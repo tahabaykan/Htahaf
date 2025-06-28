@@ -1,0 +1,96 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environments
+tf_env/
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Data Files
+*.csv
+*.json
+mastermind_data/
+data/
+
+# Log Files
+*.log
+logs/
+psf_reasoning.log
+
+# Backup and Temporary Files
+*.bak
+*.backup
+*.original
+temp_*
+*_temp.csv
+*_checkpoint.py
+
+# Test Files (specific patterns that look temporary)
+test_*.py
+analyze_*.py
+ibkr_contract_test.py
+ibkrtry*.py
+
+# Image Files
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# IDE / Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific files that look temporary or generated
+level2_venue_data_*.json
+real_venue_data_*.json
+trades_*.csv
+tokens.txt
+requirements.txt
+
+# Specific temporary/development files
+Uyanik.py
+spreadci.py
+venuelik.py
+modular_changes.txt
+fix_instructions.txt
+ozet.txt
+
+# Multiple similar project directories (keeping main ones, ignoring duplicates)
+Altahaf/
+Htahaf/
+Otahaf/
+Sptahaf/
+Tahaf/
+Tahafhammer/
+Tahafhammerlast/
+Tahafhmr/
+polstream/
+polyadam/
+polyt/
+
+# Keep only main hammerib projects
+# hammerib/
+# hammerib_hammer/ 
