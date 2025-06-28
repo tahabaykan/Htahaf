@@ -12,7 +12,7 @@ scripts = [
     "calculate_scores.py",
     "fill_missing_solidity_data.py",
     "market_risk_analyzer.py",
-    "calculate_final_thg_dynanmic.py",
+    "calculate_final_thg_dynamic.py",
     "calculate_extlt.py",
     "calculate_finalextlt.py",
     "calculate_splitextlt.py",
