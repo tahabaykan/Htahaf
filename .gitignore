@@ -16,9 +16,22 @@ venv.bak/
 
 # Data Files
 *.csv
+# But keep important CSV files
+!Htahaf/*.csv
+!Htahaf/data/*.csv
+!run_weekly_*.csv
+!common_*.csv
+!extlt_*.csv
+!final_*.csv
+!mastermind_*.csv
+!normalize_*.csv
+!scored_*.csv
+
 *.json
+# But keep important JSON files  
+!Htahaf/data/*.json
+
 mastermind_data/
-data/
 
 # Log Files
 *.log
@@ -37,7 +50,6 @@ temp_*
 test_*.py
 analyze_*.py
 ibkr_contract_test.py
-ibkrtry*.py
 
 # Image Files
 *.png
@@ -80,7 +92,6 @@ ozet.txt
 
 # Multiple similar project directories (keeping main ones, ignoring duplicates)
 Altahaf/
-Htahaf/
 Otahaf/
 Sptahaf/
 Tahaf/
