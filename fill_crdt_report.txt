@@ -1,0 +1,20 @@
+ekheldbesmaturlu.csv: 3 rows updated, 0 unmatched.
+ekheldcilizyeniyedi.csv: 1 rows updated, 0 unmatched.
+ekheldcommonsuz.csv: 3 rows updated, 0 unmatched.
+ekhelddeznff.csv: 5 rows updated, 6 unmatched.
+  Unmatched tickers: [('BK PRK', 'BK-K'), ('KKRT', 'KKRT'), ('NEE PRU', 'NEE-U'), ('PRH', 'PRH'), ('UMBFO', 'UMBFO'), ('WTFCN', 'WTFCN')]
+ekheldff.csv: 11 rows updated, 0 unmatched.
+ekheldflr.csv: 2 rows updated, 0 unmatched.
+ekheldgarabetaltiyedi.csv: 5 rows updated, 2 unmatched.
+  Unmatched tickers: [('UNMA', 'UNMA'), ('WBS PRG', 'WBS-G')]
+ekheldkuponlu.csv: 21 rows updated, 1 unmatched.
+  Unmatched tickers: [('SCHW PRJ', 'SCHW-J')]
+ekheldkuponlukreciliz.csv: 1 rows updated, 0 unmatched.
+ekheldkuponlukreorta.csv: 2 rows updated, 0 unmatched.
+ekheldnff.csv: 2 rows updated, 1 unmatched.
+  Unmatched tickers: [('EFC PRC', 'EFC-C')]
+ekheldotelremorta.csv: 5 rows updated, 1 unmatched.
+  Unmatched tickers: [('PEB PRG', 'PEB-G')]
+ekheldsolidbig.csv: 2 rows updated, 0 unmatched.
+ekheldtitrekhc.csv: 2 rows updated, 1 unmatched.
+  Unmatched tickers: [('RPT PRC', 'RPT-C')]

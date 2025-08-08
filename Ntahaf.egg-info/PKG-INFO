@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: Ntahaf
+Version: 0.1
+Requires-Dist: pandas
+Requires-Dist: numpy
+Requires-Dist: ibapi
+Requires-Dist: requests
+Requires-Dist: python-dateutil
+Dynamic: requires-dist

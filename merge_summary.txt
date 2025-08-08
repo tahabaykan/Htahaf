@@ -1,0 +1,136 @@
+DOSYA BİRLEŞTİRME, DÜZELTME, GÜNCELLEME, AYIRMA, YENİDEN ADLANDIRMA VE İKİNCİ AYIRMA ÖZETİ
+====================================================================================================
+
+Tarih: 2024-12-19
+İşlem: historical_data.csv + extlthistorical.csv → alltogether.csv → DÜZELTME → GÜNCELLEME → AYIRMA → YENİDEN ADLANDIRMA → İKİNCİ AYIRMA
+
+KAYNAK DOSYALAR:
+-----------------
+1. historical_data.csv
+   - Satır sayısı: 221
+   - Sütun sayısı: 12
+   - Boyut: ~13KB
+
+2. extlthistorical.csv
+   - Satır sayısı: 301
+   - Sütun sayısı: 22
+   - Boyut: ~27KB
+
+BİRLEŞTİRME İŞLEMİ:
+-------------------
+✅ Başarıyla tamamlandı
+
+DÜZELTME İŞLEMİ:
+-----------------
+❌ SORUN: Sütun kayması tespit edildi
+✅ ÇÖZÜM: fix_alltogether.py scripti ile düzeltildi
+
+DÜZELTME YAPILAN İŞLEMLER:
+---------------------------
+1. Gereksiz sütunlar temizlendi (Unnamed: 18, 19, 20, 21)
+2. Boş sütunlar temizlendi (DIV ADJ.PRICE, LAST PRICE, TIME TO DIV)
+3. Veri kayması düzeltildi
+4. PREF IBKR sütunu doğru konuma getirildi
+
+GÜNCELLEME İŞLEMİ:
+-------------------
+✅ Sütun sıralaması düzenlendi
+✅ 8 yeni hisse eklendi (TWOD, WTFCN, NEE PRU, KKRT, AOMD, MBNKO, BUSEP, PMTW)
+
+İLK AYIRMA İŞLEMİ:
+------------------
+✅ Hardspec hisseleri ayrıldı
+
+ÇIKARILAN HARDSPEC HİSSELERİ (33 adet):
+-----------------------------------------
+- BHFAL, BHFAM, BHFAN, BHFAO, BHFAP (BHF serisi)
+- HFRO PRA
+- SCE PRG, SCE PRL, SCE PRJ, SCE PRK, SCE PRM, SCE PRN (SCE serisi)
+- UZD, UZE, UZF (USM serisi)
+- DBRG PRH, DBRG PRI, DBRG PRJ (DBRG serisi)
+- LBRDP, MHLA, MHNC
+- NREF PRA
+- QVCC, QVCD (QVCGA serisi)
+- RC PRE, RCB, RCC, RCD (RC serisi)
+- SCCC, SCCD, SCCE, SCCF, SCCG (SACH serisi)
+
+YENİDEN ADLANDIRMA İŞLEMİ:
+---------------------------
+✅ alltogether_reordered.csv → nalltogether.csv
+✅ hardspechistorical.csv → nhardspec.csv
+
+İKİNCİ AYIRMA İŞLEMİ:
+---------------------
+✅ Notheldpff hisseleri ayrıldı
+
+ÇIKARILAN NOTHELDPFF HİSSELERİ (132 adet):
+--------------------------------------------
+- ACP PRA, AGM PRE, BCV PRA, BWBBP, EFSCP, ETI PR, ENJ, ECF PRA, CUBB
+- GAB PRH, GAB PRG, GAB PRK, GDV PRH, GDV PRK, GGN PRB, GGT PRE, GGT PRG
+- GNT PRA, GRBK PRA, GUT PRC, NCV PRA, NCZ PRA, OPP PRA, OPP PRB, RIV PRA
+- REXR PRB, REXR PRC, TRTN PRA, ALTG PRA, AOMN, ATLCP, BANFP, CGBDL, CCIA
+- CHMI PRA, CHMI PRB, CIMN, CIMO, CMRE PRB, CMRE PRC, CMRE PRD, CSWCZ
+- CUBI PRF, DSX PRB, DX PRC, ECC PRD, ECCC, ECCF, ECCU, ECCV, ECCW, ECCX
+- EFC PRD, EICA, EICB, EICC, EIIA, ET PRI, FHN PRC, FRMEP, GAINL, GAM PRB
+- GECCH, GECCI, GECCO, GECCZ, GLADZ, GMRE PRA, HCXY, HOVNP, HNNAZ, HROWL
+- HROWM, HTFB, HTFC, INBKZ, METCL, METCZ, MFAO, MFICL, MITN, MITP
+- MITT PRA, MITT PRB, MITT PRC, NEWTG, NEWTH, NEWTI, NYMTZ, NYMTG, NYMTI
+- OCCIM, OCCIN, OCCIO, OFSSH, OXLCG, OXLCI, OXLCL, OXLCN, OXLCO, OXLCP
+- OXLCZ, OXSQG, OXSQZ, PDPA, PMTU, PRIF PRD, PRIF PRJ, PRIF PRK, PRIF PRL
+- RWAYL, RWAYZ, RWT PRA, RWTN, RWTP, RWTO, SAJ, SAY, SAZ, SB PRC, SB PRD
+- SPMA, SSSSL, SWKHL, TFINP, UCB PRI, WHFCL, XFLT PRA, XOMAO, XOMAP
+- AOMD, MBNKO
+
+SONUÇ DOSYALAR:
+---------------
+1. nalltogether.csv (Ana dosya)
+   - Satır sayısı: 342 (başlık dahil 343)
+   - Sütun sayısı: 12
+   - Dosya boyutu: ~21KB
+
+2. nhardspec.csv (İlk ayrılan dosya)
+   - Satır sayısı: 33 (başlık dahil 34)
+   - Sütun sayısı: 12
+   - Dosya boyutu: ~2KB
+
+3. nnotheldpff.csv (İkinci ayrılan dosya)
+   - Satır sayısı: 132 (başlık dahil 133)
+   - Sütun sayısı: 12
+   - Dosya boyutu: ~9KB
+
+SÜTUN YAPISI (Her üç dosyada da aynı):
+---------------------------------------
+1. PREF IBKR - IBKR preferred hisse kodu
+2. CMON - Ortak hisse
+3. BOND_ - Tahvil bilgisi
+4. CRDT SCORE_ - Kredi skoru
+5. EX-DIV DATE - Temettü öncesi tarih
+6. CALL DATE - Çağrı tarihi
+7. MATUR DATE - Vade tarihi
+8. DIV AMOUNT - Temettü miktarı
+9. COUPON - Kupon oranı
+10. Aug2022_Price - Ağustos 2022 fiyatı
+11. Oct19_Price - 19 Ekim fiyatı
+12. CGRUP - Grup kodu
+
+İŞLEM DURUMU:
+-------------
+✅ Tüm işlemler başarıyla tamamlandı
+✅ Veri bütünlüğü korundu
+✅ Dosya yapısı tutarlı
+✅ Sütun sıralaması istenen şekilde düzenlendi
+✅ Dosya isimleri güncellendi
+✅ İki ayrı ayırma işlemi tamamlandı
+
+FİNAL DOSYA YAPISI:
+-------------------
+📁 nalltogether.csv (342 hisse - Ana liste)
+📁 nhardspec.csv (33 hisse - Özel liste 1)
+📁 nnotheldpff.csv (132 hisse - Özel liste 2)
+
+TOPLAM İŞLEM ÖZETİ:
+-------------------
+Orijinal: 515 hisse
+1. Ayırma: 33 hisse çıkarıldı → 482 hisse kaldı
+2. Ayırma: 132 hisse çıkarıldı → 350 hisse kaldı
+Final: 342 hisse (ana liste) + 33 hisse (hardspec) + 132 hisse (notheldpff) = 507 hisse 
