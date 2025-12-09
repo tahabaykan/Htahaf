@@ -8,6 +8,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
 import json
@@ -41,32 +43,32 @@ def get_cnbc_yield_with_selenium(driver, url, maturity):
         
         driver.get(url)
         
-        # Sayfanın yüklenmesini bekle
-        time.sleep(3)
+        # Sayfanın yüklenmesini bekle - Treasury sayfaları için daha uzun
+        time.sleep(8)
+        
+        # Sayfa tamamen yüklenene kadar bekle
+        try:
+            WebDriverWait(driver, 15).until(
+                lambda driver: driver.execute_script("return document.readyState") == "complete"
+            )
+        except:
+            print(f"{maturity}: Sayfa yükleme timeout, devam ediliyor...")
         
         # Yield değerini bul - Güncellenmiş selector'lar
         try:
             # CNBC'nin güncel sayfa yapısına uygun selector'lar
             selectors = [
+                # CNBC US5Y sayfasından alınan spesifik selector'lar
                 "//span[contains(@class, 'QuoteStrip-lastPrice')]",
                 "//div[contains(@class, 'QuoteStrip-lastPrice')]",
                 "//span[contains(@class, 'last-price')]",
                 "//div[contains(@class, 'last-price')]",
-                "//span[contains(@class, 'quote-price')]",
-                "//div[contains(@class, 'quote-price')]",
-                "//span[contains(@class, 'price') and contains(text(), '%')]",
-                "//div[contains(@class, 'price') and contains(text(), '%')]",
-                "//span[contains(text(), '%') and contains(@class, 'value')]",
-                "//div[contains(text(), '%') and contains(@class, 'value')]",
-                "//span[contains(@class, 'QuoteStrip') and contains(text(), '%')]",
-                "//div[contains(@class, 'QuoteStrip') and contains(text(), '%')]",
-                "//span[contains(@class, 'Quote') and contains(text(), '%')]",
-                "//div[contains(@class, 'Quote') and contains(text(), '%')]",
-                "//span[contains(@class, 'Last') and contains(text(), '%')]",
-                "//div[contains(@class, 'Last') and contains(text(), '%')]",
-                "//span[contains(@class, 'Price') and contains(text(), '%')]",
-                "//div[contains(@class, 'Price') and contains(text(), '%')]",
-                # Genel selector'lar
+                # Yield için özel selector'lar
+                "//span[contains(text(), '%') and contains(@class, 'QuoteStrip')]",
+                "//div[contains(text(), '%') and contains(@class, 'QuoteStrip')]",
+                "//span[contains(@class, 'QuoteStrip')]//text()[contains(., '%')]",
+                "//div[contains(@class, 'QuoteStrip')]//text()[contains(., '%')]",
+                # Genel yield selector'ları
                 "//span[contains(text(), '%')]",
                 "//div[contains(text(), '%')]",
                 "//span[contains(@class, 'quote')]",
@@ -151,7 +153,7 @@ def get_cnbc_treasury_yields():
                 if yield_rate:
                     yields[maturity] = yield_rate
                 
-                time.sleep(2)  # Rate limiting
+                time.sleep(5)  # Rate limiting - Treasury sayfaları için daha uzun
                 
         finally:
             driver.quit()

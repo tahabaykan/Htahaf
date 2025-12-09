@@ -15,7 +15,7 @@ def add_adj_risk_premium():
         if os.path.exists('treyield.csv'):
             df = pd.read_csv('treyield.csv')
             for _, row in df.iterrows():
-                treasury_yields[row['Maturity']] = row['Yield']
+                treasury_yields[row['Treasury']] = row['Yield']
             print(f"Treasury yield'ları yüklendi: {treasury_yields}")
         else:
             print("treyield.csv bulunamadı!")
@@ -28,18 +28,26 @@ def add_adj_risk_premium():
     yek_files = glob.glob('yek*.csv')
     print(f"Bulunan YEK dosyaları: {len(yek_files)}")
     
+    # Finek dosyalarını da bul
+    finek_files = glob.glob('finek*.csv')
+    print(f"Bulunan FINEK dosyaları: {len(finek_files)}")
+    
+    # Tüm dosyaları birleştir
+    all_files = yek_files + finek_files
+    print(f"Toplam işlenecek dosya: {len(all_files)}")
+    
     total_processed = 0
     
-    for yek_file in yek_files:
+    for csv_file in all_files:
         try:
-            print(f"\nİşleniyor: {yek_file}")
+            print(f"\nİşleniyor: {csv_file}")
             
             # YEK dosyasını oku
-            df = pd.read_csv(yek_file)
+            df = pd.read_csv(csv_file)
             print(f"  {len(df)} satır okundu")
             
             # Adj Risk Premium kolonu ekle veya güncelle
-            df['Adj Risk Premium'] = ''
+            df['Adj Risk Premium'] = 0.0  # ✅ 0.0 olarak başla, boş string değil!
             
             # Her hisse için Adj Risk Premium hesapla
             for index, row in df.iterrows():
@@ -94,14 +102,19 @@ def add_adj_risk_premium():
                         adj_risk_premium = cally_value - yield_value
                         df.at[index, 'Adj Risk Premium'] = round(adj_risk_premium, 4)
                     else:
-                        df.at[index, 'Adj Risk Premium'] = ''
+                        df.at[index, 'Adj Risk Premium'] = 0.0  # ✅ 0.0 olarak ayarla, boş string değil!
+                        
+                    # Debug bilgisi ekle
+                    if index < 5:  # İlk 5 hisse için debug bilgisi
+                        print(f"    {row.get('PREF IBKR', 'N/A')}: Cally={cally_value:.4f}, Yield={yield_value:.4f}, Adj Risk Premium={df.at[index, 'Adj Risk Premium']}")
+                        
                 except Exception as e:
                     print(f"  Hisse {index} için hesaplama hatası: {e}")
-                    df.at[index, 'Adj Risk Premium'] = ''
+                    df.at[index, 'Adj Risk Premium'] = 0.0  # ✅ Hata durumunda da 0.0
             
             # Dosyayı kaydet
-            df.to_csv(yek_file, index=False, encoding='utf-8-sig')
-            print(f"  [OK] {yek_file} güncellendi")
+            df.to_csv(csv_file, index=False, encoding='utf-8-sig')
+            print(f"  [OK] {csv_file} güncellendi")
             total_processed += 1
                 
         except Exception as e:

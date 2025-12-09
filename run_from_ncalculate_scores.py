@@ -8,6 +8,7 @@ scripts = [
     "nget_short_fee_rates.py",
     "noptimize_shorts.py",
     "npreviousadd.py",
+    "merge_csvs.py"
 ]
 
 for script in scripts:

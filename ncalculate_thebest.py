@@ -525,6 +525,119 @@ def calculate_ytc(row):
         print(f"YTC hesaplama hatası: {e}")
         return np.nan
 
+def calculate_gort_for_group(df, group_type, adv_file):
+    """Standart gruplar için GORT hesapla"""
+    try:
+        print(f"\n=== GORT Hesaplama ({group_type}) ===")
+        
+        # Kuponlu gruplar listesi
+        kuponlu_groups = ['heldkuponlu', 'heldkuponlukreciliz', 'heldkuponlukreorta']
+        
+        # ADV dosyasını oku (ham SMA değerleri için)
+        try:
+            adv_df = pd.read_csv(adv_file, encoding='utf-8-sig')
+        except Exception as e:
+            print(f"⚠️ ADV dosyası okunamadı: {e}")
+            return df
+        
+        # SMA kolon isimleri (farklı formatları kontrol et)
+        sma63_col_names = ['SMA63 chg', 'SMA63CHG', 'SMA63_chg', 'SMA 63 CHG']
+        sma246_col_names = ['SMA246 chg', 'SMA 246 CHG', 'SMA246CHG', 'SMA246_CHG', 'SMA 246 chg']
+        
+        # ADV dosyasında hangi kolonlar var?
+        sma63_col = None
+        sma246_col = None
+        
+        for col_name in sma63_col_names:
+            if col_name in adv_df.columns:
+                sma63_col = col_name
+                break
+        
+        for col_name in sma246_col_names:
+            if col_name in adv_df.columns:
+                sma246_col = col_name
+                break
+        
+        if not sma63_col or not sma246_col:
+            print(f"⚠️ SMA63 chg veya SMA246 chg kolonları bulunamadı")
+            df['GORT'] = 0.0
+            return df
+        
+        print(f"✓ SMA kolonları bulundu: {sma63_col}, {sma246_col}")
+        
+        # ADV dosyasından SMA değerlerini al ve df ile birleştir
+        sma_data = adv_df[['PREF IBKR', sma63_col, sma246_col]].copy()
+        sma_data[sma63_col] = pd.to_numeric(sma_data[sma63_col], errors='coerce')
+        sma_data[sma246_col] = pd.to_numeric(sma_data[sma246_col], errors='coerce')
+        
+        # df ile birleştir
+        df = df.merge(sma_data, on='PREF IBKR', how='left', suffixes=('', '_raw'))
+        
+        # GORT hesapla
+        gort_values = []
+        
+        for idx, row in df.iterrows():
+            symbol = row['PREF IBKR']
+            sma63chg = row[sma63_col]
+            sma246chg = row[sma246_col]
+            
+            if pd.isna(sma63chg) or pd.isna(sma246chg):
+                gort_values.append(np.nan)
+                continue
+            
+            # Grup ortalamalarını hesapla
+            if group_type.lower() in kuponlu_groups:
+                # Kuponlu gruplar: CGRUP'a göre gruplama
+                cgrup = row.get('CGRUP', '')
+                if pd.notna(cgrup) and cgrup != '' and cgrup != 'N/A':
+                    cgrup_str = str(cgrup).strip()
+                    # Aynı CGRUP'taki diğer hisselerin ortalaması
+                    cgrup_rows = adv_df[(adv_df['CGRUP'] == cgrup_str) & (adv_df['PREF IBKR'] != symbol)]
+                    sma63_values = pd.to_numeric(cgrup_rows[sma63_col], errors='coerce').dropna()
+                    sma246_values = pd.to_numeric(cgrup_rows[sma246_col], errors='coerce').dropna()
+                else:
+                    # CGRUP yoksa grup ortalaması
+                    sma63_values = pd.to_numeric(adv_df[sma63_col], errors='coerce').dropna()
+                    sma246_values = pd.to_numeric(adv_df[sma246_col], errors='coerce').dropna()
+            else:
+                # Diğer standart gruplar: Grup içindeki tüm hisselerin ortalaması
+                sma63_values = pd.to_numeric(adv_df[sma63_col], errors='coerce').dropna()
+                sma246_values = pd.to_numeric(adv_df[sma246_col], errors='coerce').dropna()
+            
+            # Ortalamaları hesapla
+            if len(sma63_values) > 0:
+                group_avg_sma63 = sma63_values.mean()
+                if group_avg_sma63 == 0:
+                    group_avg_sma63 = 0.01
+            else:
+                group_avg_sma63 = 0.01
+            
+            if len(sma246_values) > 0:
+                group_avg_sma246 = sma246_values.mean()
+                if group_avg_sma246 == 0:
+                    group_avg_sma246 = 0.01
+            else:
+                group_avg_sma246 = 0.01
+            
+            # GORT hesapla: 0.25 * (SMA63chg - group_avg_sma63) + 0.75 * (SMA246chg - group_avg_sma246)
+            gort = (0.25 * (sma63chg - group_avg_sma63)) + (0.75 * (sma246chg - group_avg_sma246))
+            gort_values.append(gort)
+        
+        df['GORT'] = gort_values
+        df['GORT'] = pd.to_numeric(df['GORT'], errors='coerce')
+        
+        print(f"✓ GORT hesaplandı: {df['GORT'].notna().sum()}/{len(df)} hisse")
+        print(f"GORT istatistikleri: min={df['GORT'].min():.4f}, max={df['GORT'].max():.4f}, mean={df['GORT'].mean():.4f}")
+        
+        return df
+        
+    except Exception as e:
+        print(f"⚠️ GORT hesaplama hatası: {e}")
+        import traceback
+        traceback.print_exc()
+        df['GORT'] = 0.0
+        return df
+
 def normalize_scores(df):
     """Skorları normalize et (5-95 aralığında)"""
     try:
@@ -587,6 +700,22 @@ def normalize_scores(df):
                     else:
                         df[col] = 50
         
+        # GORT normalize et (standart gruplar için) - TERSİNE ÇEVRİLMİŞ
+        # Yüksek GORT = kötü (düşük skor), Düşük GORT = iyi (yüksek skor)
+        if 'GORT' in df.columns:
+            gort_values = df['GORT'].dropna()
+            if len(gort_values) > 0:
+                gort_min, gort_max = gort_values.min(), gort_values.max()
+                if gort_max != gort_min:
+                    # Tersine çevrilmiş normalizasyon: En yüksek GORT → 5, En düşük GORT → 95
+                    df['GORT_NORM'] = 5 + ((gort_max - df['GORT']) / (gort_max - gort_min)) * 90
+                else:
+                    df['GORT_NORM'] = 50
+                print(f"GORT (tersine çevrilmiş): {gort_min:.4f}-{gort_max:.4f} -> En yüksek GORT=5, En düşük GORT=95")
+            else:
+                df['GORT_NORM'] = 50
+                print("GORT normalize edilemedi, varsayılan 50 değeri kullanıldı")
+        
         print("✓ Tüm skorlar normalize edildi")
         return df
         
@@ -594,7 +723,7 @@ def normalize_scores(df):
         print(f"Normalizasyon hatası: {e}")
         return df
 
-def calculate_final_thg(df, market_weights, group_type=None):
+def calculate_final_thg(df, market_weights, group_type=None, adv_file=None):
     """FINAL THG hesapla - Grup tipine göre farklı formüller"""
     try:
         print(f"\n=== FINAL_THG Hesaplama ({group_type}) ===")
@@ -612,6 +741,18 @@ def calculate_final_thg(df, market_weights, group_type=None):
         if group_type in ['helddeznff', 'heldnff']:
             print("YTC hesaplanıyor...")
             df['YTC'] = df.apply(calculate_ytc, axis=1)
+        
+        # Özel formül grupları için kontrol
+        special_groups = ['heldbesmaturlu', 'heldhighmatur', 'notbesmatur']
+        ytc_groups = ['helddeznff', 'heldnff']
+        exp_return_groups = ['heldff', 'heldflr', 'heldsolidbig', 'heldtitrekhc', 'nottitrekhc']
+        
+        # Standart gruplar için GORT hesapla (özel gruplar hariç)
+        is_standard_group = group_type not in special_groups + ytc_groups + exp_return_groups + ['highmatur']
+        
+        if is_standard_group and adv_file:
+            print("Standart grup tespit edildi - GORT hesaplanıyor...")
+            df = calculate_gort_for_group(df, group_type, adv_file)
         
         # Skorları normalize et
         df = normalize_scores(df)
@@ -655,7 +796,7 @@ def calculate_final_thg(df, market_weights, group_type=None):
             print("✓ Özel SMA63_chg_norm formül hesaplama tamamlandı")
             return df
         elif group_type in ytc_groups:
-            print(f"Özel formül kullanılıyor ({group_type}): YTC_NORM*5 + SOLIDITY_SCORE_NORM*2 + SMA63_chg_norm*8")
+            print(f"Özel formül kullanılıyor ({group_type}): YTC_NORM*3 + SOLIDITY_SCORE_NORM*2 + SMA63_chg_norm*10")
             
             # Gerekli kolonları kontrol et
             required_cols = ['YTC_NORM', 'SOLIDITY_SCORE_NORM', 'SMA63_chg_norm']
@@ -671,17 +812,17 @@ def calculate_final_thg(df, market_weights, group_type=None):
                     df[col] = df[col].fillna(quantile_value)
                     print(f"{col} eksik değerleri {quantile_value:.4f} ile dolduruldu")
             
-            # Özel formül: YTC_NORM * 5 + SOLIDITY_SCORE_NORM * 2 + SMA63_chg_norm * 8
+            # Özel formül: YTC_NORM * 3 + SOLIDITY_SCORE_NORM * 2 + SMA63_chg_norm * 10
             df['FINAL_THG'] = (
-                df['YTC_NORM'] * 5 +
+                df['YTC_NORM'] * 3 +
                 df['SOLIDITY_SCORE_NORM'] * 2 +
-                df['SMA63_chg_norm'] * 8
+                df['SMA63_chg_norm'] * 10
             )
             
             print("✓ Özel YTC formül hesaplama tamamlandı")
             return df
         elif group_type in special_groups:
-            print(f"Özel formül kullanılıyor ({group_type}): YTM_NORM*6 + SMA63_chg_norm*8 + SOLIDITY_SCORE_NORM*1")
+            print(f"Özel formül kullanılıyor ({group_type}): YTM_NORM*4 + SMA63_chg_norm*9 + SOLIDITY_SCORE_NORM*2")
             
             # Gerekli kolonları kontrol et
             required_cols = ['YTM_NORM', 'SMA63_chg_norm', 'SOLIDITY_SCORE_NORM']
@@ -697,17 +838,17 @@ def calculate_final_thg(df, market_weights, group_type=None):
                     df[col] = df[col].fillna(quantile_value)
                     print(f"{col} eksik değerleri {quantile_value:.4f} ile dolduruldu")
             
-            # Özel formül: YTM_NORM * 6 + SMA63_chg_norm * 8 + SOLIDITY_SCORE_NORM * 1
+            # Özel formül: YTM_NORM * 4 + SMA63_chg_norm * 9 + SOLIDITY_SCORE_NORM * 2
             df['FINAL_THG'] = (
-                df['YTM_NORM'] * 6 +
-                df['SMA63_chg_norm'] * 8 +
-                df['SOLIDITY_SCORE_NORM'] * 1
+                df['YTM_NORM'] * 4 +
+                df['SMA63_chg_norm'] * 9 +
+                df['SOLIDITY_SCORE_NORM'] * 2
             )
             
             print("✓ Özel formül hesaplama tamamlandı")
             return df
         elif group_type == 'highmatur':
-            print(f"Özel formül kullanılıyor ({group_type}): YTM_NORM*6 + SMA63_chg_norm*8 + SOLIDITY_SCORE_NORM*1")
+            print(f"Özel formül kullanılıyor ({group_type}): YTM_NORM*4 + SMA63_chg_norm*9 + SOLIDITY_SCORE_NORM*2")
             
             # Gerekli kolonları kontrol et
             required_cols = ['YTM_NORM', 'SMA63_chg_norm', 'SOLIDITY_SCORE_NORM']
@@ -721,13 +862,13 @@ def calculate_final_thg(df, market_weights, group_type=None):
                 if df[col].isna().any():
                     quantile_value = df[col].dropna().quantile(0.12)
                     df[col] = df[col].fillna(quantile_value)
-                    print(f"{col} eksik değerleri {quantile_value:.4f} ile dolduruldu")
+                    print(f"{col} eksik değerleri {quantile_value:.4f}")
             
-            # Özel formül: YTM_NORM * 6 + SMA63_chg_norm * 8 + SOLIDITY_SCORE_NORM * 1
+            # Özel formül: YTM_NORM * 4 + SMA63_chg_norm * 9 + SOLIDITY_SCORE_NORM * 2
             df['FINAL_THG'] = (
-                df['YTM_NORM'] * 6 +
-                df['SMA63_chg_norm'] * 8 +
-                df['SOLIDITY_SCORE_NORM'] * 1
+                df['YTM_NORM'] * 4 +
+                df['SMA63_chg_norm'] * 9 +
+                df['SOLIDITY_SCORE_NORM'] * 2
             )
             
             print("✓ Özel formül hesaplama tamamlandı")
@@ -869,29 +1010,50 @@ def calculate_final_thg(df, market_weights, group_type=None):
         # Şimdilik SOLIDITY_SCORE_NORM'u kullanıyoruz, ama ayrı bir credit score hesaplaması yapılabilir
         df['CREDIT_SCORE_NORM'] = df['SOLIDITY_SCORE_NORM']  # Geçici olarak SOLIDITY_SCORE_NORM kullanıyoruz
         
-        df['FINAL_THG'] = (
-            (df['SMA20_chg_norm'] + df['SMA63_chg_norm'] + df['SMA246_chg_norm']) * 3 +     # SMA toplamı * 3
-            (df['1Y_High_diff_norm'] + df['1Y_Low_diff_norm']) * 0.7 +                      # High+Low toplamı * 0.7
-            df['Aug4_chg_norm'] * 0.25 +                                                     # Aug ağırlığı
-            df['Oct19_chg_norm'] * 0.25 +                                                    # Oct ağırlığı
+        # EX_FINAL_THG hesapla (eski formül)
+        df['EX_FINAL_THG'] = (
+            (df['SMA20_chg_norm'] * 0.4 + df['SMA63_chg_norm'] * 0.9 + df['SMA246_chg_norm'] * 1.1) * 2.4 +   # SMA toplamı * 2.4 (SMA20=0.4, SMA63=0.9, SMA246=1.1)
+            (df['1Y_High_diff_norm'] + df['1Y_Low_diff_norm']) * 2.2 +                      # High+Low toplamı * 2.2
+            df['Aug4_chg_norm'] * 0.50 +                                                     # Aug ağırlığı
+            df['Oct19_chg_norm'] * 0.50 +                                                    # Oct ağırlığı
             df['SOLIDITY_SCORE_NORM'] * solidity_weight +                                     # Solidity * solidity_weight
-            df['CUR_YIELD_LIMITED'] * yield_weight +                                          # CUR_YIELD (sınırlı) * yield_weight
+            df['CUR_YIELD_LIMITED'] * yield_weight * 0.75 +                                   # CUR_YIELD (sınırlı) * yield_weight * 0.75 (%25 azaltma)
             df['AVG_ADV'] * adv_weight +                                                      # AVG_ADV * adv_weight
-            df['SOLCALL_SCORE_NORM'] * market_weights['solcall_score_weight'] +               # SOLCALL_SCORE * solcall_score_weight
+            df['SOLCALL_SCORE_NORM'] * market_weights['solcall_score_weight'] * 0.85 +        # SOLCALL_SCORE * solcall_score_weight * 0.85 (%15 azaltma)
             df['CREDIT_SCORE_NORM'] * market_weights['credit_score_norm_weight']              # CREDIT_SCORE_NORM * credit_score_norm_weight
         )
         
+        # GORT hesapla ve normalize et (standart gruplar için)
+        # GORT_NORM eksik değerleri doldur
+        if 'GORT_NORM' in df.columns:
+            if df['GORT_NORM'].isna().any():
+                quantile_value = df['GORT_NORM'].dropna().quantile(0.12)
+                df['GORT_NORM'] = df['GORT_NORM'].fillna(quantile_value)
+                print(f"GORT_NORM eksik değerleri {quantile_value:.2f} ile dolduruldu")
+        else:
+            # GORT_NORM yoksa varsayılan değer
+            df['GORT_NORM'] = 50.0
+            print("⚠️ GORT_NORM bulunamadı, varsayılan 50 değeri kullanıldı")
+        
+        # Yeni FINAL_THG formülü: EX_FINAL_THG * 0.6 + GORT_NORM * 10
+        df['FINAL_THG'] = df['EX_FINAL_THG'] * 0.6 + df['GORT_NORM'] * 10
+        
         # Kullanılan ağırlıkları kaydet
         df['SOLIDITY_WEIGHT_USED'] = solidity_weight
-        df['YIELD_WEIGHT_USED'] = yield_weight
+        df['YIELD_WEIGHT_USED'] = yield_weight * 0.75  # %25 azaltılmış yield ağırlığı
         df['ADV_WEIGHT_USED'] = adv_weight
-        df['SOLCALL_SCORE_WEIGHT_USED'] = market_weights['solcall_score_weight']
+        df['SOLCALL_SCORE_WEIGHT_USED'] = market_weights['solcall_score_weight'] * 0.85  # %15 azaltılmış solcall ağırlığı
         df['CREDIT_SCORE_NORM_WEIGHT_USED'] = market_weights['credit_score_norm_weight']
         df['ADJ_RISK_PREMIUM_WEIGHT_USED'] = market_weights['adj_risk_premium_weight']
+        df['SMA20_WEIGHT_USED'] = 0.4  # SMA20 için özel ağırlık
         
         print("✓ Standart formül hesaplama tamamlandı")
         print(f"Kullanılan ağırlıklar:")
-        print(f"  - SOLCALL Score Weight: {market_weights['solcall_score_weight']:.2f}")
+        print(f"  - SMA20 Weight: 0.4 (SMA20 ağırlığı)")
+        print(f"  - SMA63 Weight: 0.9 (SMA63 ağırlığı)")
+        print(f"  - SMA246 Weight: 1.1 (SMA246 ağırlığı)")
+        print(f"  - Yield Weight: {yield_weight * 0.75:.2f} (orijinal {yield_weight} * 0.75)")
+        print(f"  - SOLCALL Score Weight: {market_weights['solcall_score_weight'] * 0.85:.2f} (orijinal {market_weights['solcall_score_weight']} * 0.85)")
         print(f"  - Credit Score Norm Weight: {market_weights['credit_score_norm_weight']:.2f}")
         print(f"  - Adj Risk Premium Weight: {market_weights['adj_risk_premium_weight']:.0f}")
         print(f"FINAL_THG örnek değerler: {df['FINAL_THG'].head().tolist()}")
@@ -975,8 +1137,8 @@ def process_single_file(adv_file, market_weights):
         if df is None:
             return None
         
-        # FINAL_THG hesapla - Grup tipine göre
-        df = calculate_final_thg(df, market_weights, group_type)
+        # FINAL_THG hesapla - Grup tipine göre (adv_file parametresi ile)
+        df = calculate_final_thg(df, market_weights, group_type, adv_file)
         
         # Last Price eksik olan hisseleri filtrele (PRS ve PRH hariç)
         last_price_missing = df['Last Price'].isna() | (df['Last Price'] == 0)

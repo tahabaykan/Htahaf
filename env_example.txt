@@ -1,0 +1,17 @@
+# Dropbox Otomatik Dosya Yükleyici Konfigürasyonu
+# Bu dosyayı .env olarak kaydedin ve aşağıdaki değerleri doldurun
+
+# Dropbox Access Token (zorunlu)
+# Bu token'ı Dropbox Developer Console'dan alabilirsiniz
+DROPBOX_ACCESS_TOKEN=your_dropbox_access_token_here
+
+# Local dosya yolu (zorunlu)
+# Yüklenecek CSV dosyasının tam yolu
+LOCAL_FILE_PATH=C:\Users\User\Documents\data.csv
+
+# Dropbox klasör yolu (opsiyonel - varsayılan: /StockTracker)
+DROPBOX_FOLDER=/StockTracker
+
+# Dropbox'da dosya adı (opsiyonel - varsayılan: data.csv)
+DROPBOX_FILENAME=data.csv
+

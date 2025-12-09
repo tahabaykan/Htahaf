@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import os
+import time
 from datetime import datetime
 
 def run_script_simple(script_name):
@@ -10,23 +11,30 @@ def run_script_simple(script_name):
     print(f"🔄 {script_name} çalıştırılıyor...")
     
     try:
+        # Script'i mevcut dizinde çalıştır
+        current_dir = os.getcwd()
+        print(f"📁 Script çalıştırılıyor: {current_dir}/{script_name}")
+        
         # ntreyield.py için özel ayarlar
         if script_name == "ntreyield.py":
             # ntreyield.py için daha uzun timeout ve farklı ayarlar
             result = subprocess.run([sys.executable, script_name], 
                                   timeout=600,  # 10 dakika
-                                  text=True)
+                                  text=True,
+                                  cwd=current_dir)  # Mevcut dizinde çalıştır
         elif script_name == "nyield_calculator.py":
             # nyield_calculator.py için output göster
             result = subprocess.run([sys.executable, script_name], 
                                   text=True, 
-                                  timeout=300)  # 5 dakika
+                                  timeout=300,
+                                  cwd=current_dir)  # Mevcut dizinde çalıştır
         else:
             # Diğer scriptler için normal ayarlar
             result = subprocess.run([sys.executable, script_name], 
-                                  capture_output=True, 
+                                  capture_output=False,  # ✅ ÇIKTI GÖRÜNÜR!
                                   text=True, 
-                                  timeout=300)  # 5 dakika
+                                  timeout=300,
+                                  cwd=current_dir)  # Mevcut dizinde çalıştır
         
         if result.returncode == 0:
             print(f"✅ {script_name} başarıyla tamamlandı")
@@ -49,6 +57,25 @@ def main():
     """
     print("=== MASTER PROCESSOR BAŞLATILIYOR ===")
     print(f"Başlangıç zamanı: {datetime.now()}")
+    print("⚠️  SADECE ANA DİZİNDEKİ (StockTracker) DOSYALAR KULLANILACAK!")
+    print("⚠️  Alt dizinlerdeki (janall, janallw, vb.) dosyalar kullanılmayacak!")
+    
+    # Çalışma dizinini kontrol et ve yazdır
+    current_dir = os.getcwd()
+    print(f"🔍 Çalışma dizini: {current_dir}")
+    
+    # Mevcut dizindeki CSV dosyalarını listele (sadece ana dizindeki)
+    csv_files = []
+    for f in os.listdir(current_dir):
+        if f.endswith('.csv'):
+            # Dosya ana dizinde mi kontrol et
+            file_path = os.path.join(current_dir, f)
+            if os.path.isfile(file_path) and not os.path.dirname(file_path).endswith(('janall', 'janallw', 'janall_backup')):
+                csv_files.append(f)
+    
+    print(f"📁 Mevcut dizindeki CSV dosyaları (sadece ana dizinden) ({len(csv_files)} adet):")
+    for file in csv_files:
+        print(f"  - {file}")
     
     # Script sırası
     scripts = [
@@ -68,8 +95,12 @@ def main():
         
         if run_script_simple(script):
             successful_scripts += 1
+            print(f"⏳ Bir sonraki script için 5 saniye bekleniyor...")
+            time.sleep(5)  # 5 saniye bekle
         else:
             print(f"⚠️ {script} başarısız oldu, devam ediliyor...")
+            print(f"⏳ Bir sonraki script için 5 saniye bekleniyor...")
+            time.sleep(5)  # 5 saniye bekle
     
     print(f"\n=== MASTER PROCESSOR TAMAMLANDI ===")
     print(f"Bitiş zamanı: {datetime.now()}")

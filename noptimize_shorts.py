@@ -71,7 +71,14 @@ def find_lowest_short_final_stocks():
             print(f"   ✅ SHORT_FINAL hesaplandı (FINAL_THG + SMI*1000)")
             
             # En düşük SHORT_FINAL skoruna sahip hisseyi bul
-            lowest_stock = df.loc[df['SHORT_FINAL'].idxmin()]
+            # NaN değerleri filtrele
+            df_clean = df.dropna(subset=['SHORT_FINAL'])
+            
+            if len(df_clean) == 0:
+                print(f"   ❌ Tüm SHORT_FINAL değerleri NaN! Dosya atlanıyor.")
+                continue
+                
+            lowest_stock = df_clean.loc[df_clean['SHORT_FINAL'].idxmin()]
             
             # Sonuç bilgilerini hazırla
             stock_info = {

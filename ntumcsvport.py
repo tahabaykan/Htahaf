@@ -10,94 +10,94 @@ def get_file_specific_rules(file_name):
     """
     rules = {
         'ssfinekheldsolidbig.csv': {
-            'long_percent': 40, 'long_multiplier': 1.3,
-            'short_percent': 20, 'short_multiplier': 0.6,
+            'long_percent': 15, 'long_multiplier': 1.7,  # Aynı kaldı
+            'short_percent': 10, 'short_multiplier': 0.35,  # Güncellendi: 10→10, 0.5→0.35
             'max_short': 2
         },
         'ssfinekheldbesmaturlu.csv': {
-            'long_percent': 25, 'long_multiplier': 1.35,
-            'short_percent': 10, 'short_multiplier': 0.3,
+            'long_percent': 10, 'long_multiplier': 1.8,  # Güncellendi: 10→10, 1.6→1.8
+            'short_percent': 5, 'short_multiplier': 0.25,  # Aynı kaldı
             'max_short': 2
         },
         'ssfinekheldtitrekhc.csv': {
-            'long_percent': 25, 'long_multiplier': 1.35,
-            'short_percent': 10, 'short_multiplier': 0.3,
+            'long_percent': 15, 'long_multiplier': 1.7,  # Güncellendi: 20→15, 1.6→1.7
+            'short_percent': 10, 'short_multiplier': 0.3,  # Aynı kaldı
             'max_short': 2
         },
         'ssfinekheldkuponlukreorta.csv': {
-            'long_percent': 30, 'long_multiplier': 1.3,
-            'short_percent': 30, 'short_multiplier': 0.7,
+            'long_percent': 10, 'long_multiplier': 1.8,  # Aynı kaldı
+            'short_percent': 15, 'short_multiplier': 0.4,  # Güncellendi: 20→15, 0.5→0.4
             'max_short': 3
         },
         'ssfinekheldflr.csv': {
-            'long_percent': 40, 'long_multiplier': 1.25,
-            'short_percent': 20, 'short_multiplier': 0.6,
+            'long_percent': 20, 'long_multiplier': 1.7,  # Aynı kaldı
+            'short_percent': 10, 'short_multiplier': 0.35,  # Güncellendi: 15→10, 0.5→0.35
             'max_short': 2
         },
         'ssfinekheldkuponlukreciliz.csv': {
-            'long_percent': 30, 'long_multiplier': 1.35,
-            'short_percent': 30, 'short_multiplier': 0.7,
+            'long_percent': 10, 'long_multiplier': 1.8,  # Aynı kaldı
+            'short_percent': 15, 'short_multiplier': 0.4,  # Güncellendi: 20→15, 0.5→0.4
             'max_short': 3
         },
         'ssfinekheldcommonsuz.csv': {
-            'long_percent': 20, 'long_multiplier': 1.45,
-            'short_percent': 25, 'short_multiplier': 0.5,
+            'long_percent': 10, 'long_multiplier': 1.8,  # Güncellendi: 10→10, 1.6→1.8
+            'short_percent': 15, 'short_multiplier': 0.4,  # Güncellendi: 25→15, 0.5→0.4
             'max_short': 3
         },
         'ssfineknotbesmaturlu.csv': {
-            'long_percent': 20, 'long_multiplier': 1.45,
-            'short_percent': 10, 'short_multiplier': 0.3,
+            'long_percent': 10, 'long_multiplier': 1.8,  # Güncellendi: 10→10, 1.6→1.8
+            'short_percent': 5, 'short_multiplier': 0.25,  # Güncellendi: 10→5, 0.3→0.25
             'max_short': 2
         },
         'ssfinekrumoreddanger.csv': {
-            'long_percent': 15, 'long_multiplier': 1.6,
-            'short_percent': 10, 'short_multiplier': 0.3,
+            'long_percent': 5, 'long_multiplier': 1.8,  # Güncellendi: 5→5, 1.75→1.8
+            'short_percent': 5, 'short_multiplier': 0.25,  # Güncellendi: 10→5, 0.3→0.25
             'max_short': 2
         },
         'ssfinekheldgarabetaltiyedi.csv': {
-            'long_percent': 40, 'long_multiplier': 1.3,
-            'short_percent': 20, 'short_multiplier': 0.6,
+            'long_percent': 20, 'long_multiplier': 1.8,  # Aynı kaldı
+            'short_percent': 10, 'short_multiplier': 0.35,  # Güncellendi: 15→10, 0.5→0.35
             'max_short': 3
         },
         'ssfinekheldnff.csv': {
-            'long_percent': 35, 'long_multiplier': 1.3,
-            'short_percent': 20, 'short_multiplier': 0.5,
+            'long_percent': 20, 'long_multiplier': 1.7,  # Aynı kaldı
+            'short_percent': 10, 'short_multiplier': 0.3,  # Güncellendi: 15→10, 0.35→0.3
             'max_short': 2
         },
         'ssfinekheldotelremorta.csv': {
-            'long_percent': 25, 'long_multiplier': 1.4,
-            'short_percent': 20, 'short_multiplier': 0.5,
+            'long_percent': 10, 'long_multiplier': 1.8,  # Aynı kaldı
+            'short_percent': 10, 'short_multiplier': 0.3,  # Güncellendi: 15→10, 0.4→0.3
             'max_short': 3
         },
         'ssfineksalakilliquid.csv': {
-            'long_percent': 20, 'long_multiplier': 1.4,
-            'short_percent': 15, 'short_multiplier': 0.4,
+            'long_percent': 10, 'long_multiplier': 1.8,  # Aynı kaldı
+            'short_percent': 10, 'short_multiplier': 0.35,  # Güncellendi: 15→10, 0.4→0.35
             'max_short': 2
         },
         'ssfinekheldff.csv': {
-            'long_percent': 40, 'long_multiplier': 1.25,
-            'short_percent': 20, 'short_multiplier': 0.5,
+            'long_percent': 25, 'long_multiplier': 1.6,  # Aynı kaldı
+            'short_percent': 10, 'short_multiplier': 0.35,  # Güncellendi: 15→10, 0.4→0.35
             'max_short': 2
         },
         'ssfinekhighmatur.csv': {
-            'long_percent': 40, 'long_multiplier': 1.25,
-            'short_percent': 7, 'short_multiplier': 0.25,
+            'long_percent': 20, 'long_multiplier': 1.7,  # Güncellendi: 25→20, 1.5→1.7
+            'short_percent': 5, 'short_multiplier': 0.2,  # Aynı kaldı
             'max_short': 2
         },
         'ssfineknotcefilliquid.csv': {
-            'long_percent': 25, 'long_multiplier': 1.35,
-            'short_percent': 15, 'short_multiplier': 0.5,
+            'long_percent': 10, 'long_multiplier': 1.8,  # Güncellendi: 10→10, 1.7→1.8
+            'short_percent': 5, 'short_multiplier': 0.25,  # Aynı kaldı
             'max_short': 2
         },
         'ssfinekhelddeznff.csv': {
-            'long_percent': 30, 'long_multiplier': 1.3,
-            'short_percent': 30, 'short_multiplier': 0.7,
+            'long_percent': 20, 'long_multiplier': 1.7,  # Aynı kaldı
+            'short_percent': 15, 'short_multiplier': 0.4,  # Güncellendi: 20→15, 0.6→0.4
             'max_short': 2
         },
         'ssfinekheldkuponlu.csv': {
-            'long_percent': 40, 'long_multiplier': 1.20,
-            'short_percent': 40, 'short_multiplier': 0.80,
-            'max_short': 999  # Sınırsız
+            'long_percent': 35, 'long_multiplier': 1.3,  # Aynı kaldı
+            'short_percent': 35, 'short_multiplier': 0.75,  # Aynı kaldı
+            'max_short': 999  # Sınırsız - Aynı kaldı
         }
     }
     
@@ -110,7 +110,7 @@ def get_file_specific_rules(file_name):
     else:
         # Varsayılan kural
         return {
-            'long_percent': 35, 'long_multiplier': 1.35,
+            'long_percent': 25, 'long_multiplier': 1.5,  # 35→25, 1.35→1.5
             'short_percent': 25, 'short_multiplier': 0.7,
             'max_short': 3
         }
@@ -135,18 +135,18 @@ def limit_by_company(stocks_df, direction='LONG', original_df=None):
     for company, group in company_groups:
         # Orijinal dosyadaki bu şirketin toplam hisse sayısını bul
         company_total_count = len(full_df[full_df['CMON'] == company])
-        # 2.5'e böl ve normal yuvarla (0.5+ yukarı, 0.4- aşağı)
+        # 1.6'ya böl ve normal yuvarla (0.5+ yukarı, 0.4- aşağı)
         # Minimum 1 hisse seçilebilir
-        max_allowed = max(1, round(company_total_count / 2.5))
+        max_allowed = max(1, round(company_total_count / 1.6))
         
         print(f"      📊 {company}: {company_total_count} hisse → maksimum {max_allowed} seçilebilir")
         
         if direction == 'LONG':
-            # En yüksek FINAL_THG'ya sahip olanları seç
-            selected = group.nlargest(max_allowed, 'FINAL_THG')
+            # En yüksek Final FB skoruna sahip olanları seç
+            selected = group.nlargest(max_allowed, 'Final FB')
         else:  # SHORT
-            # En düşük SHORT_FINAL'a sahip olanları seç
-            selected = group.nsmallest(max_allowed, 'SHORT_FINAL')
+            # En düşük Final SFS skoruna sahip olanları seç
+            selected = group.nsmallest(max_allowed, 'Final SFS')
         
         limited_stocks.append(selected)
     
@@ -170,11 +170,11 @@ def limit_by_cgroup(stocks_df, direction='LONG', max_per_group=3):
         print(f"      📊 CGRUP {cgroup}: {len(group)} hisse → maksimum {max_per_group} seçilebilir")
         
         if direction == 'LONG':
-            # En yüksek FINAL_THG'ya sahip olanları seç
-            selected = group.nlargest(max_per_group, 'FINAL_THG')
+            # En yüksek Final FB skoruna sahip olanları seç
+            selected = group.nlargest(max_per_group, 'Final FB')
         else:  # SHORT
-            # En düşük SHORT_FINAL'a sahip olanları seç
-            selected = group.nsmallest(max_per_group, 'SHORT_FINAL')
+            # En düşük Final SFS skoruna sahip olanları seç
+            selected = group.nsmallest(max_per_group, 'Final SFS')
         
         limited_stocks.append(selected)
     
@@ -187,18 +187,18 @@ def process_ssfinekheldkuponlu_special(df, rules):
     """
     ssfinekheldkuponlu.csv için özel işleme:
     - C575, C600, C625 hariç her CGRUP'tan en iyi LONG ve en kötü SHORT zorunlu seçilir
-    - CMON sınırlaması: Her şirketin toplam hisse sayısı / 2.5 (normal yuvarlama)
+    - CMON sınırlaması: Her şirketin toplam hisse sayısı / 1.6 (normal yuvarlama)
     - LONG ve SHORT ayrı ayrı değerlendirilir
     - Ek olarak kurallara uyan hisseler de seçilir
     """
     print(f"   🎯 Özel işleme: ssfinekheldkuponlu.csv")
     
     # Ortalama değerleri hesapla
-    avg_final_thg = df['FINAL_THG'].mean()
-    avg_short_final = df['SHORT_FINAL'].mean()
+    avg_final_fb = df['Final FB'].mean()
+    avg_final_sfs = df['Final SFS'].mean()
     
-    print(f"   📈 Ortalama FINAL_THG: {avg_final_thg:.4f}")
-    print(f"   📉 Ortalama SHORT_FINAL: {avg_short_final:.4f}")
+    print(f"   📈 Ortalama Final FB: {avg_final_fb:.4f}")
+    print(f"   📉 Ortalama Final SFS: {avg_final_sfs:.4f}")
     
     # CMON sınırlarını hesapla
     cmon_counts = df['CMON'].value_counts()
@@ -207,7 +207,7 @@ def process_ssfinekheldkuponlu_special(df, rules):
     
     print(f"   📊 CMON sınırları hesaplanıyor:")
     for cmon, count in cmon_counts.items():
-        limit = max(1, round(count / 2.5))  # Minimum 1, normal yuvarlama
+        limit = max(1, round(count / 1.6))  # Minimum 1, normal yuvarlama
         cmon_limits_long[cmon] = limit
         cmon_limits_short[cmon] = limit
         print(f"      {cmon}: {count} hisse → maksimum {limit} LONG + {limit} SHORT")
@@ -229,7 +229,7 @@ def process_ssfinekheldkuponlu_special(df, rules):
         print(f"   📊 CGRUP {cgroup}: Zorunlu seçim yapılıyor")
         
         # En iyi LONG'u bul (CMON sınırına uygun)
-        best_long_candidates = group.nlargest(len(group), 'FINAL_THG')
+        best_long_candidates = group.nlargest(len(group), 'Final FB')
         best_long = None
         
         for _, candidate in best_long_candidates.iterrows():
@@ -242,7 +242,7 @@ def process_ssfinekheldkuponlu_special(df, rules):
                 break
         
         # En kötü SHORT'u bul (CMON sınırına uygun)
-        worst_short_candidates = group.nsmallest(len(group), 'SHORT_FINAL')
+        worst_short_candidates = group.nsmallest(len(group), 'Final SFS')
         worst_short = None
         
         for _, candidate in worst_short_candidates.iterrows():
@@ -257,16 +257,56 @@ def process_ssfinekheldkuponlu_special(df, rules):
         if best_long is not None:
             cmon = best_long['CMON']
             max_allowed = cmon_limits_long.get(cmon, 1)
-            print(f"      🟢 Zorunlu LONG: {best_long['PREF IBKR']} ({cmon}) (FINAL_THG={best_long['FINAL_THG']:.4f}) [CMON kullanımı: {used_cmons_long[cmon]}/{max_allowed}]")
-            all_long_stocks.append(best_long)
+            
+            # LONG hisse için KUME_ORT ve KUME_PREM hesapla
+            cmon_final_fbs = df[df['CMON'] == cmon]['Final FB']
+            cmon_avg_final_fb = cmon_final_fbs.mean()
+            
+            # AVG_ADV ve RECSIZE hesapla
+            avg_adv = best_long.get('AVG_ADV', 0)
+            kume_prem = best_long['Final FB'] - cmon_avg_final_fb
+            recsize = round((kume_prem * 8 + avg_adv / 25) / 4 / 100) * 100
+            # AVG_ADV/6 sınırlaması
+            max_recsize = round(avg_adv / 6 / 100) * 100
+            recsize = min(recsize, max_recsize)
+            
+            # KUME_ORT ve KUME_PREM değerlerini row'a ekle
+            best_long_dict = best_long.to_dict()
+            best_long_dict['KUME_ORT'] = cmon_avg_final_fb
+            best_long_dict['KUME_PREM'] = kume_prem
+            best_long_dict['AVG_ADV'] = avg_adv
+            best_long_dict['RECSIZE'] = recsize
+            
+            print(f"      🟢 Zorunlu LONG: {best_long['PREF IBKR']} ({cmon}) (Final FB={best_long['Final FB']:.4f}) [CMON kullanımı: {used_cmons_long[cmon]}/{max_allowed}]")
+            all_long_stocks.append(best_long_dict)
         else:
             print(f"      ⚠️ CGRUP {cgroup}: Uygun LONG bulunamadı (CMON sınırı)")
         
         if worst_short is not None:
             cmon = worst_short['CMON']
             max_allowed = cmon_limits_short.get(cmon, 1)
-            print(f"      🔴 Zorunlu SHORT: {worst_short['PREF IBKR']} ({cmon}) (SHORT_FINAL={worst_short['SHORT_FINAL']:.4f}) [CMON kullanımı: {used_cmons_short[cmon]}/{max_allowed}]")
-            all_short_stocks.append(worst_short)
+            
+            # SHORT hisse için KUME_ORT ve KUME_PREM hesapla
+            cmon_final_sfs = df[df['CMON'] == cmon]['Final SFS']
+            cmon_avg_final_sfs = cmon_final_sfs.mean()
+            
+            # AVG_ADV ve RECSIZE hesapla
+            avg_adv = worst_short.get('AVG_ADV', 0)
+            kume_prem = cmon_avg_final_sfs - worst_short['Final SFS']
+            recsize = round((kume_prem * 8 + avg_adv / 25) / 4 / 100) * 100
+            # AVG_ADV/6 sınırlaması
+            max_recsize = round(avg_adv / 6 / 100) * 100
+            recsize = min(recsize, max_recsize)
+            
+            # KUME_ORT ve KUME_PREM değerlerini row'a ekle
+            worst_short_dict = worst_short.to_dict()
+            worst_short_dict['KUME_ORT'] = cmon_avg_final_sfs
+            worst_short_dict['KUME_PREM'] = kume_prem
+            worst_short_dict['AVG_ADV'] = avg_adv
+            worst_short_dict['RECSIZE'] = recsize
+            
+            print(f"      🔴 Zorunlu SHORT: {worst_short['PREF IBKR']} ({cmon}) (Final SFS={worst_short['Final SFS']:.4f}) [CMON kullanımı: {used_cmons_short[cmon]}/{max_allowed}]")
+            all_short_stocks.append(worst_short_dict)
         else:
             print(f"      ⚠️ CGRUP {cgroup}: Uygun SHORT bulunamadı (CMON sınırı)")
     
@@ -278,10 +318,10 @@ def process_ssfinekheldkuponlu_special(df, rules):
             print(f"   📊 CGRUP {cgroup}: Kurallara uyan ek hisseler aranıyor")
         
         # Kurallara uyan hisseleri bul
-        # LONG kriterleri: Top %40 + 1.20x ortalama
+        # LONG kriterleri: Top %30 + 1.35x ortalama
         top_count = math.ceil(len(group) * rules['long_percent'] / 100)
-        top_stocks = group.nlargest(top_count, 'FINAL_THG')
-        long_candidates = group[group['FINAL_THG'] >= (avg_final_thg * rules['long_multiplier'])]
+        top_stocks = group.nlargest(top_count, 'Final FB')
+        long_candidates = group[group['Final FB'] >= (avg_final_fb * rules['long_multiplier'])]
         
         # Kesişim
         long_intersection = set(top_stocks['PREF IBKR']).intersection(set(long_candidates['PREF IBKR']))
@@ -289,8 +329,8 @@ def process_ssfinekheldkuponlu_special(df, rules):
         
         # SHORT kriterleri: Bottom %40 + 0.80x ortalama
         bottom_count = math.ceil(len(group) * rules['short_percent'] / 100)
-        bottom_stocks = group.nsmallest(bottom_count, 'SHORT_FINAL')
-        short_candidates = group[group['SHORT_FINAL'] <= (avg_short_final * rules['short_multiplier'])]
+        bottom_stocks = group.nsmallest(bottom_count, 'Final SFS')
+        short_candidates = group[group['Final SFS'] <= (avg_final_sfs * rules['short_multiplier'])]
         
         # Kesişim
         short_intersection = set(bottom_stocks['PREF IBKR']).intersection(set(short_candidates['PREF IBKR']))
@@ -331,22 +371,62 @@ def process_ssfinekheldkuponlu_special(df, rules):
         remaining_short_slots = max_extra_short - len(selected_short_in_group)
         
         # En iyi hisseleri seç
-        long_available.sort(key=lambda x: x['FINAL_THG'], reverse=True)
-        short_available.sort(key=lambda x: x['SHORT_FINAL'])
+        long_available.sort(key=lambda x: x['Final FB'], reverse=True)
+        short_available.sort(key=lambda x: x['Final SFS'])
         
         for i, row in enumerate(long_available[:remaining_long_slots]):
-            all_long_stocks.append(row)
+            # LONG hisse için KUME_ORT ve KUME_PREM hesapla
             cmon = row['CMON']
+            # Aynı CMON'daki tüm hisselerin Final FB ortalamasını hesapla
+            cmon_final_fbs = df[df['CMON'] == cmon]['Final FB']
+            cmon_avg_final_fb = cmon_final_fbs.mean()
+            
+            # AVG_ADV ve RECSIZE hesapla
+            avg_adv = row.get('AVG_ADV', 0)
+            kume_prem = row['Final FB'] - cmon_avg_final_fb
+            recsize = round((kume_prem * 8 + avg_adv / 25) / 4 / 100) * 100
+            # AVG_ADV/6 sınırlaması
+            max_recsize = round(avg_adv / 6 / 100) * 100
+            recsize = min(recsize, max_recsize)
+            
+            # KUME_ORT ve KUME_PREM değerlerini row'a ekle
+            row_dict = row.to_dict()
+            row_dict['KUME_ORT'] = cmon_avg_final_fb
+            row_dict['KUME_PREM'] = kume_prem
+            row_dict['AVG_ADV'] = avg_adv
+            row_dict['RECSIZE'] = recsize
+            
+            all_long_stocks.append(row_dict)
             used_cmons_long[cmon] = used_cmons_long.get(cmon, 0) + 1
             max_allowed = cmon_limits_long.get(cmon, 1)
-            print(f"      🟢 Ek LONG: {row['PREF IBKR']} ({cmon}) (FINAL_THG={row['FINAL_THG']:.4f}) [CMON kullanımı: {used_cmons_long[cmon]}/{max_allowed}]")
+            print(f"      🟢 Ek LONG: {row['PREF IBKR']} ({cmon}) (Final FB={row['Final FB']:.4f}) [CMON kullanımı: {used_cmons_long[cmon]}/{max_allowed}]")
         
         for i, row in enumerate(short_available[:remaining_short_slots]):
-            all_short_stocks.append(row)
+            # SHORT hisse için KUME_ORT ve KUME_PREM hesapla
             cmon = row['CMON']
+            # Aynı CMON'daki tüm hisselerin Final SFS ortalamasını hesapla
+            cmon_final_sfs = df[df['CMON'] == cmon]['Final SFS']
+            cmon_avg_final_sfs = cmon_final_sfs.mean()
+            
+            # AVG_ADV ve RECSIZE hesapla
+            avg_adv = row.get('AVG_ADV', 0)
+            kume_prem = cmon_avg_final_sfs - row['Final SFS']
+            recsize = round((kume_prem * 8 + avg_adv / 25) / 4 / 100) * 100
+            # AVG_ADV/6 sınırlaması
+            max_recsize = round(avg_adv / 6 / 100) * 100
+            recsize = min(recsize, max_recsize)
+            
+            # KUME_ORT ve KUME_PREM değerlerini row'a ekle
+            row_dict = row.to_dict()
+            row_dict['KUME_ORT'] = cmon_avg_final_sfs
+            row_dict['KUME_PREM'] = kume_prem
+            row_dict['AVG_ADV'] = avg_adv
+            row_dict['RECSIZE'] = recsize
+            
+            all_short_stocks.append(row_dict)
             used_cmons_short[cmon] = used_cmons_short.get(cmon, 0) + 1
             max_allowed = cmon_limits_short.get(cmon, 1)
-            print(f"      🔴 Ek SHORT: {row['PREF IBKR']} ({cmon}) (SHORT_FINAL={row['SHORT_FINAL']:.4f}) [CMON kullanımı: {used_cmons_short[cmon]}/{max_allowed}]")
+            print(f"      🔴 Ek SHORT: {row['PREF IBKR']} ({cmon}) (Final SFS={row['Final SFS']:.4f}) [CMON kullanımı: {used_cmons_short[cmon]}/{max_allowed}]")
     
     # DataFrame'e çevir ve unique satırları koru
     long_df = pd.DataFrame(all_long_stocks) if all_long_stocks else pd.DataFrame()
@@ -392,7 +472,7 @@ def process_ssfinek_files():
                 continue
             
             # Gerekli kolonları kontrol et
-            required_columns = ['PREF IBKR', 'FINAL_THG', 'SHORT_FINAL', 'CMON']
+            required_columns = ['PREF IBKR', 'Final FB', 'Final SFS', 'CMON']
             missing_columns = [col for col in required_columns if col not in df.columns]
             
             if missing_columns:
@@ -407,20 +487,20 @@ def process_ssfinek_files():
                 long_stocks_limited, short_stocks_limited = process_ssfinekheldkuponlu_special(df, rules)
             else:
                 # Ortalama değerleri hesapla
-                avg_final_thg = df['FINAL_THG'].mean()
-                avg_short_final = df['SHORT_FINAL'].mean()
+                avg_final_fb = df['Final FB'].mean()
+                avg_final_sfs = df['Final SFS'].mean()
                 
-                print(f"   📈 Ortalama FINAL_THG: {avg_final_thg:.4f}")
-                print(f"   📉 Ortalama SHORT_FINAL: {avg_short_final:.4f}")
+                print(f"   📈 Ortalama Final FB: {avg_final_fb:.4f}")
+                print(f"   📉 Ortalama Final SFS: {avg_final_sfs:.4f}")
                 print(f"   📋 Kurallar: LONG {rules['long_percent']}% + {rules['long_multiplier']}x, SHORT {rules['short_percent']}% + {rules['short_multiplier']}x (Max: {rules['max_short']})")
                 
                 # LONG hisseleri seç
-                long_candidates = df[df['FINAL_THG'] >= (avg_final_thg * rules['long_multiplier'])].copy()
-                long_candidates = long_candidates.sort_values('FINAL_THG', ascending=False)
+                long_candidates = df[df['Final FB'] >= (avg_final_fb * rules['long_multiplier'])].copy()
+                long_candidates = long_candidates.sort_values('Final FB', ascending=False)
                 
                 # Top %X'i hesapla (yukarı yuvarlama)
                 top_count = math.ceil(len(df) * rules['long_percent'] / 100)
-                top_stocks = df.nlargest(top_count, 'FINAL_THG')
+                top_stocks = df.nlargest(top_count, 'Final FB')
                 
                 # İki kriterin kesişimini al
                 long_candidates_set = set(long_candidates['PREF IBKR'])
@@ -440,12 +520,12 @@ def process_ssfinek_files():
                 print(f"      - Şirket sınırı uygulandıktan sonra: {len(long_stocks_limited)} hisse")
                 
                 # SHORT hisseleri seç
-                short_candidates = df[df['SHORT_FINAL'] <= (avg_short_final * rules['short_multiplier'])].copy()
-                short_candidates = short_candidates.sort_values('SHORT_FINAL', ascending=True)
+                short_candidates = df[df['Final SFS'] <= (avg_final_sfs * rules['short_multiplier'])].copy()
+                short_candidates = short_candidates.sort_values('Final SFS', ascending=True)
                 
                 # Bottom %X'i hesapla (yukarı yuvarlama)
                 bottom_count = math.ceil(len(df) * rules['short_percent'] / 100)
-                bottom_stocks = df.nsmallest(bottom_count, 'SHORT_FINAL')
+                bottom_stocks = df.nsmallest(bottom_count, 'Final SFS')
                 
                 # İki kriterin kesişimini al
                 short_candidates_set = set(short_candidates['PREF IBKR'])
@@ -458,7 +538,7 @@ def process_ssfinek_files():
                 # SHORT sınırını uygula
                 if len(short_stocks) > rules['max_short']:
                     print(f"   ⚠️ SHORT sınırı uygulanıyor: {len(short_stocks)} → {rules['max_short']}")
-                    short_stocks = short_stocks.nsmallest(rules['max_short'], 'SHORT_FINAL')
+                    short_stocks = short_stocks.nsmallest(rules['max_short'], 'Final SFS')
                 
                 # Şirket sınırını uygula
                 short_stocks_limited = limit_by_company(short_stocks, 'SHORT', df) # original_df'i gönder
@@ -472,37 +552,77 @@ def process_ssfinek_files():
             
             # LONG hisseleri listeye ekle
             for _, row in long_stocks_limited.iterrows():
+                # AVG_ADV ve RECSIZE hesapla
+                avg_adv = row.get('AVG_ADV', 0)
+                kume_prem = row['Final FB'] - avg_final_fb
+                
+                # HELDFF için özel RECSIZE kuralları
+                if file_name == 'ssfinekheldff.csv':
+                    recsize = round((kume_prem * 12 + avg_adv / 25) / 4 / 100) * 100
+                    # AVG_ADV/4 sınırlaması (HELDFF için özel)
+                    max_recsize = round(avg_adv / 4 / 100) * 100
+                else:
+                    recsize = round((kume_prem * 8 + avg_adv / 25) / 4 / 100) * 100
+                    # AVG_ADV/6 sınırlaması (diğer gruplar için)
+                    max_recsize = round(avg_adv / 6 / 100) * 100
+                
+                recsize = min(recsize, max_recsize)
+                
                 stock_info = {
                     'DOSYA': file_name,
                     'PREF_IBKR': row['PREF IBKR'],
-                    'FINAL_THG': row['FINAL_THG'],
-                    'SHORT_FINAL': row['SHORT_FINAL'],
+                    'Final FB': row['Final FB'],
+                    'Final SFS': row['Final SFS'],
                     'SMI': row.get('SMI', 'N/A'),
                     'CGRUP': row.get('CGRUP', 'N/A'),
                     'CMON': row.get('CMON', 'N/A'),
                     'TİP': 'LONG',
-                    'ORTALAMA_FINAL_THG': avg_final_thg,
-                    'ORTALAMA_SHORT_FINAL': avg_short_final,
+                    'ORTALAMA_FINAL_FB': avg_final_fb,
+                    'ORTALAMA_FINAL_SFS': avg_final_sfs,
                     'LONG_KURAL': f"Top {rules['long_percent']}% + {rules['long_multiplier']}x",
-                    'SHORT_KURAL': f"Bottom {rules['short_percent']}% + {rules['short_multiplier']}x"
+                    'SHORT_KURAL': f"Bottom {rules['short_percent']}% + {rules['short_multiplier']}x",
+                    'KUME_ORT': avg_final_fb,
+                    'KUME_PREM': kume_prem,
+                    'AVG_ADV': avg_adv,
+                    'RECSIZE': recsize
                 }
                 all_long_stocks.append(stock_info)
             
             # SHORT hisseleri listeye ekle
             for _, row in short_stocks_limited.iterrows():
+                # AVG_ADV ve RECSIZE hesapla
+                avg_adv = row.get('AVG_ADV', 0)
+                kume_prem = avg_final_sfs - row['Final SFS']
+                
+                # HELDFF için özel RECSIZE kuralları
+                if file_name == 'ssfinekheldff.csv':
+                    recsize = round((kume_prem * 12 + avg_adv / 25) / 4 / 100) * 100
+                    # AVG_ADV/4 sınırlaması (HELDFF için özel)
+                    max_recsize = round(avg_adv / 4 / 100) * 100
+                else:
+                    recsize = round((kume_prem * 8 + avg_adv / 25) / 4 / 100) * 100
+                    # AVG_ADV/6 sınırlaması (diğer gruplar için)
+                    max_recsize = round(avg_adv / 6 / 100) * 100
+                
+                recsize = min(recsize, max_recsize)
+                
                 stock_info = {
                     'DOSYA': file_name,
                     'PREF_IBKR': row['PREF IBKR'],
-                    'FINAL_THG': row['FINAL_THG'],
-                    'SHORT_FINAL': row['SHORT_FINAL'],
+                    'Final FB': row['Final FB'],
+                    'Final SFS': row['Final SFS'],
                     'SMI': row.get('SMI', 'N/A'),
                     'CGRUP': row.get('CGRUP', 'N/A'),
                     'CMON': row.get('CMON', 'N/A'),
                     'TİP': 'SHORT',
-                    'ORTALAMA_FINAL_THG': avg_final_thg,
-                    'ORTALAMA_SHORT_FINAL': avg_short_final,
+                    'ORTALAMA_FINAL_FB': avg_final_fb,
+                    'ORTALAMA_FINAL_SFS': avg_final_sfs,
                     'LONG_KURAL': f"Top {rules['long_percent']}% + {rules['long_multiplier']}x",
-                    'SHORT_KURAL': f"Bottom {rules['short_percent']}% + {rules['short_multiplier']}x"
+                    'SHORT_KURAL': f"Bottom {rules['short_percent']}% + {rules['short_multiplier']}x",
+                    'KUME_ORT': avg_final_sfs,
+                    'KUME_PREM': kume_prem,
+                    'AVG_ADV': avg_adv,
+                    'RECSIZE': recsize
                 }
                 all_short_stocks.append(stock_info)
             
@@ -510,12 +630,12 @@ def process_ssfinek_files():
             if len(long_stocks_limited) > 0:
                 print(f"   🟢 LONG seçilen hisseler:")
                 for _, row in long_stocks_limited.iterrows():
-                    print(f"      - {row['PREF IBKR']} ({row['CMON']}): FINAL_THG={row['FINAL_THG']:.4f}")
+                    print(f"      - {row['PREF IBKR']} ({row['CMON']}): Final FB={row['Final FB']:.4f}")
             
             if len(short_stocks_limited) > 0:
                 print(f"   🔴 SHORT seçilen hisseler:")
                 for _, row in short_stocks_limited.iterrows():
-                    print(f"      - {row['PREF IBKR']} ({row['CMON']}): SHORT_FINAL={row['SHORT_FINAL']:.4f}")
+                    print(f"      - {row['PREF IBKR']} ({row['CMON']}): Final SFS={row['Final SFS']:.4f}")
             
         except Exception as e:
             print(f"   ❌ Hata oluştu: {e}")

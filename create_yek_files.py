@@ -16,10 +16,26 @@ warnings.filterwarnings('ignore')
 def create_yek_files():
     """nek*.csv dosyalarını okuyup yek*.csv dosyaları oluştur"""
     
-    # nek ile başlayan tüm CSV dosyalarını bul
-    nek_files = glob.glob('nek*.csv')
+    # Çalışma dizinini yazdır
+    current_dir = os.getcwd()
+    print(f"🔍 Çalışma dizini: {current_dir}")
     
-    print(f"Bulunan nek dosyaları: {len(nek_files)} adet")
+    # Sadece ana dizindeki nek dosyalarını bul (alt dizinlerdeki değil)
+    nek_files = []
+    for file in os.listdir(current_dir):
+        if file.startswith('nek') and file.endswith('.csv'):
+            # Dosya ana dizinde mi kontrol et
+            file_path = os.path.join(current_dir, file)
+            if os.path.isfile(file_path) and not os.path.dirname(file_path).endswith(('janall', 'janallw', 'janall_backup')):
+                nek_files.append(file)
+    
+    # Mevcut dizindeki tüm CSV dosyalarını da listele
+    all_csv_files = [f for f in os.listdir(current_dir) if f.endswith('.csv') and not os.path.dirname(os.path.join(current_dir, f)).endswith(('janall', 'janallw', 'janall_backup'))]
+    print(f"📁 Mevcut dizindeki tüm CSV dosyaları ({len(all_csv_files)} adet):")
+    for file in all_csv_files:
+        print(f"  - {file}")
+    
+    print(f"\n🔍 Bulunan nek dosyaları (sadece ana dizinden): {len(nek_files)} adet")
     for file in nek_files:
         print(f"  - {file}")
     
@@ -69,6 +85,8 @@ def main():
     """Ana fonksiyon"""
     try:
         print("=== Yek CSV Dosyaları Oluşturma Scripti ===")
+        print("⚠️  SADECE ANA DİZİNDEKİ (StockTracker) NEK DOSYALARI KULLANILACAK!")
+        print("⚠️  Alt dizinlerdeki (janall, janallw, vb.) dosyalar kullanılmayacak!")
         create_yek_files()
         
     except Exception as e:

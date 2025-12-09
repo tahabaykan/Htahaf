@@ -7,6 +7,29 @@ from datetime import datetime, timedelta
 import math
 import os
 
+def normalize_time_to_div(time_to_div):
+    """
+    TIME TO DIV değerini 90 günlük mod sistemi ile normalize eder
+    0-90 arası çıktı verir, 0 yerine 90 yazar
+    """
+    if pd.isna(time_to_div) or time_to_div == '':
+        return 90
+    
+    try:
+        time_to_div = float(time_to_div)
+        
+        # 90 günlük mod al
+        normalized = time_to_div % 90
+        
+        # 0 ise 90 yap
+        if normalized == 0:
+            return 90
+        
+        return normalized
+        
+    except (ValueError, TypeError):
+        return 90
+
 def load_csv_files():
     """Belirtilen CSV dosyalarını yükle"""
     csv_files = [
@@ -148,11 +171,23 @@ def update_price_data(df, ib):
                                 # Kalan gün sayısını hesapla
                                 days_until_div = (next_div_date - today).days
                                 
-                                # Div adj.price hesapla
+                                # TIME TO DIV'i 90 günlük mod sistemi ile normalize et
+                                normalized_time_to_div = days_until_div % 90
+                                if normalized_time_to_div == 0:
+                                    normalized_time_to_div = 90
+                                
+                                # TIME TO DIV kolonunu güncelle
+                                df.at[idx, 'TIME TO DIV'] = normalized_time_to_div
+                                
+                                # Div adj.price hesapla (normalize edilmiş TIME TO DIV ile)
                                 div_amount = float(row['DIV AMOUNT'])
-                                days_factor = (90 - days_until_div) / 90
+                                days_factor = (90 - normalized_time_to_div) / 90
                                 div_adj_price = last_price - (days_factor * div_amount)
                                 
+                                # Div adj.price kolonunu güncelle
+                                df.at[idx, 'Div adj.price'] = f"{div_adj_price:.2f}"
+                                
+                                print(f"  TIME TO DIV: {days_until_div} → {normalized_time_to_div} (mod 90)")
                                 print(f"  Div adj.price hesaplandı: {div_adj_price:.2f} (Last: {last_price:.2f})")
                             except Exception as e:
                                 print(f"  ! Div adj.price hesaplama hatası: {str(e)}")
@@ -257,19 +292,25 @@ def calculate_div_metrics(df):
                 
             # Kalan gün sayısını hesapla
             days_until_div = (next_div_date - today).days
-            df.at[idx, 'TIME TO DIV'] = days_until_div
             
-            # Div adj.price hesapla
+            # TIME TO DIV değerini 90 günlük mod sistemi ile normalize et
+            normalized_days = normalize_time_to_div(days_until_div)
+            df.at[idx, 'TIME TO DIV'] = normalized_days
+            
+            # Div adj.price hesapla (normalize edilmiş TIME TO DIV ile)
             # Div adj.price = Last price - (((90-Time to Div)/90)*DIV AMOUNT)
             try:
                 last_price = float(row['Last Price'])
                 div_amount = float(row['DIV AMOUNT'])
                 
-                days_factor = (90 - days_until_div) / 90
+                days_factor = (90 - normalized_days) / 90
                 div_adj_price = last_price - (days_factor * div_amount)
                 df.at[idx, 'Div adj.price'] = f"{div_adj_price:.2f}"
                 
-                print(f"✓ {row['PREF IBKR']} için temettü hesaplandı: TIME TO DIV={days_until_div}, Div adj.price={div_adj_price:.2f}")
+                if days_until_div != normalized_days:
+                    print(f"✓ {row['PREF IBKR']} için temettü hesaplandı: TIME TO DIV={days_until_div}→{normalized_days}, Div adj.price={div_adj_price:.2f}")
+                else:
+                    print(f"✓ {row['PREF IBKR']} için temettü hesaplandı: TIME TO DIV={normalized_days}, Div adj.price={div_adj_price:.2f}")
             except Exception as e:
                 print(f"! {row['PREF IBKR']} için div_adj_price hesaplama hatası: {str(e)}")
         except Exception as e:

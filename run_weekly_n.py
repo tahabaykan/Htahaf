@@ -6,6 +6,7 @@ import glob
 
 scripts = [
     "nibkrtry.py",
+    "ncorrex.py",  # sek CSV dosyalarında TIME TO DIV değerlerini kontrol eder ve CNBC'den ex-div date bilgilerini çekerek düzeltir
     "nnormalize_data.py",
     "nmaster_processor.py",  # YEK dosyalarını oluşturur ve Cally değerlerini hesaplar
     "nbefore_common_adv.py",
@@ -19,7 +20,21 @@ scripts = [
     "ntumcsvport.py",  # SSFINEK dosyalarından LONG/SHORT hisseleri seçer
     "npreviousadd.py",  # SSFINEK dosyalarına prev_close kolonu ekler ve janek_ prefix ile kaydeder
     "merge_csvs.py",  # janek_ssfinek dosyalarını birleştirir ve janalldata.csv oluşturur
+    "gorter.py",  # janalldata.csv'den her CGRUP için en yüksek ve en düşük 3 GORT değerine sahip hisseleri bulur
 ]
+
+# Çalışma dizinini kontrol et ve yazdır
+print("🚀 RUN WEEKLY N - Haftalık İşlemler Başlatılıyor")
+print("=" * 60)
+current_dir = os.getcwd()
+print(f"🔍 Çalışma dizini: {current_dir}")
+
+# Mevcut dizindeki CSV dosyalarını listele
+csv_files = [f for f in os.listdir(current_dir) if f.endswith('.csv')]
+print(f"📁 Mevcut dizindeki CSV dosyaları ({len(csv_files)} adet):")
+for file in csv_files:
+    print(f"  - {file}")
+print()
 
 def copy_csv_files_to_janall():
     """Oluşturulan CSV dosyalarını janall klasörüne kopyala"""
@@ -32,6 +47,10 @@ def copy_csv_files_to_janall():
         
         # Tüm CSV dosyalarını bul
         csv_files = glob.glob("*.csv")
+        
+        print(f"📁 Kopyalanacak CSV dosyaları ({len(csv_files)} adet):")
+        for file in csv_files:
+            print(f"  - {file}")
         
         for csv_file in csv_files:
             try:
@@ -47,7 +66,12 @@ def copy_csv_files_to_janall():
 
 for script in scripts:
     print(f"Çalıştırılıyor: {script}")
-    result = subprocess.run([sys.executable, script])
+    
+    # Script'i mevcut dizinde çalıştır
+    current_dir = os.getcwd()
+    print(f"📁 Script çalıştırılıyor: {current_dir}/{script}")
+    
+    result = subprocess.run([sys.executable, script], cwd=current_dir)
     if result.returncode != 0:
         print(f"Hata oluştu, script durdu: {script}")
         break

@@ -374,11 +374,7 @@ def main():
     print("Piyasa Risk Analizi Başlatılıyor...")
     saved_weights = get_saved_market_weights()
     if saved_weights:
-        user_input = input("Bugün için piyasa analizi zaten yapılmış. Yeniden analiz yapmak ister misiniz? (e/h): ")
-        if user_input.lower() not in ['e', 'evet', 'y', 'yes']:
-            print("Mevcut piyasa ağırlıkları kullanılacak.")
-            generate_market_report(None, saved_weights)
-            return saved_weights
+        print("Bugün için piyasa analizi zaten yapılmış. Yeniden analiz yapılıyor...")
     ib = connect_to_ibkr()
     if ib is None:
         print("IBKR bağlantısı kurulamadı!")

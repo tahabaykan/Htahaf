@@ -87,13 +87,21 @@ def check_yek_files():
             print("Treasury yield'ları yüklenemedi!")
             return
         
-        # YEK dosyalarını bul
-        yek_files = glob.glob('yek*.csv')
+        # Sadece ana dizindeki YEK dosyalarını bul (alt dizinlerdeki değil)
+        yek_files = []
+        current_dir = os.getcwd()
+        for file in os.listdir(current_dir):
+            if file.startswith('yek') and file.endswith('.csv'):
+                # Dosya ana dizinde mi kontrol et
+                file_path = os.path.join(current_dir, file)
+                if os.path.isfile(file_path) and not os.path.dirname(file_path).endswith(('janall', 'janallw', 'janall_backup')):
+                    yek_files.append(file)
+        
         if not yek_files:
             print("yek*.csv dosyaları bulunamadı!")
             return
         
-        print(f"Bulunan YEK dosyaları: {len(yek_files)}")
+        print(f"Bulunan YEK dosyaları (sadece ana dizinden): {len(yek_files)} adet")
         
         for yek_file in yek_files:
             try:
@@ -132,8 +140,9 @@ def collect_csv_files():
     """
     try:
         print("=== CSV Dosyalarını Toplama ===")
+        print("⚠️  SADECE ANA DİZİNDEKİ (StockTracker) YEK DOSYALARI KULLANILACAK!")
         
-        # Toplanacak CSV dosyaları
+        # Toplanacak CSV dosyaları (sadece ana dizindeki)
         csv_files = [
             'yekheldbesmaturlu.csv',
             'yekheldcilizyeniyedi.csv', 
@@ -238,7 +247,7 @@ def create_competition_priority():
                     
                     if (other_cmon == cmon and 
                         pd.notna(other_div_amount_float) and 
-                        other_div_amount_float > div_amount_float + 0.02 and  # 0.02 cent farkı
+                        other_div_amount_float > div_amount_float + 0.017 and  # 0.017 cent farkı
                         other_div_amount_float != div_amount_float and  # Aynı değil
                         other_row.get('PREF IBKR', '') != ticker):  # Aynı ticker değil
                         higher_payers += 1
@@ -339,9 +348,17 @@ def calculate_cally_values():
     try:
         print("\n=== Cally Değerleri Hesaplama ===")
         
-        # Yek dosyalarını bul
-        yek_files = glob.glob('yek*.csv')
-        print(f"Bulunan yek dosyaları: {len(yek_files)} adet")
+        # Sadece ana dizindeki yek dosyalarını bul (alt dizinlerdeki değil)
+        yek_files = []
+        current_dir = os.getcwd()
+        for file in os.listdir(current_dir):
+            if file.startswith('yek') and file.endswith('.csv'):
+                # Dosya ana dizinde mi kontrol et
+                file_path = os.path.join(current_dir, file)
+                if os.path.isfile(file_path) and not os.path.dirname(file_path).endswith(('janall', 'janallw', 'janall_backup')):
+                    yek_files.append(file)
+        
+        print(f"Bulunan yek dosyaları (sadece ana dizinden): {len(yek_files)} adet")
         
         for yek_file in yek_files:
             try:
@@ -443,6 +460,10 @@ def calculate_cally_values():
 
 def main():
     """Ana fonksiyon"""
+    print("=== YIELD HESAPLAMA VE TREASURY YIELD EKLEME ===")
+    print("⚠️  SADECE ANA DİZİNDEKİ (StockTracker) DOSYALAR KULLANILACAK!")
+    print("⚠️  Alt dizinlerdeki (janall, janallw, vb.) dosyalar kullanılmayacak!")
+    
     check_yek_files()
     collect_csv_files()
     create_competition_priority()
