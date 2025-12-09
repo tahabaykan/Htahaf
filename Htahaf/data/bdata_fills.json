@@ -1,0 +1,20 @@
+[
+  {
+    "ticker": "TDS PRV",
+    "direction": "short",
+    "fill_price": 18.09,
+    "fill_size": 56,
+    "fill_time": "2025-06-26 21:35:25",
+    "benchmark_at_fill": 30.219,
+    "is_position_increase": true
+  },
+  {
+    "ticker": "DCOMP",
+    "direction": "short",
+    "fill_price": 18.09,
+    "fill_size": 200,
+    "fill_time": "2025-06-26 21:39:57",
+    "benchmark_at_fill": 29.526,
+    "is_position_increase": true
+  }
+]
