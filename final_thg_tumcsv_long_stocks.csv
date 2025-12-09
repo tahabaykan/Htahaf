@@ -1,0 +1,49 @@
+GRUP,DOSYA,PREF_IBKR,FINAL_THG,SHORT_FINAL,SMI,CGRUP,CMON,TİP,GRUP_YUZDESI
+helddeznff,ssfinekhelddeznff.csv,DCOMG,1242.07,1319.57,0.0775,,DCOM,LONG,10.0
+helddeznff,ssfinekhelddeznff.csv,JXN PRA,815.82,878.0200000000001,0.0622,,JXN,LONG,10.0
+helddeznff,ssfinekhelddeznff.csv,MBINM,937.42,1243.52,0.3061,,MBIN,LONG,10.0
+heldff,ssfinekheldff.csv,AGNCO,890.69,1025.59,0.1349,,AGNC,LONG,35.0
+heldff,ssfinekheldff.csv,AQNB,885.67,1439.37,0.5537,,AQN,LONG,35.0
+heldff,ssfinekheldff.csv,CIM PRB,1271.22,1297.92,0.0267,,CIM,LONG,35.0
+heldff,ssfinekheldff.csv,CIM PRD,924.76,1067.36,0.1426,,CIM,LONG,35.0
+heldff,ssfinekheldff.csv,FITBI,885.01,942.21,0.0572,,FITB,LONG,35.0
+heldff,ssfinekheldff.csv,NLY PRI,970.2,1032.4,0.0622,,NLY,LONG,35.0
+heldff,ssfinekheldff.csv,NLY PRF,794.13,809.53,0.0154,,NLY,LONG,35.0
+heldff,ssfinekheldff.csv,RITM PRA,788.45,813.6500000000001,0.0252,,RITM,LONG,35.0
+heldff,ssfinekheldff.csv,VLYPO,873.65,984.75,0.1111,,VLY,LONG,35.0
+heldkuponlukreciliz,ssfinekheldkuponlukreciliz.csv,WAFDP,1670.4,1803.0,0.1326,c475,WAFD,LONG,0.0
+heldnff,ssfinekheldnff.csv,FLG PRA,1252.18,1401.98,0.1498,,FLG,LONG,5.0
+heldsolidbig,ssfinekheldsolidbig.csv,HIG PRG,1370.98,1396.78,0.0258,c600,HIG,LONG,5.0
+heldsolidbig,ssfinekheldsolidbig.csv,MS PRI,1360.77,1397.17,0.0364,,MS,LONG,5.0
+heldtitrekhc,ssfinekheldtitrekhc.csv,RLJ PRA,1223.94,1265.44,0.0415,,RLJ,LONG,8.0
+heldtitrekhc,ssfinekheldtitrekhc.csv,SEAL PRA,1271.22,2027.02,0.7558,,SEAL,LONG,8.0
+highmatur,ssfinekhighmatur.csv,GECCO,988.95,991.45,0.0025,,GECC,LONG,15.0
+highmatur,ssfinekhighmatur.csv,OXLCI,1104.66,1754.46,0.6498,,OXLC,LONG,15.0
+highmatur,ssfinekhighmatur.csv,OXLCL,943.81,1107.71,0.1639,,OXLC,LONG,15.0
+highmatur,ssfinekhighmatur.csv,SAJ,1079.03,1250.33,0.1713,,SAR,LONG,15.0
+nottitrekhc,ssfineknottitrekhc.csv,CUBI PRF,808.6,892.5,0.0839,,CUBI,LONG,4.0
+nottitrekhc,ssfineknottitrekhc.csv,DSX PRB,1278.3,1750.1,0.4718,,DSX,LONG,4.0
+helddeznff,ssfinekhelddeznff.csv,DCOMG,1242.07,1319.57,0.0775,,DCOM,LONG,10.0
+helddeznff,ssfinekhelddeznff.csv,JXN PRA,815.82,878.0200000000001,0.0622,,JXN,LONG,10.0
+helddeznff,ssfinekhelddeznff.csv,MBINM,937.42,1243.52,0.3061,,MBIN,LONG,10.0
+heldff,ssfinekheldff.csv,AGNCO,890.69,1025.59,0.1349,,AGNC,LONG,35.0
+heldff,ssfinekheldff.csv,AQNB,885.67,1439.37,0.5537,,AQN,LONG,35.0
+heldff,ssfinekheldff.csv,CIM PRB,1271.22,1297.92,0.0267,,CIM,LONG,35.0
+heldff,ssfinekheldff.csv,CIM PRD,924.76,1067.36,0.1426,,CIM,LONG,35.0
+heldff,ssfinekheldff.csv,FITBI,885.01,942.21,0.0572,,FITB,LONG,35.0
+heldff,ssfinekheldff.csv,NLY PRI,970.2,1032.4,0.0622,,NLY,LONG,35.0
+heldff,ssfinekheldff.csv,NLY PRF,794.13,809.53,0.0154,,NLY,LONG,35.0
+heldff,ssfinekheldff.csv,RITM PRA,788.45,813.6500000000001,0.0252,,RITM,LONG,35.0
+heldff,ssfinekheldff.csv,VLYPO,873.65,984.75,0.1111,,VLY,LONG,35.0
+heldkuponlukreciliz,ssfinekheldkuponlukreciliz.csv,WAFDP,1670.4,1803.0,0.1326,c475,WAFD,LONG,0.0
+heldnff,ssfinekheldnff.csv,FLG PRA,1252.18,1401.98,0.1498,,FLG,LONG,5.0
+heldsolidbig,ssfinekheldsolidbig.csv,HIG PRG,1370.98,1396.78,0.0258,c600,HIG,LONG,5.0
+heldsolidbig,ssfinekheldsolidbig.csv,MS PRI,1360.77,1397.17,0.0364,,MS,LONG,5.0
+heldtitrekhc,ssfinekheldtitrekhc.csv,RLJ PRA,1223.94,1265.44,0.0415,,RLJ,LONG,8.0
+heldtitrekhc,ssfinekheldtitrekhc.csv,SEAL PRA,1271.22,2027.02,0.7558,,SEAL,LONG,8.0
+highmatur,ssfinekhighmatur.csv,GECCO,988.95,991.45,0.0025,,GECC,LONG,15.0
+highmatur,ssfinekhighmatur.csv,OXLCI,1104.66,1754.46,0.6498,,OXLC,LONG,15.0
+highmatur,ssfinekhighmatur.csv,OXLCL,943.81,1107.71,0.1639,,OXLC,LONG,15.0
+highmatur,ssfinekhighmatur.csv,SAJ,1079.03,1250.33,0.1713,,SAR,LONG,15.0
+nottitrekhc,ssfineknottitrekhc.csv,CUBI PRF,808.6,892.5,0.0839,,CUBI,LONG,4.0
+nottitrekhc,ssfineknottitrekhc.csv,DSX PRB,1278.3,1750.1,0.4718,,DSX,LONG,4.0

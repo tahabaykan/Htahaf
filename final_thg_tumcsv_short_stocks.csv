@@ -1,0 +1,49 @@
+GRUP,DOSYA,PREF_IBKR,FINAL_THG,SHORT_FINAL,SMI,CGRUP,CMON,TİP,GRUP_YUZDESI
+helddeznff,ssfinekhelddeznff.csv,HBANL,271.74,320.94,0.0492,,HBAN,SHORT,0
+helddeznff,ssfinekhelddeznff.csv,MTB PRJ,304.73,317.23,0.0125,,MTB,SHORT,0
+heldff,ssfinekheldff.csv,CHSCO,118.26,173.26,0.055,,-,SHORT,0
+heldff,ssfinekheldff.csv,SNV PRD,152.34,241.74,0.0894,,SNV,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,NRUC,733.53,855.13,0.1216,c550,-,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,ALL PRH,1207.86,1223.86,0.016,c500,ALL,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,CMS PRC,968.12,1128.92,0.1608,c425,CMS,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,EMP,1161.94,1204.04,0.0421,c475,ETR,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,FCNCO,931.33,1200.83,0.2695,c550,FCNCA,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,KEY PRK,899.1,947.3,0.0482,c550,KEY,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,KIM PRL,1148.45,1173.15,0.0247,c500,KIM,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,PRS,1115.36,1136.36,0.021,c550,PRU,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,GPJA,1019.02,1139.72,0.1207,c500,SO,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,SOJC,1126.76,1166.26,0.0395,c525,SO,SHORT,0
+heldkuponlukreciliz,ssfinekheldkuponlukreciliz.csv,BOH PRA,411.34,553.8399999999999,0.1425,c425,BOH,SHORT,0
+heldkuponlukreciliz,ssfinekheldkuponlukreciliz.csv,OZKAP,694.26,802.46,0.1082,c450,OZK,SHORT,0
+heldnff,ssfinekheldnff.csv,ATH PRA,284.61,297.81,0.0132,,-,SHORT,0
+heldnff,ssfinekheldnff.csv,RF PRC,156.05,181.55,0.0255,,RF,SHORT,0
+heldsolidbig,ssfinekheldsolidbig.csv,BAC PRB,233.32,261.02,0.0277,c600,BAC,SHORT,0
+heldsolidbig,ssfinekheldsolidbig.csv,JPM PRD,422.68,438.88,0.0162,c550,JPM,SHORT,0
+heldtitrekhc,ssfinekheldtitrekhc.csv,TRTN PRB,105.98,239.68,0.1337,,-,SHORT,0
+nottitrekhc,ssfineknottitrekhc.csv,ALTG PRA,541.91,598.11,0.0562,,ALTG,SHORT,0
+nottitrekhc,ssfineknottitrekhc.csv,INBKZ,275.63,624.23,0.3486,,INBK,SHORT,0
+nottitrekhc,ssfineknottitrekhc.csv,SB PRD,159.38,347.88,0.1885,,SB,SHORT,0
+helddeznff,ssfinekhelddeznff.csv,HBANL,271.74,320.94,0.0492,,HBAN,SHORT,0
+helddeznff,ssfinekhelddeznff.csv,MTB PRJ,304.73,317.23,0.0125,,MTB,SHORT,0
+heldff,ssfinekheldff.csv,CHSCO,118.26,173.26,0.055,,-,SHORT,0
+heldff,ssfinekheldff.csv,SNV PRD,152.34,241.74,0.0894,,SNV,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,NRUC,733.53,855.13,0.1216,c550,-,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,ALL PRH,1207.86,1223.86,0.016,c500,ALL,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,CMS PRC,968.12,1128.92,0.1608,c425,CMS,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,EMP,1161.94,1204.04,0.0421,c475,ETR,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,FCNCO,931.33,1200.83,0.2695,c550,FCNCA,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,KEY PRK,899.1,947.3,0.0482,c550,KEY,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,KIM PRL,1148.45,1173.15,0.0247,c500,KIM,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,PRS,1115.36,1136.36,0.021,c550,PRU,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,GPJA,1019.02,1139.72,0.1207,c500,SO,SHORT,0
+heldkuponlu,ssfinekheldkuponlu.csv,SOJC,1126.76,1166.26,0.0395,c525,SO,SHORT,0
+heldkuponlukreciliz,ssfinekheldkuponlukreciliz.csv,BOH PRA,411.34,553.8399999999999,0.1425,c425,BOH,SHORT,0
+heldkuponlukreciliz,ssfinekheldkuponlukreciliz.csv,OZKAP,694.26,802.46,0.1082,c450,OZK,SHORT,0
+heldnff,ssfinekheldnff.csv,ATH PRA,284.61,297.81,0.0132,,-,SHORT,0
+heldnff,ssfinekheldnff.csv,RF PRC,156.05,181.55,0.0255,,RF,SHORT,0
+heldsolidbig,ssfinekheldsolidbig.csv,BAC PRB,233.32,261.02,0.0277,c600,BAC,SHORT,0
+heldsolidbig,ssfinekheldsolidbig.csv,JPM PRD,422.68,438.88,0.0162,c550,JPM,SHORT,0
+heldtitrekhc,ssfinekheldtitrekhc.csv,TRTN PRB,105.98,239.68,0.1337,,-,SHORT,0
+nottitrekhc,ssfineknottitrekhc.csv,ALTG PRA,541.91,598.11,0.0562,,ALTG,SHORT,0
+nottitrekhc,ssfineknottitrekhc.csv,INBKZ,275.63,624.23,0.3486,,INBK,SHORT,0
+nottitrekhc,ssfineknottitrekhc.csv,SB PRD,159.38,347.88,0.1885,,SB,SHORT,0
