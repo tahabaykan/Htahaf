@@ -1,0 +1,102 @@
+================================================================================
+REDUCEMORE v1 VALIDATION REPORT
+================================================================================
+
+Total Tests: 4
+Passed: 4
+Failed: 0
+
+--------------------------------------------------------------------------------
+Test 1: Test Case 1: Exposure Ineligible - [PASS]
+Category: EXPOSURE_INELIGIBLE
+Description: Exposure thresholds not met - should not run
+Janall Behavior: Not eligible (exposure thresholds not met)
+
+Actual Results:
+  Decisions: 0
+  Filtered: 0
+
+--------------------------------------------------------------------------------
+Test 2: Test Case 2: Exposure Eligible - Perfect SELL - [PASS]
+Category: SELL
+Description: Position passes all filters - should SELL (75% lot)
+Janall Behavior: SELL (75% lot, ASK_SELL)
+
+Actual Results:
+  Decisions: 1
+  Filtered: 0
+
+  SELL Decisions:
+    MS PRK:
+      Action: SELL
+      Lot: 500 (75.0%)
+      Reason: Fbtot < 1.1 (1.05) and Ask Sell Pahalılık > -0.1 (0.0500)
+      Confidence: 0.62
+      Step: 2
+
+  Step Summary:
+    Step 1 (GORT Filter):
+      Total: 1
+      Eligible: 1
+      Filtered: 0
+    Step 2 (Fbtot < 1.10 (Aggressive)):
+      Total: 1
+      Decisions: 1
+      Filtered: 0
+
+--------------------------------------------------------------------------------
+Test 3: Test Case 3: Exposure Eligible - Cooldown Filter - [PASS]
+Category: COOLDOWN
+Description: Position passes all filters but cooldown is active
+Janall Behavior: SELL (cooldown yok)
+
+Actual Results:
+  Decisions: 0
+  Filtered: 1
+
+  FILTERED Positions:
+    WFC PRY:
+      Step: 2
+      Reasons: Cooldown active (3.0 minutes remaining)
+
+  Step Summary:
+    Step 1 (GORT Filter):
+      Total: 1
+      Eligible: 1
+      Filtered: 0
+    Step 2 (Fbtot < 1.10 (Aggressive)):
+      Total: 1
+      Decisions: 0
+      Filtered: 1
+
+--------------------------------------------------------------------------------
+Test 4: Test Case 4: Exposure Eligible - Pot Total Threshold - [PASS]
+Category: EXPOSURE_ELIGIBLE
+Description: Pot total exceeds threshold (90% of pot_max)
+Janall Behavior: SELL (75% lot, ASK_SELL)
+
+Actual Results:
+  Decisions: 1
+  Filtered: 0
+
+  SELL Decisions:
+    BAC PRM:
+      Action: SELL
+      Lot: 400 (75.0%)
+      Reason: Fbtot < 1.1 (1.08) and Ask Sell Pahalılık > -0.1 (0.0300)
+      Confidence: 0.58
+      Step: 2
+
+  Step Summary:
+    Step 1 (GORT Filter):
+      Total: 1
+      Eligible: 1
+      Filtered: 0
+    Step 2 (Fbtot < 1.10 (Aggressive)):
+      Total: 1
+      Decisions: 1
+      Filtered: 0
+
+================================================================================
+END OF REPORT
+================================================================================

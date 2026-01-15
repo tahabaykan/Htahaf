@@ -1,0 +1,604 @@
+description: Preset saved at 2025-12-17T12:14:41.601485
+name: strter pack
+rules:
+  addnewpos:
+    addlong:
+      enabled: true
+      filters:
+        avg_adv_gt: 100
+        bid_buy_ucuzluk_lt: -0.02
+        fbtot_lt: 10
+        spread_lt: 0.25
+      order_type: BID_BUY
+    addshort:
+      enabled: true
+      filters:
+        ask_sell_pahalilik_gt: 0.02
+        avg_adv_gt: 100
+        sfstot_lt: 10
+        spread_lt: 0.25
+      order_type: ASK_SELL
+    eligibility:
+      exposure_mode: OFANSIF
+      exposure_ratio_threshold: 0.8
+    rules:
+      exposure_usage_percent: 60
+      thresholds:
+      - max_portfolio_percent: 1
+        maxalw_multiplier: 0.5
+        portfolio_percent: 5
+      - max_portfolio_percent: 3
+        maxalw_multiplier: 0.4
+        portfolio_percent: 4
+      - max_portfolio_percent: 5
+        maxalw_multiplier: 0.3
+        portfolio_percent: 3
+      - max_portfolio_percent: 7
+        maxalw_multiplier: 0.2
+        portfolio_percent: 2
+      - max_portfolio_percent: 10
+        maxalw_multiplier: 0.1
+        portfolio_percent: 1.5
+      - max_portfolio_percent: 100
+        maxalw_multiplier: 0.05
+        portfolio_percent: 1
+    settings:
+      cooldown_minutes: 5
+      default_lot: 200
+      max_lot_per_symbol: 200
+      min_avg_adv_divisor: 10
+      min_lot_size: 100
+      mode: addlong_only
+  controller_on:
+    enabled: true
+    order_cancel:
+      cancel_unfilled_orders: true
+      check_interval_seconds: 30
+      enabled: true
+      max_order_age_seconds: 120
+    order_replace:
+      check_interval_seconds: 60
+      enabled: true
+      price_improvement_threshold: 0.01
+      replace_partial_fills: false
+  exposure:
+    default_avg_price: 100
+    default_exposure_limit: 1200000
+    defensive_threshold_percent: 95.5
+    offensive_threshold_percent: 92.7
+    pot_expo_limit: 1400000
+    transition_mode: REDUCEMORE
+  general:
+    befday_tracking:
+      csv_file: befham.csv
+      csv_file_ibkr_gun: befibgun.csv
+      csv_file_ibkr_ped: befibped.csv
+      enabled: true
+    cycle:
+      auto_cancel_after_seconds: 120
+      controller_on_enabled: true
+      interval_seconds: 240
+      lot_divider_enabled: true
+      order_wait_seconds: 120
+    intent:
+      auto_expire_enabled: true
+      max_intents_per_cycle: 50
+      ttl_seconds: 90
+  gort_lot_calculation:
+    enabled: true
+    method: PROPORTIONAL
+    proportional:
+      base_lot: 100
+      gort_multiplier: 0.5
+      max_lot: 500
+    tiered:
+    - gort_range:
+      - -1
+      - 0
+      lot_percentage: 25
+    - gort_range:
+      - 0
+      - 1
+      lot_percentage: 50
+    - gort_range:
+      - 1
+      - 2
+      lot_percentage: 75
+  guardrails:
+    daily_limits:
+      enabled: true
+      max_daily_lot_change: 200000
+      max_daily_lot_change_per_symbol: 15000
+      max_daily_orders: 2500
+      reset_time: 09:30:00
+    duplicate_prevention:
+      check_pending_orders: true
+      duplicate_intent_window_seconds: 60
+      enabled: true
+      same_symbol_cooldown_seconds: 300
+    maxalw:
+      check_before_order: true
+      company_limit_enabled: true
+      max_company_exposure_percent: 100
+    order_limits:
+      max_open_orders: 200
+      max_open_orders_per_symbol: 15
+      max_order_value: 100000
+    position_limits:
+      enabled: true
+      max_position_per_symbol: 20000
+      max_sector_exposure_percent: 100
+      max_total_positions: 200
+  jfin:
+    daily_limits:
+      befday_multiplier: 2
+      enabled: true
+      fallback_multiplier: 2
+    enabled: true
+    exposure:
+      apply_to_all_pools: true
+      exposure_percent: 60
+    filters:
+      bb_long:
+        fbtot_gt: 0.8
+        gort_lt: 1
+        sma63_chg_lt: -1.6
+      fb_long:
+        fbtot_gt: 0.8
+        gort_lt: 1
+        sma63_chg_lt: -1.6
+      sas_short:
+        gort_gt: 1
+        sfstot_gt: 0.8
+        sma63_chg_gt: 1.6
+      sfs_short:
+        gort_gt: 1
+        sfstot_gt: 0.8
+        sma63_chg_gt: 1.6
+    group_weights:
+      csv_file: groupweights.csv
+      default_long:
+        DEZNFF: 10
+        HELDFF: 15
+        HELDFLR: 5
+        HELDKUPONLU: 20
+        HELDNFF: 10
+        HIGHMATUR: 10
+        NOTBESMATURLU: 5
+        NOTCEFILLIQUID: 5
+        SALAKILLIQUID: 5
+        SHITREMHC: 5
+      default_short:
+        DEZNFF: 15
+        HELDFF: 10
+        HELDKUPONLU: 20
+        HELDNFF: 10
+        RUMOREDDANGER: 15
+        SALAKILLIQUID: 10
+        SHITREMHC: 10
+    intent:
+      auto_approve: false
+      require_approval: true
+      status: PENDING
+      ttl_seconds: 300
+    lot_controls:
+      max_lot_per_order: 5000
+      min_lot_per_order: 200
+    lot_distribution:
+      alpha: 3
+      lot_rounding: 100
+      total_long_rights: 28000
+      total_short_rights: 12000
+    percentage:
+      default: 50
+      options:
+      - 25
+      - 50
+      - 75
+      - 100
+    pools:
+      bb_long:
+        direction: LONG
+        enabled: true
+        order_type: BID_BUY
+        score_column: Final_BB_skor
+      fb_long:
+        direction: LONG
+        enabled: false
+        order_type: FRONT_BUY
+        score_column: Final_FB_skor
+      sas_short:
+        direction: SHORT
+        enabled: false
+        order_type: ASK_SELL
+        score_column: Final_SAS_skor
+      separate_pools: true
+      sfs_short:
+        direction: SHORT
+        enabled: false
+        order_type: FRONT_SELL
+        score_column: Final_SFS_skor
+    tumcsv:
+      heldkuponlu_pair_count: 8
+      min_selection: 2
+      presets:
+        v10:
+          heldkuponlu_pair_count: 8
+          min_selection: 2
+          selection_percent: 0.1
+        v15:
+          heldkuponlu_pair_count: 10
+          min_selection: 2
+          selection_percent: 0.12
+        v20:
+          heldkuponlu_pair_count: 12
+          min_selection: 3
+          selection_percent: 0.15
+      selection_percent: 0.1
+  karbotu:
+    gort_filter_longs:
+      action: FILTER
+      description: GORT > -1 ve Ask Sell Pahalılık > -0.05 olan pozisyonları filtrele
+      enabled: true
+      filters:
+        ask_sell_pahalilik_gt: -0.05
+        gort_gt: -1
+      lot_calculation: GORT_SPECIAL
+      name: GORT Filter - Longs
+      order_type: ASK_SELL
+    gort_filter_shorts:
+      action: FILTER
+      description: GORT < 1 ve Bid Buy Ucuzluk < +0.05 olan pozisyonları filtrele
+      enabled: true
+      filters:
+        bid_buy_ucuzluk_lt: 0.05
+        gort_lt: 1
+      lot_calculation: GORT_SPECIAL
+      name: GORT Filter - Shorts
+      order_type: BID_BUY
+    settings:
+      cooldown_minutes: 5
+      exclude_fbtot_zero: true
+      exclude_sfstot_zero: true
+      min_lot_size: 100
+      process_longs_first: true
+    step_10:
+      action: COVER
+      description: SFStot 1.40-1.69 ve Bid Buy Ucuzluk +0.05 ile -0.04 arası → %25
+        cover
+      enabled: true
+      filters:
+        bid_buy_ucuzluk_gte: -0.04
+        bid_buy_ucuzluk_lte: 0.05
+        qty_ge: 100
+        sfstot_gte: 1.4
+        sfstot_lte: 1.69
+      lot_percentage: 25
+      name: SFStot 1.40-1.69 Low
+      order_type: BID_BUY
+      side: SHORTS
+    step_11:
+      action: COVER
+      description: SFStot 1.40-1.69 ve Bid Buy Ucuzluk < -0.05 → %50 cover
+      enabled: true
+      filters:
+        bid_buy_ucuzluk_lt: -0.05
+        qty_ge: 100
+        sfstot_gte: 1.4
+        sfstot_lte: 1.69
+      lot_percentage: 50
+      name: SFStot 1.40-1.69 High
+      order_type: BID_BUY
+      side: SHORTS
+    step_12:
+      action: COVER
+      description: SFStot 1.10-1.39 ve Bid Buy Ucuzluk +0.05 ile -0.04 arası → %25
+        cover
+      enabled: true
+      filters:
+        bid_buy_ucuzluk_gte: -0.04
+        bid_buy_ucuzluk_lte: 0.05
+        qty_ge: 100
+        sfstot_gte: 1.1
+        sfstot_lte: 1.39
+      lot_percentage: 25
+      name: SFStot 1.10-1.39 Low
+      order_type: BID_BUY
+      side: SHORTS
+    step_13:
+      action: COVER
+      description: SFStot 1.10-1.39 ve Bid Buy Ucuzluk < -0.05 → %50 cover
+      enabled: true
+      filters:
+        bid_buy_ucuzluk_lt: -0.05
+        qty_ge: 100
+        sfstot_gte: 1.1
+        sfstot_lte: 1.39
+      lot_percentage: 50
+      name: SFStot 1.10-1.39 High
+      order_type: BID_BUY
+      side: SHORTS
+    step_2:
+      action: SELL
+      description: Fbtot < 1.10 ve Ask Sell Pahalılık > -0.10 → %50 sat
+      enabled: true
+      filters:
+        ask_sell_pahalilik_gt: -0.1
+        fbtot_lt: 1.1
+        qty_ge: 100
+      lot_percentage: 50
+      name: Fbtot < 1.10
+      order_type: ASK_SELL
+      side: LONGS
+    step_3:
+      action: SELL
+      description: Fbtot 1.11-1.45 ve Ask Sell Pahalılık -0.05 ile +0.04 arası → %25
+        sat
+      enabled: true
+      filters:
+        ask_sell_pahalilik_gte: -0.05
+        ask_sell_pahalilik_lte: 0.04
+        fbtot_gte: 1.11
+        fbtot_lte: 1.45
+        qty_ge: 100
+      lot_percentage: 25
+      name: Fbtot 1.11-1.45 Low
+      order_type: ASK_SELL
+      side: LONGS
+    step_4:
+      action: SELL
+      description: Fbtot 1.11-1.45 ve Ask Sell Pahalılık > +0.05 → %50 sat
+      enabled: true
+      filters:
+        ask_sell_pahalilik_gt: 0.05
+        fbtot_gte: 1.11
+        fbtot_lte: 1.45
+        qty_ge: 100
+      lot_percentage: 50
+      name: Fbtot 1.11-1.45 High
+      order_type: ASK_SELL
+      side: LONGS
+    step_5:
+      action: SELL
+      description: Fbtot 1.46-1.85 ve Ask Sell Pahalılık +0.05 ile +0.10 arası → %25
+        sat
+      enabled: true
+      filters:
+        ask_sell_pahalilik_gte: 0.05
+        ask_sell_pahalilik_lte: 0.1
+        fbtot_gte: 1.46
+        fbtot_lte: 1.85
+        qty_ge: 100
+      lot_percentage: 25
+      name: Fbtot 1.46-1.85 Low
+      order_type: ASK_SELL
+      side: LONGS
+    step_6:
+      action: SELL
+      description: Fbtot 1.46-1.85 ve Ask Sell Pahalılık > +0.10 → %50 sat
+      enabled: true
+      filters:
+        ask_sell_pahalilik_gt: 0.1
+        fbtot_gte: 1.46
+        fbtot_lte: 1.85
+        qty_ge: 100
+      lot_percentage: 50
+      name: Fbtot 1.46-1.85 High
+      order_type: ASK_SELL
+      side: LONGS
+    step_7:
+      action: SELL
+      description: Fbtot 1.86-2.10 ve Ask Sell Pahalılık > +0.20 → %25 sat
+      enabled: true
+      filters:
+        ask_sell_pahalilik_gt: 0.2
+        fbtot_gte: 1.86
+        fbtot_lte: 2.1
+        qty_ge: 100
+      lot_percentage: 25
+      name: Fbtot 1.86-2.10
+      order_type: ASK_SELL
+      side: LONGS
+    step_9:
+      action: COVER
+      description: SFStot > 1.70 ve Bid Buy Ucuzluk < +0.10 → %50 cover
+      enabled: true
+      filters:
+        bid_buy_ucuzluk_lt: 0.1
+        qty_ge: 100
+        sfstot_gt: 1.7
+      lot_percentage: 50
+      name: SFStot > 1.70
+      order_type: BID_BUY
+      side: SHORTS
+  lot_divider:
+    enabled: false
+    max_lot_per_order: 500
+    split_delay_ms: 500
+    split_threshold: 500
+  reducemore:
+    eligibility:
+      exposure_ratio_threshold: 0.8
+      modes:
+      - DEFANSIF
+      - GECIS
+      pot_total_multiplier: 0.9
+    gort_filter_longs:
+      action: FILTER
+      description: GORT > -1 ve Ask Sell Pahalılık > -0.05 olan pozisyonları filtrele
+      enabled: true
+      filters:
+        ask_sell_pahalilik_gt: -0.05
+        gort_gt: -1
+      lot_calculation: GORT_SPECIAL
+      name: GORT Filter - Longs
+      order_type: ASK_SELL
+    gort_filter_shorts:
+      action: FILTER
+      description: GORT < 1 ve Bid Buy Ucuzluk < +0.05 olan pozisyonları filtrele
+      enabled: true
+      filters:
+        bid_buy_ucuzluk_lt: 0.05
+        gort_lt: 1
+      lot_calculation: GORT_SPECIAL
+      name: GORT Filter - Shorts
+      order_type: BID_BUY
+    settings:
+      cooldown_minutes: 5
+      exclude_fbtot_zero: true
+      exclude_sfstot_zero: true
+      min_lot_size: 100
+      process_longs_first: true
+      spread_tolerance_percent: 0.2
+    step_10:
+      action: COVER
+      description: SFStot 1.40-1.69 ve Bid Buy Ucuzluk +0.05 ile -0.04 arası → %50
+        cover
+      enabled: true
+      filters:
+        bid_buy_ucuzluk_gte: -0.04
+        bid_buy_ucuzluk_lte: 0.05
+        qty_ge: 100
+        sfstot_gte: 1.4
+        sfstot_lte: 1.69
+      lot_percentage: 50
+      name: SFStot 1.40-1.69 Low (Aggressive)
+      order_type: BID_BUY
+      side: SHORTS
+    step_11:
+      action: COVER
+      description: SFStot 1.40-1.69 ve Bid Buy Ucuzluk < -0.05 → %75 cover
+      enabled: true
+      filters:
+        bid_buy_ucuzluk_lt: -0.05
+        qty_ge: 100
+        sfstot_gte: 1.4
+        sfstot_lte: 1.69
+      lot_percentage: 75
+      name: SFStot 1.40-1.69 High (Aggressive)
+      order_type: BID_BUY
+      side: SHORTS
+    step_12:
+      action: COVER
+      description: SFStot 1.10-1.39 ve Bid Buy Ucuzluk +0.05 ile -0.04 arası → %50
+        cover
+      enabled: true
+      filters:
+        bid_buy_ucuzluk_gte: -0.04
+        bid_buy_ucuzluk_lte: 0.05
+        qty_ge: 100
+        sfstot_gte: 1.1
+        sfstot_lte: 1.39
+      lot_percentage: 50
+      name: SFStot 1.10-1.39 Low (Aggressive)
+      order_type: BID_BUY
+      side: SHORTS
+    step_13:
+      action: COVER
+      description: SFStot 1.10-1.39 ve Bid Buy Ucuzluk < -0.05 → %75 cover
+      enabled: true
+      filters:
+        bid_buy_ucuzluk_lt: -0.05
+        qty_ge: 100
+        sfstot_gte: 1.1
+        sfstot_lte: 1.39
+      lot_percentage: 75
+      name: SFStot 1.10-1.39 High (Aggressive)
+      order_type: BID_BUY
+      side: SHORTS
+    step_2:
+      action: SELL
+      description: Fbtot < 1.10 ve Ask Sell Pahalılık > -0.10 → %75 sat
+      enabled: true
+      filters:
+        ask_sell_pahalilik_gt: -0.1
+        fbtot_lt: 1.1
+        qty_ge: 100
+      lot_percentage: 75
+      name: Fbtot < 1.10 (Aggressive)
+      order_type: ASK_SELL
+      side: LONGS
+    step_3:
+      action: SELL
+      description: Fbtot 1.11-1.45 ve Ask Sell Pahalılık -0.05 ile +0.04 arası → %50
+        sat
+      enabled: true
+      filters:
+        ask_sell_pahalilik_gte: -0.05
+        ask_sell_pahalilik_lte: 0.04
+        fbtot_gte: 1.11
+        fbtot_lte: 1.45
+        qty_ge: 100
+      lot_percentage: 50
+      name: Fbtot 1.11-1.45 Low (Aggressive)
+      order_type: ASK_SELL
+      side: LONGS
+    step_4:
+      action: SELL
+      description: Fbtot 1.11-1.45 ve Ask Sell Pahalılık > +0.05 → %75 sat
+      enabled: true
+      filters:
+        ask_sell_pahalilik_gt: 0.05
+        fbtot_gte: 1.11
+        fbtot_lte: 1.45
+        qty_ge: 100
+      lot_percentage: 75
+      name: Fbtot 1.11-1.45 High (Aggressive)
+      order_type: ASK_SELL
+      side: LONGS
+    step_5:
+      action: SELL
+      description: Fbtot 1.46-1.85 ve Ask Sell Pahalılık +0.05 ile +0.10 arası → %50
+        sat
+      enabled: true
+      filters:
+        ask_sell_pahalilik_gte: 0.05
+        ask_sell_pahalilik_lte: 0.1
+        fbtot_gte: 1.46
+        fbtot_lte: 1.85
+        qty_ge: 100
+      lot_percentage: 50
+      name: Fbtot 1.46-1.85 Low (Aggressive)
+      order_type: ASK_SELL
+      side: LONGS
+    step_6:
+      action: SELL
+      description: Fbtot 1.46-1.85 ve Ask Sell Pahalılık > +0.10 → %75 sat
+      enabled: true
+      filters:
+        ask_sell_pahalilik_gt: 0.1
+        fbtot_gte: 1.46
+        fbtot_lte: 1.85
+        qty_ge: 100
+      lot_percentage: 75
+      name: Fbtot 1.46-1.85 High (Aggressive)
+      order_type: ASK_SELL
+      side: LONGS
+    step_7:
+      action: SELL
+      description: Fbtot 1.86-2.10 ve Ask Sell Pahalılık > +0.20 → %50 sat
+      enabled: true
+      filters:
+        ask_sell_pahalilik_gt: 0.2
+        fbtot_gte: 1.86
+        fbtot_lte: 2.1
+        qty_ge: 100
+      lot_percentage: 50
+      name: Fbtot 1.86-2.10 (Aggressive)
+      order_type: ASK_SELL
+      side: LONGS
+    step_9:
+      action: COVER
+      description: SFStot > 1.70 ve Bid Buy Ucuzluk < +0.10 → %75 cover
+      enabled: true
+      filters:
+        bid_buy_ucuzluk_lt: 0.1
+        qty_ge: 100
+        sfstot_gt: 1.7
+      lot_percentage: 75
+      name: SFStot > 1.70 (Aggressive)
+      order_type: BID_BUY
+      side: SHORTS
+  version: 2.0.0
+saved_at: '2025-12-17T12:14:41.601498'
+version: 2.0.0

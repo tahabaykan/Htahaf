@@ -130,7 +130,8 @@ class ModeManager:
             if self.is_hampro_mode():
                 if self.hammer_client and self.hammer_client.connected:
                     orders = self.hammer_client.get_orders()
-                    print(f"[MODE] 📋 HAMPRO'dan {len(orders)} emir alındı")
+                    # DEBUG: Log kapatıldı - sürekli terminal loglarını dolduruyordu
+                    # print(f"[MODE] 📋 HAMPRO'dan {len(orders)} emir alındı")
                     return orders
                 else:
                     print("[MODE] ❌ HAMPRO client bağlı değil")
@@ -140,11 +141,13 @@ class ModeManager:
                 # Native IBKR client'i öncelikle kullan
                 if self.ibkr_native_client and self.ibkr_native_client.is_connected():
                     orders = self.ibkr_native_client.get_open_orders()
-                    print(f"[MODE] 📋 IBKR Native'dan {len(orders)} emir alındı")
+                    # DEBUG: Log kapatıldı - sürekli terminal loglarını dolduruyordu
+                    # print(f"[MODE] 📋 IBKR Native'dan {len(orders)} emir alındı")
                     return orders
                 elif self.ibkr_client and self.ibkr_client.is_connected():
                     orders = self.ibkr_client.get_orders_direct()
-                    print(f"[MODE] 📋 IBKR Client'dan {len(orders)} emir alındı")
+                    # DEBUG: Log kapatıldı - sürekli terminal loglarını dolduruyordu
+                    # print(f"[MODE] 📋 IBKR Client'dan {len(orders)} emir alındı")
                     return orders
                 else:
                     print("[MODE] ❌ IBKR client bağlı değil")

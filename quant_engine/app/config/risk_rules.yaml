@@ -1,0 +1,188 @@
+# Risk Rules Configuration
+# Event-Driven Trading System
+
+# Gross Exposure Limits
+exposure:
+  # HARD CAP: Never exceed this
+  max_gross_exposure_pct: 130.0
+  
+  # Soft limits (triggers warnings/derisk)
+  soft_limit_pct: 120.0
+  
+  # Target bands (user-configurable, placeholders for now)
+  long_pct_range: [50.0, 60.0]  # Target long exposure range
+  short_pct_range: [40.0, 50.0]  # Target short exposure range
+
+# Bucket Configuration
+buckets:
+  LT:  # Long-term portfolio
+    target_pct: 80.0
+    max_pct: 90.0
+    flex_pct: 10.0  # Flexibility range (target ± flex)
+    
+    # LT Band Drift Controller
+    # User-provided LT long/short gross band ranges (within LT bucket)
+    band_drift:
+      long_pct_range: [60.0, 70.0]  # LT long should be 60-70% of LT bucket
+      short_pct_range: [30.0, 40.0]  # LT short should be 30-40% of LT bucket
+      tolerance_days: 2  # Band can be violated for up to 2 days before aggressive action
+      corrective_intent_size_pct: 0.02  # 2% of position for gentle correction
+      use_limit_orders: true  # Use limit orders near truth tick
+      prefer_positive_pnl: true  # Prefer actions with positive/acceptable PnL
+    
+    # Within LT, inventory rotation for MM
+    inventory_rotation_pct: 15.0  # 10-20% of LT inventory
+    
+    # Per-group allocation (22 groups, placeholders)
+    group_allocation:
+      # Example structure (to be populated with actual groups)
+      group_1:
+        target_pct: 5.0
+        max_pct: 7.0
+      # ... (22 groups total)
+  
+  MM_PURE:  # Opportunistic market-making inventory
+    target_pct: 20.0
+    max_pct: 30.0
+    flex_pct: 10.0
+
+# Time Regime Configuration (US Market Time)
+time_regimes:
+  OPEN:
+    start_time: "09:30"  # Market open
+    end_time: "10:00"
+    # More aggressive MM allowed
+    band_tolerance_multiplier: 1.2  # Wider tolerance
+    allow_aggressive_mm: true
+    # Tolerance for gross exposure (multiplier applied to soft_limit)
+    gross_exposure_tolerance_pct: 125.0  # Can go up to 125% in OPEN
+    allow_derisk: false  # Don't derisk in OPEN unless hard cap exceeded
+  
+  EARLY:
+    start_time: "10:00"
+    end_time: "12:00"
+    band_tolerance_multiplier: 1.1
+    allow_aggressive_mm: true
+    gross_exposure_tolerance_pct: 125.0
+    allow_derisk: false
+  
+  MID:
+    start_time: "12:00"
+    end_time: "15:00"
+    band_tolerance_multiplier: 1.0  # Normal tolerance
+    allow_aggressive_mm: false
+    gross_exposure_tolerance_pct: 120.0  # Normal soft limit
+    allow_derisk: true  # Allow soft derisk if needed
+  
+  LATE:
+    start_time: "15:00"
+    end_time: "16:15"
+    band_tolerance_multiplier: 0.9  # Tighter tolerance
+    allow_aggressive_mm: false
+    gross_exposure_tolerance_pct: 115.0  # Tighter limit
+    allow_derisk: true
+  
+  CLOSE:
+    start_time: "16:15"
+    end_time: "16:30"  # Market close
+    band_tolerance_multiplier: 0.8  # Very tight tolerance
+    allow_aggressive_mm: false
+    gross_exposure_tolerance_pct: 100.0  # Very tight - target 100%
+    allow_derisk: true
+
+# Intent Arbitration Configuration
+intent_arbitration:
+  # CAP_RECOVERY target (reduce to this level, not strict 120%)
+  cap_recovery_target_gross: 123.0
+  
+  # MM overnight leftover threshold
+  mm_overnight_max_pct: 15.0
+  
+  # Soft suppress threshold (suppress MM churn above this)
+  soft_suppress_threshold: 120.0
+
+# De-risk Playbook
+derisk:
+  # Soft derisk: After 16:15 US if exposure above soft limits
+  soft_derisk:
+    trigger_time: "16:15"  # US market time
+    trigger_condition: "exposure > soft_limit_pct"
+    method: "TRUTH_TICK_PROXIMITY"  # Use truth tick ± $0.01
+    max_slippage: 0.01  # $0.01 max slippage
+    reduction_target_pct: 100.0  # Reduce to 100% gross exposure
+  
+  # Hard derisk: At 16:28 US (2 minutes to close)
+  hard_derisk:
+    trigger_time: "16:28"  # US market time
+    trigger_condition: "exposure > 100.0"  # If still above 100%
+    method: "AGGRESSIVE_REDUCTION"
+    # Longs: hit bid, Shorts: hit ask
+    reduction_chunk_pct: 10.0  # Reduce 10% per step
+    reduction_target_pct: 100.0  # Target 100% gross exposure
+    max_iterations: 10  # Max reduction steps
+
+# Stale Data Gates
+stale_data:
+  # Do not use truth tick if print/L1 stale
+  print_max_age_seconds: 300  # 5 minutes
+  l1_max_age_seconds: 60  # 1 minute
+  
+  # If data is stale, skip derisk action or use alternative method
+  skip_derisk_if_stale: true
+
+# Order Lifecycle
+order_lifecycle:
+  # Idempotency window (seconds)
+  idempotency_window_seconds: 300  # 5 minutes
+  
+  # Order replacement
+  replace_timeout_seconds: 30  # Wait 30s before replacing
+  
+  # Fill tracking
+  fill_timeout_seconds: 60  # Consider order stale after 60s
+
+# --- NEW: Canary & Shadow Mode Flags ---
+feature_flags:
+  venue_parsing_enabled: true
+  hybrid_snapshot_enabled: true
+  shadow_mode_enabled: true
+  
+  canary:
+    enabled: true
+    # Only 10 MM bucket symbols for initial rollout
+    symbols: ["CIM PRB", "CIM PRC", "AGNCN", "AGNCO", "ARR PRC", "ARR PRB", "NYCB PRU", "NYCB PRV", "MITT PRC", "MITT PRB"]
+
+# --- RUNALL Orchestrator Config ---
+runall_orchestrator:
+  enabled: true
+  # MODE: OBSERVE_ONLY | SELECTIVE_ONLY | FULL
+  # OBSERVE_ONLY: Logs what would happen, doesn't act
+  # SELECTIVE_ONLY: TTL cancels only, legacy makes decisions
+  # FULL: Sole scheduler (legacy disabled)
+  mode: OBSERVE_ONLY
+  phase_tick_seconds: 30
+  selective_cancel_enabled: false  # Enable in SELECTIVE_ONLY mode
+  persist_symbol_memory: true
+  memory_flush_interval_seconds: 300
+  allow_emergency_cancel_all: false  # Manual emergency only
+  
+  # TTL per intent category (seconds)
+  order_ttl_by_category:
+    LT_TRIM: 120       # 2 minutes
+    MM_CHURN: 60       # 1 minute
+    ADDNEWPOS: 180     # 3 minutes
+    HARD_DERISK: 30    # 30 seconds (urgent)
+    CLOSE_EXIT: 15     # 15 seconds (very urgent)
+    DEFAULT: 90        # Fallback
+  
+  # Order discipline (SINGLE SOURCE - referenced by mm_churn_engine too)
+  min_replace_interval_seconds: 2.5
+  stale_data_threshold_seconds: 90.0
+  price_change_threshold_cents: 0.01
+
+# --- Legacy PSFALGO Config ---
+psfalgo:
+  # MUST be false when runall_orchestrator.mode = FULL
+  legacy_runall_enabled: true
+  legacy_autocycle_enabled: false  # DISABLED - use orchestrator
+

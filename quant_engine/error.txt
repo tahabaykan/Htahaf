@@ -1,0 +1,32 @@
+2026-01-12 18:30:01.759 | INFO     | __main__:run:461 | \U0001f680 [test_worker04] Starting Truth Ticks Worker...
+2026-01-12 18:30:01.775 | INFO     | app.core.redis_client:sync:46 | Redis sync client connected: localhost:6379
+2026-01-12 18:30:01.776 | INFO     | __main__:connect_redis:450 | \u2705 [test_worker04] Connected to Redis
+2026-01-12 18:30:01.777 | INFO     | __main__:initialize_services:63 | \U0001f527 [test_worker04] Initializing worker services...
+2026-01-12 18:30:01.780 | INFO     | app.market_data.truth_ticks_engine:__init__:79 | TruthTicksEngine initialized (Weighted Print Realism)
+2026-01-12 18:30:01.780 | INFO     | __main__:initialize_services:73 | \u2705 [test_worker04] TruthTicksEngine initialized
+2026-01-12 18:30:02.031 | INFO     | app.market_data.static_data_store:initialize_static_store:250 | StaticDataStore global instance initialized
+2026-01-12 18:30:02.032 | INFO     | app.market_data.static_data_store:load_csv:95 | Loading static data from: C:\Users\User\OneDrive\Masaüstü\Proje\StockTracker\janall\janalldata.csv
+2026-01-12 18:30:02.040 | WARNING  | app.market_data.static_data_store:load_csv:106 | Missing columns: ['GROUP']
+2026-01-12 18:30:02.105 | INFO     | app.market_data.grouping:_load_group_files:128 | Loaded 18 group files with 437 total symbols
+2026-01-12 18:30:02.111 | WARNING  | app.market_data.grouping:resolve_primary_group:185 | Symbol SNV PRE not found in any group CSV file
+2026-01-12 18:30:02.114 | WARNING  | app.market_data.grouping:resolve_primary_group:185 | Symbol DRH PRA not found in any group CSV file
+2026-01-12 18:30:02.115 | WARNING  | app.market_data.grouping:resolve_primary_group:185 | Symbol SNV PRD not found in any group CSV file
+2026-01-12 18:30:02.120 | WARNING  | app.market_data.grouping:resolve_primary_group:185 | Symbol PNFPP not found in any group CSV file
+2026-01-12 18:30:02.158 | INFO     | app.market_data.static_data_store:load_csv:174 | Loaded 439 symbols from static data
+2026-01-12 18:30:02.159 | INFO     | __main__:initialize_services:85 | \u2705 [test_worker04] Static store initialized and loaded: 439 symbols
+2026-01-12 18:30:02.168 | INFO     | app.market_data.grpan_engine:initialize_grpan_engine:841 | GRPANEngine global instance initialized
+2026-01-12 18:30:02.170 | INFO     | app.market_data.grpan_engine:start_compute_loop:686 | GRPAN compute loop started (interval: 300.0ms)
+2026-01-12 18:30:02.171 | INFO     | __main__:initialize_services:116 | \u2705 [test_worker04] GRPANEngine initialized and compute loop started
+2026-01-12 18:30:02.173 | INFO     | __main__:initialize_services:146 | \u2699\ufe0f [test_worker04] Initializing services...
+2026-01-12 18:30:02.174 | INFO     | app.live.hammer_client:connect:91 | \U0001f50c [HAMMER_CONNECT] Connecting to Hammer Pro: ws://127.0.0.1:16400
+2026-01-12 18:30:02.174 | INFO     | app.live.hammer_client:connect:92 |    Host: 127.0.0.1, Port: 16400
+2026-01-12 18:30:02.177 | INFO     | app.live.hammer_client:_on_open:154 | WebSocket connection opened
+2026-01-12 18:30:02.177 | INFO     | app.live.hammer_client:_on_open:170 | Sending authentication...
+2026-01-12 18:30:02.238 | INFO     | app.live.hammer_client:_on_message:207 | \U0001f4e5 Authentication response: success=OK, result={'time': 1768231803, 'ver': '1.1.9932.681', 'reason': 'connected'}
+2026-01-12 18:30:02.240 | INFO     | app.live.hammer_client:_on_message:211 | \u2705 Hammer Pro authentication successful
+2026-01-12 18:30:02.241 | INFO     | app.live.hammer_client:_on_message:214 | \U0001f50d Enumerating data streamers...
+2026-01-12 18:30:02.276 | INFO     | app.live.hammer_client:connect:122 | \u2705 [HAMMER_CONNECT] WebSocket connection opened (took 0.10s)
+2026-01-12 18:30:02.276 | INFO     | app.live.hammer_client:connect:123 |    \u23f3 Waiting for authentication...
+2026-01-12 18:30:02.277 | INFO     | app.live.hammer_client:connect:131 | \u2705 [HAMMER_CONNECT] Hammer Pro connection established and authenticated (total: 0.10s)
+2026-01-12 18:30:02.278 | ERROR    | __main__:initialize_services:196 | \u274c [test_worker04] Failed to initialize services: 'GRPANTickFetcher' object has no attribute 'start'
+2026-01-12 18:30:02.278 | ERROR    | __main__:run:471 | \u274c Failed to initialize services. Exiting.

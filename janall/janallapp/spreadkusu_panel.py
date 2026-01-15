@@ -710,7 +710,8 @@ class SpreadkusuPanel:
                         
                         # Tam eşleşme kontrol et
                         if symbol in group_symbols:
-                            print(f"[SPREADKUSU] 🎯 {symbol} -> {group} grubunda bulundu (tam eşleşme)")
+                            # DEBUG: Log kapatıldı - sürekli terminal loglarını dolduruyordu
+                            # print(f"[SPREADKUSU] 🎯 {symbol} -> {group} grubunda bulundu (tam eşleşme)")
                             return group
                         
                         # Esnek eşleşme kontrol et (büyük/küçük harf, boşluk vs.)
@@ -719,7 +720,8 @@ class SpreadkusuPanel:
                             if group_symbol and isinstance(group_symbol, str):
                                 group_symbol_upper = group_symbol.upper().strip()
                                 if symbol_upper == group_symbol_upper:
-                                    print(f"[SPREADKUSU] 🎯 {symbol} -> {group} grubunda bulundu (esnek eşleşme)")
+                                    # DEBUG: Log kapatıldı - sürekli terminal loglarını dolduruyordu
+                                    # print(f"[SPREADKUSU] 🎯 {symbol} -> {group} grubunda bulundu (esnek eşleşme)")
                                     return group
                         
                     except Exception as e:
@@ -778,7 +780,8 @@ class SpreadkusuPanel:
                     final_bb_values = final_bb_values[final_bb_values > 0]  # 0'dan büyük olanları al
                     if not final_bb_values.empty:
                         avg_fb = final_bb_values.mean()
-                        print(f"[SPREADKUSU] 📊 {group} grubu ortalama Final BB: {avg_fb:.2f} ({len(final_bb_values)} geçerli hisse)")
+                        # DEBUG: Log kapatıldı - sürekli terminal loglarını dolduruyordu
+                        # print(f"[SPREADKUSU] 📊 {group} grubu ortalama Final BB: {avg_fb:.2f} ({len(final_bb_values)} geçerli hisse)")
                         return avg_fb
             
             return 0
@@ -830,7 +833,8 @@ class SpreadkusuPanel:
                     final_sas_values = final_sas_values[final_sas_values > 0]  # 0'dan büyük olanları al
                     if not final_sas_values.empty:
                         avg_sas = final_sas_values.mean()
-                        print(f"[SPREADKUSU] 📊 {group} grubu ortalama Final SAS: {avg_sas:.2f} ({len(final_sas_values)} geçerli hisse)")
+                        # DEBUG: Log kapatıldı - sürekli terminal loglarını dolduruyordu
+                        # print(f"[SPREADKUSU] 📊 {group} grubu ortalama Final SAS: {avg_sas:.2f} ({len(final_sas_values)} geçerli hisse)")
                         return avg_sas
             
             return 0
@@ -964,7 +968,8 @@ class SpreadkusuPanel:
                             # Hem kesir hem de ondalık format göster
                             decimal_ratio = rank / total_count
                             result = f"{rank}/{total_count} ({decimal_ratio:.2f})"
-                            print(f"[SPREADKUSU] 📊 {symbol} SASPlagr: {result} (Final SAS: {symbol_row.iloc[0]['Final_SAS_skor']:.2f})")
+                            # DEBUG: Log kapatıldı - sürekli terminal loglarını dolduruyordu
+                            # print(f"[SPREADKUSU] 📊 {symbol} SASPlagr: {result} (Final SAS: {symbol_row.iloc[0]['Final_SAS_skor']:.2f})")
                             return result
             
             return "N/A"

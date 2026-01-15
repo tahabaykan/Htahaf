@@ -1,0 +1,263 @@
+.jfin-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.jfin-modal {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  width: 90vw;
+  max-width: 1600px;
+  height: 90vh;
+  max-height: 900px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.jfin-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  border-bottom: 1px solid #333;
+  background: #222;
+}
+
+.jfin-modal-header h2 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.jfin-modal-close {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.jfin-modal-close:hover {
+  background: #333;
+  color: #fff;
+}
+
+.jfin-modal-error {
+  background: #4a1a1a;
+  color: #ff6b6b;
+  padding: 12px 20px;
+  border-bottom: 1px solid #333;
+  font-size: 14px;
+}
+
+.jfin-modal-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  border-bottom: 1px solid #333;
+  background: #1e1e1e;
+}
+
+.jfin-percentage-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.jfin-percentage-controls label {
+  color: #ccc;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.jfin-percentage-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.jfin-percentage-btn {
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #ccc;
+  padding: 3px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.jfin-percentage-btn:hover:not(:disabled) {
+  background: #333;
+  border-color: #555;
+}
+
+.jfin-percentage-btn.active {
+  background: #0066cc;
+  border-color: #0080ff;
+  color: #fff;
+}
+
+.jfin-percentage-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.jfin-percentage-info {
+  color: #999;
+  font-size: 13px;
+}
+
+.jfin-refresh-btn {
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #ccc;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.jfin-refresh-btn:hover:not(:disabled) {
+  background: #333;
+  border-color: #555;
+}
+
+.jfin-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.jfin-modal-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 12px;
+  border-bottom: 1px solid #333;
+  background: #1e1e1e;
+}
+
+.jfin-tab-btn {
+  background: none;
+  border: none;
+  color: #999;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  position: relative;
+  top: 1px;
+}
+
+.jfin-tab-btn:hover {
+  color: #ccc;
+  background: #252525;
+}
+
+.jfin-tab-btn.active {
+  color: #0066cc;
+  border-bottom-color: #0066cc;
+  background: #1a1a1a;
+}
+
+.jfin-modal-content {
+  flex: 1;
+  overflow: auto;
+  padding: 8px;
+  background: #1a1a1a;
+}
+
+.jfin-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #999;
+  font-size: 14px;
+}
+
+.jfin-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.jfin-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.jfin-empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.jfin-empty-message {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 24px;
+  max-width: 500px;
+}
+
+.jfin-empty-instructions {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 600px;
+  text-align: left;
+}
+
+.jfin-empty-instructions p {
+  margin: 0 0 12px 0;
+  color: #ccc;
+  font-size: 13px;
+}
+
+.jfin-empty-instructions ol {
+  margin: 12px 0;
+  padding-left: 24px;
+  color: #ccc;
+  font-size: 13px;
+}
+
+.jfin-empty-instructions li {
+  margin: 8px 0;
+}
+
+.jfin-empty-note {
+  margin-top: 16px !important;
+  padding-top: 16px;
+  border-top: 1px solid #333;
+  font-style: italic;
+  color: #999 !important;
+  font-size: 12px !important;
+}
+

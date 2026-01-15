@@ -1,0 +1,168 @@
+/* QeBench Panel Styles */
+
+.qebench-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.qebench-panel {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    width: 95%;
+    max-width: 1600px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.qebench-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid #333;
+    background: #222;
+}
+
+.qebench-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #63B3ED;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.reset-all-btn {
+    background: #f97316;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.reset-all-btn:hover {
+    background: #ea580c;
+}
+
+.close-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.close-btn:hover {
+    background: #dc2626;
+}
+
+.qebench-content {
+    flex: 1;
+    overflow: auto;
+    padding: 20px;
+}
+
+.loading,
+.error,
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #888;
+    font-size: 14px;
+}
+
+.error {
+    color: #ef4444;
+}
+
+.qebench-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.qebench-table thead {
+    position: sticky;
+    top: 0;
+    background: #222;
+    z-index: 10;
+}
+
+.qebench-table th {
+    padding: 10px 8px;
+    text-align: left;
+    border-bottom: 2px solid #444;
+    color: #888;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.qebench-table td {
+    padding: 8px;
+    border-bottom: 1px solid #333;
+    color: #ddd;
+}
+
+.qebench-table tbody tr:hover {
+    background: rgba(99, 179, 237, 0.1);
+}
+
+.symbol-cell {
+    font-weight: 700;
+    color: #63B3ED;
+}
+
+.positive {
+    color: #22c55e;
+}
+
+.negative {
+    color: #ef4444;
+}
+
+.bench-fill {
+    color: #a78bfa;
+}
+
+.bench-now {
+    color: #60a5fa;
+}
+
+.outperform-col {
+    font-weight: bold;
+}
+
+.outperform-cell {
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.qebench-footer {
+    padding: 10px 20px;
+    border-top: 1px solid #333;
+    background: #222;
+    color: #888;
+    font-size: 11px;
+    text-align: right;
+}

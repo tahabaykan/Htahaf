@@ -1,0 +1,286 @@
+.sidehit-press-page {
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.page-header {
+  margin-bottom: 20px;
+}
+
+.page-header h1 {
+  margin: 0 0 5px 0;
+  color: #1f2937;
+  font-size: 1.75rem;
+}
+
+.page-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.mode-banner {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mode-tag {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.mode-desc {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-input {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 200px;
+  color: #1f2937;
+  background: #ffffff;
+}
+
+.group-select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1f2937;
+  background: #ffffff;
+  margin-left: 8px;
+}
+
+.refresh-btn {
+  padding: 8px 16px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.refresh-btn:hover {
+  background: #2563eb;
+}
+
+.refresh-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.stats-bar {
+  padding: 8px 12px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+/* Groups Section */
+.groups-section {
+  margin-bottom: 24px;
+}
+
+.groups-section h3 {
+  margin: 0 0 12px 0;
+  color: #1f2937;
+  font-size: 1rem;
+}
+
+.groups-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.group-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.group-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+}
+
+.group-name {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.group-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.75rem;
+}
+
+.stat-count {
+  color: #6b7280;
+}
+
+.stat-drift {
+  font-weight: 600;
+}
+
+.group-performance {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.perf-over {
+  color: #10b981;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.perf-under {
+  color: #ef4444;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+/* Table */
+.table-container {
+  overflow-x: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sidehit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.sidehit-table th {
+  background: #f9fafb;
+  padding: 12px 10px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.sidehit-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sidehit-table th.sortable:hover {
+  background: #f3f4f6;
+}
+
+.sidehit-table td {
+  padding: 10px;
+  border-bottom: 1px solid #374151;
+  color: #e5e7eb;
+}
+
+.sidehit-table tr:hover {
+  background: #f9fafb;
+}
+
+.symbol-cell {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.group-cell {
+  font-size: 0.75rem;
+  color: #6b7280;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drift-cell {
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-size: 0.8rem;
+}
+
+.status-cell {
+  white-space: nowrap;
+}
+
+.volav-cell {
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-size: 0.8rem;
+  color: #374151;
+}
+
+.tick-cell {
+  text-align: center;
+  color: #6b7280;
+}
+
+.direction-cell {
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+}
+
+.empty-state p {
+  margin: 0 0 8px 0;
+}

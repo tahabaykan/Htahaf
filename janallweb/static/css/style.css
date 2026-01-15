@@ -1,0 +1,552 @@
+/* ==================== IOS FUTURISTIC THEME ==================== */
+:root {
+    /* iOS System Colors (Dark Mode) */
+    --ios-bg: #000000;
+    --ios-card-bg: rgba(28, 28, 30, 0.65);
+    --ios-card-border: rgba(255, 255, 255, 0.12);
+    --ios-primary: #0A84FF; /* iOS Blue */
+    --ios-success: #30D158; /* iOS Green */
+    --ios-danger: #FF453A; /* iOS Red */
+    --ios-warning: #FF9F0A; /* iOS Orange */
+    --ios-purple: #BF5AF2; /* iOS Purple */
+    --ios-text: #FFFFFF;
+    --ios-text-secondary: rgba(235, 235, 245, 0.6);
+    --ios-text-tertiary: rgba(235, 235, 245, 0.3);
+    
+    /* Glass Effect */
+    --glass-blur: 25px;
+    --glass-saturation: 180%;
+    
+    /* Spacing & Radius */
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+    --spacing-xs: 8px;
+    --spacing-sm: 12px;
+    --spacing-md: 20px;
+    --spacing-lg: 32px;
+    
+    /* Animation */
+    --anim-spring: cubic-bezier(0.25, 1.25, 0.5, 1); /* Bouncy feel */
+    --anim-ease: cubic-bezier(0.25, 0.1, 0.25, 1); /* Smooth iOS feel */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--ios-bg);
+    /* Modern Abstract Gradient Background */
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(10, 132, 255, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(191, 90, 242, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(48, 209, 88, 0.05) 0%, transparent 60%);
+    color: var(--ios-text);
+    min-height: 100vh;
+    overflow: hidden; /* App-like feel */
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* ==================== LAYOUT STRUCTURE ==================== */
+.app-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+/* Sidebar (iOS iPadOS style) */
+.sidebar {
+    width: 260px;
+    height: 100%;
+    background: rgba(30, 30, 30, 0.5);
+    border-right: 1px solid var(--ios-card-border);
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-md);
+    transition: width 0.4s var(--anim-ease);
+    z-index: 100;
+}
+
+.sidebar-header {
+    margin-bottom: var(--spacing-lg);
+    padding-left: var(--spacing-xs);
+}
+
+.app-logo {
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #FFF 0%, #AAA 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+}
+
+.nav-menu {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: var(--ios-text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s var(--anim-ease);
+    font-size: 14px;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--ios-text);
+}
+
+.nav-item.active {
+    background: rgba(10, 132, 255, 0.15);
+    color: var(--ios-primary);
+}
+
+.nav-icon {
+    margin-right: 12px;
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+}
+
+.sidebar-footer {
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--ios-card-border);
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    background: transparent;
+}
+
+/* Top Bar */
+.top-bar {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--spacing-lg);
+    border-bottom: 1px solid var(--ios-card-border);
+    background: rgba(20, 20, 20, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.page-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ios-text);
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+    border: 1px solid var(--ios-card-border);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--ios-danger);
+    box-shadow: 0 0 8px var(--ios-danger);
+    transition: all 0.3s ease;
+}
+
+.status-dot.connected {
+    background-color: var(--ios-success);
+    box-shadow: 0 0 8px var(--ios-success);
+}
+
+/* Content Pages */
+.content-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-lg);
+    scroll-behavior: smooth;
+}
+
+.page {
+    display: none;
+    animation: fadeIn 0.4s var(--anim-ease);
+}
+
+.page.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ==================== COMPONENTS ==================== */
+
+/* Cards */
+.ios-card {
+    background: var(--ios-card-bg);
+    border: 1px solid var(--ios-card-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s var(--anim-ease);
+}
+
+/* Buttons (iOS Style) */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border-radius: 12px; /* Smooth corners */
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s var(--anim-spring);
+    border: none;
+    gap: 6px;
+    user-select: none;
+}
+
+.btn:active {
+    transform: scale(0.96);
+    opacity: 0.8;
+}
+
+.btn-primary {
+    background: var(--ios-primary);
+    color: white;
+    box-shadow: 0 2px 10px rgba(10, 132, 255, 0.3);
+}
+
+.btn-primary:hover {
+    background: #0071e3;
+}
+
+.btn-success {
+    background: var(--ios-success);
+    color: white;
+    box-shadow: 0 2px 10px rgba(48, 209, 88, 0.3);
+}
+
+.btn-danger {
+    background: var(--ios-danger);
+    color: white;
+    box-shadow: 0 2px 10px rgba(255, 69, 58, 0.3);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--ios-text);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--ios-primary);
+    padding: 6px 12px;
+}
+
+.btn-ghost:hover {
+    background: rgba(10, 132, 255, 0.1);
+}
+
+/* Inputs & Selects */
+.input-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.ios-input, .ios-select {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--ios-card-border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    color: var(--ios-text);
+    font-size: 13px;
+    outline: none;
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.ios-input:focus, .ios-select:focus {
+    border-color: var(--ios-primary);
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.2);
+}
+
+/* Control Bar (Toolbar) */
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--ios-card-border);
+}
+
+.toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-right: 12px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.toolbar-group:last-child {
+    border-right: none;
+}
+
+/* Tables (Modern Data Grid) */
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--ios-card-border);
+}
+
+.ios-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.ios-table th {
+    background: rgba(30, 30, 30, 0.8);
+    color: var(--ios-text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 16px;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--ios-card-border);
+    position: sticky;
+    top: 0;
+    backdrop-filter: blur(10px);
+}
+
+.ios-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    color: var(--ios-text);
+    transition: background 0.2s;
+}
+
+.ios-table tbody tr:hover td {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.ios-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Empty State */
+.empty-state {
+    padding: 60px;
+    text-align: center;
+    color: var(--ios-text-tertiary);
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+/* Badges & Tags */
+.badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.badge-success { background: rgba(48, 209, 88, 0.2); color: var(--ios-success); }
+.badge-danger { background: rgba(255, 69, 58, 0.2); color: var(--ios-danger); }
+.badge-warning { background: rgba(255, 159, 10, 0.2); color: var(--ios-warning); }
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    background: rgba(28, 28, 30, 0.9);
+    border: 1px solid var(--ios-card-border);
+    backdrop-filter: blur(20px);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 300px;
+    animation: slideIn 0.3s var(--anim-spring);
+    font-size: 13px;
+}
+
+.toast.success { border-left: 4px solid var(--ios-success); }
+.toast.error { border-left: 4px solid var(--ios-danger); }
+.toast.info { border-left: 4px solid var(--ios-primary); }
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.loading-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--ios-primary);
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* CSV Buttons Grid */
+.csv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.csv-btn {
+    font-size: 11px;
+    padding: 6px 4px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Utility Classes */
+.text-success { color: var(--ios-success) !important; }
+.text-danger { color: var(--ios-danger) !important; }
+.hidden { display: none !important; }
+.w-full { width: 100%; }
+.mt-2 { margin-top: 8px; }
+.mb-2 { margin-bottom: 8px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .app-container {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 10px;
+        border-bottom: 1px solid var(--ios-card-border);
+        border-right: none;
+    }
+    .nav-menu {
+        flex-direction: row;
+        gap: 10px;
+    }
+    .nav-item {
+        width: auto;
+        white-space: nowrap;
+    }
+}

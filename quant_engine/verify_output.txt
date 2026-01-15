@@ -1,0 +1,31 @@
+INFO:VERIFY_TRACE:Starting Traceability Verification
+[32m2025-12-25 12:59:46.331[0m | [1mINFO    [0m | [36mapp.psfalgo.clean_log_store[0m:[36minitialize_clean_log_store[0m:[36m164[0m | [1mCleanLogStore initialized at data/cleanlogs[0m
+INFO:VERIFY_TRACE:Generated Correlation ID: 053662c9-0a34-4dfc-92bb-04f54b49ff7e
+[32m2025-12-25 12:59:46.371[0m | [1mINFO    [0m | [36mapp.psfalgo.karbotu_engine[0m:[36m_load_rules[0m:[36m90[0m | [1mKARBOTU rules loaded from c:\Users\User\OneDrive\Masaüstü\Proje\StockTracker\quant_engine\app\config\psfalgo_rules.yaml[0m
+INFO:VERIFY_TRACE:Running Karbotu Engine...
+[32m2025-12-25 12:59:46.371[0m | [1mINFO    [0m | [36mapp.psfalgo.karbotu_engine[0m:[36mkarbotu_decision_engine[0m:[36m153[0m | [1m[KARBOTU] Processing 1 LONGS, 0 SHORTS[0m
+[32m2025-12-25 12:59:46.371[0m | [1mINFO    [0m | [36mapp.trading.trading_account_context[0m:[36m__init__[0m:[36m46[0m | [1mTradingAccountContext initialized with default mode: HAMPRO[0m
+[32m2025-12-25 12:59:46.372[0m | [1mINFO    [0m | [36mapp.psfalgo.karbotu_engine[0m:[36mkarbotu_decision_engine[0m:[36m307[0m | [1m[KARBOTU] Completed: 0 decisions, 1 filtered, 0.12ms[0m
+INFO:VERIFY_TRACE:Engine Response Correlation ID: 053662c9-0a34-4dfc-92bb-04f54b49ff7e
+INFO:VERIFY_TRACE:SUCCESS: Correlation ID match in response.
+INFO:VERIFY_TRACE:Decisions: 0
+INFO:VERIFY_TRACE:Filtered: 1
+INFO:VERIFY_TRACE:Verifying CleanLogs...
+INFO:VERIFY_TRACE:Found 1 logs for correlation_id 053662c9-0a34-4dfc-92bb-04f54b49ff7e
+Traceback (most recent call last):
+  File "C:\Users\User\OneDrive\Masaüstü\Proje\StockTracker\quant_engine\tests\verify_traceability.py", line 91, in <module>
+    asyncio.run(test_traceability())
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Python314\Lib\asyncio\base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\User\OneDrive\Masaüstü\Proje\StockTracker\quant_engine\tests\verify_traceability.py", line 83, in test_traceability
+    logger.info(f"LOG: [{log.severity}] {log.component}: {log.message} (TraceID: {log.correlation_id})")
+                         ^^^^^^^^^^^^
+AttributeError: 'dict' object has no attribute 'severity'

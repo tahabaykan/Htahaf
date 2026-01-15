@@ -1,0 +1,448 @@
+﻿CMON,Total_Stocks_In_Group,PREF IBKR,DIV AMOUNT,COUPON,EX-DIV DATE,CALL DATE,MATUR DATE,CRDT SCORE_,BOND_,Aug2022_Price,Oct19_Price,CGRUP,Source
+BAC,14,BAC PRB,0.38,6.00%,10/29/2024,6/16/2023,,11,,25.69,23.02,c600,nalltogether.csv
+BAC,14,BAC PRK,0.37,5.88%,1/2/2025,,,11,,25.68,22.0,c575,nalltogether.csv
+BAC,14,BAC PRM,0.34,5.38%,12/2/2024,,,11,,25.18,20.7,c525,nalltogether.csv
+BAC,14,BAC PRN,0.31,5.00%,12/2/2024,,,11,,23.9,19.25,c500,nalltogether.csv
+BAC,14,BAC PRO,0.27,4.38%,10/15/2024,11/3/2025,,11,,21.39,16.54,c425,nalltogether.csv
+BAC,14,BAC PRP,0.26,4.12%,10/15/2024,,,11,,20.8,15.57,c400,nalltogether.csv
+BAC,14,BAC PRQ,0.27,4.25%,11/1/2024,,,11,,20.46,16.11,c425,nalltogether.csv
+BAC,14,BAC PRS,0.3,4.75%,11/1/2024,,,11,,22.49,18.24,c475,nalltogether.csv
+BAC,14,BAC PRE,0.31,4.00%,07/25/2025,11/15/2011,NONE,11.0,,,,,nalltogether.csv
+BAC,14,BML PRG,0.33,3.00%,05/15/2025,11/28/2009,NONE,11.0,,,,,nalltogether.csv
+BAC,14,BML PRH,0.32,3.00%,05/15/2025,11/28/2009,NONE,11.0,,,,,nalltogether.csv
+BAC,14,BML PRJ,0.33,4.00%,05/15/2025,11/21/2010,NONE,11.0,,,,,nalltogether.csv
+BAC,14,BML PRL,0.32,4.00%,07/01/2025,5/21/2010,NONE,11.0,,,,,nalltogether.csv
+BAC,14,MER PRK,0.4,6.45%,06/12/2025,12/15/2011,12/15/2066,11.5,TP,26.45,24.62,,nalltogether.csv
+PSA,14,PSA PRF,0.32,5.15%,12/12/2024,,,13.5,,25.84,20.87,c500,nalltogether.csv
+PSA,14,PSA PRG,0.32,5.05%,12/12/2024,,,13.5,,25.87,21.11,c500,nalltogether.csv
+PSA,14,PSA PRH,0.35,5.60%,12/12/2024,,,13.5,,26.96,22.76,c550,nalltogether.csv
+PSA,14,PSA PRI,0.3,4.88%,12/12/2024,,,13.5,,25.8,19.44,c475,nalltogether.csv
+PSA,14,PSA PRJ,0.29,4.70%,12/12/2024,,,13.5,,25.08,18.25,c475,nalltogether.csv
+PSA,14,PSA PRK,0.3,4.75%,12/12/2024,,,13.5,,25.8,18.4,c475,nalltogether.csv
+PSA,14,PSA PRL,0.29,4.63%,12/12/2024,,,13.5,,24.84,18.17,c450,nalltogether.csv
+PSA,14,PSA PRM,0.26,4.13%,12/12/2024,,,13.5,,22.79,16.05,c400,nalltogether.csv
+PSA,14,PSA PRN,0.24,3.88%,12/12/2024,,,13.5,,21.02,15.12,c400,nalltogether.csv
+PSA,14,PSA PRO,0.24,3.90%,12/12/2024,11/17/2025,,13.5,,20.29,15.53,c400,nalltogether.csv
+PSA,14,PSA PRP,0.25,4.00%,12/12/2024,,,13.5,,20.88,15.54,c400,nalltogether.csv
+PSA,14,PSA PRQ,0.25,3.95%,12/12/2024,,,13.5,,20.84,15.31,c400,nalltogether.csv
+PSA,14,PSA PRR,0.25,4.00%,12/12/2024,,,13.5,,20.78,15.59,c400,nalltogether.csv
+PSA,14,PSA PRS,0.26,4.10%,12/12/2024,,,13.5,,21.15,15.83,c400,nalltogether.csv
+MS,9,MS PRK,0.37,5.85%,12/27/2024,,,11,,26.38,21.4,c575,nalltogether.csv
+MS,9,MS PRL,0.3,4.88%,12/27/2024,,,11,,24.0,18.32,c475,nalltogether.csv
+MS,9,MS PRO,0.27,4.25%,12/27/2024,,,11,,20.77,15.9,c425,nalltogether.csv
+MS,9,MS PRA,0.33,4.00%,06/27/2025,7/15/2011,NONE,11.0,,,,,nalltogether.csv
+MS,9,MS PRE,0.45,7.13%,06/27/2025,10/15/2023,NONE,11.0,,26.1,24.99,,nalltogether.csv
+MS,9,MS PRF,0.43,6.88%,06/27/2025,1/15/2024,NONE,11.0,,26.31,24.43,,nalltogether.csv
+MS,9,MS PRI,0.4,6.38%,06/27/2025,10/15/2024,NONE,11.0,,26.49,23.4,,nalltogether.csv
+MS,9,MS PRP,0.41,6.50%,06/27/2025,10/15/2027,NONE,11.0,,26.33,24.28,,nalltogether.csv
+MS,9,MS PRQ,0.41,6.63%,06/30/2025,10/15/2029,NONE,11.0,,,,,nalltogether.csv
+ECC,7,ECC PRD,0.14,6.75%,05/12/2025,11/29/2026,NONE,8.0,,23.19,19.6,,nnotheldpff.csv
+ECC,7,ECCC,0.14,6.50%,05/12/2025,6/16/2024,6/30/2031,8.0,,24.15,20.52,,nnotheldpff.csv
+ECC,7,ECCF,0.17,8.00%,05/12/2025,1/18/2026,1/31/2029,8.0,Term,,,,nnotheldpff.csv
+ECC,7,ECCU,0.15,7.75%,05/12/2025,6/30/2027,4/30/2030,8.0,,,,,nnotheldpff.csv
+ECC,7,ECCV,0.34,5.38%,06/13/2025,1/31/2025,1/31/2029,8.0,BB,22.84,21.11,,nnotheldpff.csv
+ECC,7,ECCW,0.42,6.75%,06/13/2025,3/29/2024,3/31/2031,8.0,BB,24.5,21.9,,nnotheldpff.csv
+ECC,7,ECCX,0.42,6.69%,06/12/2025,4/30/2021,4/30/2028,8.0,BB,24.91,23.24,,nnotheldpff.csv
+OXLC,7,OXLCG,0.68,7.95%,06/13/2025,2/28/2030,2/29/2032,8.0,,,,,nnotheldpff.csv
+OXLC,7,OXLCI,0.55,8.75%,06/13/2025,6/30/2028,6/30/2030,8.0,BB,,,,nnotheldpff.csv
+OXLC,7,OXLCL,0.42,6.75%,06/13/2025,3/16/2024,3/31/2031,8.0,BB,24.65,22.68,,nnotheldpff.csv
+OXLC,7,OXLCN,0.15,7.13%,05/16/2025,6/30/2024,6/30/2029,8.0,Term,24.6,22.92,,nnotheldpff.csv
+OXLC,7,OXLCO,0.13,6.00%,05/16/2025,8/31/2024,8/31/2029,8.0,,23.37,21.49,,nnotheldpff.csv
+OXLC,7,OXLCP,0.13,6.25%,05/16/2025,2/28/2023,2/28/2027,8.0,,24.0,22.74,,nnotheldpff.csv
+OXLC,7,OXLCZ,0.31,5.00%,06/13/2025,1/31/2024,1/31/2027,8.0,BB,23.69,22.31,,nnotheldpff.csv
+CIM,6,CIM PRA,0.5,8.00%,12/11/2024,10/21/2021,,NR,,22.82,18.15,c775,nalltogether.csv
+CIM,6,CIM PRB,0.65,8.00%,06/02/2025,3/30/2024,NONE,8.0,,,,,nalltogether.csv
+CIM,6,CIM PRC,0.48,7.75%,06/02/2025,9/30/2025,NONE,8.0,,,,,nalltogether.csv
+CIM,6,CIM PRD,0.64,8.00%,06/02/2025,3/30/2024,NONE,8.0,,,,,nalltogether.csv
+CIM,6,CIMN,0.56,9.00%,07/30/2025,5/15/2026,5/15/2029,8.0,BB,,,,nnotheldpff.csv
+CIM,6,CIMO,0.58,9.25%,07/30/2025,8/15/2026,8/15/2029,8.0,,,,,nnotheldpff.csv
+ETR,6,ELC,0.3,4.88%,11/29/2024,,,15,BB,25.3,20.02,c475,nalltogether.csv
+ETR,6,EMP,0.31,4.90%,12/27/2024,,,14.5,BB,25.3,20.07,c475,nalltogether.csv
+ETR,6,ENO,0.34,5.50%,12/27/2024,,,13,BB,25.4,20.75,c550,nalltogether.csv
+ETR,6,ENJ,0.31,5.00%,11/29/2024,12/1/2017,,14.5,BB,24.79,19.49,c500,nnotheldpff.csv
+ETR,6,ETI PR,0.34,5.38%,12/30/2024,,,10,,25.5,21.75,c525,nnotheldpff.csv
+ETR,6,ET PRI,0.21,9.25%,08/01/2025,Never,Never,8.0,,,,,nnotheldpff.csv
+JPM,6,JPM PRC,0.38,6.00%,10/29/2024,3/1/2024,,11.5,,26.1,24.11,c600,nalltogether.csv
+JPM,6,JPM PRD,0.36,5.75%,10/29/2024,12/1/2023,,11.5,,25.75,23.3,c550,nalltogether.csv
+JPM,6,JPM PRJ,0.3,4.75%,10/29/2024,,,11.5,,23.74,19.38,c475,nalltogether.csv
+JPM,6,JPM PRK,0.28,4.55%,10/29/2024,,,11.5,,21.65,18.67,c450,nalltogether.csv
+JPM,6,JPM PRL,0.29,4.63%,10/29/2024,,,11.5,,21.62,18.94,c450,nalltogether.csv
+JPM,6,JPM PRM,0.26,4.20%,10/29/2024,,,11.5,,20.7,17.17,c425,nalltogether.csv
+NYMT,6,NYMTL,0.43,6.88%,07/01/2025,10/15/2026,NONE,8.0,,,,,nalltogether.csv
+NYMT,6,NYMTM,0.69,7.88%,07/01/2025,1/15/2025,NONE,8.0,,,,,nalltogether.csv
+NYMT,6,NYMTN,0.5,8.00%,07/01/2025,10/15/2027,NONE,8.0,,,,,nalltogether.csv
+NYMT,6,NYMTZ,0.44,7.00%,1/2/2025,,,NR,,19.78,16.6,c700,nnotheldpff.csv
+NYMT,6,NYMTG,0.57,9.13%,03/14/2025,4/1/2027,4/1/2030,8.0,,,,,nnotheldpff.csv
+NYMT,6,NYMTI,0.57,9.13%,06/12/2025,7/1/2026,7/1/2029,8.0,BB,,,,nnotheldpff.csv
+PMT,6,PMT PRA,0.51,8.13%,05/28/2025,3/15/2024,NONE,8.0,,24.77,20.8,,nalltogether.csv
+PMT,6,PMT PRB,0.5,8.00%,05/28/2025,6/15/2024,NONE,8.0,,25.0,20.27,,nalltogether.csv
+PMT,6,PMT PRC,0.42,6.75%,05/28/2025,8/24/2026,NONE,8.0,,21.21,16.38,,nalltogether.csv
+PMT,6,PMTV,0.56,9.00%,06/13/2025,2/15/2027,2/15/2030,8.0,,,,,nalltogether.csv
+PMT,6,PMTW,0.56,9.00%,06/12/2025,6/15/2027,6/15/2030,8.0,BB,,,,nalltogether.csv
+PMT,6,PMTU,0.53,8.50%,06/13/2025,9/30/2025,9/30/2028,8.0,BB,,24.25,,nnotheldpff.csv
+COF,5,COF PRI,0.31,5.00%,11/13/2024,,,10,,23.21,16.12,c500,nalltogether.csv
+COF,5,COF PRJ,0.3,4.80%,11/13/2024,,,10,,21.9,15.54,c475,nalltogether.csv
+COF,5,COF PRK,0.29,4.63%,11/13/2024,,,10,,22.17,14.99,c450,nalltogether.csv
+COF,5,COF PRL,0.27,4.38%,11/13/2024,,,10,,20.06,13.84,c425,nalltogether.csv
+COF,5,COF PRN,0.27,4.25%,11/13/2024,,,10,,19.94,13.68,c425,nalltogether.csv
+SO,5,GPJA,0.31,5.00%,12/27/2024,,,11.5,BB,25.62,20.82,c500,nalltogether.csv
+SO,5,SOJC,0.33,5.25%,11/29/2024,,,11.5,BB,25.69,20.75,c525,nalltogether.csv
+SO,5,SOJD,0.31,4.95%,10/29/2024,,,11.5,BB,23.86,19.45,c500,nalltogether.csv
+SO,5,SOJE,0.26,4.20%,1/10/2025,,,11.5,BB,20.96,17.42,c425,nalltogether.csv
+SO,5,SOJF,0.41,6.50%,06/13/2025,3/15/2030,3/15/2085,12.0,BB,,,,nalltogether.csv
+USB,5,USB PRP,0.34,5.50%,12/30/2024,,,13.5,,25.25,19.75,c550,nalltogether.csv
+USB,5,USB PRQ,0.23,3.75%,12/27/2024,,,13.5,,19.57,13.5,c400,nalltogether.csv
+USB,5,USB PRR,0.25,4.00%,12/27/2024,,,13.5,,21.05,14.57,c400,nalltogether.csv
+USB,5,USB PRS,0.28,4.50%,12/27/2024,,,13.5,,22.08,16.44,c450,nalltogether.csv
+USB,5,USB PRH,0.32,3.50%,06/27/2025,4/15/2011,NONE,12.5,,,,,nalltogether.csv
+WFC,5,WFC PRA,0.29,4.70%,11/27/2024,12/15/2025,,11,,21.54,17.53,c475,nalltogether.csv
+WFC,5,WFC PRC,0.27,4.38%,11/27/2024,,,11,,20.19,16.05,c425,nalltogether.csv
+WFC,5,WFC PRD,0.27,4.25%,11/27/2024,,,11,,19.89,15.56,c425,nalltogether.csv
+WFC,5,WFC PRY,0.35,5.63%,11/27/2024,,,11,,25.36,21.19,c550,nalltogether.csv
+WFC,5,WFC PRZ,0.3,4.75%,11/27/2024,,,11,,21.8,17.49,c475,nalltogether.csv
+AGNC,5,AGNCL,0.48,7.75%,07/01/2025,10/15/2027,NONE,8.0,,,,,nalltogether.csv
+AGNC,5,AGNCM,0.56,6.88%,07/01/2025,4/15/2024,NONE,8.0,,,,,nalltogether.csv
+AGNC,5,AGNCN,0.61,7.00%,07/01/2025,10/15/2022,NONE,8.0,,,,,nalltogether.csv
+AGNC,5,AGNCO,0.6,6.50%,07/01/2025,10/15/2024,NONE,8.0,,,,,nalltogether.csv
+AGNC,5,AGNCP,0.38,6.13%,07/01/2025,4/15/2025,NONE,8.0,,,,,nalltogether.csv
+MITT,5,MITN,0.59,9.50%,08/01/2025,2/15/2026,2/15/2029,8.0,BB,,,,nnotheldpff.csv
+MITT,5,MITP,0.59,9.50%,07/30/2025,5/15/2026,5/15/2029,8.0,BB,,,,nnotheldpff.csv
+MITT,5,MITT PRA,0.52,8.25%,05/30/2025,9/17/2024,NONE,8.0,,20.45,17.36,,nnotheldpff.csv
+MITT,5,MITT PRB,0.5,8.00%,05/30/2025,9/27/2017,NONE,8.0,,20.19,16.46,,nnotheldpff.csv
+MITT,5,MITT PRC,0.71,8.00%,05/30/2025,8/3/2017,NONE,8.0,,,,,nnotheldpff.csv
+AFG,4,AFGB,0.37,5.88%,12/13/2024,,,11.5,BB,26.83,21.4,c575,nalltogether.csv
+AFG,4,AFGC,0.32,5.13%,11/29/2024,,,11.5,BB,26.22,18.46,c500,nalltogether.csv
+AFG,4,AFGD,0.35,5.63%,11/15/2024,,,11.5,BB,25.56,20.36,c550,nalltogether.csv
+AFG,4,AFGE,0.28,4.50%,11/29/2024,,,11.5,BB,22.31,16.58,c450,nalltogether.csv
+AGM,4,AGM PRD,0.36,5.70%,12/27/2024,,,NR,,25.28,21.04,c550,nalltogether.csv
+AGM,4,AGM PRF,0.33,5.25%,12/27/2024,,,NR,,22.5,19.9,c525,nalltogether.csv
+AGM,4,AGM PRG,0.3,4.88%,12/27/2024,,,NR,,21.8,18.2,c475,nalltogether.csv
+AGM,4,AGM PRE,0.36,5.75%,12/27/2024,,,NR,,24.9,21.55,c550,nnotheldpff.csv
+ALL,4,ALL PRH,0.32,5.10%,12/27/2024,,,12,,24.78,18.74,c500,nalltogether.csv
+ALL,4,ALL PRI,0.3,4.75%,12/27/2024,,,12,,24.92,17.85,c475,nalltogether.csv
+ALL,4,ALL PRB,0.48,5.10%,06/27/2025,1/15/2023,1/15/2053,12.5,,,,,nalltogether.csv
+ALL,4,ALL PRJ,0.46,7.38%,06/27/2025,7/15/2028,NONE,12.0,,,25.29,,nalltogether.csv
+CMS,4,CMS PRC,0.26,4.20%,1/2/2025,,,10.5,,20.81,17.98,c425,nalltogether.csv
+CMS,4,CMSA,0.35,5.63%,11/29/2024,3/15/2023,,11.5,BB,26.19,21.25,c550,nalltogether.csv
+CMS,4,CMSC,0.37,5.88%,12/27/2024,10/15/2023,,11.5,BB,25.19,21.74,c575,nalltogether.csv
+CMS,4,CMSD,0.37,5.88%,11/15/2024,,,11.5,BB,25.59,21.91,c575,nalltogether.csv
+KEY,4,KEY PRJ,0.35,5.65%,11/27/2024,,,10.5,,25.36,16.17,c550,nalltogether.csv
+KEY,4,KEY PRK,0.35,5.63%,11/27/2024,,,10.5,,26.17,16.05,c550,nalltogether.csv
+KEY,4,KEY PRI,0.38,6.13%,05/28/2025,12/15/2026,NONE,10.5,,,,,nalltogether.csv
+KEY,4,KEY PRL,0.39,6.20%,05/28/2025,9/15/2027,NONE,10.5,,,,,nalltogether.csv
+MFA,4,MFA PRB,0.47,7.50%,11/27/2024,4/15/2018,,NR,,21.92,18.34,c750,nalltogether.csv
+MFA,4,MFA PRC,0.41,6.50%,06/02/2025,3/31/2025,NONE,8.0,,,,,nalltogether.csv
+MFA,4,MFAN,0.56,8.88%,08/01/2025,2/15/2026,2/15/2029,8.0,BB,,,,nalltogether.csv
+MFA,4,MFAO,0.56,9.00%,07/30/2025,8/15/2026,8/15/2029,8.0,BB,,,,nnotheldpff.csv
+AMG,4,MGR,0.37,5.88%,12/27/2024,,,12,BB,26.29,19.6,c575,nalltogether.csv
+AMG,4,MGRB,0.3,4.75%,12/27/2024,,,12,BB,22.01,16.09,c475,nalltogether.csv
+AMG,4,MGRD,0.26,4.20%,12/27/2024,,,12,BB,19.5,15.18,c425,nalltogether.csv
+AMG,4,MGRE,0.42,6.75%,06/26/2025,3/30/2029,3/30/2064,12.0,BB,,,,nalltogether.csv
+PEB,4,PEB PRE,0.4,6.38%,12/27/2024,,,NR,,24.71,18.32,c625,nalltogether.csv
+PEB,4,PEB PRF,0.39,6.30%,12/27/2024,,,NR,,23.52,18.56,c625,nalltogether.csv
+PEB,4,PEB PRG,0.4,6.38%,12/27/2024,,,NR,,23.4,18.0,c625,nalltogether.csv
+PEB,4,PEB PRH,0.36,5.70%,12/27/2024,,,NR,,21.01,16.38,c550,nalltogether.csv
+VNO,4,VNO PRL,0.34,5.40%,12/13/2024,,,10.5,,24.16,13.75,c525,nalltogether.csv
+VNO,4,VNO PRM,0.33,5.25%,12/13/2024,,,10.5,,23.4,13.71,c525,nalltogether.csv
+VNO,4,VNO PRN,0.33,5.25%,12/13/2024,,,10.5,,22.92,13.76,c525,nalltogether.csv
+VNO,4,VNO PRO,0.28,4.50%,12/13/2024,,,10.5,,19.7,11.6,c450,nalltogether.csv
+WRB,4,WRB PRE,0.36,5.70%,12/13/2024,,,11.5,BB,25.59,21.77,c550,nalltogether.csv
+WRB,4,WRB PRF,0.32,5.10%,12/13/2024,,,11.5,BB,24.51,18.93,c500,nalltogether.csv
+WRB,4,WRB PRG,0.27,4.25%,12/13/2024,,,11.5,BB,21.25,17.35,c425,nalltogether.csv
+WRB,4,WRB PRH,0.26,4.13%,12/13/2024,,,11.5,BB,20.85,15.6,c400,nalltogether.csv
+EFC,4,EFC PRA,0.61,6.75%,06/27/2025,10/30/2024,NONE,8.0,,,,,nalltogether.csv
+EFC,4,EFC PRB,0.39,6.25%,06/27/2025,1/30/2027,NONE,8.0,,,,,nalltogether.csv
+EFC,4,EFC PRC,0.54,8.63%,06/27/2025,4/30/2028,,8.0,,,,,nalltogether.csv
+EFC,4,EFC PRD,0.44,7.00%,06/18/2025,5/12/2022,NONE,8.0,,,,,nnotheldpff.csv
+GAIN,4,GAINI,0.49,7.88%,07/14/2025,2/1/2027,2/1/2030,8.0,,,,,nalltogether.csv
+GAIN,4,GAINN,0.31,5.00%,07/11/2025,5/1/2023,5/1/2026,8.0,BB,23.85,23.23,,nalltogether.csv
+GAIN,4,GAINZ,0.31,4.75%,07/11/2025,11/1/2023,11/1/2028,8.0,BB,23.45,21.85,,nalltogether.csv
+GAIN,4,GAINL,0.5,8.00%,07/15/2025,8/1/2025,8/1/2028,8.0,BB,,25.07,,nnotheldpff.csv
+GNL,4,GNL PRA,0.45,7.25%,07/02/2025,9/12/2022,NONE,8.0,,25.75,16.96,,nalltogether.csv
+GNL,4,GNL PRB,0.43,6.88%,07/02/2025,11/26/2024,NONE,8.0,,26.04,16.01,,nalltogether.csv
+GNL,4,GNL PRD,0.47,7.50%,07/03/2025,3/26/2024,NONE,8.0,,,17.92,,nalltogether.csv
+GNL,4,GNL PRE,0.46,7.38%,07/03/2025,12/15/2025,NONE,8.0,,,17.64,,nalltogether.csv
+NEWT,4,NEWTZ,0.34,5.50%,07/11/2025,2/1/2022,2/1/2026,8.0,,24.46,23.61,,nalltogether.csv
+NEWT,4,NEWTG,0.53,8.50%,05/30/2025,6/1/2027,6/1/2029,8.0,BB,,,,nnotheldpff.csv
+NEWT,4,NEWTH,0.54,8.63%,07/14/2025,10/15/2026,10/15/2029,8.0,BB,,,,nnotheldpff.csv
+NEWT,4,NEWTI,0.5,8.00%,05/15/2025,9/1/2025,9/1/2028,8.0,BB,,24.8,,nnotheldpff.csv
+RITM,4,RITM PRA,0.64,7.50%,07/25/2025,8/15/2024,NONE,8.0,,,,,nalltogether.csv
+RITM,4,RITM PRB,0.63,7.13%,07/25/2025,8/15/2024,NONE,8.0,,,,,nalltogether.csv
+RITM,4,RITM PRC,0.59,6.38%,07/25/2025,2/15/2025,NONE,8.0,,,,,nalltogether.csv
+RITM,4,RITM PRD,0.44,7.00%,07/25/2025,11/15/2026,NONE,8.0,,,,,nalltogether.csv
+SAR,4,SAT,0.38,6.00%,05/15/2025,4/27/2024,4/30/2027,8.0,BB,24.99,23.3,,nalltogether.csv
+SAR,4,SAJ,0.5,8.00%,05/15/2025,10/27/2024,10/31/2027,8.0,BB,,24.68,,nnotheldpff.csv
+SAR,4,SAY,0.51,8.13%,05/15/2025,12/13/2024,12/31/2027,8.0,BB,,25.01,,nnotheldpff.csv
+SAR,4,SAZ,0.53,8.50%,05/15/2025,4/14/2025,4/15/2028,8.0,BB,,25.03,,nnotheldpff.csv
+TWO,4,TWO PRA,0.51,8.13%,07/10/2025,4/26/2027,NONE,8.0,,,,,nalltogether.csv
+TWO,4,TWO PRB,0.48,7.63%,07/10/2025,7/27/2027,NONE,8.0,,,,,nalltogether.csv
+TWO,4,TWO PRC,0.6,7.25%,07/10/2025,1/27/2025,NONE,8.0,,,,,nalltogether.csv
+TWO,4,TWOD,0.59,9.38%,08/01/2025,5/15/2027,8/15/2030,8.0,BB,,,,nalltogether.csv
+GECC,4,GECCH,0.5,8.13%,06/13/2025,12/30/2026,12/31/2029,8.0,BB,,,,nnotheldpff.csv
+GECC,4,GECCI,0.53,8.50%,06/13/2025,4/30/2026,4/30/2029,8.0,,,,,nnotheldpff.csv
+GECC,4,GECCO,0.36,5.88%,06/13/2025,6/30/2023,6/30/2026,8.0,BB,24.75,24.05,,nnotheldpff.csv
+GECC,4,GECCZ,0.54,8.75%,06/13/2025,9/30/2025,9/30/2028,8.0,BB,,24.64,,nnotheldpff.csv
+RWT,4,RWT PRA,0.63,10.00%,06/27/2025,4/15/2028,NONE,8.0,,,,,nnotheldpff.csv
+RWT,4,RWTN,0.57,9.13%,05/15/2025,3/1/2026,3/1/2029,8.0,BB,,,,nnotheldpff.csv
+RWT,4,RWTO,0.56,9.00%,05/15/2025,9/1/2026,9/1/2029,8.0,BB,,,,nnotheldpff.csv
+RWT,4,RWTP,0.85,9.13%,05/15/2025,3/1/2027,3/1/2030,8.0,,,,,nnotheldpff.csv
+ASB,3,ASB PRE,0.37,5.88%,12/2/2024,,,10,,25.1,16.77,c575,nalltogether.csv
+ASB,3,ASB PRF,0.35,5.63%,12/2/2024,,,10,,25.25,16.4,c550,nalltogether.csv
+ASB,3,ASBA,0.41,6.63%,05/15/2025,3/1/2028,3/1/2033,11.0,,,,,nalltogether.csv
+DLR,3,DLR PRJ,0.33,5.25%,12/13/2024,,,10.5,,25.38,19.55,c525,nalltogether.csv
+DLR,3,DLR PRK,0.37,5.88%,12/13/2024,,,10.5,,26.4,22.0,c575,nalltogether.csv
+DLR,3,DLR PRL,0.33,5.20%,12/13/2024,,,10.5,,25.37,19.32,c525,nalltogether.csv
+DTE,3,DTB,0.27,4.38%,12/27/2024,,,11.5,BB,22.29,17.3,c425,nalltogether.csv
+DTE,3,DTG,0.27,4.38%,11/15/2024,,,11.5,BB,20.89,17.32,c425,nalltogether.csv
+DTE,3,DTW,0.33,5.25%,11/15/2024,12/1/2022,,11.5,BB,25.42,20.88,c525,nalltogether.csv
+F,3,F PRB,0.39,6.20%,11/12/2024,6/1/2024,,9.5,BB,26.79,20.83,c625,nalltogether.csv
+F,3,F PRC,0.38,6.00%,11/12/2024,12/1/2024,,9,BB,25.99,20.49,c600,nalltogether.csv
+F,3,F PRD,0.4,6.50%,04/30/2025,8/15/2027,8/15/2062,9.0,BB,,20.79,,nalltogether.csv
+FHN,3,FHN PRF,0.29,4.70%,12/20/2024,,,8.5,,,,c475,nalltogether.csv
+FHN,3,FHN PRE,0.41,6.50%,06/25/2025,10/10/2025,NONE,8.5,,,,,nalltogether.csv
+FHN,3,FHN PRC,0.41,6.60%,07/17/2025,5/1/2026,NONE,8.5,,,,,nnotheldpff.csv
+FITB,3,FITBO,0.31,4.95%,12/26/2024,,,10.5,,25.79,17.93,c500,nalltogether.csv
+FITB,3,FITBP,0.38,6.00%,12/26/2024,,,NR,,25.6,22.13,c600,nalltogether.csv
+FITB,3,FITBI,0.52,6.63%,06/26/2025,12/31/2023,NONE,10.5,,,,,nalltogether.csv
+HBAN,3,HBANM,0.36,5.70%,11/15/2024,12/1/2022,,9,,25.47,17.8,c550,nalltogether.csv
+HBAN,3,HBANP,0.28,4.50%,1/2/2025,,,10,,20.81,14.07,c450,nalltogether.csv
+HBAN,3,HBANL,0.43,6.88%,07/01/2025,4/15/2028,NONE,10.5,,,,,nalltogether.csv
+MBIN,3,MBINN,0.38,6.00%,12/13/2024,,,NR,,24.23,16.5,c600,nalltogether.csv
+MBIN,3,MBINL,0.48,7.63%,06/12/2025,1/1/2030,NONE,8.0,,,,,nalltogether.csv
+MBIN,3,MBINM,0.52,8.25%,06/13/2025,10/1/2027,NONE,8.0,,,,,nalltogether.csv
+MET,3,MET PRE,0.35,5.63%,11/27/2024,,,12,,26.5,21.22,c550,nalltogether.csv
+MET,3,MET PRF,0.3,4.75%,11/27/2024,,,12,,24.56,18.5,c475,nalltogether.csv
+MET,3,MET PRA,0.36,4.00%,05/30/2025,9/15/2010,NONE,11.5,,,,,nalltogether.csv
+PRU,3,PFH,0.26,4.13%,11/15/2024,9/1/2025,,13,BB,22.61,17.35,c400,nalltogether.csv
+PRU,3,PRH,0.37,5.95%,11/15/2024,,,13,BB,,23.79,c575,nalltogether.csv
+PRU,3,PRS,0.35,5.63%,11/1/2024,8/15/2023,,13,BB,26.16,22.52,c550,nalltogether.csv
+RF,3,RF PRE,0.28,4.45%,11/27/2024,,,10,,20.69,15.45,c450,nalltogether.csv
+RF,3,RF PRC,0.36,5.70%,07/09/2025,8/15/2029,NONE,10.5,,,,,nalltogether.csv
+RF,3,RF PRF,0.43,6.95%,06/02/2025,9/15/2029,NONE,10.5,,,,,nalltogether.csv
+SF,3,SF PRB,0.39,6.25%,12/2/2024,,,8,,26.94,22.01,c625,nalltogether.csv
+SF,3,SF PRC,0.38,6.13%,12/2/2024,,,8,,27.0,22.12,c625,nalltogether.csv
+SF,3,SF PRD,0.28,4.50%,12/2/2024,,,8,,20.54,15.64,c450,nalltogether.csv
+T,3,T PRA,0.31,5.00%,1/7/2025,12/12/2024,,10,,23.49,18.31,c500,nalltogether.csv
+T,3,T PRC,0.3,4.75%,1/7/2025,2/18/2025,,10,,21.55,17.25,c475,nalltogether.csv
+T,3,TBB,0.33,5.35%,10/17/2024,,,12,BB,24.98,20.32,c525,nalltogether.csv
+TFC,3,TFC PRO,0.33,5.25%,11/8/2024,,,11.5,,25.2,19.78,c525,nalltogether.csv
+TFC,3,TFC PRR,0.3,4.75%,11/8/2024,,,11.5,,22.49,17.71,c475,nalltogether.csv
+TFC,3,TFC PRI,0.32,4.00%,08/08/2025,9/15/2011,NONE,11.5,,,,,nalltogether.csv
+ABR,3,ABR PRD,0.4,6.38%,06/17/2025,6/2/2026,NONE,8.0,,21.35,16.6,,nalltogether.csv
+ABR,3,ABR PRE,0.39,6.25%,06/17/2025,8/11/2026,NONE,8.0,,21.35,16.6,,nalltogether.csv
+ABR,3,ABR PRF,0.39,6.25%,07/11/2025,10/30/2026,NONE,8.0,,,,,nalltogether.csv
+ATLC,3,ATLCL,0.38,6.13%,07/11/2025,10/2/2026,12/31/2026,8.0,,24.52,21.61,,nalltogether.csv
+ATLC,3,ATLCZ,0.58,9.25%,07/01/2025,1/31/2028,1/31/2029,8.0,BB,,,,nalltogether.csv
+ATLC,3,ATLCP,0.48,7.63%,05/30/2025,6/11/2026,NONE,8.0,,24.15,20.61,,nnotheldpff.csv
+GS,3,GS PRA,0.34,3.75%,07/24/2025,4/10/2010,NONE,9.5,,,,,nalltogether.csv
+GS,3,GS PRC,0.34,4.00%,07/24/2025,5/24/2011,NONE,9.5,,,,,nalltogether.csv
+GS,3,GS PRD,0.33,4.00%,07/24/2025,10/31/2010,NONE,9.5,,,,,nalltogether.csv
+NLY,3,NLY PRF,0.6,6.95%,06/02/2025,9/30/2022,NONE,8.0,,,,,nalltogether.csv
+NLY,3,NLY PRG,0.55,6.50%,06/02/2025,3/31/2023,NONE,8.0,,,,,nalltogether.csv
+NLY,3,NLY PRI,0.6,6.75%,06/02/2025,6/30/2024,NONE,8.0,,,,,nalltogether.csv
+VLY,3,VLYPN,0.52,8.25%,06/12/2025,9/30/2029,NONE,8.0,,,,,nalltogether.csv
+VLY,3,VLYPO,0.52,5.50%,06/13/2025,9/30/2022,NONE,8.0,,,,,nalltogether.csv
+VLY,3,VLYPP,0.39,6.25%,06/13/2025,6/30/2025,NONE,8.0,,,,,nalltogether.csv
+GAB,3,GAB PRG,0.31,5.00%,12/16/2024,,,16,,24.5,21.0,c500,nnotheldpff.csv
+GAB,3,GAB PRH,0.31,5.00%,12/16/2024,,,16,,23.89,20.98,c500,nnotheldpff.csv
+GAB,3,GAB PRK,0.31,5.00%,12/16/2024,,,16,,24.4,21.23,c500,nnotheldpff.csv
+CMRE,3,CMRE PRB,0.48,7.63%,07/10/2025,8/6/2018,NONE,8.0,,25.18,24.82,,nnotheldpff.csv
+CMRE,3,CMRE PRC,0.53,8.50%,07/10/2025,1/21/2019,NONE,8.0,,25.32,25.17,,nnotheldpff.csv
+CMRE,3,CMRE PRD,0.55,8.75%,07/10/2025,5/13/2020,NONE,8.0,,25.83,25.07,,nnotheldpff.csv
+EIC,3,EICA,0.1,5.00%,05/12/2025,10/31/2023,10/30/2026,8.0,Term,23.25,22.68,,nnotheldpff.csv
+EIC,3,EICB,0.16,7.75%,05/12/2025,7/31/2025,7/31/2028,8.0,Term,,24.42,,nnotheldpff.csv
+EIC,3,EICC,0.17,8.00%,05/12/2025,4/3/2026,4/30/2029,8.0,Term,,,,nnotheldpff.csv
+OCCI,3,OCCIM,0.16,7.88%,05/20/2025,10/31/2026,10/31/2029,8.0,Term,,,,nnotheldpff.csv
+OCCI,3,OCCIN,0.11,5.25%,05/20/2025,12/31/2023,12/31/2026,8.0,,22.99,22.07,,nnotheldpff.csv
+OCCI,3,OCCIO,0.13,6.13%,05/20/2025,4/30/2023,4/30/2026,8.0,,24.87,23.35,,nnotheldpff.csv
+ACGL,2,ACGLN,0.28,4.55%,12/13/2024,,,12,,21.7,16.62,c450,nalltogether.csv
+ACGL,2,ACGLO,0.34,5.45%,12/13/2024,,,11.5,,24.93,19.34,c550,nalltogether.csv
+AMH,2,AMH PRG,0.37,5.88%,12/13/2024,,,9,,25.47,21.43,c575,nalltogether.csv
+AMH,2,AMH PRH,0.39,6.25%,12/13/2024,,,9,,25.85,22.38,c625,nalltogether.csv
+BFS,2,BFS PRD,0.38,6.13%,12/27/2024,,,NR,,24.15,19.3,c625,nalltogether.csv
+BFS,2,BFS PRE,0.38,6.00%,12/27/2024,,,NR,,24.6,18.93,c600,nalltogether.csv
+BOH,2,BOH PRA,0.27,4.38%,10/17/2024,8/1/2026,,12,,20.44,13.05,c425,nalltogether.csv
+BOH,2,BOH PRB,0.5,8.00%,07/14/2025,8/1/2029,NONE,9.5,,,,,nalltogether.csv
+CFG,2,CFG PRE,0.31,5.00%,12/18/2024,,,10,,22.34,16.2,c500,nalltogether.csv
+CFG,2,CFG PRH,0.46,7.38%,06/20/2025,7/6/2029,NONE,10.5,,,,,nalltogether.csv
+DCOM,2,DCOMP,0.34,5.50%,11/5/2024,2/15/2025,,8,,22.38,14.51,c550,nalltogether.csv
+DCOM,2,DCOMG,0.56,9.00%,06/30/2025,7/15/2029,7/15/2034,10.0,,,,,nalltogether.csv
+DUK,2,DUK PRA,0.36,5.75%,11/15/2024,,,11,,26.49,22.91,c550,nalltogether.csv
+DUK,2,DUKB,0.35,5.63%,12/13/2024,,,12,BB,26.08,21.93,c550,nalltogether.csv
+EQH,2,EQH PRA,0.33,5.25%,11/29/2024,,,10.5,,23.77,17.79,c525,nalltogether.csv
+EQH,2,EQH PRC,0.27,4.30%,11/29/2024,,,10.5,,21.08,13.95,c425,nalltogether.csv
+FCNCA,2,FCNCO,0.35,5.63%,11/27/2024,,,9.5,,24.08,19.4,c550,nalltogether.csv
+FCNCA,2,FCNCP,0.34,5.38%,11/27/2024,,,9.5,,23.66,18.85,c525,nalltogether.csv
+INN,2,INN PRE,0.39,6.25%,11/13/2024,11/13/2022,,NR,,21.22,18.14,c625,nalltogether.csv
+INN,2,INN PRF,0.37,5.88%,11/13/2024,8/12/2026,,NR,,21.02,18.07,c575,nalltogether.csv
+KIM,2,KIM PRL,0.32,5.13%,12/27/2024,,,11.5,,25.42,19.2,c500,nalltogether.csv
+KIM,2,KIM PRM,0.33,5.25%,12/27/2024,,,11.5,,25.4,19.83,c525,nalltogether.csv
+NEE,2,NEE PRN,0.35,5.65%,11/27/2024,,,12,BB,26.15,22.13,c550,nalltogether.csv
+NEE,2,NEE PRU,0.41,6.50%,08/29/2025,6/01/2030,6/01/2085,12.0,BB,,,,nalltogether.csv
+REG,2,REGCO,0.37,5.88%,10/16/2024,,,NR,,,21.85,c575,nalltogether.csv
+REG,2,REGCP,0.39,6.25%,10/16/2024,,,NR,,,23.1,c625,nalltogether.csv
+RNR,2,RNR PRF,0.36,5.75%,11/27/2024,,,12,,25.11,20.71,c550,nalltogether.csv
+RNR,2,RNR PRG,0.26,4.20%,11/27/2024,,,12,,20.02,15.35,c425,nalltogether.csv
+SCHW,2,SCHW PRD,0.37,5.95%,11/13/2024,,,12,,25.94,22.65,c575,nalltogether.csv
+SCHW,2,SCHW PRJ,0.28,4.45%,11/13/2024,,,12,,23.4,16.75,c450,nalltogether.csv
+SHO,2,SHO PRH,0.38,6.13%,12/27/2024,,,NR,,23.75,20.4,c625,nalltogether.csv
+SHO,2,SHO PRI,0.36,5.70%,12/27/2024,,,NR,,22.98,19.43,c550,nalltogether.csv
+SYF,2,SYF PRA,0.35,5.63%,10/30/2024,11/15/2024,,NR,,22.14,15.28,c550,nalltogether.csv
+SYF,2,SYF PRB,0.52,8.25%,08/04/2025,5/15/2029,NONE,8.0,,,,,nalltogether.csv
+TDS,2,TDS PRU,0.41,6.63%,12/13/2024,,,7,,24.25,14.26,c650,nalltogether.csv
+TDS,2,TDS PRV,0.38,6.00%,12/13/2024,9/30/2026,,7,,22.28,12.88,c600,nalltogether.csv
+WBS,2,WBS PRF,0.33,5.25%,12/2/2024,,,10,,24.4,15.52,c525,nalltogether.csv
+WBS,2,WBS PRG,0.41,6.50%,06/30/2025,4/15/2018,NONE,10.0,,25.24,20.25,,nalltogether.csv
+ACR,2,ACR PRC,0.64,8.63%,07/01/2025,7/30/2024,NONE,8.0,,,,,nalltogether.csv
+ACR,2,ACR PRD,0.49,7.88%,07/01/2025,5/21/2026,NONE,8.0,,20.5,18.57,,nalltogether.csv
+BC,2,BC PRA,0.4,6.50%,06/29/2025,10/15/2023,10/15/2048,11.5,BB,26.22,22.5,,nalltogether.csv
+BC,2,BC PRC,0.39,6.38%,06/29/2025,4/15/2024,4/15/2049,11.5,BB,25.99,22.33,,nalltogether.csv
+FG,2,FGN,0.5,7.95%,05/30/2025,12/15/2028,12/15/2053,11.0,BB,,,,nalltogether.csv
+FG,2,FGSN,0.46,7.30%,07/01/2025,1/15/2030,1/15/2065,8.5,,,,,nalltogether.csv
+MTB,2,MTB PRH,0.35,5.63%,06/02/2025,12/15/2026,NONE,10.5,,,,,nalltogether.csv
+MTB,2,MTB PRJ,0.47,7.50%,06/02/2025,6/15/2029,NONE,10.5,,,,,nalltogether.csv
+ONB,2,ONBPO,0.44,7.00%,08/01/2025,8/20/2025,NONE,9.0,,,,,nalltogether.csv
+ONB,2,ONBPP,0.44,7.00%,08/01/2025,8/20/2025,NONE,9.0,,26.93,22.98,,nalltogether.csv
+RGA,2,RZB,0.36,5.75%,05/30/2025,6/15/2026,6/15/2056,12.0,,,,,nalltogether.csv
+RGA,2,RZC,0.45,7.13%,06/27/2025,10/15/2027,10/15/2052,12.0,,,,,nalltogether.csv
+SEAL,2,SEAL PRA,0.56,9.00%,06/27/2025,10/5/2021,NONE,8.0,,,,,nalltogether.csv
+SEAL,2,SEAL PRB,0.53,8.50%,06/27/2025,10/15/2027,NONE,8.0,,,,,nalltogether.csv
+SNV,2,SNV PRD,0.5,6.30%,06/13/2025,6/21/2023,NONE,8.0,,,,,nalltogether.csv
+SNV,2,SNV PRE,0.53,5.88%,06/13/2025,7/1/2024,NONE,8.0,,,,,nalltogether.csv
+GOOGL,2,TVC,0.13,2.13%,05/30/2025,,6/1/2028,19.5,,,,,nalltogether.csv
+GOOGL,2,TVE,0.14,2.22%,07/28/2025,,5/1/2029,19.5,,,,,nalltogether.csv
+CUBI,2,CUBB,0.34,5.38%,12/13/2024,,,NR,BB,23.56,18.75,c525,nnotheldpff.csv
+CUBI,2,CUBI PRF,0.59,6.00%,05/30/2025,12/14/2021,NONE,8.0,,,,,nnotheldpff.csv
+GDV,2,GDV PRH,0.34,5.38%,12/16/2024,,,17,,25.85,22.55,c525,nnotheldpff.csv
+GDV,2,GDV PRK,0.27,4.25%,12/13/2024,,,17,,20.82,17.65,c425,nnotheldpff.csv
+GGT,2,GGT PRE,0.32,5.13%,12/16/2024,,,15,,24.85,22.98,c500,nnotheldpff.csv
+GGT,2,GGT PRG,0.32,5.13%,12/16/2024,12/20/2024,,15,,24.59,22.95,c500,nnotheldpff.csv
+OPP,2,OPP PRA,0.27,4.38%,11/1/2024,,,16,,20.87,16.98,c425,nnotheldpff.csv
+OPP,2,OPP PRB,0.3,4.75%,11/1/2024,2/15/2027,,16,,21.43,18.7,c475,nnotheldpff.csv
+REXR,2,REXR PRB,0.37,5.88%,12/13/2024,,,NR,,25.39,21.16,c575,nnotheldpff.csv
+REXR,2,REXR PRC,0.35,5.63%,11/15/2024,,,NR,,26.1,20.05,c550,nnotheldpff.csv
+AOMR,2,AOMN,0.59,9.50%,07/14/2025,7/30/2026,7/30/2029,8.0,BB,,,,nnotheldpff.csv
+AOMR,2,AOMD,0.61,9.75%,07/15/2025,6/01/2027,6/01/2030,8.0,BB,,,,nnotheldpff.csv
+CHMI,2,CHMI PRA,0.51,8.20%,06/27/2025,8/17/2022,NONE,8.0,,22.65,19.6,,nnotheldpff.csv
+CHMI,2,CHMI PRB,0.64,8.25%,06/27/2025,4/5/2024,NONE,8.0,,,,,nnotheldpff.csv
+HROW,2,HROWL,0.54,8.63%,07/11/2025,2/1/2026,4/30/2026,8.0,BB,24.39,23.7,,nnotheldpff.csv
+HROW,2,HROWM,0.74,11.88%,07/11/2025,12/31/2024,12/31/2027,8.0,BB,,25.2,,nnotheldpff.csv
+HRZN,2,HTFB,0.31,4.88%,06/13/2025,3/30/2023,3/30/2026,8.0,BB,24.49,23.53,,nnotheldpff.csv
+HRZN,2,HTFC,0.39,4.88%,06/13/2025,6/15/2024,6/15/2027,8.0,BB,25.25,24.2,,nnotheldpff.csv
+METC,2,METCL,0.56,9.00%,07/15/2025,7/30/2023,7/30/2026,8.0,BB,26.32,25.45,,nnotheldpff.csv
+METC,2,METCZ,0.52,8.38%,04/15/2025,11/30/2026,11/30/2029,8.0,,,,,nnotheldpff.csv
+OXSQ,2,OXSQG,0.34,5.50%,06/20/2025,5/31/2024,7/31/2028,8.0,BB,23.55,21.5,,nnotheldpff.csv
+OXSQ,2,OXSQZ,0.39,6.25%,06/20/2025,4/30/2022,4/30/2026,8.0,BB,24.7,23.48,,nnotheldpff.csv
+RWAY,2,RWAYL,0.47,7.50%,05/15/2025,7/28/2024,7/28/2027,8.0,BB,25.4,24.3,,nnotheldpff.csv
+RWAY,2,RWAYZ,0.5,8.00%,05/15/2025,12/31/2024,12/31/2027,8.0,BB,,24.52,,nnotheldpff.csv
+SB,2,SB PRC,0.5,8.00%,07/16/2025,5/31/2019,NONE,8.0,,25.2,24.98,,nnotheldpff.csv
+SB,2,SB PRD,0.5,8.00%,07/16/2025,6/30/2019,NONE,8.0,,,,,nnotheldpff.csv
+XOMA,2,XOMAO,0.52,8.38%,06/30/2025,4/15/2022,NONE,8.0,,25.3,22.56,,nnotheldpff.csv
+XOMA,2,XOMAP,0.54,8.63%,06/30/2025,12/15/2021,NONE,8.0,,25.92,22.76,,nnotheldpff.csv
+ADC,1,ADC PRA,0.27,4.25%,10/22/2024,,,11,,20.92,15.83,c425,nalltogether.csv
+AEG,1,AEFC,0.32,5.10%,11/29/2024,12/15/2024,,12.5,BB,24.32,18.56,c500,nalltogether.csv
+AHH,1,AHH PRA,0.42,6.75%,1/2/2025,,,NR,,26.43,20.5,c675,nalltogether.csv
+AIZ,1,AIZN,0.33,5.25%,12/27/2024,,,10,BB,24.0,17.74,c525,nalltogether.csv
+AXS,1,AXS PRE,0.34,5.50%,12/26/2024,,,11.5,,24.04,19.26,c550,nalltogether.csv
+CADE,1,CADE PRA,0.34,5.50%,11/1/2024,11/20/2024,,NR,,24.16,16.69,c550,nalltogether.csv
+CFR,1,CFR PRB,0.28,4.45%,11/27/2024,,,11.5,,21.8,15.89,c450,nalltogether.csv
+CIO,1,CIO PRA,0.41,6.63%,1/8/2025,9/15/2021,,NR,,24.0,15.06,c650,nalltogether.csv
+CLDT,1,CLDT PRA,0.41,6.63%,12/27/2024,,,NR,,24.33,19.64,c650,nalltogether.csv
+CNO,1,CNO PRA,0.32,5.13%,11/15/2024,11/25/2025,,NR,BB,22.08,14.95,c500,nalltogether.csv
+FBRT,1,FBRT PRE,0.47,7.50%,12/27/2024,,,NR,,21.68,18.2,c750,nalltogether.csv
+FRT,1,FRT PRC,0.31,5.00%,1/2/2025,,,12.5,,25.75,19.64,c500,nalltogether.csv
+FULT,1,FULTP,0.32,5.13%,12/2/2024,,,11,,23.1,15.09,c500,nalltogether.csv
+HIG,1,HIG PRG,0.38,6.00%,11/1/2024,11/15/2023,,11,,26.6,22.89,c600,nalltogether.csv
+HWC,1,HWCPZ,0.39,6.25%,11/27/2024,6/15/2025,,11,BB,26.56,22.45,c625,nalltogether.csv
+NAVI,1,JSM,0.38,6.00%,12/13/2024,,,7.5,BB,23.5,16.7,c600,nalltogether.csv
+KREF,1,KREF PRA,0.41,6.50%,11/27/2024,4/16/2026,,NR,,23.37,16.18,c650,nalltogether.csv
+NSA,1,NSA PRA,0.38,6.00%,12/13/2024,,,NR,,25.3,20.65,c600,nalltogether.csv
+NTRS,1,NTRSO,0.29,4.70%,12/13/2024,,,13,,24.85,18.3,c475,nalltogether.csv
+OZK,1,OZKAP,0.29,4.63%,11/1/2024,11/15/2026,,9,,20.78,14.61,c450,nalltogether.csv
+PSEC,1,PSEC PRA,0.33,5.35%,10/16/2024,7/19/2026,,9,,19.55,15.21,c525,nalltogether.csv
+SIGI,1,SIGIP,0.29,4.60%,11/27/2024,,,10,,20.74,15.48,c450,nalltogether.csv
+SLG,1,SLG PRI,0.41,6.50%,12/17/2024,,,9.5,,25.67,18.15,c650,nalltogether.csv
+SR,1,SR PRA,0.37,5.90%,10/25/2024,8/15/2024,,11,,26.15,21.87,c575,nalltogether.csv
+SRE,1,SREA,0.36,5.75%,12/13/2024,,,11.5,BB,25.24,21.16,c550,nalltogether.csv
+STT,1,STT PRG,0.33,5.35%,11/27/2024,,,13,,26.9,21.63,c525,nalltogether.csv
+TCBI,1,TCBIO,0.36,5.75%,12/2/2024,6/15/2026,,8,,24.5,16.01,c550,nalltogether.csv
+TRTX,1,TRTX PRC,0.39,6.25%,12/16/2024,6/14/2026,,NR,,18.83,13.81,c625,nalltogether.csv
+UNM,1,UNMA,0.39,6.25%,11/29/2024,,,10,BB,26.19,21.92,c625,nalltogether.csv
+WAFD,1,WAFDP,0.3,4.88%,12/27/2024,4/15/2026,,10,,22.2,12.6,c475,nalltogether.csv
+APO,1,APOS,0.48,7.63%,05/30/2025,12/15/2028,9/15/2053,13.0,,,,,nalltogether.csv
+AQN,1,AQNB,0.55,6.20%,06/13/2025,7/1/2024,7/1/2079,9.0,,,,,nalltogether.csv
+ARR,1,ARR PRC,0.15,7.00%,05/15/2025,1/28/2025,,8.0,,22.6,18.06,,nalltogether.csv
+AUB,1,AUB PRA,0.43,6.88%,05/16/2025,9/1/2025,NONE,8.0,,26.14,19.25,,nalltogether.csv
+BANC,1,BANC PRF,0.49,7.75%,05/19/2025,9/1/2027,NONE,8.0,,,,,nalltogether.csv
+BK,1,BK PRK,0.41,6.15%,06/05/2025,3/20/2030,NONE,12.5,,,,,nalltogether.csv
+BPOP,1,BPOPM,0.13,6.13%,05/15/2025,12/1/2009,12/1/2034,7.0,TP,27.2,24.51,,nalltogether.csv
+C,1,C PRN,0.68,7.88%,07/25/2025,10/30/2015,10/30/2040,10.0,,,,,nalltogether.csv
+CION,1,CICB,0.47,7.50%,06/12/2025,12/30/2026,12/30/2029,8.0,,,,,nalltogether.csv
+CNOB,1,CNOBP,0.33,5.25%,05/15/2025,9/1/2026,NONE,8.0,,,,,nalltogether.csv
+CRBG,1,CRBD,0.4,6.38%,05/30/2025,12/15/2029,12/15/2064,11.0,,,,,nalltogether.csv
+DDS,1,DDT,0.47,7.50%,07/11/2025,8/12/2003,8/1/2038,10.5,TP,27.0,25.4,,nalltogether.csv
+DRH,1,DRH PRA,0.52,8.25%,06/20/2025,8/31/2025,NONE,8.0,,27.0,24.87,,nalltogether.csv
+CCAP,1,FCRX,0.31,5.00%,05/30/2025,5/25/2023,5/25/2026,8.0,BB,,23.25,,nalltogether.csv
+FLG,1,FLG PRA,0.4,6.38%,06/06/2025,6/17/2027,NONE,8.5,,,,,nalltogether.csv
+GPMT,1,GPMT PRA,0.44,7.00%,06/30/2025,1/15/2027,NONE,8.0,,,,,nalltogether.csv
+GSL,1,GSL PRB,0.55,8.75%,06/23/2025,8/20/2019,NONE,8.0,,,,,nalltogether.csv
+HPP,1,HPP PRC,0.3,4.75%,06/16/2025,11/16/2026,NONE,7.0,,21.92,10.5,,nalltogether.csv
+IVR,1,IVR PRC,0.47,7.50%,06/05/2025,9/27/2027,NONE,8.0,,,,,nalltogether.csv
+JXN,1,JXN PRA,0.5,8.00%,06/12/2025,3/30/2028,NONE,10.0,,,,,nalltogether.csv
+KMPR,1,KMPB,0.37,5.88%,05/30/2025,3/15/2027,3/15/2062,10.0,,,,,nalltogether.csv
+LNC,1,LNC PRD,0.56,9.00%,05/15/2025,12/1/2027,NONE,11.0,,,26.41,,nalltogether.csv
+MSBI,1,MSBIP,0.48,7.75%,06/16/2025,9/30/2027,NONE,8.0,,,,,nalltogether.csv
+NMFC,1,NMFCZ,0.52,8.25%,08/01/2025,6/17/2027,11/15/2028,9.5,BB,,,,nalltogether.csv
+PBI,1,PBI PRB,0.42,6.70%,05/23/2025,3/7/2018,3/7/2043,8.0,BB,23.44,16.07,,nalltogether.csv
+PNFP,1,PNFPP,0.42,6.75%,05/15/2025,9/1/2025,NONE,8.0,,26.08,21.0,,nalltogether.csv
+RLJ,1,RLJ PRA,0.49,7.80%,06/27/2025,NONE,NONE,8.0,,26.33,23.55,,nalltogether.csv
+RPT,1,RPT PRC,0.49,9.88%,07/30/2025,5/15/2030,NONE,8.0,,,,,nalltogether.csv
+SACH,1,SACH PRA,0.48,7.75%,06/13/2025,6/29/2026,NONE,8.0,,24.15,19.69,,nalltogether.csv
+SPNT,1,SPNT PRB,0.5,8.00%,05/15/2025,2/26/2026,NONE,9.0,,,,,nalltogether.csv
+TPG,1,TPGXL,0.43,6.95%,05/29/2025,3/15/2029,3/15/2064,12.0,BB,,,,nalltogether.csv
+TRIN,1,TRINI,0.49,7.88%,06/12/2025,9/30/2026,9/30/2029,8.0,BB,,,,nalltogether.csv
+UMH,1,UMH PRD,0.4,6.38%,05/15/2025,1/22/2023,NONE,8.0,,25.57,20.85,,nalltogether.csv
+VOYA,1,VOYA PRB,0.33,5.35%,05/27/2025,9/15/2029,NONE,10.0,,,,,nalltogether.csv
+WAL,1,WAL PRA,0.27,4.25%,06/13/2025,9/30/2026,NONE,8.0,,,,,nalltogether.csv
+WSBC,1,WSBCP,0.42,6.75%,07/28/2025,11/15/2025,NONE,8.0,,,,,nalltogether.csv
+WTFC,1,WTFCN,0.49,7.88%,07/01/2025,7/15/2030,NONE,8.0,,,,,nalltogether.csv
+KKR,1,KKRT,0.43,6.88%,06/13/2025,6/01/2030,6/01/2065,8.0,BB,,,,nalltogether.csv
+BUSE,1,BUSEP,0.52,8.25%,08/01/2025,6/01/2030,NONE,8.0,,,,,nalltogether.csv
+UMBF,1,UMBFO,0.48,7.75%,06/12/2025,7/15/2030,NONE,10.0,,,,,nalltogether.csv
+ACP,1,ACP PRA,0.33,5.25%,12/16/2024,,,15,,24.61,21.47,c525,nnotheldpff.csv
+BCV,1,BCV PRA,0.34,5.39%,12/16/2024,,,16,,24.69,22.15,c525,nnotheldpff.csv
+BWB,1,BWBBP,0.37,5.88%,11/11/2024,8/17/2026,,NR,,23.52,16.57,c575,nnotheldpff.csv
+ECF,1,ECF PRA,0.33,5.25%,12/16/2024,,,16,,24.84,21.83,c525,nnotheldpff.csv
+EFSC,1,EFSCP,0.31,5.00%,11/27/2024,,,NR,,21.75,15.4,c500,nnotheldpff.csv
+GGN,1,GGN PRB,0.31,5.00%,12/16/2024,5/7/2018,,15,,23.67,21.38,c500,nnotheldpff.csv
+GNT,1,GNT PRA,0.33,5.20%,11/15/2024,,,15,,24.55,21.53,c525,nnotheldpff.csv
+GRBK,1,GRBK PRA,0.36,5.75%,11/25/2024,,,NR,,22.08,17.93,c550,nnotheldpff.csv
+GUT,1,GUT PRC,0.34,5.38%,12/16/2024,,,16,,25.39,23.02,c525,nnotheldpff.csv
+NCV,1,NCV PRA,0.35,5.63%,12/5/2024,,,NR,,24.28,20.92,c550,nnotheldpff.csv
+NCZ,1,NCZ PRA,0.34,5.50%,12/5/2024,,,NR,,24.28,20.5,c550,nnotheldpff.csv
+ALTG,1,ALTG PRA,0.63,10.00%,07/11/2025,12/22/2025,NONE,8.0,,26.75,25.75,,nnotheldpff.csv
+BANF,1,BANFP,0.45,7.20%,06/27/2025,3/21/2009,3/31/2034,8.0,TP,27.53,27.0,,nnotheldpff.csv
+CCIF,1,CCIA,0.18,8.75%,05/19/2025,10/31/2025,10/31/2028,8.0,Term,,,,nnotheldpff.csv
+CGBD,1,CGBDL,0.51,,05/15/2025,,,8.0,,,,,nnotheldpff.csv
+CSWC,1,CSWCZ,0.48,7.75%,07/15/2025,8/1/2025,8/1/2028,8.0,BB,,25.05,,nnotheldpff.csv
+DSX,1,DSX PRB,0.56,8.88%,07/10/2025,3/14/2019,NONE,8.0,,25.8,25.16,,nnotheldpff.csv
+DX,1,DX PRC,0.43,6.90%,06/27/2025,4/25/2025,NONE,8.0,,,,,nnotheldpff.csv
+FRME,1,FRMEP,0.47,7.50%,07/28/2025,8/15/2025,NONE,8.0,,26.0,23.23,,nnotheldpff.csv
+GAM,1,GAM PRB,0.37,5.95%,06/09/2025,9/24/2008,NONE,8.0,,26.21,24.28,,nnotheldpff.csv
+GLAD,1,GLADZ,0.48,7.75%,05/15/2025,9/1/2025,9/1/2028,8.0,BB,,25.02,,nnotheldpff.csv
+GMRE,1,GMRE PRA,0.47,7.50%,07/11/2025,9/15/2022,NONE,8.0,,25.54,24.46,,nnotheldpff.csv
+HTGC,1,HCXY,0.39,6.25%,07/11/2025,10/30/2023,10/30/2033,8.0,BB,25.31,23.56,,nnotheldpff.csv
+HNNA,1,HNNAZ,0.31,4.88%,06/13/2025,12/31/2023,12/31/2026,8.0,BB,24.59,23.49,,nnotheldpff.csv
+HOVN,1,HOVNP,0.48,7.63%,06/27/2025,7/12/2010,NONE,2.5,,,,,nnotheldpff.csv
+INBK,1,INBKZ,0.54,6.00%,05/15/2025,6/30/2024,6/30/2029,8.0,,,,,nnotheldpff.csv
+MFIC,1,MFICL,0.5,8.00%,05/27/2025,12/15/2025,12/15/2028,8.0,BB,,,,nnotheldpff.csv
+OFS,1,OFSSH,0.31,4.95%,07/11/2025,10/31/2023,10/31/2028,8.0,BB,22.99,21.0,,nnotheldpff.csv
+RIV,1,RIV PRA,0.38,6.00%,08/01/2025,5/15/2027,NONE,12.0,,25.01,22.06,,nnotheldpff.csv
+SPMC,1,SPMA,0.17,8.00%,05/15/2025,11/30/2026,11/30/2029,8.0,,,,,nnotheldpff.csv
+SSSS,1,SSSSL,0.38,6.00%,06/13/2025,12/30/2024,12/30/2026,8.0,BB,24.75,23.35,,nnotheldpff.csv
+SWKH,1,SWKHL,0.56,9.00%,06/13/2025,Anytime,1/31/2027,8.0,BB,,24.8,,nnotheldpff.csv
+TFIN,1,TFINP,0.45,7.13%,06/13/2025,6/30/2025,NONE,8.0,,25.47,19.2,,nnotheldpff.csv
+UCB,1,UCB PRI,0.43,6.88%,05/29/2025,9/15/2025,NONE,8.0,,,,,nnotheldpff.csv
+WHF,1,WHFCL,0.49,7.88%,05/28/2025,9/15/2025,9/15/2028,8.0,BB,,24.85,,nnotheldpff.csv
+XFLT,1,XFLT PRA,0.41,6.50%,07/14/2025,3/31/2023,3/31/2026,8.0,,25.46,24.54,,nnotheldpff.csv
+MFIN,1,MBNKO,0.56,9.00%,06/16/2025,7/01/2030,NONE,8.0,,,,,nnotheldpff.csv

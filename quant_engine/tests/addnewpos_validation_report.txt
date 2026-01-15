@@ -1,0 +1,102 @@
+================================================================================
+ADDNEWPOS v1 VALIDATION REPORT
+================================================================================
+
+Total Tests: 4
+Passed: 4
+Failed: 0
+
+--------------------------------------------------------------------------------
+Test 1: Test Case 1: Exposure Ineligible - [PASS]
+Category: EXPOSURE_INELIGIBLE
+Description: Exposure ratio >= threshold - should not run
+Janall Behavior: Not eligible (exposure ratio >= 80%)
+
+Actual Results:
+  Decisions: 0
+  Filtered: 0
+
+--------------------------------------------------------------------------------
+Test 2: Test Case 2: Exposure Eligible - Perfect BUY - [PASS]
+Category: BUY
+Description: Symbol passes all filters - should BUY (200 lot)
+Janall Behavior: BUY (200 lot, BID_BUY)
+
+Actual Results:
+  Decisions: 1
+  Filtered: 0
+
+  BUY/ADD Decisions:
+    MS PRK:
+      Action: BUY
+      Lot: 200
+      Reason: Bid Buy Ucuzluk=0.0800, Fbtot=1.15, Spread=0.0300
+      Confidence: 0.78
+      Step: 2
+
+  Step Summary:
+    Step 1 (Symbol Filtering):
+      Total: 1
+      Eligible: 1
+      Filtered: 0
+    Step 2 (BUY Decision Generation):
+      Total: 1
+      Decisions: 1
+      Filtered: 0
+
+--------------------------------------------------------------------------------
+Test 3: Test Case 3: Exposure Eligible - ADD (Existing Position) - [PASS]
+Category: ADD
+Description: Symbol with existing position - should ADD (remaining capacity)
+Janall Behavior: ADD (100 lot, BID_BUY)
+
+Actual Results:
+  Decisions: 1
+  Filtered: 0
+
+  BUY/ADD Decisions:
+    BAC PRM:
+      Action: ADD
+      Lot: 100
+      Reason: Bid Buy Ucuzluk=0.0700, Fbtot=1.12, Spread=0.0400
+      Confidence: 0.77
+      Step: 2
+
+  Step Summary:
+    Step 1 (Symbol Filtering):
+      Total: 1
+      Eligible: 1
+      Filtered: 0
+    Step 2 (BUY Decision Generation):
+      Total: 1
+      Decisions: 1
+      Filtered: 0
+
+--------------------------------------------------------------------------------
+Test 4: Test Case 4: Symbol Filtered - Bid Buy Ucuzluk Too Low - [PASS]
+Category: FILTERED
+Description: Bid Buy Ucuzluk < threshold - should be filtered
+Janall Behavior: FILTERED (Bid Buy Ucuzluk <= 0.06)
+
+Actual Results:
+  Decisions: 0
+  Filtered: 1
+
+  FILTERED Symbols:
+    WFC PRY:
+      Step: 1
+      Reasons: Bid Buy Ucuzluk <= 0.06 (Bid Buy=0.04)
+
+  Step Summary:
+    Step 1 (Symbol Filtering):
+      Total: 1
+      Eligible: 0
+      Filtered: 1
+    Step 2 (BUY Decision Generation):
+      Total: 0
+      Decisions: 0
+      Filtered: 0
+
+================================================================================
+END OF REPORT
+================================================================================

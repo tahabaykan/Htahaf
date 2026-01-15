@@ -139,8 +139,8 @@ def show_ibkr_orders_window(parent):
                 all_items = []
                 for item in tree.get_children():
                     values = tree.item(item)['values']
-                    if len(values) >= 8:
-                        order_id = values[7]  # order_id kolonu
+                    if len(values) >= 10:
+                        order_id = values[9]  # order_id kolonu (Index 9)
                         all_items.append((item, order_id))
                 
                 if not all_items:
@@ -250,7 +250,8 @@ def show_ibkr_orders_window(parent):
                 for item in tree.get_children():
                     values = tree.item(item)['values']
                     if values[0] == '☑':  # Seçili
-                        selected_items.append((item, values[7]))  # (item, order_id)
+                        if len(values) >= 10:
+                            selected_items.append((item, values[9]))  # (item, order_id)
                 
                 if not selected_items:
                     messagebox.showwarning("Uyarı", "Hiç emir seçilmedi!")
@@ -341,8 +342,8 @@ def show_ibkr_orders_window(parent):
         ttk.Button(refresh_frame, text="Seçili Emirleri İptal Et", command=cancel_selected_orders).pack(side='left', padx=5)
         
         # Tablo - Checkbox sistemi ile
-        cols = ['select', 'symbol', 'action', 'quantity', 'price', 'order_type', 'status', 'order_id']
-        headers = ['Seç', 'Symbol', 'Action', 'Quantity', 'Price', 'Order Type', 'Status', 'Order ID']
+        cols = ['select', 'symbol', 'action', 'quantity', 'price', 'fill_price', 'order_type', 'status', 'emir_tipi', 'order_id']
+        headers = ['Seç', 'Symbol', 'Action', 'Quantity', 'Price', 'Fill Price', 'Order Type', 'Status', 'Emir Tipi', 'Order ID']
         
         tree = ttk.Treeview(win, columns=cols, show='headings', height=20)
         
@@ -355,27 +356,27 @@ def show_ibkr_orders_window(parent):
         for c, h in zip(cols, headers):
             tree.heading(c, text=h)
             if c == 'select':
-                tree.column(c, width=50, anchor='center')
+                tree.column(c, width=40, anchor='center')
             elif c == 'symbol':
-                tree.column(c, width=100, anchor='center')
+                tree.column(c, width=80, anchor='center')
             elif c == 'action':
-                tree.column(c, width=80, anchor='center')
+                tree.column(c, width=60, anchor='center')
             elif c == 'quantity':
-                tree.column(c, width=80, anchor='center')
+                tree.column(c, width=70, anchor='center')
             elif c == 'price':
-                tree.column(c, width=80, anchor='center')
+                tree.column(c, width=70, anchor='center')
             elif c == 'fill_price':
-                tree.column(c, width=100, anchor='center')
+                tree.column(c, width=70, anchor='center')
             elif c == 'order_type':
-                tree.column(c, width=100, anchor='center')
+                tree.column(c, width=80, anchor='center')
             elif c == 'status':
-                tree.column(c, width=100, anchor='center')
+                tree.column(c, width=90, anchor='center')
             elif c == 'emir_tipi':
-                tree.column(c, width=120, anchor='center')
-            elif c == 'order_id':
-                tree.column(c, width=120, anchor='center')
-            else:
                 tree.column(c, width=100, anchor='center')
+            elif c == 'order_id':
+                tree.column(c, width=100, anchor='center')
+            else:
+                tree.column(c, width=80, anchor='center')
         
         # Scrollbar
         scrollbar = ttk.Scrollbar(win, orient="vertical", command=tree.yview)
@@ -420,8 +421,8 @@ def show_ibkr_orders_window(parent):
                 
                 # Seçili emrin bilgilerini al
                 values = tree.item(selected_item[0])['values']
-                symbol = values[0]
-                order_id = values[6]
+                symbol = values[1]  # Index 1: Symbol
+                order_id = values[9]  # Index 9: Order ID
                 
                 # Onay al
                 if messagebox.askyesno("Emir İptali", 
@@ -430,10 +431,45 @@ def show_ibkr_orders_window(parent):
                                      f"Order ID: {order_id}"):
                     
                     # IBKR'de emri iptal et
-                    if hasattr(parent, 'ibkr') and parent.ibkr.is_connected():
-                        # IBKR'de emir iptal etme implementasyonu burada olacak
-                        # Şimdilik sadece mesaj göster
-                        messagebox.showinfo("Bilgi", "IBKR emir iptal etme henüz implement edilmedi!")
+                    ibkr_client = None
+                    
+                    # ÖNCE IBKR Native client'ı kontrol et
+                    if hasattr(parent, 'mode_manager') and parent.mode_manager:
+                        if hasattr(parent.mode_manager, 'ibkr_native_client') and parent.mode_manager.ibkr_native_client:
+                            native_client = parent.mode_manager.ibkr_native_client
+                            if native_client.is_connected():
+                                ibkr_client = native_client
+                                print(f"[IBKR_ORDERS] ✅ IBKR Native client kullanılıyor")
+                    
+                    # Fallback: ib_insync client
+                    if not ibkr_client and hasattr(parent, 'ibkr') and parent.ibkr.is_connected():
+                        ibkr_client = parent.ibkr
+                        print(f"[IBKR_ORDERS] 🔄 IBKR ib_insync client kullanılıyor (fallback)")
+                    
+                    if ibkr_client and ibkr_client.is_connected():
+                        try:
+                            # IBKR Native API
+                            if hasattr(ibkr_client, 'cancelOrder'):
+                                order_id_int = int(order_id)
+                                ibkr_client.cancelOrder(order_id_int)
+                                print(f"[IBKR_ORDERS] 📤 İptal isteği gönderildi: {order_id}")
+                                messagebox.showinfo("Bilgi", "İptal isteği gönderildi.")
+                            else:
+                                # ib_insync client
+                                success = ibkr_client.cancel_order(order_id)
+                                if success:
+                                    print(f"[IBKR_ORDERS] 📤 İptal isteği gönderildi: {order_id}")
+                                    messagebox.showinfo("Bilgi", "İptal isteği gönderildi.")
+                                else:
+                                    print(f"[IBKR_ORDERS] ❌ İptal isteği başarısız: {order_id}")
+                                    messagebox.showerror("Hata", "İptal isteği başarısız oldu!")
+                            
+                            # Yenile
+                            win.after(1000, refresh_orders)
+                            
+                        except Exception as e:
+                            print(f"[IBKR ORDERS] ❌ Emir iptal hatası: {e}")
+                            messagebox.showerror("Hata", f"Emir iptal hatası: {e}")
                     else:
                         messagebox.showerror("Hata", "IBKR bağlantısı yok!")
                         

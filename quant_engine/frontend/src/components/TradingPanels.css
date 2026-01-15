@@ -1,0 +1,123 @@
+.trading-panels {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 0;
+  overflow: hidden;
+  height: 100%;
+  max-height: 90vh;
+  /* Safety cap */
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-tabs {
+  display: flex;
+  border-bottom: 2px solid #e0e0e0;
+  background: #f8f9fa;
+  position: relative;
+}
+
+.panel-content {
+  padding: 0;
+  /* Remove padding to let table fill */
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  /* Critical for nested flex scrolling */
+  position: relative;
+}
+
+.tab-button {
+  padding: 8px 16px;
+  /* Reduced vertical padding */
+  border: none;
+  background: transparent;
+  font-size: 11px;
+  /* Smaller font */
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+}
+
+/* ... (keep intermediate classes if matching context, but jumping to table styles) */
+
+.positions-table th,
+.orders-table th {
+  background: #f8f9fa;
+  padding: 8px 6px;
+  /* Tighter padding */
+  text-align: left;
+  font-size: 10px;
+  /* Smaller header */
+  font-weight: 700;
+  color: #555 !important;
+  /* Softer header color */
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.positions-table td,
+.orders-table td {
+  padding: 6px 6px;
+  /* Tighter cell padding */
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 11px;
+  /* Standard compact font */
+  color: #000 !important;
+  line-height: 1.1;
+  white-space: nowrap;
+  /* Prevent wrapping for density */
+}
+
+/* ... symbols */
+
+.symbol-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.symbol-text {
+  color: #000 !important;
+  font-weight: 600;
+  /* Semi-bold, not heavy */
+  font-size: 11px;
+}
+
+.taxonomy-badge {
+  font-size: 8px;
+  /* Sml badge */
+  font-weight: 700;
+  padding: 1px 4px;
+  /* Compact badge */
+  border-radius: 3px;
+  text-transform: uppercase;
+  color: white;
+  min-width: 20px;
+  text-align: center;
+  margin-left: 4px;
+}
+
+.taxonomy-badge.lt {
+  background-color: #007bff;
+  /* Blue */
+}
+
+.taxonomy-badge.mm {
+  background-color: #6f42c1;
+  /* Purple */
+}
+
+.sort-icon {
+  font-size: 9px;
+  margin-left: 3px;
+  opacity: 0.6;
+}

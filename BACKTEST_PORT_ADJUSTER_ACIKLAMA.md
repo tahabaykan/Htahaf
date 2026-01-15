@@ -307,3 +307,10 @@ position_size = capital / num_stocks
 
 
 
+
+
+
+
+
+
+

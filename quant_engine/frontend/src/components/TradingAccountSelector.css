@@ -1,0 +1,142 @@
+.trading-account-selector {
+  background: #1a1a1a;
+  padding: 4px 8px;
+  border-bottom: 1px solid #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.market-data-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.indicator-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.indicator-value {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.market-data-live {
+  background: #22543d;
+  color: #68d391;
+}
+
+.trading-account-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.control-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.mode-button {
+  padding: 4px 8px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #2a2a2a;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  color: #fff;
+}
+
+.mode-button:hover:not(:disabled) {
+  border-color: #555;
+  background: #333;
+}
+
+.mode-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mode-button.active {
+  border-color: #0066cc;
+  background: #0066cc;
+  color: #fff;
+}
+
+.mode-button.connected {
+  border-color: #22543d;
+}
+
+.mode-button.disconnected {
+  border-color: #742a2a;
+}
+
+.mode-button.active.connected {
+  background: #22543d;
+  border-color: #22543d;
+  color: #68d391;
+}
+
+.connection-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.connection-dot.connected {
+  background: #68d391;
+  box-shadow: 0 0 3px rgba(104, 211, 145, 0.5);
+}
+
+.connection-dot.disconnected {
+  background: #fc8181;
+  box-shadow: 0 0 3px rgba(252, 129, 129, 0.5);
+}
+
+.active-indicator {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.active-indicator.hammer-active {
+  background: #22543d;
+  color: #68d391;
+}
+
+.active-indicator.ibkr-active {
+  background: #1e3a5f;
+  color: #60a5fa;
+}
+
+
+
+
+

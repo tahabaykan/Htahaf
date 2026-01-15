@@ -20,7 +20,10 @@ import numpy as np
 import time
 import os
 import threading
+import queue
+from queue import Queue, Empty
 from datetime import datetime, date
+from typing import Dict, Any
 from .etf_panel import ETFPanel
 from .order_management import OrderManager, OrderBookWindow
 from .bdata_storage import BDataStorage
@@ -38,6 +41,37 @@ class MainWindow(tk.Tk):
         self.background_data_cache = {}
         self.background_update_thread = None
         self.background_update_running = False
+        
+        # Thread-safe UI güncelleme için Priority Queue
+        # Öncelik: 0 = Kullanıcı etkileşimi (en yüksek), 1 = Normal UI güncelleme, 2 = Arka plan işlemleri
+        self.ui_queue = Queue()
+        self.user_interaction_queue = Queue()  # Kullanıcı etkileşimleri için ayrı queue (en yüksek öncelik)
+        self.process_ui_queue()
+        self.process_user_interactions()  # Kullanıcı etkileşimlerini hemen işle
+        
+        # Algoritma thread'leri için flag'ler
+        self.algorithm_threads = {}  # Çalışan algoritma thread'lerini takip et
+        self.algorithm_thread_lock = threading.Lock()  # Thread yönetimi için lock
+        
+        # Kullanıcı kontrolü - her zaman öncelikli
+        self.user_control_priority = True  # Kullanıcı her zaman kontrolü elinde tutar
+        
+        # Multiprocessing için AlgoProcessor
+        from multiprocessing import Queue as MPQueue
+        from .algo import AlgoProcessor
+        
+        # Process'ler arası iletişim için queue'lar
+        self.algo_command_queue = MPQueue()  # UI'dan process'e komut göndermek için
+        self.algo_result_queue = MPQueue()  # Process'ten UI'a sonuç almak için
+        
+        # AlgoProcessor'ı başlat
+        self.algo_processor = AlgoProcessor(
+            ui_command_queue=self.algo_command_queue,
+            ui_result_queue=self.algo_result_queue
+        )
+        
+        # Algo result queue'yu dinle (her 100ms'de bir kontrol et)
+        self.process_algo_results()
         
         # Hammer Pro client
         from .hammer_client import HammerClient
@@ -137,6 +171,14 @@ class MainWindow(tk.Tk):
         # Cache sistemi - hesaplama boşluklarını önle
         self.last_valid_scores = {}  # Her ticker için son geçerli skorlar
         
+        # Döngü Raporu - RUNALL emir kararlarını takip
+        self.loop_report = []  # Her emir kararı için detaylı log
+        self.loop_report_start_time = None  # Döngü başlangıç zamanı
+        self.loop_report_loop_number = 0  # Döngü numarası
+        
+        # Psfalgo Aktivite Logu - Tüm Psfalgo işlemlerini takip (uygulama kapanınca sıfırlanır)
+        self.psfalgo_activity_log = []  # Her işlem için: {time, action, details, status, reason}
+        
         # Başlangıçta boş DataFrame
         self.df = pd.DataFrame()
         
@@ -157,6 +199,192 @@ class MainWindow(tk.Tk):
         
         # Başlangıçta exposure bilgisini güncelle
         self.after(1000, self.update_exposure_display)  # 1 saniye sonra güncelle
+    
+    def process_ui_queue(self):
+        """UI queue'sunu işle - thread'lerden gelen UI güncellemelerini main thread'de çalıştır"""
+        try:
+            # Önce kullanıcı etkileşimlerini işle (en yüksek öncelik)
+            while True:
+                try:
+                    callback, args, kwargs = self.user_interaction_queue.get_nowait()
+                    callback(*args, **kwargs)
+                except Empty:
+                    break
+            
+            # Sonra normal UI güncellemelerini işle (limitli - kullanıcı etkileşimlerini bloklamamak için)
+            processed = 0
+            max_per_cycle = 5  # Her döngüde maksimum 5 normal güncelleme
+            while processed < max_per_cycle:
+                try:
+                    callback, args, kwargs = self.ui_queue.get_nowait()
+                    callback(*args, **kwargs)
+                    processed += 1
+                except Empty:
+                    break
+        except Exception as e:
+            print(f"[UI_QUEUE] ⚠️ Queue işleme hatası: {e}")
+        finally:
+            # Her 50ms'de bir queue'yu kontrol et (daha hızlı yanıt için)
+            self.after(50, self.process_ui_queue)
+    
+    def process_user_interactions(self):
+        """Kullanıcı etkileşimlerini hemen işle - en yüksek öncelik"""
+        try:
+            while True:
+                try:
+                    callback, args, kwargs = self.user_interaction_queue.get_nowait()
+                    # Hemen çalıştır (bloklamadan)
+                    callback(*args, **kwargs)
+                except Empty:
+                    break
+        except Exception as e:
+            print(f"[USER_INTERACTION] ⚠️ Kullanıcı etkileşim işleme hatası: {e}")
+        finally:
+            # Her 10ms'de bir kontrol et (çok hızlı yanıt için)
+            self.after(10, self.process_user_interactions)
+    
+    def safe_ui_call(self, callback, *args, **kwargs):
+        """Thread'lerden güvenli şekilde UI güncellemesi yapmak için (normal öncelik)"""
+        self.ui_queue.put((callback, args, kwargs))
+    
+    def priority_ui_call(self, callback, *args, **kwargs):
+        """Kullanıcı etkileşimleri için yüksek öncelikli UI çağrısı - HEMEN çalıştırılır"""
+        self.user_interaction_queue.put((callback, args, kwargs))
+    
+    def check_window_focus(self):
+        """Pencere odak kontrolü - kullanıcı pencereye tıkladığında öne getir"""
+        try:
+            if hasattr(self, 'psfalgo_window') and self.psfalgo_window:
+                if self.psfalgo_window.winfo_exists():
+                    try:
+                        # Pencere minimize edilmişse veya arka plandaysa, kullanıcı tıkladığında öne getir
+                        # Bu kontrolü sürekli yapmak yerine, sadece pencere event'lerinde yapalım
+                        # Ama yine de periyodik kontrol yapalım (daha az sıklıkta)
+                        pass
+                    except:
+                        pass
+        except:
+            pass
+        finally:
+            # Her 2 saniyede bir kontrol et (çok sık olmasın, UI'ı bloklamasın)
+            self.after(2000, self.check_window_focus)
+    
+    def process_algo_results(self):
+        """AlgoProcessor'dan gelen sonuçları işle (multiprocessing queue)"""
+        try:
+            # Tüm mevcut sonuçları al (non-blocking)
+            while True:
+                try:
+                    result = self.algo_result_queue.get_nowait()
+                    self._handle_algo_result(result)
+                except queue.Empty:
+                    break
+        except Exception as e:
+            print(f"[ALGO_RESULT] ⚠️ Sonuç işleme hatası: {e}")
+        finally:
+            # Her 100ms'de bir kontrol et
+            self.after(100, self.process_algo_results)
+    
+    def _handle_algo_result(self, result: Dict[str, Any]):
+        """AlgoProcessor'dan gelen bir sonucu işle"""
+        try:
+            algorithm_name = result.get('algorithm_name', 'unknown')
+            algorithm_type = result.get('algorithm_type', 'unknown')
+            event = result.get('event', 'unknown')
+            message = result.get('message', '')
+            
+            print(f"[ALGO_RESULT] {algorithm_name} ({algorithm_type}): {event} - {message}")
+            
+            # Event tipine göre işle
+            if event == 'started':
+                self.safe_ui_call(self.log_message, f"▶️ {algorithm_type.upper()} başlatıldı: {algorithm_name}")
+            elif event == 'completed':
+                self.safe_ui_call(self.log_message, f"✅ {algorithm_type.upper()} tamamlandı: {algorithm_name}")
+            elif event == 'error':
+                self.safe_ui_call(self.log_message, f"❌ {algorithm_type.upper()} hatası: {message}")
+            elif event == 'progress':
+                # İlerleme mesajları
+                self.safe_ui_call(self.log_message, f"🔄 {algorithm_type.upper()}: {message}")
+                
+                # Eğer action varsa (KARBOTU, ADDNEWPOS başlatma gibi) işle
+                action = result.get('action')
+                if action == 'start_karbotu':
+                    # KARBOTU'yu multiprocessing ile başlat
+                    karbotu_name = f"karbotu_{int(time.time())}"
+                    self.algo_processor.start_algorithm(
+                        algorithm_name=karbotu_name,
+                        algorithm_type="karbotu",
+                        params={'from_runall': True}
+                    )
+                elif action == 'start_reducemore':
+                    # REDUCEMORE'u multiprocessing ile başlat
+                    reducemore_name = f"reducemore_{int(time.time())}"
+                    exposure_mode = result.get('exposure_mode', 'DEFANSIVE')
+                    self.algo_processor.start_algorithm(
+                        algorithm_name=reducemore_name,
+                        algorithm_type="reducemore",
+                        params={
+                            'from_runall': True,
+                            'exposure_mode': exposure_mode
+                        }
+                    )
+            elif event == 'runall_callback':
+                # KARBOTU/REDUCEMORE tamamlandı, ADDNEWPOS kontrolü yap
+                action = result.get('action')
+                if action == 'check_addnewpos':
+                    # ADDNEWPOS kontrolü için runall_check_karbotu_and_addnewpos benzeri mantık
+                    # Şimdilik basit bir mesaj
+                    self.safe_ui_call(self.log_message, "🔄 KARBOTU/REDUCEMORE tamamlandı, ADDNEWPOS kontrolü yapılıyor...")
+                    # TODO: Exposure kontrolü yap ve ADDNEWPOS'u başlat
+                elif action == 'start_addnewpos':
+                    # ADDNEWPOS'u multiprocessing ile başlat
+                    addnewpos_name = f"addnewpos_{int(time.time())}"
+                    self.algo_processor.start_algorithm(
+                        algorithm_name=addnewpos_name,
+                        algorithm_type="addnewpos",
+                        params={'from_runall': True}
+                    )
+            elif event == 'exposure_check':
+                # Exposure kontrolü sonucu
+                exposure_info = result.get('exposure_info', {})
+                pot_total = exposure_info.get('pot_total', 0)
+                pot_max_lot = exposure_info.get('pot_max_lot', 63636)
+                exposure_mode = exposure_info.get('mode', 'UNKNOWN')
+                self.safe_ui_call(self.log_message, f"📊 Exposure: Pot Total={pot_total:,}, Pot Max={pot_max_lot:,}, Mode={exposure_mode}")
+            elif event == 'order_sent':
+                # Emir gönderildi mesajları
+                symbol = result.get('symbol', '')
+                side = result.get('side', '')
+                quantity = result.get('quantity', 0)
+                price = result.get('price', 0)
+                self.safe_ui_call(self.log_message, f"📤 {symbol}: {side} {quantity} lot @ ${price:.2f}")
+            
+        except Exception as e:
+            print(f"[ALGO_RESULT] ❌ Sonuç işleme hatası: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def show_window_priority(self, window_func, *args, **kwargs):
+        """Pencere açma fonksiyonlarını öncelikli olarak çalıştır - KULLANICI ÖNCELİKLİ"""
+        def open_window():
+            try:
+                win = window_func(*args, **kwargs)
+                # Pencereyi hemen öne getir ve focus ver
+                if win:
+                    if hasattr(win, 'lift'):
+                        win.lift()
+                    if hasattr(win, 'focus_force'):
+                        win.focus_force()
+                    elif hasattr(win, 'focus'):
+                        win.focus()
+                return win
+            except Exception as e:
+                print(f"[SHOW_WINDOW_PRIORITY] ❌ Hata: {e}")
+                import traceback
+                traceback.print_exc()
+        
+        # Priority queue ile hemen çalıştır
+        self.priority_ui_call(open_window)
     
     def load_main_csv_on_startup(self):
         """Uygulama başlarken ana CSV dosyasını otomatik yükle"""
@@ -2079,10 +2307,9 @@ class MainWindow(tk.Tk):
                         group=group
                     )
                     
-                    # Pencere kapanana kadar bekle
+                    # wait_window() kaldırıldı - GUI'yi bloklamamak için
                     if confirmation_win:
-                        confirmation_win.wait_window()
-                        print(f"[TOP TEN] ✅ {group}: Onay penceresi kapandı")
+                        print(f"[TOP TEN] ✅ {group}: Onay penceresi açıldı (non-blocking)")
                     else:
                         print(f"[TOP TEN] ❌ {group}: Onay penceresi açılamadı!")
                     
@@ -2321,9 +2548,9 @@ class MainWindow(tk.Tk):
                         group=group
                     )
                     
-                    # Pencere kapanana kadar bekle
+                    # wait_window() kaldırıldı - GUI'yi bloklamamak için
                     if confirmation_win:
-                        confirmation_win.wait_window()
+                        print(f"[BOTTOM TEN] ✅ {group}: Onay penceresi açıldı (non-blocking)")
                     
                 except Exception as e:
                     print(f"[BOTTOM TEN] ❌ {group} hatası: {e}")
@@ -2670,13 +2897,29 @@ class MainWindow(tk.Tk):
         return win
     
     def show_positions(self):
-        """Mevcut moda göre pozisyonlarım penceresini aç"""
-        if self.mode_manager.is_hampro_mode():
-            from .mypositions import show_positions_window
-            show_positions_window(self, self.get_last_price_for_symbol)
-        elif self.mode_manager.is_ibkr_mode():
-            from .ibkr_positions import show_ibkr_positions_window
-            show_ibkr_positions_window(self, self.get_last_price_for_symbol)
+        """Mevcut moda göre pozisyonlarım penceresini aç - KULLANICI ÖNCELİKLİ"""
+        # Hemen çalıştır (kullanıcı etkileşimi - en yüksek öncelik)
+        def open_positions():
+            try:
+                if self.mode_manager.is_hampro_mode():
+                    from .mypositions import show_positions_window
+                    win = show_positions_window(self, self.get_last_price_for_symbol)
+                    # Pencereyi hemen öne getir
+                    if win:
+                        win.lift()
+                        win.focus_force()
+                elif self.mode_manager.is_ibkr_mode():
+                    from .ibkr_positions import show_ibkr_positions_window
+                    win = show_ibkr_positions_window(self, self.get_last_price_for_symbol)
+                    # Pencereyi hemen öne getir
+                    if win:
+                        win.lift()
+                        win.focus_force()
+            except Exception as e:
+                print(f"[SHOW_POSITIONS] ❌ Hata: {e}")
+        
+        # Priority queue ile hemen çalıştır
+        self.priority_ui_call(open_positions)
     
     def set_mode(self, mode):
         """Modu değiştir ve GUI'yi güncelle"""
@@ -2743,14 +2986,36 @@ class MainWindow(tk.Tk):
                         self.check_daily_befib()
     
     def show_take_profit_longs(self):
-        """Take Profit Longs penceresini aç - Sadece long pozisyonlar (quantity > 0)"""
-        from .take_profit_panel import TakeProfitPanel
-        TakeProfitPanel(self, "longs")
+        """Take Profit Longs penceresini aç - Sadece long pozisyonlar (quantity > 0) - KULLANICI ÖNCELİKLİ"""
+        def open_take_profit_longs():
+            try:
+                from .take_profit_panel import TakeProfitPanel
+                panel = TakeProfitPanel(self, "longs")
+                # Pencereyi hemen öne getir
+                if hasattr(panel, 'win') and panel.win:
+                    panel.win.lift()
+                    panel.win.focus_force()
+            except Exception as e:
+                print(f"[SHOW_TAKE_PROFIT_LONGS] ❌ Hata: {e}")
+        
+        # Priority queue ile hemen çalıştır
+        self.priority_ui_call(open_take_profit_longs)
     
     def show_take_profit_shorts(self):
-        """Take Profit Shorts penceresini aç - Sadece short pozisyonlar (quantity < 0)"""
-        from .take_profit_panel import TakeProfitPanel
-        TakeProfitPanel(self, "shorts")
+        """Take Profit Shorts penceresini aç - Sadece short pozisyonlar (quantity < 0) - KULLANICI ÖNCELİKLİ"""
+        def open_take_profit_shorts():
+            try:
+                from .take_profit_panel import TakeProfitPanel
+                panel = TakeProfitPanel(self, "shorts")
+                # Pencereyi hemen öne getir
+                if hasattr(panel, 'win') and panel.win:
+                    panel.win.lift()
+                    panel.win.focus_force()
+            except Exception as e:
+                print(f"[SHOW_TAKE_PROFIT_SHORTS] ❌ Hata: {e}")
+        
+        # Priority queue ile hemen çalıştır
+        self.priority_ui_call(open_take_profit_shorts)
     
     def execute_croplit6(self):
         """Croplit6: Spread > 0.06, Longs için Ask Sell Pahalılık > -0.06, Shorts için Bid Buy Ucuzluk < 0.06"""
@@ -3002,12 +3267,33 @@ class MainWindow(tk.Tk):
                     if success:
                         print(f"[CROPLIT] ✅ {symbol}: {side} {quantity} lot @ ${price:.2f}")
                         success_count += 1
+                        
+                        self.log_psfalgo_activity(
+                            action=f"CROPLIT {position_type} Emir",
+                            details=f"{symbol}: {side} {quantity} lot @ ${price:.2f}",
+                            status="SUCCESS",
+                            category="CROPLIT"
+                        )
                     else:
                         print(f"[CROPLIT] ❌ {symbol}: Emir gönderilemedi")
                         error_count += 1
+                        
+                        self.log_psfalgo_activity(
+                            action=f"CROPLIT {position_type} Başarısız",
+                            details=f"{symbol}: Emir gönderilemedi",
+                            status="ERROR",
+                            category="CROPLIT"
+                        )
                 else:
                     print(f"[CROPLIT] ❌ Mode manager bulunamadı")
                     error_count += 1
+                    
+                    self.log_psfalgo_activity(
+                        action=f"CROPLIT {position_type} Hata",
+                        details=f"{symbol}: Mode manager bulunamadı",
+                        status="ERROR",
+                        category="CROPLIT"
+                    )
             
             # Sonuç mesajı
             result_msg = f"Croplit {position_type} Emirleri:\n\n"
@@ -3025,9 +3311,20 @@ class MainWindow(tk.Tk):
             messagebox.showerror("Hata", f"Emir gönderme hatası: {e}")
     
     def show_spreadkusu(self):
-        """Spreadkusu penceresini aç - Spread >= 0.20 olan hisseler"""
-        from .spreadkusu_panel import SpreadkusuPanel
-        SpreadkusuPanel(self)
+        """Spreadkusu penceresini aç - Spread >= 0.20 olan hisseler - KULLANICI ÖNCELİKLİ"""
+        def open_spreadkusu():
+            try:
+                from .spreadkusu_panel import SpreadkusuPanel
+                panel = SpreadkusuPanel(self)
+                # Pencereyi hemen öne getir
+                if hasattr(panel, 'win') and panel.win:
+                    panel.win.lift()
+                    panel.win.focus_force()
+            except Exception as e:
+                print(f"[SHOW_SPREADKUSU] ❌ Hata: {e}")
+        
+        # Priority queue ile hemen çalıştır
+        self.priority_ui_call(open_spreadkusu)
     
     def runall_execute_qpcal(self):
         """RUNALL için Qpcal işlemini yürüt: Spreadkusu panel aç, Qpcal butonuna tıkla, Runqp'a bas, emirleri gönder"""
@@ -3043,12 +3340,11 @@ class MainWindow(tk.Tk):
                 # Veri yüklenmesini bekle (2 saniye - daha güvenli)
                 self.after(2000, lambda: self._runall_qpcal_after_panel_ready())
             else:
-                # Mevcut panel'i öne getir
+                # Mevcut panel'i kullan (ama öne getirme - kullanıcı isterse açabilir)
                 try:
                     if self.spreadkusu_panel.win.winfo_exists():
-                        print("[RUNALL] 📊 Mevcut Spreadkusu panel kullanılıyor...")
-                        self.spreadkusu_panel.win.lift()
-                        self.spreadkusu_panel.win.focus()
+                        print("[RUNALL] 📊 Mevcut Spreadkusu panel kullanılıyor (arka planda)...")
+                        # lift() ve focus() kaldırıldı - kullanıcı isterse pencereyi açabilir
                         # Veri yüklenmesini bekle (2 saniye - daha güvenli)
                         self.after(2000, lambda: self._runall_qpcal_after_panel_ready())
                     else:
@@ -3182,27 +3478,48 @@ class MainWindow(tk.Tk):
         PortfolioComparisonWindow(self)
     
     def show_my_orders(self):
-        """Emirlerim penceresini aç - Mod-aware"""
-        # Mevcut moda göre emirleri göster
-        if hasattr(self, 'mode_manager'):
-            if self.mode_manager.is_hampro_mode():
-                print("[MAIN] 🔄 HAMPRO modunda emirler gösteriliyor...")
-                # Hammer Pro'dan emirleri göster
-                from .myorders import show_orders_window
-                show_orders_window(self)
-            elif self.mode_manager.is_ibkr_mode():
-                print("[MAIN] 🔄 IBKR modunda emirler gösteriliyor...")
-                # IBKR'den emirleri göster
-                from .ibkr_orders import show_ibkr_orders_window
-                show_ibkr_orders_window(self)
-            else:
-                print("[MAIN] ⚠️ Mod belirlenemedi, HAMPRO kullanılıyor...")
-                from .myorders import show_orders_window
-                show_orders_window(self)
-        else:
-            print("[MAIN] ⚠️ Mode manager bulunamadı, HAMPRO kullanılıyor...")
-            from .myorders import show_orders_window
-            show_orders_window(self)
+        """Emirlerim penceresini aç - Mod-aware - KULLANICI ÖNCELİKLİ"""
+        def open_orders():
+            try:
+                # Mevcut moda göre emirleri göster
+                if hasattr(self, 'mode_manager'):
+                    if self.mode_manager.is_hampro_mode():
+                        print("[MAIN] 🔄 HAMPRO modunda emirler gösteriliyor...")
+                        # Hammer Pro'dan emirleri göster
+                        from .myorders import show_orders_window
+                        win = show_orders_window(self)
+                        # Pencereyi hemen öne getir
+                        if win:
+                            win.lift()
+                            win.focus_force()
+                    elif self.mode_manager.is_ibkr_mode():
+                        print("[MAIN] 🔄 IBKR modunda emirler gösteriliyor...")
+                        # IBKR'den emirleri göster
+                        from .ibkr_orders import show_ibkr_orders_window
+                        win = show_ibkr_orders_window(self)
+                        # Pencereyi hemen öne getir
+                        if win:
+                            win.lift()
+                            win.focus_force()
+                    else:
+                        print("[MAIN] ⚠️ Mod belirlenemedi, HAMPRO kullanılıyor...")
+                        from .myorders import show_orders_window
+                        win = show_orders_window(self)
+                        if win:
+                            win.lift()
+                            win.focus_force()
+                else:
+                    print("[MAIN] ⚠️ Mode manager bulunamadı, HAMPRO kullanılıyor...")
+                    from .myorders import show_orders_window
+                    win = show_orders_window(self)
+                    if win:
+                        win.lift()
+                        win.focus_force()
+            except Exception as e:
+                print(f"[SHOW_MY_ORDERS] ❌ Hata: {e}")
+        
+        # Priority queue ile hemen çalıştır
+        self.priority_ui_call(open_orders)
     
     def reset_trades_csv(self):
         """trades.csv dosyasını sıfırla - yeni işlem başlıyor"""
@@ -3946,6 +4263,88 @@ class MainWindow(tk.Tk):
             
             self.psfalgo_window.protocol("WM_DELETE_WINDOW", on_closing)
             
+            # Pencereyi öne getirme fonksiyonu
+            def bring_to_front():
+                """Pencereyi zorla öne getir - bot çalışırken bile çalışır"""
+                try:
+                    if hasattr(self, 'psfalgo_window') and self.psfalgo_window:
+                        if self.psfalgo_window.winfo_exists():
+                            # Önce topmost yap (en üste getir) - UI thread'ini bloklamadan
+                            self.psfalgo_window.attributes('-topmost', True)
+                            # Pencereyi öne getir
+                            self.psfalgo_window.lift()
+                            # Ana pencereyi de güncelle (UI thread'i bloklamasın)
+                            self.update_idletasks()
+                            # Odaklan
+                            self.psfalgo_window.focus_force()
+                            # update_idletasks ile UI'ı güncelle
+                            self.psfalgo_window.update_idletasks()
+                            # 100ms sonra topmost'u kaldır (normal moda döndür)
+                            self.psfalgo_window.after(100, lambda: self.psfalgo_window.attributes('-topmost', False))
+                            print("[PSFALGO] ✅ Pencere öne getirildi")
+                except Exception as e:
+                    print(f"[PSFALGO] ⚠️ Pencere öne getirme hatası: {e}")
+            
+            self.bring_psfalgo_window_to_front = bring_to_front
+            
+            # Pencere event'lerine tıklama kontrolü ekle - kullanıcı pencereye tıkladığında öne getir
+            def on_window_click(event):
+                """Pencereye tıklandığında öne getir - HEMEN çalışır"""
+                try:
+                    # Hemen öne getir (UI thread'ini bloklamadan) - TOPMOST ile zorla
+                    self.psfalgo_window.attributes('-topmost', True)
+                    self.psfalgo_window.lift()
+                    self.psfalgo_window.focus_force()
+                    # update_idletasks'i ayrı bir after() ile çağır (bloklamasın)
+                    self.psfalgo_window.after_idle(lambda: self.psfalgo_window.update_idletasks())
+                    # 100ms sonra topmost'u kaldır (normal moda döndür)
+                    self.psfalgo_window.after(100, lambda: self.psfalgo_window.attributes('-topmost', False))
+                except:
+                    pass
+            
+            # Pencere tıklama event'lerini dinle
+            self.psfalgo_window.bind('<Button-1>', on_window_click)
+            self.psfalgo_window.bind('<Button-3>', on_window_click)  # Sağ tık da
+            self.psfalgo_window.bind('<FocusIn>', lambda e: (self.psfalgo_window.attributes('-topmost', True), self.psfalgo_window.lift(), self.psfalgo_window.focus_force(), self.psfalgo_window.after(100, lambda: self.psfalgo_window.attributes('-topmost', False))))
+            self.psfalgo_window.bind('<Map>', lambda e: self.psfalgo_window.lift())  # Pencere görünür olduğunda
+            self.psfalgo_window.bind('<Enter>', lambda e: self.psfalgo_window.lift())  # Mouse pencereye girdiğinde
+            
+            # SÜREKLI ÇALIŞAN PENCERE ÖNE GETİRME - Her 1 saniyede bir pencereyi öne getir (bot çalışırken bile)
+            def force_window_to_front():
+                """Sürekli çalışan pencere öne getirme - bot çalışırken bile pencereye tıklanabilir"""
+                try:
+                    if hasattr(self, 'psfalgo_window') and self.psfalgo_window:
+                        if self.psfalgo_window.winfo_exists():
+                            try:
+                                # Pencere görünür mü kontrol et
+                                if self.psfalgo_window.winfo_viewable():
+                                    # Pencereyi sürekli öne getir (ama topmost yapma - sadece lift)
+                                    self.psfalgo_window.lift()
+                                    # Ana pencereyi de güncelle
+                                    self.update_idletasks()
+                            except:
+                                pass
+                except:
+                    pass
+                finally:
+                    # Her 1 saniyede bir kontrol et (bot çalışırken bile pencereye tıklanabilir)
+                    if hasattr(self, 'psfalgo_window') and self.psfalgo_window:
+                        if self.psfalgo_window.winfo_exists():
+                            self.psfalgo_window.after(1000, force_window_to_front)
+            
+            # Sürekli çalışan mekanizmayı başlat
+            self.psfalgo_window.after(1000, force_window_to_front)
+            
+            # Ana pencereye de klavye kısayolu ekle (psfalgo_window açıkken)
+            def bring_psfalgo_to_front(event=None):
+                if hasattr(self, 'psfalgo_window') and self.psfalgo_window:
+                    if self.psfalgo_window.winfo_exists():
+                        bring_to_front()
+                return "break"  # Event propagation'ı durdur
+            
+            self.bind('<Control-f>', bring_psfalgo_to_front)
+            self.bind('<F5>', bring_psfalgo_to_front)
+            
             # Robot durumu
             self.psfalgo_running = False
             self.psfalgo_positions = {}  # Pozisyon takibi
@@ -3980,6 +4379,12 @@ class MainWindow(tk.Tk):
                 100: (0.05, 1.0)   # >= %10: MAXALW×0.05, Portföy×%1
             }
             
+            # ADDNEWPOS Exposure Limit Ayarı (Kalan exposure'a göre lot ayarlama yüzdesi)
+            # Default: %60 (0-100 arası ayarlanabilir)
+            # %100 = Eski hali (tam exposure doldurur)
+            # %60 = Kalan exposure'ın %60'ını kullanır
+            self.addnewpos_exposure_percentage = 60
+            
             # KARBOTU/REDUCEMORE Kuralları (Pozisyon Azaltma)
             # Format: {eşik_yüzdesi: (maxalw_carpani, befday_carpani)}
             # None = sınırsız
@@ -3997,7 +4402,7 @@ class MainWindow(tk.Tk):
             import time
             self.orders_cache = []
             self.orders_cache_time = time.time() - 61  # İlk çağrıda hemen güncellensin
-            self.orders_cache_interval = 60  # 60 saniye
+            self.orders_cache_interval = 10  # 10 saniye (60'tan 10'a düşürüldü - daha sık güncelleme)
             
             # Pozisyonlar için cache
             self.positions_cache = {}  # {account: positions_list}
@@ -4116,10 +4521,20 @@ class MainWindow(tk.Tk):
         window_controls = ttk.Frame(right_top_frame)
         window_controls.pack(side='left', padx=5)
         
+        # Öne Getir butonu (bot çalışırken pencereyi öne almak için)
+        bring_to_front_btn = ttk.Button(window_controls, text="⬆️ Öne Getir", width=12,
+                                        command=self.bring_psfalgo_window_to_front)
+        bring_to_front_btn.pack(side='left', padx=2)
+        
         # Alta Al (Minimize) butonu
         minimize_btn = ttk.Button(window_controls, text="🗕 Alta Al", width=10,
                                   command=lambda: self.psfalgo_window.iconify())
         minimize_btn.pack(side='left', padx=2)
+        
+        # Klavye kısayolu: Ctrl+F veya F5 ile pencereyi öne getir
+        self.psfalgo_window.bind('<Control-f>', lambda e: self.bring_psfalgo_window_to_front())
+        self.psfalgo_window.bind('<F5>', lambda e: self.bring_psfalgo_window_to_front())
+        self.psfalgo_window.bind('<Control-F>', lambda e: self.bring_psfalgo_window_to_front())
         
         # Exposure ayarları çerçevesi
         exposure_frame = ttk.LabelFrame(self.psfalgo_window, text="💰 Exposure Ayarları", padding=10)
@@ -4172,11 +4587,23 @@ class MainWindow(tk.Tk):
                                         style='Accent.TButton', width=15)
         self.bm_shifter_btn.grid(row=1, column=2, padx=2, pady=2, sticky='ew')
         
-        # Üçüncü satır - Kurallar butonu
+        # Üçüncü satır - Kurallar butonu ve Döngü Raporu butonu
         self.kurallar_btn = ttk.Button(buttons_frame, text="📋 Kurallar", 
                                        command=self.show_rules_dialog, 
                                        style='Accent.TButton', width=15)
         self.kurallar_btn.grid(row=2, column=0, padx=2, pady=2, sticky='ew')
+        
+        # Döngü Raporu butonu - RUNALL emirlerinin detaylı raporunu gösterir
+        self.loop_report_btn = ttk.Button(buttons_frame, text="📊 Döngü Raporu", 
+                                          command=self.show_loop_report_window, 
+                                          style='Accent.TButton', width=15)
+        self.loop_report_btn.grid(row=2, column=1, padx=2, pady=2, sticky='ew')
+        
+        # Psfalgo Alg Raporu butonu - Tüm Psfalgo aktivitelerini gösterir
+        self.psfalgo_alg_raporu_btn = ttk.Button(buttons_frame, text="📈 Alg Raporu", 
+                                                 command=self.show_psfalgo_alg_raporu, 
+                                                 style='Accent.TButton', width=15)
+        self.psfalgo_alg_raporu_btn.grid(row=2, column=2, padx=2, pady=2, sticky='ew')
         
         # Dördüncü satır - Croplit butonları
         self.croplit6_btn = ttk.Button(buttons_frame, text="🔪 Croplit6", 
@@ -4315,6 +4742,13 @@ class MainWindow(tk.Tk):
                                                            variable=self.runall_lot_divider_var)
         self.runall_lot_divider_checkbox.pack(side='left', padx=5)
         
+        # RevOrderMod checkbox - RUNALL modunda otomatik RevOrder açma için
+        self.revorder_mod_var = tk.BooleanVar(value=False)
+        self.revorder_mod_checkbox = ttk.Checkbutton(control_frame, 
+                                                      text="🔄 RevOrderMod (Otomatik Kar Alma)", 
+                                                      variable=self.revorder_mod_var)
+        self.revorder_mod_checkbox.pack(side='left', padx=5)
+        
         # BM Shift değeri gösterimi
         current_shift = getattr(self, 'benchmark_shift', 0.0)
         self.bm_shift_label = ttk.Label(control_frame, text=f"BM Shift: {current_shift:.4f}", 
@@ -4380,18 +4814,24 @@ class MainWindow(tk.Tk):
         log_scrollbar.pack(side='right', fill='y')
         
         # İlk pozisyon verilerini yükle
-        self.load_psfalgo_positions()
+        # Pozisyonları thread'de yükle (UI'ı bloklamamak için)
+        self.load_psfalgo_positions_async()
         
-        # İlk exposure kontrolünü yap (robot başlamadan önce bile göster)
-        try:
-            exposure_info = self.check_exposure_limits()
-            if exposure_info.get('mode') == 'ERROR':
-                self.current_lot_label.config(text="Bağlantı bekleniyor...", foreground='orange')
-        except Exception as e:
-            self.log_message(f"⚠️ İlk exposure kontrolü yapılamadı: {e}")
+        # İlk exposure kontrolünü yap (thread'de, UI'ı bloklamaz)
+        self.check_exposure_limits_async(callback=lambda info: (
+            self.after(0, lambda: self.current_lot_label.config(
+                text="Bağlantı bekleniyor...", foreground='orange'
+            ) if info.get('mode') == 'ERROR' else None)
+        ))
     
-    def load_psfalgo_positions(self):
-        """Psfalgo için pozisyon verilerini yükle - Aktif moda göre"""
+    def load_psfalgo_positions_async(self):
+        """Psfalgo pozisyonlarını thread'de yükle (UI'ı bloklamaz)"""
+        import threading
+        thread = threading.Thread(target=self._load_psfalgo_positions_thread, daemon=True)
+        thread.start()
+    
+    def _load_psfalgo_positions_thread(self):
+        """Thread'de pozisyon verilerini yükle - Tüm bloklayan işlemler burada"""
         try:
             # Aktif modu kontrol et
             if hasattr(self, 'mode_manager'):
@@ -4406,148 +4846,260 @@ class MainWindow(tk.Tk):
                 else:
                     active_account = "HAMPRO"
             
-            self.log_message(f"🔄 Aktif mod: {active_account} - Pozisyonlar çekiliyor...")
+            # Log mesajını main thread'de göster (thread-safe)
+            self.safe_ui_call(self.log_message, f"🔄 Aktif mod: {active_account} - Pozisyonlar çekiliyor...")
             
-            # Aktif hesaptan pozisyonları al
+            # Aktif hesaptan pozisyonları al (cache'den veya direkt)
+            # Lock kullanarak aynı anda sadece bir thread pozisyon çeksin
+            import threading
+            if not hasattr(self, '_positions_lock'):
+                self._positions_lock = threading.Lock()
+            
             positions = []
-            if active_account in ["IBKR_GUN", "IBKR_PED"]:
-                # IBKR mod - IBKR pozisyonlarını al (GUN veya PED)
-                if hasattr(self.mode_manager, 'ibkr_native_client') and self.mode_manager.ibkr_native_client.is_connected():
-                    positions = self.mode_manager.ibkr_native_client.get_positions()
-                    self.log_message(f"✅ IBKR Native'dan {len(positions)} pozisyon alındı ({active_account})")
-                elif hasattr(self.mode_manager, 'ibkr_client') and self.mode_manager.ibkr_client.is_connected():
-                    positions = self.mode_manager.ibkr_client.get_positions()
-                    self.log_message(f"✅ IBKR Client'dan {len(positions)} pozisyon alındı ({active_account})")
+            with self._positions_lock:
+                # Önce cache'den kontrol et (5 saniye içinde çekilmişse cache'den kullan)
+                import time
+                cache_key = active_account
+                current_time = time.time()
+                
+                if (hasattr(self, 'positions_cache') and 
+                    cache_key in self.positions_cache and
+                    hasattr(self, 'positions_cache_time') and
+                    cache_key in self.positions_cache_time and
+                    (current_time - self.positions_cache_time.get(cache_key, 0)) < 5.0):  # 5 saniye cache
+                    positions = self.positions_cache[cache_key].copy()  # Copy yap ki değişmesin
+                    self.safe_ui_call(self.log_message, f"✅ {active_account}: {len(positions)} pozisyon cache'den alındı")
                 else:
-                    self.log_message(f"❌ IBKR bağlantısı yok! ({active_account}) Lütfen önce bağlanın.")
-                    return
-            else:  # HAMPRO
-                # HAMPRO mod - Hammer Pro pozisyonlarını al
-                if self.hammer and self.hammer.connected:
-                    positions = self.hammer.get_positions_direct()
-                    self.log_message(f"✅ HAMPRO'dan {len(positions)} pozisyon alındı")
-                    # Debug: Pozisyon yapısını logla
-                    if positions:
-                        self.log_message(f"🔍 İlk pozisyon örneği: {positions[0]}")
-                    else:
-                        self.log_message("⚠️ HAMPRO'dan pozisyon döndü ama liste boş!")
-                else:
-                    self.log_message("❌ HAMPRO bağlantısı yok! Lütfen önce bağlanın.")
-                    return
+                    # Cache yok veya eski, yeni pozisyon çek
+                    if active_account in ["IBKR_GUN", "IBKR_PED"]:
+                        # IBKR mod - IBKR pozisyonlarını al (GUN veya PED)
+                        if hasattr(self.mode_manager, 'ibkr_native_client') and self.mode_manager.ibkr_native_client.is_connected():
+                            positions = self.mode_manager.ibkr_native_client.get_positions()
+                            self.safe_ui_call(self.log_message, f"✅ IBKR Native'dan {len(positions)} pozisyon alındı ({active_account})")
+                        elif hasattr(self.mode_manager, 'ibkr_client') and self.mode_manager.ibkr_client.is_connected():
+                            positions = self.mode_manager.ibkr_client.get_positions()
+                            self.safe_ui_call(self.log_message, f"✅ IBKR Client'dan {len(positions)} pozisyon alındı ({active_account})")
+                        else:
+                            self.safe_ui_call(self.log_message, f"❌ IBKR bağlantısı yok! ({active_account}) Lütfen önce bağlanın.")
+                            return
+                    else:  # HAMPRO
+                        # HAMPRO mod - Hammer Pro pozisyonlarını al
+                        if self.hammer and self.hammer.connected:
+                            positions = self.hammer.get_positions_direct()
+                            self.safe_ui_call(self.log_message, f"✅ HAMPRO'dan {len(positions)} pozisyon alındı")
+                            # Debug: Pozisyon yapısını logla
+                            if positions:
+                                self.safe_ui_call(self.log_message, f"🔍 İlk pozisyon örneği: {positions[0]}")
+                            else:
+                                self.safe_ui_call(self.log_message, "⚠️ HAMPRO'dan pozisyon döndü ama liste boş!")
+                        else:
+                            self.safe_ui_call(self.log_message, "❌ HAMPRO bağlantısı yok! Lütfen önce bağlanın.")
+                            return
+                    
+                    # Cache'i güncelle
+                    if not hasattr(self, 'positions_cache'):
+                        self.positions_cache = {}
+                    if not hasattr(self, 'positions_cache_time'):
+                        self.positions_cache_time = {}
+                    self.positions_cache[cache_key] = positions.copy()  # Copy yap
+                    self.positions_cache_time[cache_key] = current_time
             
             if not positions:
-                self.log_message("⚠️ Pozisyon bulunamadı!")
+                self.after(0, lambda: self.log_message("⚠️ Pozisyon bulunamadı!"))
+                return
+            
+            # Duplicate pozisyonları filtrele ve birleştir (aynı symbol için quantity'leri topla)
+            unique_positions = {}
+            for pos in positions:
+                symbol = pos.get('symbol', '') or pos.get('Symbol', '') or pos.get('ticker', '') or pos.get('Ticker', '')
+                if not symbol:
+                    continue
+                
+                qty = pos.get('qty', None) or pos.get('quantity', None) or pos.get('Quantity', None)
+                if qty is None:
+                    continue
+                
+                try:
+                    qty_float = float(qty)
+                except (ValueError, TypeError):
+                    continue
+                
+                # Duplicate pozisyonları birleştir
+                if symbol in unique_positions:
+                    unique_positions[symbol] += qty_float
+                else:
+                    unique_positions[symbol] = qty_float
+            
+            # Duplicate pozisyon uyarısı
+            if len(positions) != len(unique_positions):
+                self.safe_ui_call(self.log_message, f"⚠️ {len(positions) - len(unique_positions)} duplicate pozisyon birleştirildi (Toplam: {len(positions)} → Unique: {len(unique_positions)})")
+            
+            if not unique_positions:
+                self.safe_ui_call(self.log_message, "⚠️ Pozisyon bulunamadı!")
                 return
             
             # Pozisyonları DataFrame'e çevir
             position_data = []
-            for pos in positions:
-                symbol = pos.get('symbol', '') or pos.get('Symbol', '') or pos.get('ticker', '') or pos.get('Ticker', '')
-                qty = pos.get('qty', None) or pos.get('quantity', None) or pos.get('Quantity', None) or pos.get('qty', None)
-                
-                # Debug log
-                if not symbol:
-                    self.log_message(f"⚠️ Pozisyon'da symbol bulunamadı: {pos}")
-                    continue
-                
-                if qty is None:
-                    self.log_message(f"⚠️ {symbol}: qty None, 0 olarak ayarlandı")
-                    qty = 0
-                
-                try:
-                    qty_float = float(qty)
-                    if qty_float != 0:  # Sadece 0 olmayan pozisyonları ekle
-                        position_data.append({
-                            'Symbol': symbol,
-                            'Quantity': qty_float
-                        })
-                        self.log_message(f"✅ {symbol}: {qty_float:.0f} lot eklendi")
-                except (ValueError, TypeError) as e:
-                    self.log_message(f"⚠️ {symbol}: qty parse edilemedi: {qty} - {e}")
-                    continue
+            for symbol, qty_float in unique_positions.items():
+                if qty_float != 0:  # Sadece 0 olmayan pozisyonları ekle
+                    position_data.append({
+                        'Symbol': symbol,
+                        'Quantity': qty_float
+                    })
             
             if not position_data:
-                self.log_message("⚠️ Pozisyon verisi parse edilemedi veya tüm pozisyonlar 0!")
-                self.log_message(f"🔍 Toplam {len(positions)} pozisyon geldi ama parse edilemedi")
+                self.safe_ui_call(self.log_message, "⚠️ Pozisyon verisi parse edilemedi veya tüm pozisyonlar 0!")
+                self.safe_ui_call(self.log_message, f"🔍 Toplam {len(positions)} pozisyon geldi ama parse edilemedi")
                 return
             
             df = pd.DataFrame(position_data)
+            
+            # Tüm pozisyon verilerini thread'de hazırla (UI widget'larına erişmeden)
+            prepared_data = []
+            print(f"[PSFALGO] 🔄 {len(df)} pozisyon için veri hazırlanıyor...")
+            
+            for idx, row in df.iterrows():
+                try:
+                    symbol = row['Symbol']
+                    quantity = row['Quantity']
+                    
+                    # Gün başı pozisyonu al (befib/befham'dan) - CSV okuma thread'de
+                    befday_qty = self.load_bef_position(symbol)
+                    
+                    # Bugünkü değişim hesapla
+                    todays_qty_chg = quantity - befday_qty
+                    
+                    # MAXALW değerini al (AVG_ADV / rule_avg_adv_divisor) - CSV okuma thread'de
+                    maxalw = self.get_maxalw_for_symbol(symbol)
+                    # Max Change = MAXALW * rule_max_change_multiplier (varsayılan 0.75)
+                    multiplier = getattr(self, 'rule_max_change_multiplier', 0.75)
+                    max_change = int(maxalw * multiplier) if maxalw > 0 else 0
+                    
+                    # Açık emirleri kontrol et (cache'den, hızlı)
+                    open_orders_count = self.get_open_orders_count(symbol, use_cache=True)
+                    
+                    # Emir analizi yap (cache'den, hızlı)
+                    order_analysis = self.analyze_order_impact(symbol, quantity)
+                    
+                    # Yeni kolonlar: Befday Cost, Todays Cost, Last Price - CSV okuma thread'de
+                    befday_cost = self.get_prev_close_for_psfalgo(symbol)
+                    todays_cost = self.get_todays_cost_for_psfalgo(symbol, quantity, befday_qty)
+                    last_price = self.get_last_price_for_psfalgo(symbol)
+                    
+                    # Pozisyon değişikliği hesapla
+                    position_change = self.calculate_position_change(befday_qty, todays_qty_chg)
+                    
+                    # Veriyi hazırla (UI güncellemesi için)
+                    prepared_data.append({
+                        'symbol': symbol,
+                        'quantity': quantity,
+                        'display_quantity': f"{quantity:.0f}" if quantity >= 0 else f"{quantity:.0f}",
+                        'befday_qty': befday_qty,
+                        'todays_qty_chg': todays_qty_chg,
+                        'maxalw': maxalw,
+                        'max_change': max_change,
+                        'open_orders_count': open_orders_count,
+                        'order_analysis': order_analysis,
+                        'befday_cost': befday_cost,
+                        'todays_cost': todays_cost,
+                        'last_price': last_price,
+                        'position_change': position_change
+                    })
+                except Exception as e:
+                    print(f"[PSFALGO] ⚠️ {symbol} pozisyonu hazırlanırken hata: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    continue
+            
+            # Debug: Pozisyon verilerini logla
+            print(f"[PSFALGO] 📊 {len(prepared_data)} pozisyon hazırlandı, UI'ya gönderiliyor...")
+            if prepared_data:
+                print(f"[PSFALGO] 🔍 İlk pozisyon örneği: {prepared_data[0]['symbol']} - Qty: {prepared_data[0]['quantity']}")
+            
+            # UI güncellemesini main thread'de yap (thread-safe)
+            self.safe_ui_call(self._update_ui_with_positions, prepared_data)
+            
+        except Exception as e:
+            # Hata mesajını da main thread'de göster (thread-safe)
+            self.safe_ui_call(self.log_message, f"❌ Pozisyon yükleme hatası: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def _update_ui_with_positions(self, prepared_data):
+        """UI'ı hazırlanmış pozisyon verileri ile güncelle (main thread'de çalışır)"""
+        try:
+            # Pencere ve tree widget'ının var olduğunu kontrol et
+            if not hasattr(self, 'psfalgo_window') or not self.psfalgo_window:
+                print("[PSFALGO] ⚠️ Pencere bulunamadı, pozisyonlar yüklenemiyor")
+                return
+            
+            if not hasattr(self, 'psfalgo_tree') or not self.psfalgo_tree:
+                print("[PSFALGO] ⚠️ Tree widget bulunamadı, pozisyonlar yüklenemiyor")
+                return
+            
+            # Pencere hala açık mı kontrol et
+            try:
+                if not self.psfalgo_window.winfo_exists():
+                    print("[PSFALGO] ⚠️ Pencere kapatılmış, pozisyonlar yüklenemiyor")
+                    return
+            except:
+                print("[PSFALGO] ⚠️ Pencere kontrolü başarısız, pozisyonlar yüklenemiyor")
+                return
             
             # Tabloyu temizle
             for item in self.psfalgo_tree.get_children():
                 self.psfalgo_tree.delete(item)
             
             # Pozisyonları tabloya ekle
-            for _, row in df.iterrows():
-                symbol = row['Symbol']
-                quantity = row['Quantity']
+            print(f"[PSFALGO] 📋 {len(prepared_data)} pozisyon tabloya ekleniyor...")
+            for data in prepared_data:
+                symbol = data['symbol']
+                quantity = data['quantity']
                 
-                # Gün başı pozisyonu al (befib/befham'dan)
-                befday_qty = self.load_bef_position(symbol)
-                
-                # Bugünkü değişim hesapla
-                todays_qty_chg = quantity - befday_qty
-                
-                # MAXALW değerini al (AVG_ADV / rule_avg_adv_divisor)
-                maxalw = self.get_maxalw_for_symbol(symbol)
-                # Max Change = MAXALW * rule_max_change_multiplier (varsayılan 0.75)
-                multiplier = getattr(self, 'rule_max_change_multiplier', 0.75)
-                max_change = int(maxalw * multiplier) if maxalw > 0 else 0
-                
-                # Short pozisyonları eksi ile göster
-                display_quantity = f"{quantity:.0f}" if quantity >= 0 else f"{quantity:.0f}"
-                
-                # Açık emirleri kontrol et
-                open_orders_count = self.get_open_orders_count(symbol)
-                
-                # Emir analizi yap
-                order_analysis = self.analyze_order_impact(symbol, quantity)
-                
-                # Yeni kolonlar: Befday Cost, Todays Cost, Last Price
-                befday_cost = self.get_prev_close_for_psfalgo(symbol)
-                todays_cost = self.get_todays_cost_for_psfalgo(symbol, quantity, befday_qty)
-                last_price = self.get_last_price_for_psfalgo(symbol)
-                
-                # Pozisyon değişikliği hesapla
-                position_change = self.calculate_position_change(befday_qty, todays_qty_chg)
-                
-                self.psfalgo_tree.insert('', 'end', values=[
-                    symbol,
-                    display_quantity,
-                    f"{order_analysis['potential_position']:.0f}",  # Potansiyel pozisyon
-                    f"${befday_cost:.2f}" if befday_cost > 0 else "N/A",  # Befday Cost (prev_close)
-                    f"${todays_cost:.2f}" if todays_cost > 0 else "",  # Todays Cost (bugünkü ortalama maliyet)
-                    f"${last_price:.2f}" if last_price > 0 else "N/A",  # Last Price
-                    f"{befday_qty:.0f}",  # Befday Qty
-                    f"{todays_qty_chg:+.0f}",  # Todays Qty Chg (artı/eksi ile)
-                    position_change,  # Pozisyon Değişikliği
-                    f"{max_change}",  # Max Change (MAXALW × multiplier)
-                    f"{maxalw:.0f}",  # MAXALW
-                    "0",  # 3 saatlik değişim
-                    f"{open_orders_count}",  # Açık emir sayısı
-                    f"{order_analysis['max_additional_long']:.0f}",  # Max ek long
-                    f"{order_analysis['max_additional_short']:.0f}",  # Max ek short
-                    "Hazır"
-                ])
-                
-                # Pozisyon verilerini sakla
-                self.psfalgo_positions[symbol] = {
-                    'quantity': quantity,
-                    'befday_qty': befday_qty,
-                    'todays_qty_chg': todays_qty_chg,
-                    'maxalw': maxalw,
-                    'max_change': max_change,
-                    'three_hour_change': 0,
-                    'last_trade_time': None,
-                    'befday_cost': befday_cost,
-                    'todays_cost': todays_cost,
-                    'last_price': last_price
-                }
+                try:
+                    self.psfalgo_tree.insert('', 'end', values=[
+                        symbol,
+                        data['display_quantity'],
+                        f"{data['order_analysis']['potential_position']:.0f}",  # Potansiyel pozisyon
+                        f"${data['befday_cost']:.2f}" if data['befday_cost'] > 0 else "N/A",  # Befday Cost
+                        f"${data['todays_cost']:.2f}" if data['todays_cost'] > 0 else "",  # Todays Cost
+                        f"${data['last_price']:.2f}" if data['last_price'] > 0 else "N/A",  # Last Price
+                        f"{data['befday_qty']:.0f}",  # Befday Qty
+                        f"{data['todays_qty_chg']:+.0f}",  # Todays Qty Chg
+                        data['position_change'],  # Pozisyon Değişikliği
+                        f"{data['max_change']}",  # Max Change
+                        f"{data['maxalw']:.0f}",  # MAXALW
+                        "0",  # 3 saatlik değişim
+                        f"{data['open_orders_count']}",  # Açık emir sayısı
+                        f"{data['order_analysis']['max_additional_long']:.0f}",  # Max ek long
+                        f"{data['order_analysis']['max_additional_short']:.0f}",  # Max ek short
+                        "Hazır"
+                    ])
+                    
+                    # Pozisyon verilerini sakla
+                    self.psfalgo_positions[symbol] = {
+                        'quantity': quantity,
+                        'befday_qty': data['befday_qty'],
+                        'todays_qty_chg': data['todays_qty_chg'],
+                        'maxalw': data['maxalw'],
+                        'max_change': data['max_change'],
+                        'three_hour_change': 0,
+                        'last_trade_time': None,
+                        'befday_cost': data['befday_cost'],
+                        'todays_cost': data['todays_cost'],
+                        'last_price': data['last_price']
+                    }
+                except Exception as e:
+                    print(f"[PSFALGO] ⚠️ {symbol} pozisyonu eklenirken hata: {e}")
+                    continue
             
-            self.log_message(f"✅ {len(df)} pozisyon yüklendi")
+            print(f"[PSFALGO] ✅ {len(prepared_data)} pozisyon tabloya eklendi")
+            self.log_message(f"✅ {len(prepared_data)} pozisyon yüklendi")
             
         except Exception as e:
-            self.log_message(f"❌ Pozisyon yükleme hatası: {e}")
+            self.log_message(f"❌ UI güncelleme hatası: {e}")
+            import traceback
+            traceback.print_exc()
     
     def calculate_position_change(self, befday_qty, todays_qty_chg):
         """
@@ -4668,7 +5220,7 @@ class MainWindow(tk.Tk):
         """
         Psfalgo için bugün yapılan pozisyon artırımlarının ortalama maliyetini hesapla (Todays Cost)
         
-        nfilled dosyalarından okur (nfilledped.csv, nfilledgun.csv, nfilledham.csv)
+        Önce IBKR Native Client'dan bugünkü filled emirleri çeker, yoksa nfilled dosyalarından okur
         
         Pozisyon artırımı kontrolü:
         - Long için: befday_qty >= 0 ve current_qty > befday_qty ise artırım var
@@ -4699,7 +5251,58 @@ class MainWindow(tk.Tk):
                 # Pozisyon artırımı yok (azalma veya değişim yok)
                 return 0
             
-            # nfilled dosyasından bugünkü işlemleri al
+            # ÖNCE IBKR Native Client'dan bugünkü filled emirleri çek
+            filled_orders = []
+            if hasattr(self, 'mode_manager') and self.mode_manager:
+                if hasattr(self.mode_manager, 'ibkr_native_client') and self.mode_manager.ibkr_native_client:
+                    native_client = self.mode_manager.ibkr_native_client
+                    if native_client.is_connected():
+                        all_filled = native_client.get_todays_filled_orders()
+                        # Symbol'e göre filtrele
+                        symbol_variants = [symbol]
+                        if '-' in symbol:
+                            symbol_variants.append(symbol.replace('-', ' PR'))
+                        elif ' PR' in symbol:
+                            parts = symbol.split(' PR')
+                            if len(parts) == 2:
+                                symbol_variants.append(f"{parts[0]}-{parts[1]}")
+                        
+                        for fill in all_filled:
+                            fill_symbol = fill.get('symbol', '')
+                            if fill_symbol in symbol_variants:
+                                filled_orders.append(fill)
+            
+            # IBKR'den filled emirler varsa onları kullan
+            if filled_orders:
+                total_qty = 0
+                total_value = 0
+                
+                for fill in filled_orders:
+                    fill_qty = abs(float(fill.get('fill_qty', 0) or fill.get('qty', 0)))
+                    fill_price = float(fill.get('fill_price', 0) or fill.get('price', 0))
+                    
+                    if fill_qty <= 0 or fill_price <= 0:
+                        continue
+                    
+                    # Action kolonundan yön belirle
+                    action = str(fill.get('action', '')).lower()
+                    is_buy = 'buy' in action
+                    is_sell = 'sell' in action
+                    
+                    if is_long_increase and is_buy:
+                        # Long artırım - sadece buy işlemlerini say
+                        total_qty += fill_qty
+                        total_value += fill_qty * fill_price
+                    elif is_short_increase and is_sell:
+                        # Short artırım - sadece sell işlemlerini say
+                        total_qty += fill_qty
+                        total_value += fill_qty * fill_price
+                
+                if total_qty > 0:
+                    avg_cost = total_value / total_qty
+                    return round(avg_cost, 2)
+            
+            # IBKR'den filled emir yoksa nfilled dosyasından oku (fallback)
             import pandas as pd
             import os
             from datetime import datetime
@@ -5288,9 +5891,13 @@ class MainWindow(tk.Tk):
             print(f"[CONTROLLER] ❌ Pozisyon türü kontrol hatası: {e}")
             return True, order_qty, True, f"Hata: {e}"
     
-    def check_maxalw_limits(self, symbol, current_qty, open_orders_qty, new_order_qty, order_side, gün_başı_pozisyon, maxalw):
+    def check_maxalw_limits(self, symbol, current_qty, open_orders_qty, new_order_qty, order_side, gün_başı_pozisyon, maxalw, is_reduce_order=False):
         """
         MAXALW limitleri kontrolü
+        
+        Args:
+            is_reduce_order: True ise pozisyon AZALTMA emri (KARBOTU/REDUCEMORE), False ise pozisyon ARTIRMA emri
+            Pozisyon azaltma durumlarında toplam pozisyon limiti kontrolü YAPILMAZ (çünkü zaten azaltmak istiyoruz)
         
         Returns: (allowed_qty, reason)
         """
@@ -5305,27 +5912,35 @@ class MainWindow(tk.Tk):
                 potential_position = current_potential - new_order_qty
             
             # Limit 1: Toplam pozisyon MAXALW'yi geçmemeli (abs ile) - emir miktarı ayarlanır
-            abs_potential = abs(potential_position)
-            current_abs = abs(current_potential)
-            
-            if abs_potential > maxalw:
-                # Limit aşılıyor, ne kadar eklenebilir?
-                if current_abs >= maxalw:
-                    limit_1_allowed = 0
-                    limit_1_reason = f"Toplam pozisyon limiti: Zaten MAXALW'ye ulaştı ({current_abs:.0f} >= {maxalw:.0f}), emir engellendi"
-                else:
-                    # Kalan kapasite (yönü dikkate alarak)
-                    limit_1_allowed = maxalw - current_abs
-                    if limit_1_allowed < new_order_qty:
-                        limit_1_reason = f"Toplam pozisyon limiti: Emir {new_order_qty} → {limit_1_allowed:.0f} lot'a düşürüldü (MAXALW: {maxalw:.0f}, mevcut: {current_abs:.0f})"
-                    else:
-                        limit_1_reason = f"Toplam pozisyon limiti OK"
+            # ANCAK: POZISYON AZALTMA (KARBOTU/REDUCEMORE) durumunda bu kontrol YAPILMAZ!
+            # Çünkü zaten pozisyonu azaltmak istiyoruz, MAXALW üzerinde olması sorun değil
+            if is_reduce_order:
+                # Pozisyon azaltma - toplam pozisyon limiti kontrolü YAPILMAZ
+                limit_1_allowed = new_order_qty  # Tam emir miktarı kabul edilir
+                limit_1_reason = "Toplam pozisyon limiti: Pozisyon azaltma - kontrol atlandı"
             else:
-                # Limit içinde, tam emir miktarı kabul edilebilir (ama diğer limitlere de bakılacak)
-                limit_1_allowed = maxalw - current_abs
-                if limit_1_allowed > new_order_qty:
-                    limit_1_allowed = new_order_qty
-                limit_1_reason = f"Toplam pozisyon limiti OK"
+                # Pozisyon artırma - toplam pozisyon limiti kontrolü YAPILIR
+                abs_potential = abs(potential_position)
+                current_abs = abs(current_potential)
+                
+                if abs_potential > maxalw:
+                    # Limit aşılıyor, ne kadar eklenebilir?
+                    if current_abs >= maxalw:
+                        limit_1_allowed = 0
+                        limit_1_reason = f"Toplam pozisyon limiti: Zaten MAXALW'ye ulaştı ({current_abs:.0f} >= {maxalw:.0f}), emir engellendi"
+                    else:
+                        # Kalan kapasite (yönü dikkate alarak)
+                        limit_1_allowed = maxalw - current_abs
+                        if limit_1_allowed < new_order_qty:
+                            limit_1_reason = f"Toplam pozisyon limiti: Emir {new_order_qty} → {limit_1_allowed:.0f} lot'a düşürüldü (MAXALW: {maxalw:.0f}, mevcut: {current_abs:.0f})"
+                        else:
+                            limit_1_reason = f"Toplam pozisyon limiti OK"
+                else:
+                    # Limit içinde, tam emir miktarı kabul edilebilir (ama diğer limitlere de bakılacak)
+                    limit_1_allowed = maxalw - current_abs
+                    if limit_1_allowed > new_order_qty:
+                        limit_1_allowed = new_order_qty
+                    limit_1_reason = f"Toplam pozisyon limiti OK"
             
             # Limit 2: Günlük değişim MAXALW*multiplier'ı geçmemeli (abs ile) - emir miktarı ayarlanır
             multiplier = getattr(self, 'rule_max_change_multiplier', 0.75)
@@ -5538,9 +6153,15 @@ class MainWindow(tk.Tk):
             traceback.print_exc()
             return order_qty, f"Hata: {e}"
     
-    def controller_check_order(self, symbol, order_side, requested_qty):
+    def controller_check_order(self, symbol, order_side, requested_qty, is_reduce_order=False):
         """
         Controller ON iken emir kontrolü
+        
+        Args:
+            symbol: Sembol
+            order_side: "BUY" veya "SELL"
+            requested_qty: İstenen emir miktarı
+            is_reduce_order: True ise pozisyon AZALTMA emri (KARBOTU/REDUCEMORE), False ise pozisyon ARTIRMA emri
         
         Returns: (allowed, adjusted_qty, reason)
         """
@@ -5591,8 +6212,10 @@ class MainWindow(tk.Tk):
             )
             
             # 2. MAXALW LİMİTLERİ KONTROLÜ
+            # POZISYON AZALTMA (KARBOTU/REDUCEMORE) durumunda toplam pozisyon limiti kontrolü YAPILMAZ
+            # Çünkü zaten pozisyonu azaltmak istiyoruz, MAXALW üzerinde olması sorun değil
             maxalw_allowed_qty, maxalw_reason = self.check_maxalw_limits(
-                symbol, current_qty, open_orders_qty, pos_adjusted_qty, order_side, gün_başı_pozisyon, maxalw
+                symbol, current_qty, open_orders_qty, pos_adjusted_qty, order_side, gün_başı_pozisyon, maxalw, is_reduce_order=is_reduce_order
             )
             
             # 3. POT TOPLAM LİMİT KONTROLÜ (sadece pozisyon arttırma emirleri için)
@@ -5702,13 +6325,10 @@ class MainWindow(tk.Tk):
             return
         
         try:
-            # Exposure kontrolü yap
-            exposure_info = self.check_exposure_limits()
-            current_mode = exposure_info.get('mode', 'UNKNOWN')
-            can_add_positions = exposure_info.get('can_add_positions', False)
-            
-            # Pozisyonları güncelle (emirler cache'den alınacak)
-            self.update_psfalgo_positions()
+            # Exposure kontrolü yap (thread'de, UI'ı bloklamaz)
+            self.check_exposure_limits_async(callback=lambda exposure_info: (
+                self.after(0, lambda: self._process_exposure_info(exposure_info))
+            ))
             
             # Pot Toplam kontrolü (Controller ON ise ve 60 saniyede bir)
             if hasattr(self, 'controller_enabled') and self.controller_enabled:
@@ -5818,8 +6438,24 @@ class MainWindow(tk.Tk):
         except Exception as e:
             self.log_message(f"ERROR TP Longs otomasyon init: {e}")
     
+    def check_exposure_limits_async(self, callback=None):
+        """Exposure limitlerini thread'de kontrol et (UI'ı bloklamaz)"""
+        import threading
+        thread = threading.Thread(target=self._check_exposure_limits_thread, args=(callback,), daemon=True)
+        thread.start()
+    
     def check_exposure_limits(self):
-        """Exposure limitlerini kontrol et ve modu belirle - AKTİF HESAP bazlı"""
+        """Exposure limitlerini kontrol et - Senkron versiyon (geriye uyumluluk için)"""
+        import queue
+        result_queue = queue.Queue()
+        self.check_exposure_limits_async(callback=lambda info: result_queue.put(info))
+        try:
+            return result_queue.get(timeout=10)  # 10 saniye timeout
+        except queue.Empty:
+            return {'mode': 'ERROR', 'can_add_positions': False}
+    
+    def _check_exposure_limits_thread(self, callback=None):
+        """Thread'de exposure limitlerini kontrol et - Tüm bloklayan işlemler burada"""
         try:
             # Exposure parametrelerini al
             exposure_limit = float(self.exposure_limit_var.get())
@@ -5843,35 +6479,100 @@ class MainWindow(tk.Tk):
                 else:
                     active_account = "HAMPRO"
             
-            self.log_message(f"📊 Exposure kontrolü başlatıldı - Aktif hesap: {active_account}")
+            # Log mesajlarını topla (main thread'de gösterilecek)
+            log_messages = [f"📊 Exposure kontrolü başlatıldı - Aktif hesap: {active_account}"]
             
-            # Aktif hesaptan pozisyonları al
+            # Aktif hesaptan pozisyonları al (cache'den veya direkt - lock ile)
+            import threading
+            if not hasattr(self, '_positions_lock'):
+                self._positions_lock = threading.Lock()
+            
             positions = []
-            if active_account == "HAMPRO":
-                # HAMPRO mod kontrolü
-                if not self.hammer or not self.hammer.connected:
-                    self.log_message("⚠️ HAMPRO bağlantısı yok!")
-                    self.current_lot_label.config(text="HAMPRO bağlantısı yok!", foreground='red')
-                    return {'mode': 'ERROR', 'can_add_positions': False}
+            with self._positions_lock:
+                # Önce cache'den kontrol et (5 saniye içinde çekilmişse cache'den kullan)
+                import time
+                cache_key = active_account
+                current_time = time.time()
                 
-                positions = self.hammer.get_positions_direct()
-                self.log_message(f"✅ HAMPRO'dan {len(positions)} pozisyon alındı")
-                
-            elif active_account in ["IBKR_GUN", "IBKR_PED"]:
-                # IBKR mod kontrolü (GUN veya PED)
-                if hasattr(self.mode_manager, 'ibkr_native_client') and self.mode_manager.ibkr_native_client.is_connected():
-                    positions = self.mode_manager.ibkr_native_client.get_positions()
-                    self.log_message(f"✅ IBKR Native'dan {len(positions)} pozisyon alındı ({active_account})")
-                elif hasattr(self.mode_manager, 'ibkr_client') and self.mode_manager.ibkr_client.is_connected():
-                    positions = self.mode_manager.ibkr_client.get_positions()
-                    self.log_message(f"✅ IBKR Client'dan {len(positions)} pozisyon alındı ({active_account})")
+                if (hasattr(self, 'positions_cache') and 
+                    cache_key in self.positions_cache and
+                    hasattr(self, 'positions_cache_time') and
+                    cache_key in self.positions_cache_time and
+                    (current_time - self.positions_cache_time.get(cache_key, 0)) < 5.0):  # 5 saniye cache
+                    positions = self.positions_cache[cache_key].copy()  # Copy yap ki değişmesin
+                    log_messages.append(f"✅ {active_account}: {len(positions)} pozisyon cache'den alındı")
                 else:
-                    self.log_message(f"⚠️ IBKR bağlantısı yok! ({active_account})")
-                    self.current_lot_label.config(text=f"IBKR bağlantısı yok! ({active_account})", foreground='red')
-                    return {'mode': 'ERROR', 'can_add_positions': False}
-            else:
-                self.log_message(f"⚠️ Bilinmeyen mod: {active_account}")
-                return {'mode': 'ERROR', 'can_add_positions': False}
+                    # Cache yok veya eski, yeni pozisyon çek
+                    if active_account == "HAMPRO":
+                        # HAMPRO mod kontrolü
+                        if not self.hammer or not self.hammer.connected:
+                            error_result = {'mode': 'ERROR', 'can_add_positions': False}
+                            self.after(0, lambda: (
+                                self.log_message("⚠️ HAMPRO bağlantısı yok!"),
+                                self.current_lot_label.config(text="HAMPRO bağlantısı yok!", foreground='red')
+                            ))
+                            if callback:
+                                callback(error_result)
+                            return
+                        
+                        positions = self.hammer.get_positions_direct()
+                        log_messages.append(f"✅ HAMPRO'dan {len(positions)} pozisyon alındı")
+                        
+                    elif active_account in ["IBKR_GUN", "IBKR_PED"]:
+                        # IBKR mod kontrolü (GUN veya PED)
+                        if hasattr(self.mode_manager, 'ibkr_native_client') and self.mode_manager.ibkr_native_client.is_connected():
+                            positions = self.mode_manager.ibkr_native_client.get_positions()
+                            log_messages.append(f"✅ IBKR Native'dan {len(positions)} pozisyon alındı ({active_account})")
+                        elif hasattr(self.mode_manager, 'ibkr_client') and self.mode_manager.ibkr_client.is_connected():
+                            positions = self.mode_manager.ibkr_client.get_positions()
+                            log_messages.append(f"✅ IBKR Client'dan {len(positions)} pozisyon alındı ({active_account})")
+                        else:
+                            error_result = {'mode': 'ERROR', 'can_add_positions': False}
+                            self.after(0, lambda: (
+                                self.log_message(f"⚠️ IBKR bağlantısı yok! ({active_account})"),
+                                self.current_lot_label.config(text=f"IBKR bağlantısı yok! ({active_account})", foreground='red')
+                            ))
+                            if callback:
+                                callback(error_result)
+                            return
+                    else:
+                        # Bilinmeyen mod
+                        error_result = {'mode': 'ERROR', 'can_add_positions': False}
+                        self.after(0, lambda: self.log_message(f"⚠️ Bilinmeyen mod: {active_account}"))
+                        if callback:
+                            callback(error_result)
+                        return
+                    
+                    # Cache'i güncelle (sadece pozisyonlar başarıyla çekildiyse)
+                    if not hasattr(self, 'positions_cache'):
+                        self.positions_cache = {}
+                    if not hasattr(self, 'positions_cache_time'):
+                        self.positions_cache_time = {}
+                    self.positions_cache[cache_key] = positions.copy()  # Copy yap
+                    self.positions_cache_time[cache_key] = current_time
+            
+            # Duplicate pozisyonları filtrele (aynı symbol için sadece bir pozisyon)
+            unique_positions = {}
+            for pos in positions:
+                symbol = pos.get('symbol', '') or pos.get('Symbol', '') or pos.get('ticker', '') or pos.get('Ticker', '')
+                if not symbol:
+                    continue
+                
+                # Eğer bu symbol zaten varsa, quantity'leri topla (duplicate pozisyonları birleştir)
+                qty_value = pos.get('quantity') or pos.get('qty') or pos.get('Quantity')
+                if qty_value is None:
+                    continue
+                
+                try:
+                    qty = float(qty_value)
+                except (ValueError, TypeError):
+                    continue
+                
+                if symbol in unique_positions:
+                    # Duplicate pozisyon - quantity'leri topla
+                    unique_positions[symbol] += qty
+                else:
+                    unique_positions[symbol] = qty
             
             # Toplam lot hesapla (long pozisyonlar + abs(short pozisyonlar))
             total_lots = 0
@@ -5880,27 +6581,25 @@ class MainWindow(tk.Tk):
             
             # Debug: İlk 3 pozisyonun yapısını göster
             if len(positions) > 0:
-                self.log_message(f"🔍 İlk pozisyon örneği: {positions[0]}")
+                log_messages.append(f"🔍 İlk pozisyon örneği: {positions[0]}")
             
-            for pos in positions:
-                # Önce quantity dene, yoksa qty kullan
-                qty_value = pos.get('quantity') or pos.get('qty') or pos.get('Quantity')
-                if qty_value is None:
-                    self.log_message(f"⚠️ Pozisyon'da qty bulunamadı: {pos}")
-                    continue
-                
+            # Unique pozisyonları say
+            for symbol, qty in unique_positions.items():
                 try:
-                    qty = int(float(qty_value))
+                    qty_int = int(qty)
                 except (ValueError, TypeError):
-                    self.log_message(f"⚠️ qty parse edilemedi: {qty_value} - {pos}")
                     continue
                 
-                if qty > 0:
-                    long_lots += qty
-                elif qty < 0:
-                    short_lots += abs(qty)
+                if qty_int > 0:
+                    long_lots += qty_int
+                elif qty_int < 0:
+                    short_lots += abs(qty_int)
                 
-                total_lots += abs(qty)
+                total_lots += abs(qty_int)
+            
+            # Duplicate pozisyon uyarısı
+            if len(positions) != len(unique_positions):
+                log_messages.append(f"⚠️ {len(positions) - len(unique_positions)} duplicate pozisyon birleştirildi")
             
             # Modu belirle
             if total_lots > defensive_threshold:
@@ -5918,7 +6617,63 @@ class MainWindow(tk.Tk):
             if hasattr(self, 'controller_enabled') and self.controller_enabled:
                 pot_info = self.calculate_potential_total()
                 pot_total = pot_info.get('pot_total', total_lots)
-                self.log_message(f"📊 Pot Toplam: {pot_total:,} lot (Mevcut: {total_lots:,}, Arttırma: {pot_info.get('pot_increase', 0):,}, Azaltma: {pot_info.get('pot_decrease', 0):,})")
+                log_messages.append(f"📊 Pot Toplam: {pot_total:,} lot (Mevcut: {total_lots:,}, Arttırma: {pot_info.get('pot_increase', 0):,}, Azaltma: {pot_info.get('pot_decrease', 0):,})")
+            
+            # Pot Max Lot hesapla
+            pot_expo_limit = float(self.pot_expo_limit_var.get())
+            pot_max_lot = int(pot_expo_limit / avg_price)
+            
+            # Sonuç verisini hazırla
+            result = {
+                'mode': mode,
+                'total_lots': total_lots,
+                'long_lots': long_lots,
+                'short_lots': short_lots,
+                'max_lot': max_lot,
+                'pot_max_lot': pot_max_lot,
+                'pot_total': pot_total,
+                'defensive_threshold': defensive_threshold,
+                'offensive_threshold': offensive_threshold,
+                'can_add_positions': (mode == "OFANSIF" or mode == "GEÇIŞ"),
+                'active_account': active_account,
+                'mode_color': mode_color,
+                'log_messages': log_messages
+            }
+            
+            # UI güncellemelerini main thread'de yap
+            self.after(0, lambda: self._update_ui_with_exposure_info(result))
+            
+            # Callback'i çağır (varsa)
+            if callback:
+                callback(result)
+            
+        except Exception as e:
+            # Hata mesajını da main thread'de göster
+            error_result = {'mode': 'ERROR', 'can_add_positions': False}
+            self.after(0, lambda: self.log_message(f"❌ Exposure kontrol hatası: {e}"))
+            if callback:
+                callback(error_result)
+            import traceback
+            traceback.print_exc()
+    
+    def _update_ui_with_exposure_info(self, result):
+        """UI'ı exposure bilgileri ile güncelle (main thread'de çalışır)"""
+        try:
+            mode = result['mode']
+            mode_color = result['mode_color']
+            total_lots = result['total_lots']
+            long_lots = result['long_lots']
+            short_lots = result['short_lots']
+            pot_total = result['pot_total']
+            active_account = result['active_account']
+            max_lot = result['max_lot']
+            defensive_threshold = result['defensive_threshold']
+            offensive_threshold = result['offensive_threshold']
+            log_messages = result.get('log_messages', [])
+            
+            # Log mesajlarını göster
+            for msg in log_messages:
+                self.log_message(msg)
             
             # UI güncelle
             if pot_total > 0:
@@ -5937,32 +6692,33 @@ class MainWindow(tk.Tk):
             self.log_message(f"📈 Long: {long_lots:,} lot | Short: {short_lots:,} lot | Toplam: {total_lots:,} lot")
             self.log_message(f"🎯 Eşikler: Defansif={defensive_threshold:,} lot (%95.5) | Ofansif dönüş={offensive_threshold:,} lot (%92.7)")
             
-            # Pot Max Lot hesapla
-            pot_expo_limit = float(self.pot_expo_limit_var.get())
-            pot_max_lot = int(pot_expo_limit / avg_price)
+        except Exception as e:
+            self.log_message(f"❌ UI güncelleme hatası: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def _process_exposure_info(self, exposure_info):
+        """Exposure bilgisini işle ve pozisyonları güncelle"""
+        try:
+            current_mode = exposure_info.get('mode', 'UNKNOWN')
+            can_add_positions = exposure_info.get('can_add_positions', False)
             
-            return {
-                'mode': mode,
-                'total_lots': total_lots,
-                'long_lots': long_lots,
-                'short_lots': short_lots,
-                'max_lot': max_lot,
-                'pot_max_lot': pot_max_lot,
-                'pot_total': pot_total,
-                'defensive_threshold': defensive_threshold,
-                'offensive_threshold': offensive_threshold,
-                'can_add_positions': (mode == "OFANSIF" or mode == "GEÇIŞ"),
-                'active_account': active_account
-            }
+            # Pozisyonları güncelle (thread'de, UI'ı bloklamaz)
+            self.update_psfalgo_positions_async()
+            
+            # Diğer işlemler burada devam edebilir...
             
         except Exception as e:
-            self.log_message(f"❌ Exposure kontrol hatası: {e}")
-            import traceback
-            self.log_message(f"❌ Traceback: {traceback.format_exc()}")
-            return {'mode': 'ERROR', 'can_add_positions': False}
+            self.log_message(f"❌ Exposure bilgisi işleme hatası: {e}")
     
-    def update_psfalgo_positions(self):
-        """Psfalgo pozisyonlarını güncelle - Aktif mod için"""
+    def update_psfalgo_positions_async(self):
+        """Psfalgo pozisyonlarını thread'de güncelle (UI'ı bloklamaz)"""
+        import threading
+        thread = threading.Thread(target=self._update_psfalgo_positions_thread, daemon=True)
+        thread.start()
+    
+    def _update_psfalgo_positions_thread(self):
+        """Thread'de pozisyon güncellemesi yap - Tüm bloklayan işlemler burada"""
         try:
             # Aktif modu kontrol et
             if hasattr(self, 'mode_manager'):
@@ -5990,18 +6746,24 @@ class MainWindow(tk.Tk):
                 # HAMPRO pozisyonlarını al
                 if self.hammer and self.hammer.connected:
                     current_positions = self.hammer.get_positions_direct()
-                    self.log_message(f"🔄 update_psfalgo_positions: {len(current_positions)} pozisyon alındı")
+                    # Log mesajlarını main thread'de göster
+                    self.after(0, lambda: self.log_message(f"🔄 update_psfalgo_positions: {len(current_positions)} pozisyon alındı"))
                     if current_positions:
-                        self.log_message(f"🔍 update_psfalgo_positions: İlk pozisyon örneği: {current_positions[0]}")
+                        self.after(0, lambda: self.log_message(f"🔍 update_psfalgo_positions: İlk pozisyon örneği: {current_positions[0]}"))
                 else:
                     current_positions = []
-                    self.log_message("❌ update_psfalgo_positions: HAMPRO bağlantısı yok!")
+                    self.after(0, lambda: self.log_message("❌ update_psfalgo_positions: HAMPRO bağlantısı yok!"))
             
             if not current_positions:
-                self.log_message("⚠️ update_psfalgo_positions: Pozisyon bulunamadı!")
+                # Log mesajını main thread'de göster
+                self.after(0, lambda: self.log_message("⚠️ update_psfalgo_positions: Pozisyon bulunamadı!"))
                 return
             
-            # Pozisyonları güncelle
+            # Güncelleme verilerini topla (UI güncellemesi için)
+            update_data = []
+            log_messages = []
+            
+            # Pozisyonları güncelle (thread'de tüm hesaplamaları yap)
             for pos in current_positions:
                 symbol = pos.get('symbol', '') or pos.get('Symbol', '')
                 current_qty = pos.get('quantity', None) or pos.get('qty', None) or pos.get('Quantity', 0)
@@ -6012,7 +6774,7 @@ class MainWindow(tk.Tk):
                     old_qty = self.psfalgo_positions[symbol]['quantity']
                     change = current_qty - old_qty
                     
-                    # Eğer değişim varsa, kontrolleri yap
+                    # Eğer değişim varsa, kontrolleri yap (thread'de)
                     if change != 0:
                         # Pozisyon değişim türünü belirle
                         change_type, change_amount = self.determine_position_change_type(symbol, old_qty, current_qty)
@@ -6023,46 +6785,80 @@ class MainWindow(tk.Tk):
                         # 3 saatlik limiti kontrol et
                         three_hour_ok, three_hour_msg = self.check_three_hour_limit(symbol, change_amount)
                         
-                        # Log mesajları
-                        self.log_message(f"📊 {symbol}: {change_type} ({change_amount:+.0f})")
-                        self.log_message(f"   MAXALW: {maxalw_msg}")
-                        self.log_message(f"   3H: {three_hour_msg}")
+                        # Log mesajlarını topla
+                        log_messages.append(f"📊 {symbol}: {change_type} ({change_amount:+.0f})")
+                        log_messages.append(f"   MAXALW: {maxalw_msg}")
+                        log_messages.append(f"   3H: {three_hour_msg}")
                         
                         # Eğer limitler aşıldıysa uyarı ver
                         if not maxalw_ok or not three_hour_ok:
-                            self.log_message(f"⚠️ {symbol} LİMİT AŞILDI!")
+                            log_messages.append(f"⚠️ {symbol} LİMİT AŞILDI!")
                     
-                    # Pozisyon değişimini kaydet
+                    # Açık emirleri kontrol et (cache'den, hızlı)
+                    open_orders_count = self.get_open_orders_count(symbol, use_cache=True)
+                    if open_orders_count > 0:
+                        log_messages.append(f"📋 {symbol}: {open_orders_count} açık emir mevcut")
+                    
+                    # Emir analizi yap (cache'den, hızlı)
+                    order_analysis = self.analyze_order_impact(symbol, current_qty)
+                    if order_analysis['long_increase_orders'] > 0 or order_analysis['long_decrease_orders'] > 0 or order_analysis['short_increase_orders'] > 0 or order_analysis['short_decrease_orders'] > 0:
+                        log_messages.append(f"📊 {symbol} Emir Analizi:")
+                        log_messages.append(f"   Long Artırma: {order_analysis['long_increase_orders']}")
+                        log_messages.append(f"   Long Azaltma: {order_analysis['long_decrease_orders']}")
+                        log_messages.append(f"   Short Artırma: {order_analysis['short_increase_orders']}")
+                        log_messages.append(f"   Short Azaltma: {order_analysis['short_decrease_orders']}")
+                        log_messages.append(f"   Potansiyel Pozisyon: {order_analysis['potential_position']}")
+                        log_messages.append(f"   Max Ek Long: {order_analysis['max_additional_long']}")
+                        log_messages.append(f"   Max Ek Short: {order_analysis['max_additional_short']}")
+                        
+                        # MAXALW kontrolü (CSV okuma thread'de)
+                        maxalw = self.get_maxalw_for_symbol(symbol)
+                        if abs(order_analysis['potential_position']) > maxalw:
+                            log_messages.append(f"⚠️ {symbol} MAXALW AŞILDI! Potansiyel: {abs(order_analysis['potential_position'])} > {maxalw}")
+                    
+                    # Güncelleme verisini topla
+                    update_data.append({
+                        'symbol': symbol,
+                        'current_qty': current_qty,
+                        'change': change,
+                        'old_qty': old_qty
+                    })
+            
+            # UI güncellemelerini main thread'de yap
+            self.after(0, lambda: self._update_ui_with_position_updates(update_data, log_messages))
+            
+        except Exception as e:
+            # Hata mesajını da main thread'de göster
+            self.after(0, lambda: self.log_message(f"❌ Pozisyon güncelleme hatası: {e}"))
+            import traceback
+            traceback.print_exc()
+    
+    def _update_ui_with_position_updates(self, update_data, log_messages):
+        """UI'ı pozisyon güncellemeleri ile güncelle (main thread'de çalışır)"""
+        try:
+            # Log mesajlarını göster
+            for msg in log_messages:
+                self.log_message(msg)
+            
+            # Pozisyonları güncelle
+            for data in update_data:
+                symbol = data['symbol']
+                current_qty = data['current_qty']
+                change = data['change']
+                old_qty = data['old_qty']
+                
+                # Pozisyon değişimini kaydet
+                if symbol in self.psfalgo_positions:
                     self.psfalgo_positions[symbol]['quantity'] = current_qty
                     self.psfalgo_positions[symbol]['three_hour_change'] += change
                     
                     # Tabloyu güncelle
                     self.update_psfalgo_table_row(symbol, current_qty, change)
                     
-                    # Açık emirleri kontrol et ve logla
-                    open_orders_count = self.get_open_orders_count(symbol)
-                    if open_orders_count > 0:
-                        self.log_message(f"📋 {symbol}: {open_orders_count} açık emir mevcut")
-                    
-                    # Emir analizi yap ve logla
-                    order_analysis = self.analyze_order_impact(symbol, current_qty)
-                    if order_analysis['long_increase_orders'] > 0 or order_analysis['long_decrease_orders'] > 0 or order_analysis['short_increase_orders'] > 0 or order_analysis['short_decrease_orders'] > 0:
-                        self.log_message(f"📊 {symbol} Emir Analizi:")
-                        self.log_message(f"   Long Artırma: {order_analysis['long_increase_orders']}")
-                        self.log_message(f"   Long Azaltma: {order_analysis['long_decrease_orders']}")
-                        self.log_message(f"   Short Artırma: {order_analysis['short_increase_orders']}")
-                        self.log_message(f"   Short Azaltma: {order_analysis['short_decrease_orders']}")
-                        self.log_message(f"   Potansiyel Pozisyon: {order_analysis['potential_position']}")
-                        self.log_message(f"   Max Ek Long: {order_analysis['max_additional_long']}")
-                        self.log_message(f"   Max Ek Short: {order_analysis['max_additional_short']}")
-                        
-                        # MAXALW kontrolü
-                        maxalw = self.get_maxalw_for_symbol(symbol)
-                        if abs(order_analysis['potential_position']) > maxalw:
-                            self.log_message(f"⚠️ {symbol} MAXALW AŞILDI! Potansiyel: {abs(order_analysis['potential_position'])} > {maxalw}")
-                    
         except Exception as e:
-            self.log_message(f"❌ Pozisyon güncelleme hatası: {e}")
+            self.log_message(f"❌ UI güncelleme hatası: {e}")
+            import traceback
+            traceback.print_exc()
     
     def update_psfalgo_table_row(self, symbol, quantity, change):
         """Psfalgo tablosundaki satırı güncelle
@@ -6173,7 +6969,8 @@ class MainWindow(tk.Tk):
                 if hasattr(self, 'mode_manager'):
                     self.orders_cache = self.mode_manager.get_orders()
                     self.orders_cache_time = current_time
-                    print(f"[PSFALGO] 🔄 Emir cache güncellendi ({len(self.orders_cache)} emir)")
+                    # DEBUG: Log kapatıldı - sürekli terminal loglarını dolduruyordu
+                    # print(f"[PSFALGO] 🔄 Emir cache güncellendi ({len(self.orders_cache)} emir)")
                 else:
                     self.orders_cache = []
             
@@ -6235,11 +7032,34 @@ class MainWindow(tk.Tk):
             print(f"[PSFALGO] ❌ Pozisyon cache hatası: {e}")
             return []
     
-    def get_open_orders_count(self, symbol):
-        """Belirli bir sembol için açık emir sayısını döndür"""
+    def get_open_orders_count(self, symbol, use_cache=False):
+        """Belirli bir sembol için açık emir sayısını döndür
+        
+        Args:
+            symbol: Sembol adı
+            use_cache: True ise cache'lenmiş emirleri kullan, False ise direkt API'den çek
+        """
         try:
-            # Cache'lenmiş emirleri al
-            orders = self.get_cached_orders()
+            # Cache kullanılıyorsa cache'den al, değilse direkt çek
+            if use_cache and hasattr(self, 'orders_cache'):
+                orders = self.get_cached_orders()
+            else:
+                # Aktif hesaptan açık emirleri al
+                if hasattr(self, 'mode_manager'):
+                    active_account = self.mode_manager.get_active_account()
+                else:
+                    active_account = "HAMPRO" if self.hampro_mode else "IBKR"
+                
+                orders = []
+                if active_account in ["IBKR_GUN", "IBKR_PED"]:
+                    if hasattr(self.mode_manager, 'ibkr_native_client') and self.mode_manager.ibkr_native_client.is_connected():
+                        orders = self.mode_manager.ibkr_native_client.get_open_orders() if hasattr(self.mode_manager.ibkr_native_client, 'get_open_orders') else []
+                    elif hasattr(self.mode_manager, 'ibkr_client') and self.mode_manager.ibkr_client.is_connected():
+                        orders = self.mode_manager.ibkr_client.get_orders_direct() if hasattr(self.mode_manager.ibkr_client, 'get_orders_direct') else []
+                else:  # HAMPRO
+                    if self.hammer and self.hammer.connected:
+                        orders = self.hammer.get_open_orders() if hasattr(self.hammer, 'get_open_orders') else []
+            
             if not orders:
                 return 0
             
@@ -6558,18 +7378,850 @@ class MainWindow(tk.Tk):
         except Exception:
             pass
     
+    def add_to_loop_report(self, symbol, action, lot, price, status, step_name, conditions_checked, conditions_passed, conditions_failed, final_reason):
+        """
+        Döngü raporuna detaylı emir kararı ekle
+        
+        Args:
+            symbol: Hisse sembolü
+            action: 'BUY' veya 'SELL'
+            lot: Lot miktarı
+            price: Emir fiyatı
+            status: 'SENT' (gönderildi) veya 'BLOCKED' (engellendi)
+            step_name: Hangi adımda (ör: 'KARBOTU Step 2')
+            conditions_checked: Kontrol edilen koşullar listesi
+            conditions_passed: Geçilen koşullar listesi  
+            conditions_failed: Takılan koşullar listesi
+            final_reason: Son karar nedeni
+        """
+        try:
+            report_entry = {
+                'time': datetime.now().strftime('%H:%M:%S'),
+                'symbol': symbol,
+                'action': action,
+                'lot': lot,
+                'price': price,
+                'status': status,
+                'step_name': step_name,
+                'conditions_checked': conditions_checked,
+                'conditions_passed': conditions_passed,
+                'conditions_failed': conditions_failed,
+                'final_reason': final_reason
+            }
+            self.loop_report.append(report_entry)
+            
+            # Kısa log da ekle
+            status_icon = "✅" if status == "SENT" else "❌"
+            print(f"[DÖNGÜ RAPOR] {status_icon} {symbol} {action} {lot} lot @ ${price:.2f} - {final_reason}")
+            
+        except Exception as e:
+            print(f"[DÖNGÜ RAPOR] Hata: {e}")
+    
+    def clear_loop_report(self):
+        """Döngü raporunu temizle - Yeni döngü başlarken çağrılır"""
+        self.loop_report = []
+        self.loop_report_start_time = datetime.now()
+        print(f"[DÖNGÜ RAPOR] 🔄 Rapor temizlendi, yeni döngü başladı: {self.loop_report_start_time.strftime('%H:%M:%S')}")
+    
+    def show_loop_report_window(self):
+        """Döngü Raporu penceresini göster - KULLANICI ÖNCELİKLİ"""
+        def open_loop_report():
+            try:
+                # Pencere oluştur
+                report_win = tk.Toplevel(self)
+                report_win.title(f"Döngü Raporu - Döngü #{self.loop_report_loop_number}")
+                report_win.geometry("1200x700")
+                
+                # Pencereyi hemen öne getir
+                report_win.lift()
+                report_win.focus_force()
+                
+                # Başlık frame
+                header_frame = ttk.Frame(report_win)
+                header_frame.pack(fill='x', padx=10, pady=5)
+                
+                # Döngü bilgisi
+                start_time_str = self.loop_report_start_time.strftime('%H:%M:%S') if self.loop_report_start_time else 'N/A'
+                ttk.Label(header_frame, text=f"📊 Döngü #{self.loop_report_loop_number} | Başlangıç: {start_time_str}", 
+                         font=('Arial', 12, 'bold')).pack(side='left')
+                
+                # İstatistikler
+                sent_count = sum(1 for r in self.loop_report if r['status'] == 'SENT')
+                blocked_count = sum(1 for r in self.loop_report if r['status'] == 'BLOCKED')
+                ttk.Label(header_frame, text=f"✅ Gönderilen: {sent_count} | ❌ Engellenen: {blocked_count}", 
+                         font=('Arial', 10)).pack(side='right')
+                
+                # Notebook (tabs)
+                notebook = ttk.Notebook(report_win)
+                notebook.pack(fill='both', expand=True, padx=10, pady=5)
+                
+                # Tab 1: Tüm Emirler
+                all_frame = ttk.Frame(notebook)
+                notebook.add(all_frame, text="📋 Tüm Emirler")
+                self._create_report_table(all_frame, self.loop_report)
+                
+                # Tab 2: Gönderilen Emirler
+                sent_frame = ttk.Frame(notebook)
+                notebook.add(sent_frame, text="✅ Gönderilen")
+                sent_reports = [r for r in self.loop_report if r['status'] == 'SENT']
+                self._create_report_table(sent_frame, sent_reports)
+                
+                # Tab 3: Engellenen Emirler
+                blocked_frame = ttk.Frame(notebook)
+                notebook.add(blocked_frame, text="❌ Engellenen")
+                blocked_reports = [r for r in self.loop_report if r['status'] == 'BLOCKED']
+                self._create_report_table(blocked_frame, blocked_reports)
+                
+                # Tab 4: Detaylı Log
+                detail_frame = ttk.Frame(notebook)
+                notebook.add(detail_frame, text="📝 Detaylı Log")
+                self._create_detailed_log(detail_frame)
+                
+                # Alt butonlar
+                btn_frame = ttk.Frame(report_win)
+                btn_frame.pack(fill='x', padx=10, pady=5)
+                
+                ttk.Button(btn_frame, text="🔄 Yenile", command=lambda: self._refresh_report_window(report_win)).pack(side='left', padx=5)
+                ttk.Button(btn_frame, text="💾 CSV'ye Kaydet", command=self._save_loop_report_to_csv).pack(side='left', padx=5)
+                ttk.Button(btn_frame, text="🗑️ Temizle", command=lambda: self._clear_and_refresh(report_win)).pack(side='left', padx=5)
+                ttk.Button(btn_frame, text="❌ Kapat", command=report_win.destroy).pack(side='right', padx=5)
+                
+            except Exception as e:
+                print(f"[DÖNGÜ RAPOR] Pencere hatası: {e}")
+                import traceback
+                traceback.print_exc()
+        
+        # Priority queue ile hemen çalıştır
+        self.priority_ui_call(open_loop_report)
+    
+    def _create_report_table(self, parent, reports):
+        """Rapor tablosu oluştur"""
+        # Scrollable frame
+        canvas = tk.Canvas(parent)
+        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Treeview
+        columns = ('time', 'symbol', 'action', 'lot', 'price', 'status', 'step', 'reason')
+        tree = ttk.Treeview(scrollable_frame, columns=columns, show='headings', height=20)
+        
+        tree.heading('time', text='Saat')
+        tree.heading('symbol', text='Sembol')
+        tree.heading('action', text='İşlem')
+        tree.heading('lot', text='Lot')
+        tree.heading('price', text='Fiyat')
+        tree.heading('status', text='Durum')
+        tree.heading('step', text='Adım')
+        tree.heading('reason', text='Sebep')
+        
+        tree.column('time', width=70)
+        tree.column('symbol', width=100)
+        tree.column('action', width=60)
+        tree.column('lot', width=60)
+        tree.column('price', width=80)
+        tree.column('status', width=80)
+        tree.column('step', width=120)
+        tree.column('reason', width=400)
+        
+        # Raporları ekle
+        for report in reports:
+            status_text = "✅ Gönderildi" if report['status'] == 'SENT' else "❌ Engellendi"
+            price_text = f"${report['price']:.2f}" if report['price'] > 0 else "N/A"
+            
+            values = (
+                report['time'],
+                report['symbol'],
+                report['action'],
+                report['lot'],
+                price_text,
+                status_text,
+                report['step_name'],
+                report['final_reason']
+            )
+            
+            tag = 'sent' if report['status'] == 'SENT' else 'blocked'
+            tree.insert('', 'end', values=values, tags=(tag,))
+        
+        tree.tag_configure('sent', background='#90EE90')  # Açık yeşil
+        tree.tag_configure('blocked', background='#FFB6C1')  # Açık kırmızı
+        
+        tree.pack(fill='both', expand=True)
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+    
+    def _create_detailed_log(self, parent):
+        """Detaylı log görünümü oluştur"""
+        text = tk.Text(parent, wrap=tk.WORD, font=('Consolas', 9))
+        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=text.yview)
+        text.configure(yscrollcommand=scrollbar.set)
+        
+        for report in self.loop_report:
+            status_icon = "✅" if report['status'] == 'SENT' else "❌"
+            price_text = f"${report['price']:.2f}" if report['price'] > 0 else "N/A"
+            
+            # Başlık
+            text.insert(tk.END, f"\n{'='*80}\n")
+            text.insert(tk.END, f"{status_icon} {report['time']} | {report['symbol']} | {report['action']} {report['lot']} lot @ {price_text}\n")
+            text.insert(tk.END, f"Adım: {report['step_name']}\n")
+            text.insert(tk.END, f"{'='*80}\n\n")
+            
+            # Kontrol edilen koşullar
+            text.insert(tk.END, "📋 KONTROL EDİLEN KOŞULLAR:\n")
+            for cond in report.get('conditions_checked', []):
+                text.insert(tk.END, f"   • {cond}\n")
+            
+            # Geçilen koşullar
+            text.insert(tk.END, "\n✅ GEÇİLEN KOŞULLAR:\n")
+            for cond in report.get('conditions_passed', []):
+                text.insert(tk.END, f"   ✓ {cond}\n")
+            
+            # Takılan koşullar
+            if report.get('conditions_failed'):
+                text.insert(tk.END, "\n❌ TAKILDIĞI KOŞUL:\n")
+                for cond in report.get('conditions_failed', []):
+                    text.insert(tk.END, f"   ✗ {cond}\n")
+            
+            # Son karar
+            text.insert(tk.END, f"\n📌 SONUÇ: {report['final_reason']}\n")
+        
+        text.config(state='disabled')
+        text.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+    
+    def _refresh_report_window(self, win):
+        """Rapor penceresini yenile"""
+        win.destroy()
+        self.show_loop_report_window()
+    
+    def _clear_and_refresh(self, win):
+        """Raporu temizle ve yenile"""
+        self.loop_report = []
+        win.destroy()
+        self.show_loop_report_window()
+    
+    def _save_loop_report_to_csv(self):
+        """Döngü raporunu CSV'ye kaydet"""
+        try:
+            import pandas as pd
+            if not self.loop_report:
+                messagebox.showinfo("Bilgi", "Kaydedilecek rapor yok!")
+                return
+            
+            df = pd.DataFrame(self.loop_report)
+            filename = f"dongu_raporu_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            df.to_csv(filename, index=False, encoding='utf-8-sig')
+            messagebox.showinfo("Başarılı", f"Rapor kaydedildi: {filename}")
+            
+        except Exception as e:
+            messagebox.showerror("Hata", f"Kaydetme hatası: {e}")
+    
+    # ==================== PSFALGO AKTİVİTE LOGU ====================
+    
+    def log_psfalgo_activity(self, action, details, status="INFO", reason="", category="GENEL", 
+                             symbol="", step_name="", fbtot=None, sfstot=None, pahalilik=None, ucuzluk=None,
+                             maxalw=None, gort=None, sma_chg=None, lot_percentage=None, calculated_lot=None,
+                             daily_limit=None, current_daily_change=None, remaining_allowance=None,
+                             controller_result=None, min_lot_check=None, conditions_checked=None,
+                             conditions_passed=None, conditions_failed=None, revorder_info=None,
+                             loop_number=None):
+        """
+        Psfalgo'da yapılan her işlemi detaylı logla
+        
+        Args:
+            action: İşlem adı (ör: 'KARBOTU Başlatıldı', 'Emir Gönderildi')
+            details: Detaylar (ör: 'AAL: BUY 500 lot @ $15.20')
+            status: 'SUCCESS', 'BLOCKED', 'ERROR', 'INFO', 'WARNING'
+            reason: Engelleme/hata sebebi
+            category: 'KARBOTU', 'REDUCEMORE', 'ADDNEWPOS', 'CROPLIT', 'RUNALL', 'CONTROLLER', 'REVORDER', 'GENEL'
+            symbol: Hisse sembolü
+            step_name: Hangi adım (ör: 'KARBOTU Step 2', 'ADDNEWPOS')
+            fbtot: Fbtot değeri
+            sfstot: SFStot değeri
+            pahalilik: Ask Sell Pahalılık veya benzeri
+            ucuzluk: Bid Buy Ucuzluk veya benzeri
+            maxalw: MAXALW değeri
+            gort: GORT değeri
+            sma_chg: SMA63CHG değeri
+            lot_percentage: Lot yüzdesi
+            calculated_lot: Hesaplanan lot
+            daily_limit: Günlük limit
+            current_daily_change: Mevcut günlük değişim
+            remaining_allowance: Kalan hak
+            controller_result: Controller sonucu
+            min_lot_check: Minimum lot kontrolü sonucu
+            conditions_checked: Kontrol edilen koşullar listesi
+            conditions_passed: Geçilen koşullar listesi
+            conditions_failed: Takılan koşullar listesi
+            revorder_info: RevOrder bilgileri
+            loop_number: RUNALL döngü numarası
+        """
+        try:
+            # Eğer loop_number verilmemişse, mevcut döngü numarasını kullan
+            if loop_number is None:
+                loop_number = getattr(self, 'runall_loop_count', 0)
+            
+            log_entry = {
+                'time': datetime.now().strftime('%H:%M:%S'),
+                'timestamp': datetime.now(),
+                'category': category,
+                'action': action,
+                'details': details,
+                'status': status,
+                'reason': reason,
+                'symbol': symbol,
+                'step_name': step_name,
+                'fbtot': fbtot,
+                'sfstot': sfstot,
+                'pahalilik': pahalilik,
+                'ucuzluk': ucuzluk,
+                'maxalw': maxalw,
+                'gort': gort,
+                'sma_chg': sma_chg,
+                'lot_percentage': lot_percentage,
+                'calculated_lot': calculated_lot,
+                'daily_limit': daily_limit,
+                'current_daily_change': current_daily_change,
+                'remaining_allowance': remaining_allowance,
+                'controller_result': controller_result,
+                'min_lot_check': min_lot_check,
+                'conditions_checked': conditions_checked or [],
+                'conditions_passed': conditions_passed or [],
+                'conditions_failed': conditions_failed or [],
+                'revorder_info': revorder_info,
+                'loop_number': loop_number
+            }
+            self.psfalgo_activity_log.append(log_entry)
+            
+            # Konsola da yazdır
+            status_icons = {
+                'SUCCESS': '✅',
+                'BLOCKED': '❌',
+                'ERROR': '⚠️',
+                'INFO': 'ℹ️',
+                'WARNING': '⚠️'
+            }
+            icon = status_icons.get(status, '•')
+            print(f"[PSFALGO LOG] {icon} [{category}] {action}: {details}")
+            if reason:
+                print(f"             └─ Sebep: {reason}")
+                
+        except Exception as e:
+            print(f"[PSFALGO LOG] Loglama hatası: {e}")
+    
+    def show_psfalgo_alg_raporu(self):
+        """Psfalgo Algoritma Raporu penceresini göster - Son RUNALL döngüsüne odaklan - KULLANICI ÖNCELİKLİ"""
+        def open_psfalgo_report():
+            try:
+                # Pencere oluştur
+                report_win = tk.Toplevel(self)
+                report_win.title("Psfalgo Algoritma Raporu - Son RUNALL Döngüsü")
+                report_win.geometry("1600x900")
+                
+                # Pencereyi hemen öne getir
+                report_win.lift()
+                report_win.focus_force()
+                
+                # Son RUNALL döngü numarasını al
+                current_loop = getattr(self, 'runall_loop_count', 0)
+                
+                # Son döngüye ait logları filtrele
+                last_loop_logs = [r for r in self.psfalgo_activity_log 
+                                 if r.get('loop_number', 0) == current_loop or 
+                                    (current_loop == 0 and len(self.psfalgo_activity_log) > 0)]
+                
+                # Eğer son döngü logu yoksa, CSV'den oku (algraporu.csv)
+                if not last_loop_logs:
+                    csv_filename = "algraporu.csv"
+                    try:
+                        import os
+                        if os.path.exists(csv_filename):
+                            print(f"[ALG RAPOR] 📂 CSV'den okunuyor: {csv_filename}")
+                            df = pd.read_csv(csv_filename, encoding='utf-8-sig')
+                            # DataFrame'i dict listesine çevir
+                            last_loop_logs = df.to_dict('records')
+                            print(f"[ALG RAPOR] ✅ CSV'den {len(last_loop_logs)} kayıt okundu")
+                            # Döngü numarasını CSV'den al (eğer varsa)
+                            if last_loop_logs and 'loop_number' in last_loop_logs[0]:
+                                csv_loop = last_loop_logs[0].get('loop_number', 0)
+                                if csv_loop > 0:
+                                    current_loop = csv_loop
+                                    print(f"[ALG RAPOR] 📊 CSV'den döngü numarası: {current_loop}")
+                        else:
+                            print(f"[ALG RAPOR] ⚠️ CSV dosyası bulunamadı: {csv_filename}")
+                            # En son logları al (son 100)
+                            last_loop_logs = self.psfalgo_activity_log[-100:] if len(self.psfalgo_activity_log) > 100 else self.psfalgo_activity_log
+                    except Exception as e:
+                        print(f"[ALG RAPOR] ❌ CSV okuma hatası: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        # Hata durumunda en son logları al
+                        last_loop_logs = self.psfalgo_activity_log[-100:] if len(self.psfalgo_activity_log) > 100 else self.psfalgo_activity_log
+                
+                # Başlık frame
+                header_frame = ttk.Frame(report_win)
+                header_frame.pack(fill='x', padx=10, pady=5)
+                
+                # İstatistikler
+                total_count = len(last_loop_logs)
+                success_count = sum(1 for r in last_loop_logs if r['status'] == 'SUCCESS')
+                blocked_count = sum(1 for r in last_loop_logs if r['status'] == 'BLOCKED')
+                error_count = sum(1 for r in last_loop_logs if r['status'] == 'ERROR')
+                
+                ttk.Label(header_frame, text=f"📊 Psfalgo Algoritma Raporu - Döngü #{current_loop}", 
+                         font=('Arial', 14, 'bold')).pack(side='left')
+                
+                stats_text = f"Toplam: {total_count} | ✅ Başarılı: {success_count} | ❌ Engellenen: {blocked_count} | ⚠️ Hata: {error_count}"
+                ttk.Label(header_frame, text=stats_text, font=('Arial', 10)).pack(side='right')
+                
+                # Notebook (tabs)
+                notebook = ttk.Notebook(report_win)
+                notebook.pack(fill='both', expand=True, padx=10, pady=5)
+                
+                # Tab 1: Detaylı Emir Raporu (YENİ - Çok detaylı)
+                detail_frame = ttk.Frame(notebook)
+                notebook.add(detail_frame, text="📋 Detaylı Emir Raporu")
+                self._create_detailed_order_report(detail_frame, last_loop_logs)
+                
+                # Tab 2: Tüm Aktiviteler
+                all_frame = ttk.Frame(notebook)
+                notebook.add(all_frame, text="📋 Tüm Aktiviteler")
+                self._create_psfalgo_activity_table(all_frame, last_loop_logs)
+                
+                # Tab 3: Kategorilere Göre
+                categories = ['KARBOTU', 'REDUCEMORE', 'ADDNEWPOS', 'CROPLIT', 'RUNALL', 'CONTROLLER', 'REVORDER']
+                for cat in categories:
+                    cat_frame = ttk.Frame(notebook)
+                    cat_logs = [r for r in last_loop_logs if r['category'] == cat]
+                    if cat_logs:  # Sadece log varsa tab ekle
+                        notebook.add(cat_frame, text=f"🔹 {cat}")
+                        self._create_psfalgo_activity_table(cat_frame, cat_logs)
+                
+                # Tab: Sadece Başarılı
+                success_frame = ttk.Frame(notebook)
+                success_logs = [r for r in last_loop_logs if r['status'] == 'SUCCESS']
+                notebook.add(success_frame, text="✅ Başarılı")
+                self._create_psfalgo_activity_table(success_frame, success_logs)
+                
+                # Tab: Sadece Engellenen
+                blocked_frame = ttk.Frame(notebook)
+                blocked_logs = [r for r in last_loop_logs if r['status'] == 'BLOCKED']
+                notebook.add(blocked_frame, text="❌ Engellenen")
+                self._create_psfalgo_activity_table(blocked_frame, blocked_logs)
+                
+                # Tab: Detaylı Log (text view)
+                detail_text_frame = ttk.Frame(notebook)
+                notebook.add(detail_text_frame, text="📝 Detaylı Log (Text)")
+                self._create_psfalgo_detailed_log(detail_text_frame, last_loop_logs)
+                
+                # Alt butonlar
+                btn_frame = ttk.Frame(report_win)
+                btn_frame.pack(fill='x', padx=10, pady=5)
+                
+                ttk.Button(btn_frame, text="🔄 Yenile", 
+                          command=lambda: self._refresh_psfalgo_report(report_win)).pack(side='left', padx=5)
+                ttk.Button(btn_frame, text="💾 CSV'ye Kaydet (algraporu.csv)", 
+                          command=lambda: self._save_psfalgo_log_to_csv(filename="algraporu.csv", show_message=True)).pack(side='left', padx=5)
+                ttk.Button(btn_frame, text="🗑️ Temizle", 
+                          command=lambda: self._clear_psfalgo_log(report_win)).pack(side='left', padx=5)
+                ttk.Button(btn_frame, text="❌ Kapat", 
+                          command=report_win.destroy).pack(side='right', padx=5)
+                
+            except Exception as e:
+                print(f"[PSFALGO RAPOR] Pencere hatası: {e}")
+                import traceback
+                traceback.print_exc()
+        
+        # Priority queue ile hemen çalıştır
+        self.priority_ui_call(open_psfalgo_report)
+    
+    def _create_psfalgo_activity_table(self, parent, logs):
+        """Psfalgo aktivite tablosu oluştur"""
+        # Frame ve scrollbar
+        table_frame = ttk.Frame(parent)
+        table_frame.pack(fill='both', expand=True, padx=5, pady=5)
+        
+        # Treeview
+        columns = ('time', 'category', 'action', 'details', 'status', 'reason')
+        tree = ttk.Treeview(table_frame, columns=columns, show='headings', height=25)
+        
+        # Scrollbar
+        vsb = ttk.Scrollbar(table_frame, orient="vertical", command=tree.yview)
+        hsb = ttk.Scrollbar(table_frame, orient="horizontal", command=tree.xview)
+        tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+        
+        tree.heading('time', text='Saat')
+        tree.heading('category', text='Kategori')
+        tree.heading('action', text='İşlem')
+        tree.heading('details', text='Detaylar')
+        tree.heading('status', text='Durum')
+        tree.heading('reason', text='Sebep/Açıklama')
+        
+        tree.column('time', width=70, minwidth=70)
+        tree.column('category', width=100, minwidth=80)
+        tree.column('action', width=200, minwidth=150)
+        tree.column('details', width=400, minwidth=200)
+        tree.column('status', width=80, minwidth=60)
+        tree.column('reason', width=350, minwidth=200)
+        
+        # Logları ekle
+        for log in logs:
+            status_map = {
+                'SUCCESS': '✅ Başarılı',
+                'BLOCKED': '❌ Engellendi',
+                'ERROR': '⚠️ Hata',
+                'INFO': 'ℹ️ Bilgi',
+                'WARNING': '⚠️ Uyarı'
+            }
+            status_text = status_map.get(log['status'], log['status'])
+            
+            values = (
+                log['time'],
+                log['category'],
+                log['action'],
+                log['details'],
+                status_text,
+                log.get('reason', '')
+            )
+            
+            # Renk etiketleri
+            if log['status'] == 'SUCCESS':
+                tag = 'success'
+            elif log['status'] == 'BLOCKED':
+                tag = 'blocked'
+            elif log['status'] == 'ERROR':
+                tag = 'error'
+            else:
+                tag = 'info'
+            
+            tree.insert('', 'end', values=values, tags=(tag,))
+        
+        tree.tag_configure('success', background='#90EE90')  # Açık yeşil
+        tree.tag_configure('blocked', background='#FFB6C1')  # Açık kırmızı
+        tree.tag_configure('error', background='#FFD700')    # Sarı
+        tree.tag_configure('info', background='#E0E0E0')     # Açık gri
+        
+        # Pack
+        tree.pack(side='left', fill='both', expand=True)
+        vsb.pack(side='right', fill='y')
+        hsb.pack(side='bottom', fill='x')
+    
+    def _create_detailed_order_report(self, parent, logs):
+        """Detaylı emir raporu oluştur - Her emir için neden gönderildi/engellendi açıklaması"""
+        # Scrollable frame
+        canvas = tk.Canvas(parent)
+        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Sadece emir ile ilgili logları filtrele
+        order_logs = [r for r in logs if r['action'] in ['EMIR_ILETILDI', 'EMIR_BLOKE', 'EMIR_HATASI']]
+        
+        if not order_logs:
+            ttk.Label(scrollable_frame, text="Henüz emir logu yok", font=('Arial', 12)).pack(pady=20)
+        else:
+            for idx, log in enumerate(order_logs):
+                # Her emir için detaylı frame
+                order_frame = ttk.LabelFrame(scrollable_frame, padding=10)
+                order_frame.pack(fill='x', padx=10, pady=5)
+                
+                # Başlık
+                status_icons = {
+                    'SUCCESS': '✅',
+                    'BLOCKED': '❌',
+                    'ERROR': '⚠️',
+                    'INFO': 'ℹ️',
+                    'WARNING': '⚠️'
+                }
+                icon = status_icons.get(log['status'], '•')
+                
+                title_text = f"{icon} [{log['time']}] {log.get('symbol', 'N/A')} - {log['action']} - {log['details']}"
+                title_label = ttk.Label(order_frame, text=title_text, font=('Arial', 11, 'bold'))
+                title_label.pack(anchor='w', pady=(0, 5))
+                
+                # Detaylı bilgiler
+                details_text = tk.Text(order_frame, wrap=tk.WORD, font=('Consolas', 9), height=15, width=100)
+                details_text.pack(fill='both', expand=True, padx=5, pady=5)
+                
+                # Rapor içeriği oluştur
+                report_lines = []
+                report_lines.append("=" * 100)
+                report_lines.append(f"EMİR DURUMU: {log['status']}")
+                report_lines.append("=" * 100)
+                report_lines.append("")
+                
+                # Temel bilgiler
+                report_lines.append("📌 TEMEL BİLGİLER:")
+                report_lines.append(f"   • Sembol: {log.get('symbol', 'N/A')}")
+                report_lines.append(f"   • Kategori: {log.get('category', 'N/A')}")
+                report_lines.append(f"   • Adım: {log.get('step_name', 'N/A')}")
+                report_lines.append(f"   • Detay: {log.get('details', 'N/A')}")
+                report_lines.append(f"   • Sebep: {log.get('reason', 'N/A')}")
+                report_lines.append("")
+                
+                # Neden seçildi / Neden engellendi
+                if log['status'] == 'SUCCESS':
+                    report_lines.append("✅ NEDEN GÖNDERİLDİ:")
+                else:
+                    report_lines.append("❌ NEDEN ENGELLENDİ:")
+                
+                # Filtreleme kriterleri
+                if log.get('fbtot') is not None:
+                    report_lines.append(f"   • Fbtot: {log['fbtot']}")
+                if log.get('sfstot') is not None:
+                    report_lines.append(f"   • SFStot: {log['sfstot']}")
+                if log.get('pahalilik') is not None:
+                    report_lines.append(f"   • Pahalılık: {log['pahalilik']}")
+                if log.get('ucuzluk') is not None:
+                    report_lines.append(f"   • Ucuzluk: {log['ucuzluk']}")
+                if log.get('sma_chg') is not None:
+                    report_lines.append(f"   • SMA63CHG: {log['sma_chg']}")
+                if log.get('gort') is not None:
+                    report_lines.append(f"   • GORT: {log['gort']}")
+                report_lines.append("")
+                
+                # Lot hesaplama
+                if log.get('lot_percentage') is not None:
+                    report_lines.append("📊 LOT HESAPLAMA:")
+                    report_lines.append(f"   • Lot Yüzdesi: %{log['lot_percentage']}")
+                    if log.get('calculated_lot') is not None:
+                        report_lines.append(f"   • Hesaplanan Lot: {log['calculated_lot']:.0f}")
+                    report_lines.append("")
+                
+                # Limitler
+                report_lines.append("🔒 LİMİTLER VE KURALLAR:")
+                if log.get('maxalw') is not None:
+                    report_lines.append(f"   • MAXALW: {log['maxalw']:.0f}")
+                if log.get('daily_limit') is not None:
+                    report_lines.append(f"   • Günlük Limit: {log['daily_limit']:.0f}")
+                if log.get('current_daily_change') is not None:
+                    report_lines.append(f"   • Mevcut Günlük Değişim: {log['current_daily_change']:.0f}")
+                if log.get('remaining_allowance') is not None:
+                    report_lines.append(f"   • Kalan Hak: {log['remaining_allowance']:.0f}")
+                if log.get('min_lot_check') is not None:
+                    report_lines.append(f"   • Minimum Lot Kontrolü: {log['min_lot_check']}")
+                report_lines.append("")
+                
+                # Controller sonucu
+                if log.get('controller_result'):
+                    report_lines.append("🎛️ CONTROLLER KONTROLÜ:")
+                    report_lines.append(f"   • Sonuç: {log['controller_result']}")
+                    report_lines.append("")
+                
+                # Kontrol edilen koşullar
+                if log.get('conditions_checked'):
+                    report_lines.append("📋 KONTROL EDİLEN KOŞULLAR:")
+                    for cond in log['conditions_checked']:
+                        report_lines.append(f"   • {cond}")
+                    report_lines.append("")
+                
+                # Geçilen koşullar
+                if log.get('conditions_passed'):
+                    report_lines.append("✅ GEÇİLEN KOŞULLAR:")
+                    for cond in log['conditions_passed']:
+                        report_lines.append(f"   ✓ {cond}")
+                    report_lines.append("")
+                
+                # Takılan koşullar
+                if log.get('conditions_failed'):
+                    report_lines.append("❌ TAKILDIĞI KOŞULLAR:")
+                    for cond in log['conditions_failed']:
+                        report_lines.append(f"   ✗ {cond}")
+                    report_lines.append("")
+                
+                # RevOrder bilgisi
+                if log.get('revorder_info'):
+                    report_lines.append("🔄 REVORDER BİLGİSİ:")
+                    report_lines.append(f"   • {log['revorder_info']}")
+                    report_lines.append("")
+                
+                # Sonuç
+                report_lines.append("=" * 100)
+                if log['status'] == 'SUCCESS':
+                    report_lines.append("✅ SONUÇ: Emir başarıyla gönderildi")
+                elif log['status'] == 'BLOCKED':
+                    report_lines.append("❌ SONUÇ: Emir engellendi - Yukarıdaki kurallar/kısıtlar nedeniyle")
+                else:
+                    report_lines.append("⚠️ SONUÇ: Emir hatası oluştu")
+                report_lines.append("=" * 100)
+                
+                # Text'e ekle
+                full_text = "\n".join(report_lines)
+                details_text.insert('1.0', full_text)
+                details_text.config(state='disabled')
+        
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+    
+    def _create_psfalgo_detailed_log(self, parent, logs=None):
+        """Psfalgo detaylı log görünümü"""
+        if logs is None:
+            logs = self.psfalgo_activity_log
+        
+        text = tk.Text(parent, wrap=tk.WORD, font=('Consolas', 9))
+        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=text.yview)
+        text.configure(yscrollcommand=scrollbar.set)
+        
+        for log in logs:
+            status_icons = {
+                'SUCCESS': '✅',
+                'BLOCKED': '❌',
+                'ERROR': '⚠️',
+                'INFO': 'ℹ️',
+                'WARNING': '⚠️'
+            }
+            icon = status_icons.get(log['status'], '•')
+            
+            text.insert(tk.END, f"\n{'─'*80}\n")
+            text.insert(tk.END, f"{icon} [{log['time']}] [{log['category']}] {log['action']}\n")
+            text.insert(tk.END, f"   Detay: {log['details']}\n")
+            if log.get('reason'):
+                text.insert(tk.END, f"   Sebep: {log['reason']}\n")
+        
+        text.config(state='disabled')
+        text.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+    
+    def _refresh_psfalgo_report(self, win):
+        """Rapor penceresini yenile"""
+        win.destroy()
+        self.show_psfalgo_alg_raporu()
+    
+    def _clear_psfalgo_log(self, win):
+        """Psfalgo logunu temizle"""
+        self.psfalgo_activity_log = []
+        win.destroy()
+        self.show_psfalgo_alg_raporu()
+    
+    def _save_psfalgo_log_to_csv(self, filename="algraporu.csv", show_message=False):
+        """Psfalgo logunu CSV'ye kaydet (varsayılan: algraporu.csv, overwrite eder)"""
+        try:
+            # Son döngüye ait logları filtrele
+            current_loop = getattr(self, 'runall_loop_count', 0)
+            last_loop_logs = [r for r in self.psfalgo_activity_log 
+                             if r.get('loop_number', 0) == current_loop or 
+                                (current_loop == 0 and len(self.psfalgo_activity_log) > 0)]
+            
+            # Eğer son döngü logu yoksa, tüm logları al
+            if not last_loop_logs:
+                last_loop_logs = self.psfalgo_activity_log
+            
+            if not last_loop_logs:
+                if show_message:
+                    messagebox.showinfo("Bilgi", "Kaydedilecek log yok!")
+                return False
+            
+            # timestamp'i çıkar (csv'ye yazılamaz)
+            logs_for_csv = []
+            for log in last_loop_logs:
+                log_copy = {k: v for k, v in log.items() if k != 'timestamp'}
+                logs_for_csv.append(log_copy)
+            
+            df = pd.DataFrame(logs_for_csv)
+            df.to_csv(filename, index=False, encoding='utf-8-sig')
+            
+            if show_message:
+                messagebox.showinfo("Başarılı", f"Log kaydedildi: {filename}")
+            
+            print(f"[ALG RAPOR] ✅ CSV kaydedildi: {filename} ({len(logs_for_csv)} kayıt)")
+            return True
+            
+        except Exception as e:
+            print(f"[ALG RAPOR] ❌ CSV kaydetme hatası: {e}")
+            if show_message:
+                messagebox.showerror("Hata", f"Kaydetme hatası: {e}")
+            return False
+    
     def run_all_sequence(self, from_restart=False):
         """RUNALL butonu: Lot bölücü aç → Controller ON → KARBOTU başlat → ADDNEWPOS → 1 dk bekle → Emirleri iptal et → Tekrar başla (sürekli döngü)
         
         Args:
             from_restart: True ise restart'tan geliyor demektir, döngü kontrolünü atla
+        
+        NOT: Bu fonksiyon artık multiprocessing ile ayrı process'te çalışır - UI'ı bloklamaz!
         """
+        print(f"[RUNALL] 🎯 run_all_sequence FONKSİYONU ÇAĞRILDI! from_restart={from_restart}")
         try:
+            # Algoritma adı oluştur
+            algorithm_name = f"runall_{int(time.time())}"
+            print(f"[RUNALL] 🔧 Algoritma adı: {algorithm_name}")
+            
+            # RUNALL parametrelerini hazırla
+            # Exposure parametrelerini al
+            exposure_limit = float(self.exposure_limit_var.get()) if hasattr(self, 'exposure_limit_var') else 5000000
+            avg_price = float(self.avg_price_var.get()) if hasattr(self, 'avg_price_var') else 100
+            pot_expo_limit = float(self.pot_expo_limit_var.get()) if hasattr(self, 'pot_expo_limit_var') else 6363600
+            
+            params = {
+                'from_restart': from_restart,
+                'runall_allowed_mode': hasattr(self, 'runall_allowed_var') and self.runall_allowed_var.get() if hasattr(self, 'runall_allowed_var') else False,
+                'mode': self.mode_manager.get_active_account() if hasattr(self, 'mode_manager') else 'HAMPRO',
+                'exposure_limit': exposure_limit,
+                'avg_price': avg_price,
+                'pot_expo_limit': pot_expo_limit,
+            }
+            
+            # Threading ile RUNALL'ı başlat (multiprocessing pickle hatası nedeniyle)
+            # Multiprocessing weakref hatası veriyor, bu yüzden threading kullanıyoruz
+            import threading
+            
+            def run_sequence_thread():
+                try:
+                    print(f"[RUNALL] 🧵 Thread başladı: {threading.current_thread().name}")
+                    print(f"[RUNALL] 🔍 _run_all_sequence_impl çağrılıyor...")
+                    self._run_all_sequence_impl(from_restart=from_restart)
+                    print(f"[RUNALL] ✅ _run_all_sequence_impl tamamlandı")
+                except Exception as e:
+                    print(f"[RUNALL] ❌ Thread hatası: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    self.safe_ui_call(lambda: self.log_message(f"❌ RUNALL thread hatası: {e}"))
+            print(f"[RUNALL] 🔧 Thread oluşturuluyor...")
+            thread = threading.Thread(target=run_sequence_thread, daemon=True, name="RUNALL_Sequence")
+            print(f"[RUNALL] 🚀 Thread başlatılıyor...")
+            thread.start()
+            print(f"[RUNALL] ✅ Thread başlatıldı: {thread.name}, is_alive={thread.is_alive()}")
+            
+            # Thread'i takip et
+            if not hasattr(self, 'algorithm_threads'):
+                self.algorithm_threads = {}
+            self.algorithm_threads['runall_sequence'] = thread
+            
+            print(f"[RUNALL] ✅ RUNALL threading ile başlatıldı")
+            self.safe_ui_call(self.log_message, f"▶️ RUNALL başlatıldı (Thread)")
+                
+        except Exception as e:
+            print(f"[RUNALL] ❌ RUNALL başlatma hatası: {e}")
+            self.safe_ui_call(self.log_message, f"❌ RUNALL başlatma hatası: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def _run_all_sequence_impl(self, from_restart=False):
+        """RUNALL sequence'ın gerçek implementasyonu (thread'de çalışır)"""
+        try:
+            print(f"[RUNALL] 🎯 _run_all_sequence_impl FONKSİYONU ÇAĞRILDI! from_restart={from_restart}")
+            
             # RUNALL Allowed modunu kontrol et
             if hasattr(self, 'runall_allowed_var'):
                 self.runall_allowed_mode = self.runall_allowed_var.get()
             else:
                 self.runall_allowed_mode = False
+            
+            print(f"[RUNALL] 🔍 Allowed Mode: {self.runall_allowed_mode}")
             
             # RUNALL döngüsü durumu kontrolü (toggle)
             if not hasattr(self, 'runall_loop_running'):
@@ -6591,59 +8243,71 @@ class MainWindow(tk.Tk):
                 self._closed_windows.clear()
             
             print("[RUNALL] ▶️ RUNALL sırası başlatılıyor...")
-            self.log_message("▶️ RUNALL sırası başlatılıyor...")
+            self.safe_ui_call(self.log_message, "▶️ RUNALL sırası başlatılıyor...")
             
-            # Buton metnini güncelle
-            if hasattr(self, 'runall_btn'):
-                self.runall_btn.config(text="▶️ RUNALL", state='disabled')
-            if hasattr(self, 'runall_stop_btn'):
-                self.runall_stop_btn.config(state='normal')
+            # Psfalgo aktivite logu
+            self.safe_ui_call(self.log_psfalgo_activity,
+                action="RUNALL Başlatıldı",
+                details=f"Allowed Mode: {self.runall_allowed_mode}",
+                status="INFO",
+                category="RUNALL"
+            )
+            
+            # Buton metnini güncelle (UI thread'de)
+            def update_buttons():
+                if hasattr(self, 'runall_btn'):
+                    self.runall_btn.config(text="▶️ RUNALL", state='disabled')
+                if hasattr(self, 'runall_stop_btn'):
+                    self.runall_stop_btn.config(state='normal')
+            self.safe_ui_call(update_buttons)
             
             # Döngü sayacını artır (her zaman artır, restart'tan geliyorsa da)
             self.runall_loop_count += 1
             
+            # Döngü raporunu temizle (yeni döngü başlıyor)
+            self.clear_loop_report()
+            self.loop_report_loop_number = self.runall_loop_count
+            
             print(f"[RUNALL] 🔄 {self.runall_loop_count}. döngü başlatılıyor...")
-            self.log_message(f"🔄 {self.runall_loop_count}. döngü başlatılıyor...")
+            self.safe_ui_call(self.log_message, f"🔄 {self.runall_loop_count}. döngü başlatılıyor...")
             
-            # Döngü sayacı label'ını güncelle
-            if hasattr(self, 'runall_loop_label'):
-                self.runall_loop_label.config(text=f"Döngü: {self.runall_loop_count}")
+            # Döngü sayacı label'ını güncelle (UI thread'de)
+            def update_loop_label():
+                if hasattr(self, 'runall_loop_label'):
+                    self.runall_loop_label.config(text=f"Döngü: {self.runall_loop_count}")
+            self.safe_ui_call(update_loop_label)
             
-            # Psfalgo penceresini öne getir (kullanıcı botu durdurabilsin)
-            if hasattr(self, 'psfalgo_window') and self.psfalgo_window:
-                try:
-                    if self.psfalgo_window.winfo_exists():
-                        self.psfalgo_window.lift()  # Pencereyi öne getir
-                        self.psfalgo_window.focus_force()  # Odaklan
-                        self.psfalgo_window.attributes('-topmost', True)  # En üste getir
-                        self.after(100, lambda: self.psfalgo_window.attributes('-topmost', False))  # 100ms sonra normal moda döndür
-                except Exception as e:
-                    print(f"[RUNALL] ⚠️ Psfalgo penceresi öne getirilemedi: {e}")
+            # Bot pencereleri öne getirmeyecek - kullanıcı istediği pencereye geçebilir
+            # Psfalgo penceresi arka planda kalabilir, kullanıcı isterse açabilir
             
             # Adım 1: Lot bölücü kontrolü (checkbox'tan kontrol edilecek)
             if hasattr(self, 'runall_lot_divider_var'):
                 lot_divider_enabled = self.runall_lot_divider_var.get()
                 if lot_divider_enabled and not self.lot_divider_enabled:
                     self.lot_divider_enabled = True
-                    self.btn_lot_divider.config(text="📦 Lot Bölücü: ON")
-                    self.btn_lot_divider.config(style='Success.TButton')
+                    def update_lot_divider():
+                        self.btn_lot_divider.config(text="📦 Lot Bölücü: ON")
+                        self.btn_lot_divider.config(style='Success.TButton')
+                    self.safe_ui_call(update_lot_divider)
                     print("[RUNALL] ✅ Adım 1: Lot Bölücü açıldı (checkbox aktif)")
-                    self.log_message("✅ Adım 1: Lot Bölücü açıldı (checkbox aktif)")
+                    self.safe_ui_call(self.log_message, "✅ Adım 1: Lot Bölücü açıldı (checkbox aktif)")
                 elif not lot_divider_enabled:
                     print("[RUNALL] ℹ️ Adım 1: Lot Bölücü checkbox işaretli değil, açılmayacak")
-                    self.log_message("ℹ️ Adım 1: Lot Bölücü checkbox işaretli değil")
+                    self.safe_ui_call(self.log_message, "ℹ️ Adım 1: Lot Bölücü checkbox işaretli değil")
                 else:
                     print("[RUNALL] ℹ️ Adım 1: Lot Bölücü zaten açık")
-                    self.log_message("ℹ️ Adım 1: Lot Bölücü zaten açık")
+                    self.safe_ui_call(self.log_message, "ℹ️ Adım 1: Lot Bölücü zaten açık")
             else:
                 print("[RUNALL] ℹ️ Adım 1: Lot Bölücü checkbox bulunamadı, açılmayacak")
-                self.log_message("ℹ️ Adım 1: Lot Bölücü checkbox bulunamadı")
+                self.safe_ui_call(self.log_message, "ℹ️ Adım 1: Lot Bölücü checkbox bulunamadı")
             
             # Adım 2: Controller'ı ON yap (aktif moda göre doğru CSV kullanılacak)
             if not self.controller_enabled:
                 self.controller_enabled = True
-                self.controller_btn.config(text="🎛️ Controller: ON")
-                self.controller_btn.config(style='Success.TButton')
+                def update_controller():
+                    self.controller_btn.config(text="🎛️ Controller: ON")
+                    self.controller_btn.config(style='Success.TButton')
+                self.safe_ui_call(update_controller)
                 
                 # Aktif modu logla
                 active_account = self.mode_manager.get_active_account()
@@ -6657,17 +8321,48 @@ class MainWindow(tk.Tk):
                     csv_file = "bilinmeyen"
                 
                 print(f"[RUNALL] ✅ Adım 2: Controller ON yapıldı (CSV: {csv_file})")
-                self.log_message(f"✅ Adım 2: Controller ON yapıldı (CSV: {csv_file})")
+                self.safe_ui_call(self.log_message, f"✅ Adım 2: Controller ON yapıldı (CSV: {csv_file})")
             else:
                 print("[RUNALL] ℹ️ Adım 2: Controller zaten ON")
-                self.log_message("ℹ️ Adım 2: Controller zaten ON")
+                self.safe_ui_call(self.log_message, "ℹ️ Adım 2: Controller zaten ON")
             
             # Adım 3: Pot Toplam kontrolü ve ADDNEWPOS butonu durumu (thread'de yapılacak)
             def check_exposure_and_start_karbotu():
                 """Exposure kontrolünü thread'de yap ve KARBOTU'yu başlat"""
                 try:
-                    # Exposure kontrolü (bloklayıcı işlem)
-                    exposure_info = self.check_exposure_limits()
+                    print("[RUNALL] 🔍 check_exposure_and_start_karbotu ÇAĞRILDI!")
+                    # Exposure kontrolü (async - callback ile sonuç al)
+                    exposure_result = {'ready': False}
+                    def exposure_callback(exposure_info):
+                        print(f"[RUNALL] ✅ Exposure callback çağrıldı: mode={exposure_info.get('mode')}")
+                        exposure_result['info'] = exposure_info
+                        exposure_result['ready'] = True
+                    
+                    print("[RUNALL] 🔍 check_exposure_limits_async çağrılıyor...")
+                    # Async exposure kontrolü başlat
+                    self.check_exposure_limits_async(callback=exposure_callback)
+                    
+                    # Sonucu bekle (ama UI'ı bloklamadan)
+                    import time
+                    timeout = 5  # 5 saniye timeout (10'dan 5'e düşürüldü - daha hızlı)
+                    elapsed = 0
+                    check_interval = 0.1  # 100ms bekle
+                    while not exposure_result['ready'] and elapsed < timeout:
+                        time.sleep(check_interval)
+                        elapsed += check_interval
+                        if elapsed % 1.0 < check_interval:  # Her saniye log
+                            print(f"[RUNALL] ⏳ Exposure kontrolü bekleniyor... ({elapsed:.1f}/{timeout}s)")
+                    
+                    if not exposure_result['ready']:
+                        print(f"[RUNALL] ⚠️ Exposure kontrolü timeout! ({timeout} saniye) - KARBOTU varsayılan modda başlatılıyor...")
+                        self.safe_ui_call(self.log_message, f"⚠️ Exposure kontrolü timeout! ({timeout} saniye) - KARBOTU varsayılan modda başlatılıyor...")
+                        # Hata olsa bile KARBOTU'yu başlat (varsayılan OFANSIF modunda)
+                        self.runall_waiting_for_karbotu = True
+                        self.runall_addnewpos_triggered = False
+                        self.safe_ui_call(self.start_karbotu_automation)
+                        return
+                    
+                    exposure_info = exposure_result['info']
                     pot_total = exposure_info.get('pot_total', 0)
                     pot_max_lot = exposure_info.get('pot_max_lot', 63636)
                     total_lots = exposure_info.get('total_lots', 0)
@@ -6723,8 +8418,8 @@ class MainWindow(tk.Tk):
                             # REDUCEMORE'u non-blocking başlat
                             self.after(100, self.start_reducemore_automation)
                     
-                    # UI thread'ine geçiş yap
-                    self.after(0, update_ui)
+                    # UI thread'ine geçiş yap (safe_ui_call kullan)
+                    self.safe_ui_call(update_ui)
                     
                 except Exception as e:
                     print(f"[RUNALL] ❌ Exposure kontrolü hatası: {e}")
@@ -6859,6 +8554,13 @@ class MainWindow(tk.Tk):
                                     elif field == 'port':
                                         self.addnewpos_rules[threshold] = (current[0], float(rule_value))
                         
+                        # ADDNEWPOS Exposure Percentage
+                        elif rule_name == 'addnewpos_exposure_percentage':
+                            self.addnewpos_exposure_percentage = float(rule_value)
+                            # 0-100 arası kontrol
+                            if not (0 <= self.addnewpos_exposure_percentage <= 100):
+                                self.addnewpos_exposure_percentage = 60
+                        
                         # REDUCE Kuralları
                         elif rule_name.startswith('reduce_'):
                             parts = rule_name.split('_')
@@ -6908,6 +8610,9 @@ class MainWindow(tk.Tk):
                 data.append({'Kural': f'addnewpos_{threshold}_maxalw', 'Deger': maxalw_mult, 'Aciklama': f'ADDNEWPOS <%{threshold}: MAXALW çarpanı'})
                 data.append({'Kural': f'addnewpos_{threshold}_port', 'Deger': port_pct, 'Aciklama': f'ADDNEWPOS <%{threshold}: Portföy % limiti'})
             
+            # ADDNEWPOS Exposure Percentage
+            data.append({'Kural': 'addnewpos_exposure_percentage', 'Deger': self.addnewpos_exposure_percentage, 'Aciklama': 'ADDNEWPOS kalan exposure ayarı (%0-100, default: 60)'})
+            
             # REDUCE Kuralları
             for threshold, (maxalw_mult, befday_mult) in self.reduce_rules.items():
                 maxalw_val = 'None' if maxalw_mult is None else maxalw_mult
@@ -6932,7 +8637,7 @@ class MainWindow(tk.Tk):
             dialog.title("📋 PSFAlgo Kuralları")
             dialog.geometry("800x650")
             dialog.transient(self.psfalgo_window)
-            dialog.grab_set()
+            # grab_set() kaldırıldı - GUI'yi bloklamamak için
             
             # Başlık
             title_label = ttk.Label(dialog, text="PSFAlgo Kural Ayarları", 
@@ -7028,6 +8733,24 @@ class MainWindow(tk.Tk):
                 
                 self.addnewpos_vars[threshold] = (maxalw_var, port_var)
             
+            # ADDNEWPOS Exposure Limit Ayarı
+            exposure_frame = ttk.LabelFrame(addnewpos_tab, text="ADDNEWPOS Kalan Exposure Ayarı", padding=10)
+            exposure_frame.pack(fill='x', padx=10, pady=10)
+            
+            exposure_desc_frame = ttk.Frame(exposure_frame)
+            exposure_desc_frame.pack(fill='x', pady=5)
+            ttk.Label(exposure_desc_frame, text="Kalan exposure'a göre lot ayarlama yüzdesi:", font=("Arial", 10, "bold"), width=40).pack(side='left', padx=5)
+            self.addnewpos_exposure_var = tk.StringVar(value=str(self.addnewpos_exposure_percentage))
+            exposure_entry = ttk.Entry(exposure_desc_frame, textvariable=self.addnewpos_exposure_var, width=8)
+            exposure_entry.pack(side='left', padx=5)
+            ttk.Label(exposure_desc_frame, text="%", font=("Arial", 10)).pack(side='left', padx=2)
+            
+            exposure_info_frame = ttk.Frame(exposure_frame)
+            exposure_info_frame.pack(fill='x', padx=5, pady=5)
+            ttk.Label(exposure_info_frame, text="📌 %100 = Eski hali (tam exposure doldurur)", font=("Arial", 9, "italic"), foreground="blue").pack(anchor='w')
+            ttk.Label(exposure_info_frame, text="📌 %60 (default) = Kalan exposure'ın %60'ını kullanır", font=("Arial", 9, "italic"), foreground="blue").pack(anchor='w')
+            ttk.Label(exposure_info_frame, text="📌 Örnek: 10,000 lot kalan exposure varsa, %60 ile 6,000 lot alınır", font=("Arial", 9, "italic"), foreground="blue").pack(anchor='w')
+            
             # Açıklama
             info_frame = ttk.Frame(addnewpos_tab)
             info_frame.pack(fill='x', padx=10, pady=5)
@@ -7109,6 +8832,19 @@ class MainWindow(tk.Tk):
                         except ValueError:
                             pass
                     
+                    # ADDNEWPOS Exposure Percentage güncelle
+                    try:
+                        exposure_pct = float(self.addnewpos_exposure_var.get())
+                        # 0-100 arası kontrol
+                        if 0 <= exposure_pct <= 100:
+                            self.addnewpos_exposure_percentage = exposure_pct
+                        else:
+                            messagebox.showwarning("Uyarı", "Exposure yüzdesi 0-100 arası olmalıdır. Varsayılan değer (%60) kullanıldı.")
+                            self.addnewpos_exposure_percentage = 60
+                    except ValueError:
+                        messagebox.showwarning("Uyarı", "Geçersiz exposure yüzdesi. Varsayılan değer (%60) kullanıldı.")
+                        self.addnewpos_exposure_percentage = 60
+                    
                     # REDUCE kurallarını güncelle
                     for threshold, (maxalw_var, befday_var) in self.reduce_vars.items():
                         try:
@@ -7122,7 +8858,7 @@ class MainWindow(tk.Tk):
                     self.save_rules_to_csv()
                     
                     # Pozisyon tablosunu yenile
-                    self.load_psfalgo_positions()
+                    self.load_psfalgo_positions_async()
                     
                     self.log_message("✅ Tüm kurallar güncellendi ve kaydedildi")
                     messagebox.showinfo("Başarılı", "Kurallar kaydedildi ve uygulandı!")
@@ -7146,6 +8882,9 @@ class MainWindow(tk.Tk):
                     m, p = defaults_addnewpos.get(threshold, (0.5, 5.0))
                     maxalw_var.set(str(m))
                     port_var.set(str(p))
+                
+                # ADDNEWPOS Exposure Percentage varsayılanı
+                self.addnewpos_exposure_var.set("60")
                 
                 # REDUCE varsayılanları
                 defaults_reduce = {3: (None, None), 5: (0.75, 0.75), 7: (0.60, 0.60), 10: (0.50, 0.50), 100: (0.40, 0.40)}
@@ -7571,7 +9310,7 @@ class MainWindow(tk.Tk):
             dialog.title("Filtreleri Kaydet")
             dialog.geometry("300x150")
             dialog.transient(self.psfalgo_window)
-            dialog.grab_set()  # Modal dialog
+            # grab_set() kaldırıldı - GUI'yi bloklamamak için
             
             # Pencereyi ortala
             dialog.update_idletasks()
@@ -7628,7 +9367,7 @@ class MainWindow(tk.Tk):
             dialog.title("🚫 Excluder - Ticker Exclude Listesi")
             dialog.geometry("600x500")
             dialog.transient(self.psfalgo_window)
-            dialog.grab_set()
+            # grab_set() kaldırıldı - GUI'yi bloklamamak için
             
             # Ana frame
             main_frame = ttk.Frame(dialog)
@@ -7787,7 +9526,7 @@ class MainWindow(tk.Tk):
             dialog.title("📊 General BM Shifter")
             dialog.geometry("450x280")
             dialog.transient(self.psfalgo_window)
-            dialog.grab_set()
+            # grab_set() kaldırıldı - GUI'yi bloklamamak için
             
             # Ana frame
             main_frame = ttk.Frame(dialog)
@@ -7926,6 +9665,15 @@ class MainWindow(tk.Tk):
             print("[ADDNEWPOS] ▶️ ADDNEWPOS otomasyonu başlatılıyor...")
             self.log_message("▶️ ADDNEWPOS otomasyonu başlatılıyor...")
             
+            # Psfalgo aktivite logu
+            source = "RUNALL" if from_runall else "Manuel"
+            self.log_psfalgo_activity(
+                action="ADDNEWPOS Başlatıldı",
+                details=f"Kaynak: {source}",
+                status="INFO",
+                category="ADDNEWPOS"
+            )
+            
             # RUNALL'dan çağrılmadıysa (manuel çağrıldıysa) exposure kontrolü yapma, direkt başlat
             if not from_runall:
                 print("[ADDNEWPOS] ℹ️ Manuel olarak başlatıldı, exposure kontrolü yapılmıyor")
@@ -7955,6 +9703,12 @@ class MainWindow(tk.Tk):
         except Exception as e:
             print(f"[ADDNEWPOS] ❌ Otomasyon başlatma hatası: {e}")
             self.log_message(f"❌ ADDNEWPOS başlatma hatası: {e}")
+            self.log_psfalgo_activity(
+                action="ADDNEWPOS Hata",
+                details=str(e),
+                status="ERROR",
+                category="ADDNEWPOS"
+            )
             import traceback
             traceback.print_exc()
             from tkinter import messagebox
@@ -9119,10 +10873,45 @@ class MainWindow(tk.Tk):
             self.log_message(f"❌ Controller toggle hatası: {e}")
     
     def start_karbotu_automation(self):
-        """KARBOTU otomasyonunu başlat"""
+        """KARBOTU otomasyonunu başlat (thread'de çalışır - UI'ı bloklamaz)"""
+        print(f"[KARBOTU] 🎯 start_karbotu_automation FONKSİYONU ÇAĞRILDI!")
+        # Thread'de çalıştır
+        def karbotu_thread():
+            try:
+                print(f"[KARBOTU] 🧵 KARBOTU thread başladı: {threading.current_thread().name}")
+                self._start_karbotu_automation_impl()
+            except Exception as e:
+                print(f"[KARBOTU] ❌ Thread hatası: {e}")
+                import traceback
+                traceback.print_exc()
+                self.safe_ui_call(lambda: self.log_message(f"❌ KARBOTU thread hatası: {e}"))
+                self.safe_ui_call(lambda: messagebox.showerror("Hata", f"KARBOTU başlatılamadı: {e}"))
+        
+        # Thread'i başlat
+        import threading
+        print(f"[KARBOTU] 🔧 KARBOTU thread oluşturuluyor...")
+        thread = threading.Thread(target=karbotu_thread, daemon=True, name="KARBOTU_Automation")
+        print(f"[KARBOTU] 🚀 KARBOTU thread başlatılıyor...")
+        thread.start()
+        print(f"[KARBOTU] ✅ KARBOTU thread başlatıldı: {thread.name}, is_alive={thread.is_alive()}")
+        
+        # Thread'i takip et
+        with self.algorithm_thread_lock:
+            self.algorithm_threads['karbotu'] = thread
+    
+    def _start_karbotu_automation_impl(self):
+        """KARBOTU otomasyonunun gerçek implementasyonu (thread'de çalışır)"""
         try:
             print("[KARBOTU] 🎯 KARBOTU otomasyonu başlatılıyor...")
-            self.log_message("🎯 KARBOTU otomasyonu başlatılıyor...")
+            self.safe_ui_call(self.log_message, "🎯 KARBOTU otomasyonu başlatılıyor...")
+            
+            # Psfalgo aktivite logu
+            self.safe_ui_call(self.log_psfalgo_activity,
+                action="KARBOTU Başlatıldı",
+                details="13 adımlı otomasyon başlıyor",
+                status="INFO",
+                category="KARBOTU"
+            )
             
             # KARBOTU adımlarını başlat
             self.karbotu_current_step = 1
@@ -9130,17 +10919,24 @@ class MainWindow(tk.Tk):
             self.karbotu_running = True
             
             # İlk adım: Take Profit Longs penceresini aç (non-blocking)
-            # after() kullanarak GUI'yi bloklamadan başlat
-            self.after(100, self.karbotu_step_1_open_take_profit_longs)
+            # safe_ui_call kullanarak GUI'yi bloklamadan başlat
+            self.safe_ui_call(self.karbotu_step_1_open_take_profit_longs)
             
         except Exception as e:
             print(f"[KARBOTU] ❌ Otomasyon başlatma hatası: {e}")
-            self.log_message(f"❌ KARBOTU başlatma hatası: {e}")
-            self.after(0, lambda: messagebox.showerror("Hata", f"KARBOTU başlatılamadı: {e}"))
+            self.safe_ui_call(self.log_message, f"❌ KARBOTU başlatma hatası: {e}")
+            self.safe_ui_call(self.log_psfalgo_activity,
+                action="KARBOTU Hata",
+                details=str(e),
+                status="ERROR",
+                category="KARBOTU"
+            )
+            self.safe_ui_call(lambda: messagebox.showerror("Hata", f"KARBOTU başlatılamadı: {e}"))
     
     def karbotu_step_1_open_take_profit_longs(self):
         """Adım 1: Take Profit Longs penceresini aç"""
         try:
+            print(f"[KARBOTU] 🎯 karbotu_step_1_open_take_profit_longs FONKSİYONU ÇAĞRILDI!")
             print("[KARBOTU] 📋 Adım 1: Take Profit Longs penceresi açılıyor...")
             self.log_message("📋 Adım 1: Take Profit Longs penceresi açılıyor...")
             
@@ -9168,6 +10964,7 @@ class MainWindow(tk.Tk):
     def karbotu_step_2_fbtot_lt_110(self):
         """Adım 2: Fbtot < 1.10 ve Ask Sell pahalılık > -0.10"""
         try:
+            print(f"[KARBOTU] 🎯 karbotu_step_2_fbtot_lt_110 FONKSİYONU ÇAĞRILDI!")
             print("[KARBOTU] 📋 Adım 2: Fbtot < 1.10 kontrolü...")
             self.log_message("📋 Adım 2: Fbtot < 1.10 ve Ask Sell pahalılık > -0.10")
             
@@ -10338,6 +12135,11 @@ class MainWindow(tk.Tk):
                 qty = float(item_values[2])  # Negatif gelebilir
                 abs_qty = abs(qty)
                 
+                # Koşullar listesi (detaylı rapor için)
+                conditions_checked = []
+                conditions_passed = []
+                conditions_failed = []
+                
                 # Lot hesapla
                 calculated_lot = abs_qty * (lot_percentage / 100)
                 
@@ -10362,6 +12164,9 @@ class MainWindow(tk.Tk):
                 else:
                     lot_qty = 0
                 
+                conditions_checked.append(f"Lot Hesaplama: {abs_qty} x {lot_percentage}% = {calculated_lot:.0f} → Yuvarlanmış: {lot_qty}")
+                conditions_passed.append(f"Lot hesaplandı: {lot_qty}")
+                
                 # MAXALW limit kontrolü (kural bazlı)
                 maxalw = self.get_maxalw_for_symbol(symbol)
                 multiplier = getattr(self, 'rule_max_change_multiplier', 0.75)
@@ -10382,20 +12187,48 @@ class MainWindow(tk.Tk):
                 new_potential = current_potential + lot_qty  # Short pozisyonu azaltır (daha az negatif)
                 potential_daily_change = abs(new_potential - befday_qty)
                 
+                conditions_checked.append(f"Max Change Limiti: MAXALW={maxalw} x {multiplier} = {max_change_limit:.0f}")
+                conditions_checked.append(f"Günlük Değişim: BefDay={befday_qty}, Current={current_potential:.0f}, New={new_potential:.0f}")
+                conditions_checked.append(f"Potansiyel Değişim: {potential_daily_change:.0f} vs Max Change: {max_change_limit:.0f}")
+                
                 # MAXALW limit kontrolü (kural bazlı)
                 if potential_daily_change > max_change_limit:
+                    conditions_failed.append(f"Max Change limiti aşıldı: {potential_daily_change:.0f} > {max_change_limit:.0f}")
+                    self.add_to_loop_report(
+                        symbol=symbol, action="BUY", lot=lot_qty, price=0,
+                        status="BLOCKED", step_name=step_name,
+                        conditions_checked=conditions_checked,
+                        conditions_passed=conditions_passed,
+                        conditions_failed=conditions_failed,
+                        final_reason=f"Max Change limiti aşıldı ({potential_daily_change:.0f} > {max_change_limit:.0f})"
+                    )
                     print(f"[KARBOTU SHORTS] ⚠️ {symbol}: Max Change limiti aşılacak ({potential_daily_change:.0f} > {max_change_limit:.0f}), emir atlandı")
                     self.log_message(f"⚠️ {symbol}: Max Change limiti aşılacak, emir atlandı")
                     continue
+                
+                conditions_passed.append(f"Max Change limiti OK: {potential_daily_change:.0f} <= {max_change_limit:.0f}")
                 
                 # Emir fiyatını hesapla
                 market_data = None
                 if hasattr(self, 'hammer') and self.hammer:
                     market_data = self.hammer.get_market_data(symbol)
                 
+                conditions_checked.append(f"Market Data kontrolü")
+                
                 if not market_data:
+                    conditions_failed.append("Market data bulunamadı")
+                    self.add_to_loop_report(
+                        symbol=symbol, action="BUY", lot=lot_qty, price=0,
+                        status="BLOCKED", step_name=step_name,
+                        conditions_checked=conditions_checked,
+                        conditions_passed=conditions_passed,
+                        conditions_failed=conditions_failed,
+                        final_reason="Market data bulunamadı"
+                    )
                     print(f"[KARBOTU SHORTS] ❌ {symbol} market_data bulunamadı, atlandı")
                     continue
+                
+                conditions_passed.append("Market data mevcut")
                 
                 bid = float(market_data.get('bid', 0))
                 ask = float(market_data.get('ask', 0))
@@ -10406,17 +12239,29 @@ class MainWindow(tk.Tk):
                     if bid > 0 and ask > 0:
                         spread = ask - bid
                         emir_fiyat = bid + (spread * 0.15)
+                        conditions_passed.append(f"Fiyat hesaplandı: Bid={bid:.2f}, Ask={ask:.2f}, Spread={spread:.2f}, Emir=${emir_fiyat:.2f}")
                     else:
+                        conditions_failed.append(f"Bid/Ask geçersiz: Bid={bid}, Ask={ask}")
+                        self.add_to_loop_report(
+                            symbol=symbol, action="BUY", lot=lot_qty, price=0,
+                            status="BLOCKED", step_name=step_name,
+                            conditions_checked=conditions_checked,
+                            conditions_passed=conditions_passed,
+                            conditions_failed=conditions_failed,
+                            final_reason="Bid/Ask fiyatları geçersiz"
+                        )
                         continue
                 elif order_type == "Ask Sell":
                     if bid > 0 and ask > 0:
                         spread = ask - bid
                         emir_fiyat = ask - (spread * 0.15)
+                        conditions_passed.append(f"Fiyat hesaplandı: Bid={bid:.2f}, Ask={ask:.2f}, Spread={spread:.2f}, Emir=${emir_fiyat:.2f}")
                     else:
+                        conditions_failed.append(f"Bid/Ask geçersiz: Bid={bid}, Ask={ask}")
                         continue
                 
                 if emir_fiyat > 0 and lot_qty != 0:
-                    order_data[symbol] = {'price': emir_fiyat, 'lot': lot_qty}
+                    order_data[symbol] = {'price': emir_fiyat, 'lot': lot_qty, 'conditions_checked': conditions_checked, 'conditions_passed': conditions_passed}
             
             # Emirleri gönder
             success_count = 0
@@ -10424,20 +12269,48 @@ class MainWindow(tk.Tk):
                 data = order_data[symbol]
                 emir_fiyat = data['price']
                 lot_qty = data['lot']
+                conditions_checked = data['conditions_checked']
+                conditions_passed = data['conditions_passed']
+                conditions_failed = []
+                
+                conditions_checked.append(f"Minimum Lot kontrolü: {abs(lot_qty)} >= 200?")
                 
                 if abs(lot_qty) < 200:
+                    conditions_failed.append(f"Lot çok küçük: {abs(lot_qty)} < 200")
+                    self.add_to_loop_report(
+                        symbol=symbol, action="BUY", lot=lot_qty, price=emir_fiyat,
+                        status="BLOCKED", step_name=step_name,
+                        conditions_checked=conditions_checked,
+                        conditions_passed=conditions_passed,
+                        conditions_failed=conditions_failed,
+                        final_reason=f"Minimum lot altında ({abs(lot_qty)} < 200)"
+                    )
                     continue
                 
+                conditions_passed.append(f"Minimum lot OK: {abs(lot_qty)} >= 200")
+                
                 # Controller kontrolü (MAXALW limitleri dahil)
+                # KARBOTU pozisyon AZALTMA yapıyor - toplam pozisyon limiti kontrolü YAPILMAZ
                 if hasattr(self, 'controller_enabled') and self.controller_enabled:
                     order_side = "BUY"  # Short pozisyonu kapatmak için BUY
-                    allowed, adjusted_qty, reason = self.controller_check_order(symbol, order_side, abs(lot_qty))
+                    conditions_checked.append(f"Controller kontrolü: {order_side} {abs(lot_qty)} lot")
+                    allowed, adjusted_qty, reason = self.controller_check_order(symbol, order_side, abs(lot_qty), is_reduce_order=True)
                     
                     if not allowed or adjusted_qty == 0:
+                        conditions_failed.append(f"Controller engelledi: {reason}")
+                        self.add_to_loop_report(
+                            symbol=symbol, action="BUY", lot=lot_qty, price=emir_fiyat,
+                            status="BLOCKED", step_name=step_name,
+                            conditions_checked=conditions_checked,
+                            conditions_passed=conditions_passed,
+                            conditions_failed=conditions_failed,
+                            final_reason=f"Controller engelledi: {reason}"
+                        )
                         print(f"[KARBOTU SHORTS] ⚠️ {symbol}: Controller engelledi - {reason}")
                         self.log_message(f"⚠️ {symbol}: Controller engelledi - {reason}")
                         continue
                     
+                    conditions_passed.append(f"Controller OK: {adjusted_qty} lot onaylandı")
                     lot_qty = adjusted_qty
                 
                 # Emir gönder
@@ -10454,11 +12327,36 @@ class MainWindow(tk.Tk):
                         )
                         if success or "new order sent" in str(success):
                             success_count += 1
+                            conditions_passed.append(f"Emir başarıyla gönderildi")
+                            self.add_to_loop_report(
+                                symbol=symbol, action="BUY", lot=lot_qty, price=emir_fiyat,
+                                status="SENT", step_name=step_name,
+                                conditions_checked=conditions_checked,
+                                conditions_passed=conditions_passed,
+                                conditions_failed=[],
+                                final_reason=f"Emir gönderildi: BUY {lot_qty} lot @ ${emir_fiyat:.2f}"
+                            )
                             print(f"[KARBOTU SHORTS] ✅ {symbol}: Bid Buy {lot_qty} lot @ ${emir_fiyat:.2f}")
                     except Exception as e:
                         if "new order sent" in str(e).lower():
                             success_count += 1
+                            self.add_to_loop_report(
+                                symbol=symbol, action="BUY", lot=lot_qty, price=emir_fiyat,
+                                status="SENT", step_name=step_name,
+                                conditions_checked=conditions_checked,
+                                conditions_passed=conditions_passed,
+                                conditions_failed=[],
+                                final_reason=f"Emir gönderildi: BUY {lot_qty} lot @ ${emir_fiyat:.2f}"
+                            )
                         else:
+                            self.add_to_loop_report(
+                                symbol=symbol, action="BUY", lot=lot_qty, price=emir_fiyat,
+                                status="BLOCKED", step_name=step_name,
+                                conditions_checked=conditions_checked,
+                                conditions_passed=conditions_passed,
+                                conditions_failed=[f"API hatası: {e}"],
+                                final_reason=f"API hatası: {e}"
+                            )
                             print(f"[KARBOTU SHORTS] ❌ {symbol}: {e}")
                 else:
                     success = self.mode_manager.place_order(
@@ -10471,6 +12369,14 @@ class MainWindow(tk.Tk):
                     )
                     if success:
                         success_count += 1
+                        self.add_to_loop_report(
+                            symbol=symbol, action="BUY", lot=lot_qty, price=emir_fiyat,
+                            status="SENT", step_name=step_name,
+                            conditions_checked=conditions_checked,
+                            conditions_passed=conditions_passed,
+                            conditions_failed=[],
+                            final_reason=f"Emir gönderildi: BUY {lot_qty} lot @ ${emir_fiyat:.2f}"
+                        )
                         print(f"[KARBOTU SHORTS] ✅ {symbol}: Bid Buy {lot_qty} lot @ ${emir_fiyat:.2f}")
             
             print(f"[KARBOTU SHORTS] ✅ {step_name} tamamlandı: {success_count} emir gönderildi")
@@ -10485,7 +12391,15 @@ class MainWindow(tk.Tk):
             import traceback
             traceback.print_exc()
             # Hata olsa bile sonraki adıma geç (kısa bir bekleme ile)
-            self.after(1000, self.karbotu_proceed_to_next_step)
+            # UI'ı güncelle
+            if hasattr(self, 'psfalgo_window') and self.psfalgo_window:
+                try:
+                    if self.psfalgo_window.winfo_exists():
+                        self.psfalgo_window.lift()
+                        self.psfalgo_window.update_idletasks()
+                except:
+                    pass
+            self.after(500, self.karbotu_proceed_to_next_step)  # 1000'den 500'e düşürüldü
     
     def karbotu_show_shorts_confirmation_window(self, positions, order_type, lot_percentage, step_name):
         """KARBOTU Shorts onay penceresi göster"""
@@ -11242,17 +13156,11 @@ class MainWindow(tk.Tk):
             else:
                 print("[KARBOTU] ⚠️ Adım 13: Koşula uygun pozisyon bulunamadı")
                 self.log_message("⚠️ Adım 13: Koşula uygun pozisyon bulunamadı")
-                # Tüm adımlar tamamlandı
-                print("[KARBOTU] 🎯 Tüm adımlar tamamlandı!")
-                self.log_message("🎯 KARBOTU otomasyonu tamamlandı!")
-                self.karbotu_running = False
-                
-                # RUNALL'dan çağrıldıysa ADDNEWPOS kontrolü yap (SADECE BİR KEZ)
-                if hasattr(self, 'runall_waiting_for_karbotu') and self.runall_waiting_for_karbotu:
-                    if not hasattr(self, 'runall_addnewpos_triggered') or not self.runall_addnewpos_triggered:
-                        self.runall_waiting_for_karbotu = False
-                        self.runall_addnewpos_triggered = True  # İşaretle ki tekrar tetiklenmesin
-                        self.after(2000, self.runall_check_karbotu_and_addnewpos)  # 2 saniye sonra kontrol et
+                # Adım 13 tamamlandı, current_step'i set et ve proceed_to_next_step çağır
+                # proceed_to_next_step içinde bitiş kontrolü yapılacak
+                self.karbotu_current_step = 13
+                print("[KARBOTU] 🔄 Adım 13 tamamlandı, karbotu_proceed_to_next_step çağrılıyor...")
+                self.after(200, self.karbotu_proceed_to_next_step)
                 
         except Exception as e:
             print(f"[KARBOTU] ❌ Adım 13 hatası: {e}")
@@ -11268,22 +13176,38 @@ class MainWindow(tk.Tk):
             print("[REDUCEMORE] 📉 REDUCEMORE otomasyonu başlatılıyor...")
             self.log_message("📉 REDUCEMORE otomasyonu başlatılıyor...")
             
+            # Psfalgo aktivite logu
+            self.log_psfalgo_activity(
+                action="REDUCEMORE Başlatıldı",
+                details="13 adımlı otomasyon başlıyor",
+                status="INFO",
+                category="REDUCEMORE"
+            )
+            
             # REDUCEMORE adımlarını başlat
             self.reducemore_current_step = 1
             self.reducemore_total_steps = 13
             self.reducemore_running = True
             
-            # İlk adım: Take Profit Longs penceresini aç
-            self.reduce_more_step_1_open_take_profit_longs()
+            # İlk adım: Take Profit Longs penceresini aç (non-blocking)
+            # after() kullanarak GUI'yi bloklamadan başlat
+            self.after(100, self.reduce_more_step_1_open_take_profit_longs)
             
         except Exception as e:
             print(f"[REDUCEMORE] ❌ Otomasyon başlatma hatası: {e}")
             self.log_message(f"❌ REDUCEMORE başlatma hatası: {e}")
+            self.log_psfalgo_activity(
+                action="REDUCEMORE Hata",
+                details=str(e),
+                status="ERROR",
+                category="REDUCEMORE"
+            )
             messagebox.showerror("Hata", f"REDUCEMORE başlatılamadı: {e}")
     
     def karbotu_gort_check_take_profit_longs(self):
         """KARBOTU: Take Profit Longs için Gort kontrolü - Gort > -1 ve Ask Sell pahalılık > -0.05"""
         try:
+            print(f"[KARBOTU GORT] 🎯 karbotu_gort_check_take_profit_longs FONKSİYONU ÇAĞRILDI!")
             print("[KARBOTU GORT] 📋 Take Profit Longs için Gort kontrolü yapılıyor...")
             self.log_message("📋 KARBOTU Gort kontrolü (Longs): Gort > -1 ve Ask Sell pahalılık > -0.05")
             
@@ -11436,12 +13360,16 @@ class MainWindow(tk.Tk):
             else:
                 print("[KARBOTU GORT] ⚠️ Koşula uygun pozisyon bulunamadı")
                 self.log_message("⚠️ KARBOTU Gort kontrolü: Koşula uygun pozisyon bulunamadı")
+                # Pozisyon bulunamadıysa direkt adım 9'a geç (non-blocking)
+                self.after(200, self.karbotu_step_9_sfstot_170_high)
                 
         except Exception as e:
             print(f"[KARBOTU GORT] ❌ Hata: {e}")
             self.log_message(f"❌ KARBOTU Gort kontrolü hatası: {e}")
             import traceback
             traceback.print_exc()
+            # Hata olsa bile adım 9'a geç
+            self.after(200, self.karbotu_step_9_sfstot_170_high)
     
     def reduce_more_step_1_open_take_profit_longs(self):
         """Adım 1: Take Profit Longs penceresini aç"""
@@ -12304,6 +14232,16 @@ class MainWindow(tk.Tk):
                 self.log_message("🎯 REDUCEMORE otomasyonu tamamlandı!")
                 self.reducemore_running = False
                 
+                # RUNALL'dan çağrıldıysa ADDNEWPOS kontrolü yap (SADECE BİR KEZ)
+                if hasattr(self, 'runall_waiting_for_reducemore') and self.runall_waiting_for_reducemore:
+                    if not hasattr(self, 'runall_addnewpos_triggered') or not self.runall_addnewpos_triggered:
+                        # Flag'i runall_check_karbotu_and_addnewpos içinde set edeceğiz, burada sadece tetikle
+                        # Hemen kontrol et (200ms bekle - hızlı geçiş)
+                        print("[REDUCEMORE] 🔄 RUNALL'dan çağrıldı, ADDNEWPOS kontrolü 200ms sonra yapılacak...")
+                        self.after(200, self.runall_check_karbotu_and_addnewpos)
+                    else:
+                        print("[REDUCEMORE] ⚠️ ADDNEWPOS zaten tetiklendi, tekrar tetiklenmeyecek")
+                
         except Exception as e:
             print(f"[REDUCEMORE] ❌ Adım 13 hatası: {e}")
             self.log_message(f"❌ Adım 13 hatası: {e}")
@@ -12663,13 +14601,22 @@ class MainWindow(tk.Tk):
                     continue
                 
                 # Controller kontrolü (MAXALW limitleri dahil)
+                # KARBOTU pozisyon AZALTMA yapıyor - toplam pozisyon limiti kontrolü YAPILMAZ
                 if hasattr(self, 'controller_enabled') and self.controller_enabled:
                     order_side = "SELL" if order_type in ["Ask Sell", "Front Sell"] else "BUY"
-                    allowed, adjusted_qty, reason = self.controller_check_order(symbol, order_side, abs(lot_qty))
+                    allowed, adjusted_qty, reason = self.controller_check_order(symbol, order_side, abs(lot_qty), is_reduce_order=True)
                     
                     if not allowed or adjusted_qty == 0:
                         print(f"[REDUCEMORE] ⚠️ {symbol}: Controller engelledi - {reason}")
                         self.log_message(f"⚠️ {symbol}: Controller engelledi - {reason}")
+                        
+                        self.log_psfalgo_activity(
+                            action=f"{step_name} Engellendi",
+                            details=f"{symbol}: Controller engelledi",
+                            status="BLOCKED",
+                            reason=reason,
+                            category="REDUCEMORE"
+                        )
                         continue
                     
                     lot_qty = adjusted_qty if order_side == "SELL" else adjusted_qty
@@ -12689,11 +14636,17 @@ class MainWindow(tk.Tk):
                         if success or "new order sent" in str(success):
                             success_count += 1
                             print(f"[REDUCEMORE] ✅ {symbol}: {order_type} {lot_qty} lot @ ${emir_fiyat:.2f}")
+                            # Reasoning: Neden bu emir gönderildi?
+                            reasoning = f"{step_name} | Lot: {lot_qty} ({lot_percentage}% of {abs(qty)}) | Limit: {daily_limit:.0f} | DailyChg: {current_daily_change:.0f} | Rem: {remaining_allowance:.0f}"
+                            self.log_psfalgo_activity("EMIR_ILETILDI", f"{symbol} {order_type} {lot_qty} @ ${emir_fiyat:.2f}", "SUCCESS", reasoning, "REDUCEMORE")
                     except Exception as e:
                         if "new order sent" in str(e).lower():
                             success_count += 1
+                            reasoning = f"{step_name} | Lot: {lot_qty} ({lot_percentage}% of {abs(qty)}) | Limit: {daily_limit:.0f} | DailyChg: {current_daily_change:.0f} | Rem: {remaining_allowance:.0f}"
+                            self.log_psfalgo_activity("EMIR_ILETILDI", f"{symbol} {order_type} {lot_qty} @ {emir_fiyat:.2f}", "SUCCESS", reasoning, "REDUCEMORE")
                         else:
                             print(f"[REDUCEMORE] ❌ {symbol}: {e}")
+                            self.log_psfalgo_activity("EMIR_HATASI", f"{symbol} {e}", "ERROR", str(e), "REDUCEMORE")
                 else:
                     success = self.mode_manager.place_order(
                         symbol=symbol,
@@ -12706,6 +14659,10 @@ class MainWindow(tk.Tk):
                     if success:
                         success_count += 1
                         print(f"[REDUCEMORE] ✅ {symbol}: {order_type} {lot_qty} lot @ ${emir_fiyat:.2f}")
+                        details_msg = f"{symbol} {order_type} {lot_qty} @ {emir_fiyat:.2f}"
+                        # Reasoning: Neden bu emir gönderildi?
+                        reasoning = f"{step_name} | Lot: {lot_qty} ({lot_percentage}% of {abs(qty)}) | Limit: {daily_limit:.0f} | DailyChg: {current_daily_change:.0f} | Rem: {remaining_allowance:.0f}"
+                        self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "REDUCEMORE")
             
             print(f"[REDUCEMORE] ✅ {step_name} tamamlandı: {success_count} emir gönderildi")
             self.log_message(f"✅ {step_name} tamamlandı: {success_count} emir gönderildi")
@@ -12921,9 +14878,18 @@ class MainWindow(tk.Tk):
                                     quantity=lot_qty,
                                     price=emir_fiyat,
                                     order_type="LIMIT",
-                                    hidden=True
                                 )
+                                if success:
+                                    details_msg = f"{symbol} SELL {lot_qty} @ {emir_fiyat:.2f} | Manuel Onay"
+                                    reasoning = f"{step_name} | User Approved | Lot: {lot_qty} ({lot_percentage}% of position)"
+                                    self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "REDUCEMORE")
                             except Exception as e:
+                                if "new order sent" in str(e).lower():
+                                    details_msg = f"{symbol} SELL {lot_qty} @ {emir_fiyat:.2f} | Manuel Onay"
+                                    reasoning = f"{step_name} | User Approved | Lot: {lot_qty} ({lot_percentage}% of position)"
+                                    self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "REDUCEMORE")
+                                else:
+                                    self.log_psfalgo_activity("EMIR_HATASI", f"{symbol} {e}", "ERROR", str(e), "REDUCEMORE")
                                 pass
                         else:
                             success = self.mode_manager.place_order(
@@ -12934,6 +14900,10 @@ class MainWindow(tk.Tk):
                                 order_type="LIMIT",
                                 hidden=True
                             )
+                            if success:
+                                details_msg = f"{symbol} SELL {lot_qty} @ {emir_fiyat:.2f} | Manuel Onay"
+                                reasoning = f"{step_name} | User Approved | Lot: {lot_qty} ({lot_percentage}% of position)"
+                                self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "REDUCEMORE")
                     
                     print(f"[REDUCEMORE] ✅ {step_name} emirleri gönderildi")
                     self.log_message(f"✅ {step_name} emirleri gönderildi")
@@ -13219,9 +15189,18 @@ class MainWindow(tk.Tk):
                                     quantity=lot_qty,
                                     price=emir_fiyat,
                                     order_type="LIMIT",
-                                    hidden=True
                                 )
+                                if success:
+                                    details_msg = f"{symbol} BUY {lot_qty} @ {emir_fiyat:.2f} | Manuel Onay (Shorts)"
+                                    reasoning = f"{step_name} | User Approved | Lot: {lot_qty} ({lot_percentage}% of position)"
+                                    self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "REDUCEMORE")
                             except Exception as e:
+                                if "new order sent" in str(e).lower():
+                                    details_msg = f"{symbol} BUY {lot_qty} @ {emir_fiyat:.2f} | Manuel Onay (Shorts)"
+                                    reasoning = f"{step_name} | User Approved | Lot: {lot_qty} ({lot_percentage}% of position)"
+                                    self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "REDUCEMORE")
+                                else:
+                                    self.log_psfalgo_activity("EMIR_HATASI", f"{symbol} {e}", "ERROR", str(e), "REDUCEMORE")
                                 pass
                         else:
                             success = self.mode_manager.place_order(
@@ -13232,6 +15211,10 @@ class MainWindow(tk.Tk):
                                 order_type="LIMIT",
                                 hidden=True
                             )
+                            if success:
+                                details_msg = f"{symbol} BUY {lot_qty} @ {emir_fiyat:.2f} | Manuel Onay (Shorts)"
+                                reasoning = f"{step_name} | User Approved | Lot: {lot_qty} ({lot_percentage}% of position)"
+                                self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "REDUCEMORE")
                     
                     print(f"[REDUCEMORE] ✅ {step_name} emirleri gönderildi")
                     self.log_message(f"✅ {step_name} emirleri gönderildi")
@@ -13352,7 +15335,9 @@ class MainWindow(tk.Tk):
                     if not hasattr(self, 'runall_addnewpos_triggered') or not self.runall_addnewpos_triggered:
                         self.runall_waiting_for_reducemore = False
                         self.runall_addnewpos_triggered = True  # İşaretle ki tekrar tetiklenmesin
-                        self.after(2000, self.runall_check_karbotu_and_addnewpos)  # 2 saniye sonra kontrol et
+                        # Thread-safe UI çağrısı - bot işlemleri normal öncelikli queue'ya gider (kullanıcı etkileşimlerini bloklamaz)
+                        print("[REDUCEMORE] ⏳ ADDNEWPOS kontrolü 200ms sonra yapılacak...")
+                        self.safe_ui_call(lambda: self.after(200, self.runall_check_karbotu_and_addnewpos))
                 
                 return
             
@@ -13385,8 +15370,16 @@ class MainWindow(tk.Tk):
             self.log_message(f"❌ Sonraki adım hatası: {e}")
     
     def karbotu_select_positions_and_confirm(self, positions, order_type, lot_percentage, step_name):
-        """Pozisyonları seç ve onay penceresi aç"""
+        """Pozisyonları seç ve onay penceresi aç (veya Allowed modunda direkt gönder)"""
         try:
+            # ALLOWED MODU KONTROLÜ - Eğer aktifse direkt emir gönder, onay penceresi açma!
+            if hasattr(self, 'runall_allowed_mode') and self.runall_allowed_mode:
+                print(f"[KARBOTU] ✅ Allowed modu aktif - Onay penceresi atlanıyor, emirler direkt gönderiliyor")
+                self.log_message(f"✅ Allowed modu: {step_name} - Emirler otomatik gönderiliyor")
+                # Emirleri direkt gönder (onay penceresi açmadan)
+                self.karbotu_send_orders_direct(positions, order_type, lot_percentage, step_name)
+                return
+            
             # Pozisyonları seç
             for pos in positions:
                 self.take_profit_longs_panel.tree.set(pos['item'], "select", "✓")
@@ -13429,11 +15422,24 @@ class MainWindow(tk.Tk):
             
             # Pozisyon verilerini hazırla
             order_data = {}
+            processed_count = 0
             
             for pos in positions:
                 item_values = self.take_profit_longs_panel.tree.item(pos['item'])['values']
                 symbol = pos['symbol']
                 qty = float(item_values[2])
+                
+                # Her 5 sembol işlendikten sonra UI'ı güncelle (bloklamadan)
+                processed_count += 1
+                if processed_count % 5 == 0:
+                    self.psfalgo_window.update_idletasks()
+                    # Pencereyi öne getirme kontrolü
+                    if hasattr(self, 'psfalgo_window') and self.psfalgo_window:
+                        try:
+                            if self.psfalgo_window.winfo_exists():
+                                self.psfalgo_window.lift()
+                        except:
+                            pass
                 
                 # Lot hesapla
                 calculated_lot = qty * (lot_percentage / 100)
@@ -13494,6 +15500,34 @@ class MainWindow(tk.Tk):
                     if remaining_allowance < self.rule_min_lot:
                         print(f"[KARBOTU] ⚠️ {symbol}: Günlük limit doldu ({current_daily_change:.0f}/{daily_limit:.0f}), emir atlandı")
                         self.log_message(f"⚠️ {symbol}: Günlük REDUCE limit doldu, emir atlandı")
+                        details_msg = f"{symbol} Günlük Limit Doldu | Limit:{daily_limit:.0f} Used:{current_daily_change:.0f} Rem:{remaining_allowance:.0f}"
+                        # Detaylı blok logu
+                        pos_data = self.psfalgo_positions.get(symbol, {})
+                        fbtot = pos_data.get('fbtot', None)
+                        sfstot = pos_data.get('sfstot', None)
+                        pahalilik = pos_data.get('ask_sell_pahalilik', None)
+                        ucuzluk = pos_data.get('bid_buy_ucuzluk', None)
+                        
+                        self.log_psfalgo_activity(
+                            action="EMIR_BLOKE",
+                            details=details_msg,
+                            status="BLOCKED",
+                            reason="Daily Limit",
+                            category="KARBOTU",
+                            symbol=symbol,
+                            step_name=step_name,
+                            fbtot=fbtot,
+                            sfstot=sfstot,
+                            pahalilik=pahalilik,
+                            ucuzluk=ucuzluk,
+                            maxalw=maxalw,
+                            lot_percentage=lot_percentage,
+                            calculated_lot=calculated_lot if 'calculated_lot' in locals() else None,
+                            daily_limit=daily_limit,
+                            current_daily_change=current_daily_change,
+                            remaining_allowance=remaining_allowance,
+                            conditions_failed=[f"Günlük limit doldu: {current_daily_change:.0f} >= {daily_limit:.0f}"]
+                        )
                         continue
                     else:
                         # Lot miktarını ayarla
@@ -13514,13 +15548,23 @@ class MainWindow(tk.Tk):
                     lot_qty = int(abs(current_potential))  # 0'a getir
                     print(f"[KARBOTU] ⚠️ {symbol}: Ters poz. yasak, lot ayarlandı → {lot_qty}")
                 
-                # Emir fiyatını hesapla
+                # Emir fiyatını hesapla - timeout ile
                 market_data = None
                 if hasattr(self, 'hammer') and self.hammer:
-                    market_data = self.hammer.get_market_data(symbol)
+                    try:
+                        # UI thread'ini bloklamadan market data al
+                        market_data = self.hammer.get_market_data(symbol)
+                        # UI'ı güncelle
+                        if processed_count % 3 == 0:
+                            self.psfalgo_window.update_idletasks()
+                    except Exception as e:
+                        print(f"[KARBOTU] ⚠️ {symbol} market_data hatası: {e}")
+                        market_data = None
                 
                 if not market_data:
                     print(f"[KARBOTU] ❌ {symbol} market_data bulunamadı, atlandı")
+                    # UI thread'ini bloklamadan devam et
+                    self.psfalgo_window.update_idletasks()
                     continue
                 
                 bid = float(market_data.get('bid', 0))
@@ -13565,13 +15609,43 @@ class MainWindow(tk.Tk):
                     continue
                 
                 # Controller kontrolü (MAXALW limitleri dahil)
+                # KARBOTU pozisyon AZALTMA yapıyor - toplam pozisyon limiti kontrolü YAPILMAZ
                 if hasattr(self, 'controller_enabled') and self.controller_enabled:
                     order_side = "SELL" if order_type in ["Ask Sell", "Front Sell"] else "BUY"
-                    allowed, adjusted_qty, reason = self.controller_check_order(symbol, order_side, abs(lot_qty))
+                    allowed, adjusted_qty, reason = self.controller_check_order(symbol, order_side, abs(lot_qty), is_reduce_order=True)
                     
                     if not allowed or adjusted_qty == 0:
                         print(f"[KARBOTU] ⚠️ {symbol}: Controller engelledi - {reason}")
                         self.log_message(f"⚠️ {symbol}: Controller engelledi - {reason}")
+                        
+                        # Detaylı blok logu
+                        pos_data = self.psfalgo_positions.get(symbol, {})
+                        fbtot = pos_data.get('fbtot', None)
+                        sfstot = pos_data.get('sfstot', None)
+                        pahalilik = pos_data.get('ask_sell_pahalilik', None)
+                        ucuzluk = pos_data.get('bid_buy_ucuzluk', None)
+                        
+                        self.log_psfalgo_activity(
+                            action="EMIR_BLOKE",
+                            details=f"{symbol} {reason}",
+                            status="BLOCKED",
+                            reason=reason,
+                            category="KARBOTU",
+                            symbol=symbol,
+                            step_name=step_name,
+                            fbtot=fbtot,
+                            sfstot=sfstot,
+                            pahalilik=pahalilik,
+                            ucuzluk=ucuzluk,
+                            maxalw=maxalw,
+                            lot_percentage=lot_percentage,
+                            calculated_lot=calculated_lot if 'calculated_lot' in locals() else None,
+                            daily_limit=daily_limit,
+                            current_daily_change=current_daily_change,
+                            remaining_allowance=remaining_allowance,
+                            controller_result=f"Allowed: {allowed}, Adjusted: {adjusted_qty}",
+                            conditions_failed=[f"Controller engelledi: {reason}"]
+                        )
                         continue
                     
                     lot_qty = adjusted_qty if order_side == "SELL" else adjusted_qty
@@ -13591,11 +15665,43 @@ class MainWindow(tk.Tk):
                         if success or "new order sent" in str(success):
                             success_count += 1
                             print(f"[KARBOTU] ✅ {symbol}: {order_type} {lot_qty} lot @ ${emir_fiyat:.2f}")
+                            # Detaylı log - Neden bu emir gönderildi?
+                            reasoning = f"{step_name} | Lot: {lot_qty} ({lot_percentage}% of {abs(qty)}) | Limit: {daily_limit:.0f} | DailyChg: {current_daily_change:.0f} | Rem: {remaining_allowance:.0f}"
+                            
+                            # Pozisyon bilgilerini al
+                            pos_data = self.psfalgo_positions.get(symbol, {})
+                            fbtot = pos_data.get('fbtot', None)
+                            sfstot = pos_data.get('sfstot', None)
+                            pahalilik = pos_data.get('ask_sell_pahalilik', None)
+                            ucuzluk = pos_data.get('bid_buy_ucuzluk', None)
+                            
+                            self.log_psfalgo_activity(
+                                action="EMIR_ILETILDI",
+                                details=f"{symbol} {order_type} {lot_qty} @ ${emir_fiyat:.2f}",
+                                status="SUCCESS",
+                                reason=reasoning,
+                                category="KARBOTU",
+                                symbol=symbol,
+                                step_name=step_name,
+                                fbtot=fbtot,
+                                sfstot=sfstot,
+                                pahalilik=pahalilik,
+                                ucuzluk=ucuzluk,
+                                maxalw=maxalw,
+                                lot_percentage=lot_percentage,
+                                calculated_lot=calculated_lot if 'calculated_lot' in locals() else None,
+                                daily_limit=daily_limit,
+                                current_daily_change=current_daily_change,
+                                remaining_allowance=remaining_allowance,
+                                controller_result=f"Allowed: {allowed}, Adjusted: {adjusted_qty}" if 'allowed' in locals() else None,
+                                min_lot_check=f"{abs(lot_qty)} >= 200: OK" if abs(lot_qty) >= 200 else f"{abs(lot_qty)} < 200: FAILED"
+                            )
                     except Exception as e:
                         if "new order sent" in str(e).lower():
                             success_count += 1
                         else:
                             print(f"[KARBOTU] ❌ {symbol}: {e}")
+                            self.log_psfalgo_activity("EMIR_HATASI", f"{symbol} {e}", "ERROR", str(e), "KARBOTU")
                 else:
                     success = self.mode_manager.place_order(
                         symbol=symbol,
@@ -13608,12 +15714,52 @@ class MainWindow(tk.Tk):
                     if success:
                         success_count += 1
                         print(f"[KARBOTU] ✅ {symbol}: {order_type} {lot_qty} lot @ ${emir_fiyat:.2f}")
+                        # Detaylı log - Neden bu emir gönderildi?
+                        reasoning = f"{step_name} | Lot: {lot_qty} ({lot_percentage}% of {abs(qty)}) | Limit: {daily_limit:.0f} | DailyChg: {current_daily_change:.0f} | Rem: {remaining_allowance:.0f}"
+                        
+                        # Pozisyon bilgilerini al
+                        pos_data = self.psfalgo_positions.get(symbol, {})
+                        fbtot = pos_data.get('fbtot', None)
+                        sfstot = pos_data.get('sfstot', None)
+                        pahalilik = pos_data.get('ask_sell_pahalilik', None)
+                        ucuzluk = pos_data.get('bid_buy_ucuzluk', None)
+                        
+                        self.log_psfalgo_activity(
+                            action="EMIR_ILETILDI",
+                            details=f"{symbol} {order_type} {lot_qty} @ ${emir_fiyat:.2f}",
+                            status="SUCCESS",
+                            reason=reasoning,
+                            category="KARBOTU",
+                            symbol=symbol,
+                            step_name=step_name,
+                            fbtot=fbtot,
+                            sfstot=sfstot,
+                            pahalilik=pahalilik,
+                            ucuzluk=ucuzluk,
+                            maxalw=maxalw,
+                            lot_percentage=lot_percentage,
+                            calculated_lot=calculated_lot if 'calculated_lot' in locals() else None,
+                            daily_limit=daily_limit,
+                            current_daily_change=current_daily_change,
+                            remaining_allowance=remaining_allowance,
+                            controller_result=f"Allowed: {allowed}, Adjusted: {adjusted_qty}" if 'allowed' in locals() else None,
+                            min_lot_check=f"{abs(lot_qty)} >= 200: OK" if abs(lot_qty) >= 200 else f"{abs(lot_qty)} < 200: FAILED"
+                        )
             
             print(f"[KARBOTU] ✅ {step_name} tamamlandı: {success_count} emir gönderildi")
             self.log_message(f"✅ {step_name} tamamlandı: {success_count} emir gönderildi")
             
+            # UI'ı güncelle ve pencereyi öne getir
+            if hasattr(self, 'psfalgo_window') and self.psfalgo_window:
+                try:
+                    if self.psfalgo_window.winfo_exists():
+                        self.psfalgo_window.lift()
+                        self.psfalgo_window.update_idletasks()
+                except:
+                    pass
+            
             # Sonraki adıma geç (kısa bir bekleme ile - adımlar sıralı ilerlesin)
-            self.after(1000, self.karbotu_proceed_to_next_step)
+            self.after(500, self.karbotu_proceed_to_next_step)  # 1000'den 500'e düşürüldü
             
         except Exception as e:
             print(f"[KARBOTU] ❌ Direkt emir gönderme hatası: {e}")
@@ -13621,7 +15767,15 @@ class MainWindow(tk.Tk):
             import traceback
             traceback.print_exc()
             # Hata olsa bile sonraki adıma geç (kısa bir bekleme ile)
-            self.after(1000, self.karbotu_proceed_to_next_step)
+            # UI'ı güncelle
+            if hasattr(self, 'psfalgo_window') and self.psfalgo_window:
+                try:
+                    if self.psfalgo_window.winfo_exists():
+                        self.psfalgo_window.lift()
+                        self.psfalgo_window.update_idletasks()
+                except:
+                    pass
+            self.after(500, self.karbotu_proceed_to_next_step)  # 1000'den 500'e düşürüldü
     
     def karbotu_gort_select_and_send_longs(self, positions, order_type, lot_percentage, step_name):
         """KARBOTU Gort: Longs pozisyonları seç ve özel lot hesaplama ile emir gönder"""
@@ -13738,6 +15892,8 @@ class MainWindow(tk.Tk):
                 if not is_unlimited and lot_qty > remaining_allowance:
                     if remaining_allowance < self.rule_min_lot:
                         print(f"[REDUCEMORE GORT] ⚠️ {symbol}: Günlük limit doldu, emir atlandı")
+                        details_msg = f"{symbol} Günlük Limit Doldu | Limit:{daily_limit:.0f} Used:{current_daily_change:.0f} Rem:{remaining_allowance:.0f}"
+                        self.log_psfalgo_activity("EMIR_BLOKE", details_msg, "BLOCKED", "Daily Limit", "REDUCEMORE")
                         continue
                     lot_qty = self.round_lot(remaining_allowance, is_reduce=True, remaining_position=abs(current_qty))
                     print(f"[REDUCEMORE GORT] 📊 {symbol}: Emir miktarı ayarlandı → {lot_qty} lot")
@@ -13784,6 +15940,9 @@ class MainWindow(tk.Tk):
                         if success:
                             print(f"[REDUCEMORE GORT] ✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
                             self.log_message(f"✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
+                            details_msg = f"{symbol} SELL {lot_qty} @ {emir_fiyat:.2f}"
+                            reasoning = f"{step_name} (Gort) | Lot: {lot_qty} | Limit: {daily_limit:.0f} | DailyChg: {current_daily_change:.0f} | Rem: {remaining_allowance:.0f}"
+                            self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "REDUCEMORE")
                     except Exception as e:
                         print(f"[REDUCEMORE GORT] ❌ {symbol} emir hatası: {e}")
                 else:
@@ -13797,6 +15956,9 @@ class MainWindow(tk.Tk):
                     if success:
                         print(f"[REDUCEMORE GORT] ✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
                         self.log_message(f"✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
+                        details_msg = f"{symbol} SELL {lot_qty} @ {emir_fiyat:.2f}"
+                        reasoning = f"{step_name} (Gort) | Lot: {lot_qty} | Limit: {daily_limit:.0f} | DailyChg: {current_daily_change:.0f} | Rem: {remaining_allowance:.0f}"
+                        self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "REDUCEMORE")
             
             print(f"[REDUCEMORE GORT] ✅ {len(order_data)} emir gönderildi")
             self.log_message(f"✅ REDUCEMORE Gort {step_name}: {len(order_data)} emir gönderildi")
@@ -14162,6 +16324,10 @@ class MainWindow(tk.Tk):
                                 
                                 if success or "new order sent" in str(success):
                                     print(f"[KARBOTU] ✅ {symbol} → {hammer_symbol}: SELL {lot_qty} lot @ ${emir_fiyat:.2f}")
+                                    print(f"[KARBOTU] ✅ {symbol} → {hammer_symbol}: SELL {lot_qty} lot @ ${emir_fiyat:.2f}")
+                                    details_msg = f"{symbol} SELL {lot_qty} @ {emir_fiyat:.2f} | Manuel Onay"
+                                    reasoning = f"{step_name} | User Approved | Lot: {lot_qty} ({lot_percentage}% of {abs(qty)}) | Limit: {daily_limit:.0f} | DailyChg: {current_daily_change:.0f} | Rem: {remaining_allowance:.0f}"
+                                    self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "KARBOTU")
                                 else:
                                     print(f"[KARBOTU] ❌ {symbol} → {hammer_symbol}: SELL {lot_qty} lot @ ${emir_fiyat:.2f}")
                             except Exception as e:
@@ -14169,6 +16335,7 @@ class MainWindow(tk.Tk):
                                     print(f"[KARBOTU] ✅ {symbol} → {hammer_symbol}: SELL {lot_qty} lot @ ${emir_fiyat:.2f} (new order sent)")
                                 else:
                                     print(f"[KARBOTU] ❌ {symbol} → {hammer_symbol}: {e}")
+                                    self.log_psfalgo_activity("EMIR_HATASI", f"{symbol} {e}", "ERROR", str(e), "KARBOTU")
                         else:
                             # IBKR
                             success = self.mode_manager.place_order(
@@ -14182,6 +16349,9 @@ class MainWindow(tk.Tk):
                             
                             if success:
                                 print(f"[KARBOTU] ✅ {symbol}: SELL {lot_qty} lot @ ${emir_fiyat:.2f}")
+                                details_msg = f"{symbol} SELL {lot_qty} @ {emir_fiyat:.2f} | Manuel Onay"
+                                reasoning = f"{step_name} | User Approved | Lot: {lot_qty} ({lot_percentage}% of position)"
+                                self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "KARBOTU")
                             else:
                                 print(f"[KARBOTU] ❌ {symbol}: SELL {lot_qty} lot @ ${emir_fiyat:.2f}")
                     
@@ -14316,6 +16486,7 @@ class MainWindow(tk.Tk):
     def karbotu_gort_send_orders_direct_longs(self, positions, order_type, lot_percentage, step_name):
         """KARBOTU Gort Longs: Emirleri direkt gönder (Allowed modunda onay penceresi olmadan)"""
         try:
+            print(f"[KARBOTU GORT] 🎯 karbotu_gort_send_orders_direct_longs FONKSİYONU ÇAĞRILDI! {len(positions)} pozisyon")
             print(f"[KARBOTU GORT] 🔄 {step_name} emirleri direkt gönderiliyor (Allowed modu)...")
             self.log_message(f"🔄 KARBOTU Gort {step_name} emirleri direkt gönderiliyor (Allowed modu)...")
             
@@ -14388,6 +16559,8 @@ class MainWindow(tk.Tk):
                 if not is_unlimited and lot_qty > remaining_allowance:
                     if remaining_allowance < self.rule_min_lot:
                         print(f"[KARBOTU GORT] ⚠️ {symbol}: Günlük limit doldu, emir atlandı")
+                        details_msg = f"{symbol} Günlük Limit Doldu | Limit:{daily_limit:.0f} Used:{current_daily_change:.0f} Rem:{remaining_allowance:.0f}"
+                        self.log_psfalgo_activity("EMIR_BLOKE", details_msg, "BLOCKED", "Daily Limit", "KARBOTU")
                         continue
                     lot_qty = self.round_lot(remaining_allowance, is_reduce=True, remaining_position=abs(current_qty))
                     print(f"[KARBOTU GORT] 📊 {symbol}: Emir miktarı ayarlandı → {lot_qty} lot")
@@ -14421,8 +16594,11 @@ class MainWindow(tk.Tk):
                         if success:
                             print(f"[KARBOTU GORT] ✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
                             self.log_message(f"✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
+                            reasoning = f"{step_name} (Gort) | Lot: {lot_qty} | Limit: {daily_limit:.0f} | DailyChg: {current_daily_change:.0f} | Rem: {remaining_allowance:.0f}"
+                            self.log_psfalgo_activity("EMIR_ILETILDI", f"{symbol} SELL {lot_qty} @ {emir_fiyat:.2f}", "SUCCESS", reasoning, "KARBOTU")
                     except Exception as e:
                         print(f"[KARBOTU GORT] ❌ {symbol} emir hatası: {e}")
+                        self.log_psfalgo_activity("EMIR_HATASI", f"{symbol} {e}", "ERROR", str(e), "KARBOTU")
                 else:
                     success = self.mode_manager.place_order(
                         symbol=symbol,
@@ -14434,11 +16610,14 @@ class MainWindow(tk.Tk):
                     if success:
                         print(f"[KARBOTU GORT] ✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
                         self.log_message(f"✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
+                        reasoning = f"{step_name} (Gort) | Lot: {lot_qty} | Limit: {daily_limit:.0f} | DailyChg: {current_daily_change:.0f} | Rem: {remaining_allowance:.0f}"
+                        self.log_psfalgo_activity("EMIR_ILETILDI", f"{symbol} SELL {lot_qty} @ {emir_fiyat:.2f}", "SUCCESS", reasoning, "KARBOTU")
             
             print(f"[KARBOTU GORT] ✅ {len(order_data)} emir gönderildi")
             self.log_message(f"✅ KARBOTU Gort {step_name}: {len(order_data)} emir gönderildi")
             
             # Sonraki adıma geç (Gort kontrolü bitince adım 2'ye geçilecek)
+            print(f"[KARBOTU GORT] 🔄 Adım 2'ye geçiliyor (500ms sonra)...")
             self.after(500, self.karbotu_step_2_fbtot_lt_110)
             
         except Exception as e:
@@ -14504,6 +16683,8 @@ class MainWindow(tk.Tk):
                 if not is_unlimited and lot_qty > remaining_allowance:
                     if remaining_allowance < self.rule_min_lot:
                         print(f"[KARBOTU GORT SHORTS] ⚠️ {symbol}: Günlük limit doldu, emir atlandı")
+                        details_msg = f"{symbol} Günlük Limit Doldu | Limit:{daily_limit:.0f} Used:{current_daily_change:.0f} Rem:{remaining_allowance:.0f}"
+                        self.log_psfalgo_activity("EMIR_BLOKE", details_msg, "BLOCKED", "Daily Limit", "KARBOTU")
                         continue
                     lot_qty = self.round_lot(remaining_allowance, is_reduce=True, remaining_position=abs_qty)
                     print(f"[KARBOTU GORT SHORTS] 📊 {symbol}: Emir miktarı ayarlandı → {lot_qty} lot")
@@ -14550,8 +16731,11 @@ class MainWindow(tk.Tk):
                         if success:
                             print(f"[KARBOTU GORT] ✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
                             self.log_message(f"✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
+                            reasoning = f"{step_name} (Gort) | Lot: {lot_qty} | Limit: {daily_limit:.0f} | DailyChg: {current_daily_change:.0f} | Rem: {remaining_allowance:.0f}"
+                            self.log_psfalgo_activity("EMIR_ILETILDI", f"{symbol} BUY {lot_qty} @ {emir_fiyat:.2f}", "SUCCESS", reasoning, "KARBOTU")
                     except Exception as e:
                         print(f"[KARBOTU GORT] ❌ {symbol} emir hatası: {e}")
+                        self.log_psfalgo_activity("EMIR_HATASI", f"{symbol} {e}", "ERROR", str(e), "KARBOTU")
                 else:
                     success = self.mode_manager.place_order(
                         symbol=symbol,
@@ -14563,6 +16747,8 @@ class MainWindow(tk.Tk):
                     if success:
                         print(f"[KARBOTU GORT] ✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
                         self.log_message(f"✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
+                        reasoning = f"{step_name} (Gort) | Lot: {lot_qty} | Limit: {daily_limit:.0f} | DailyChg: {current_daily_change:.0f} | Rem: {remaining_allowance:.0f}"
+                        self.log_psfalgo_activity("EMIR_ILETILDI", f"{symbol} BUY {lot_qty} @ {emir_fiyat:.2f}", "SUCCESS", reasoning, "KARBOTU")
             
             print(f"[KARBOTU GORT] ✅ {len(order_data)} emir gönderildi")
             self.log_message(f"✅ KARBOTU Gort {step_name}: {len(order_data)} emir gönderildi")
@@ -14707,8 +16893,12 @@ class MainWindow(tk.Tk):
                                 if success:
                                     print(f"[KARBOTU GORT] ✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
                                     self.log_message(f"✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
+                                    details_msg = f"{symbol} SELL {lot_qty} @ {emir_fiyat:.2f} | Manuel Onay (Gort)"
+                                    reasoning = f"{step_name} | User Approved | Lot: {lot_qty} ({lot_percentage}% of {abs(qty)}) | Limit: {daily_limit:.0f} | DailyChg: {current_daily_change:.0f} | Rem: {remaining_allowance:.0f}"
+                                    self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "KARBOTU")
                             except Exception as e:
                                 print(f"[KARBOTU GORT] ❌ {symbol} emir hatası: {e}")
+                                self.log_psfalgo_activity("EMIR_HATASI", f"{symbol} {e}", "ERROR", str(e), "KARBOTU")
                         else:
                             success = self.mode_manager.place_order(
                                 symbol=symbol,
@@ -14720,6 +16910,9 @@ class MainWindow(tk.Tk):
                             if success:
                                 print(f"[KARBOTU GORT] ✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
                                 self.log_message(f"✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
+                                details_msg = f"{symbol} SELL {lot_qty} @ {emir_fiyat:.2f} | Manuel Onay (Gort)"
+                                reasoning = f"{step_name} | User Approved | Lot: {lot_qty} ({lot_percentage}% of position)"
+                                self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "KARBOTU")
                     
                     print(f"[KARBOTU GORT] ✅ {len(order_data)} emir gönderildi")
                     self.log_message(f"✅ KARBOTU Gort {step_name}: {len(order_data)} emir gönderildi")
@@ -14902,8 +17095,12 @@ class MainWindow(tk.Tk):
                                 if success:
                                     print(f"[KARBOTU GORT] ✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
                                     self.log_message(f"✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
+                                    details_msg = f"{symbol} BUY {lot_qty} @ {emir_fiyat:.2f} | Manuel Onay (Gort Shorts)"
+                                    reasoning = f"{step_name} | User Approved | Lot: {lot_qty} ({lot_percentage}% of {abs(qty)}) | Limit: {daily_limit:.0f} | DailyChg: {current_daily_change:.0f} | Rem: {remaining_allowance:.0f}"
+                                    self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "KARBOTU")
                             except Exception as e:
                                 print(f"[KARBOTU GORT] ❌ {symbol} emir hatası: {e}")
+                                self.log_psfalgo_activity("EMIR_HATASI", f"{symbol} {e}", "ERROR", str(e), "KARBOTU")
                         else:
                             success = self.mode_manager.place_order(
                                 symbol=symbol,
@@ -14915,6 +17112,9 @@ class MainWindow(tk.Tk):
                             if success:
                                 print(f"[KARBOTU GORT] ✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
                                 self.log_message(f"✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
+                                details_msg = f"{symbol} BUY {lot_qty} @ {emir_fiyat:.2f} | Manuel Onay (Gort Shorts)"
+                                reasoning = f"{step_name} | User Approved | Lot: {lot_qty} ({lot_percentage}% of position)"
+                                self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "KARBOTU")
                     
                     print(f"[KARBOTU GORT] ✅ {len(order_data)} emir gönderildi")
                     self.log_message(f"✅ KARBOTU Gort {step_name}: {len(order_data)} emir gönderildi")
@@ -15095,9 +17295,14 @@ class MainWindow(tk.Tk):
                                 )
                                 if success:
                                     print(f"[REDUCEMORE GORT] ✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
+                                    print(f"[REDUCEMORE GORT] ✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
                                     self.log_message(f"✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
+                                    details_msg = f"{symbol} SELL {lot_qty} @ {emir_fiyat:.2f} | Manuel Onay (Gort)"
+                                    reasoning = f"{step_name} | User Approved | Lot: {lot_qty} ({lot_percentage}% of position)"
+                                    self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "REDUCEMORE")
                             except Exception as e:
                                 print(f"[REDUCEMORE GORT] ❌ {symbol} emir hatası: {e}")
+                                self.log_psfalgo_activity("EMIR_HATASI", f"{symbol} {e}", "ERROR", str(e), "REDUCEMORE")
                         else:
                             success = self.mode_manager.place_order(
                                 symbol=symbol,
@@ -15109,6 +17314,9 @@ class MainWindow(tk.Tk):
                             if success:
                                 print(f"[REDUCEMORE GORT] ✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
                                 self.log_message(f"✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
+                                details_msg = f"{symbol} SELL {lot_qty} @ {emir_fiyat:.2f} | Manuel Onay (Gort)"
+                                reasoning = f"{step_name} | User Approved | Lot: {lot_qty} ({lot_percentage}% of position)"
+                                self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "REDUCEMORE")
                     
                     print(f"[REDUCEMORE GORT] ✅ {len(order_data)} emir gönderildi")
                     self.log_message(f"✅ REDUCEMORE Gort {step_name}: {len(order_data)} emir gönderildi")
@@ -15195,6 +17403,9 @@ class MainWindow(tk.Tk):
                 if not is_unlimited and lot_qty > remaining_allowance:
                     if remaining_allowance < self.rule_min_lot:
                         print(f"[REDUCEMORE GORT SHORTS] ⚠️ {symbol}: Günlük limit doldu, emir atlandı")
+                        print(f"[REDUCEMORE GORT SHORTS] ⚠️ {symbol}: Günlük limit doldu, emir atlandı")
+                        details_msg = f"{symbol} Günlük Limit Doldu | Limit:{daily_limit:.0f} Used:{current_daily_change:.0f} Rem:{remaining_allowance:.0f}"
+                        self.log_psfalgo_activity("EMIR_BLOKE", details_msg, "BLOCKED", "Daily Limit", "REDUCEMORE")
                         continue
                     lot_qty = self.round_lot(remaining_allowance, is_reduce=True, remaining_position=abs_qty)
                     print(f"[REDUCEMORE GORT SHORTS] 📊 {symbol}: Emir miktarı ayarlandı → {lot_qty} lot")
@@ -15241,8 +17452,11 @@ class MainWindow(tk.Tk):
                         if success:
                             print(f"[REDUCEMORE GORT] ✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
                             self.log_message(f"✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
+                            reasoning = f"{step_name} (Gort) | Lot: {lot_qty} | Limit: {daily_limit:.0f} | DailyChg: {current_daily_change:.0f} | Rem: {remaining_allowance:.0f}"
+                            self.log_psfalgo_activity("EMIR_ILETILDI", f"{symbol} BUY {lot_qty} @ {emir_fiyat:.2f}", "SUCCESS", reasoning, "REDUCEMORE")
                     except Exception as e:
                         print(f"[REDUCEMORE GORT] ❌ {symbol} emir hatası: {e}")
+                        self.log_psfalgo_activity("EMIR_HATASI", f"{symbol} {e}", "ERROR", str(e), "REDUCEMORE")
                 else:
                     success = self.mode_manager.place_order(
                         symbol=symbol,
@@ -15254,6 +17468,8 @@ class MainWindow(tk.Tk):
                     if success:
                         print(f"[REDUCEMORE GORT] ✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
                         self.log_message(f"✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
+                        reasoning = f"{step_name} (Gort) | Lot: {lot_qty} | Limit: {daily_limit:.0f} | DailyChg: {current_daily_change:.0f} | Rem: {remaining_allowance:.0f}"
+                        self.log_psfalgo_activity("EMIR_ILETILDI", f"{symbol} BUY {lot_qty} @ {emir_fiyat:.2f}", "SUCCESS", reasoning, "REDUCEMORE")
             
             print(f"[REDUCEMORE GORT] ✅ {len(order_data)} emir gönderildi")
             self.log_message(f"✅ REDUCEMORE Gort {step_name}: {len(order_data)} emir gönderildi")
@@ -15399,8 +17615,12 @@ class MainWindow(tk.Tk):
                                 if success:
                                     print(f"[REDUCEMORE GORT] ✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
                                     self.log_message(f"✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
+                                    details_msg = f"{symbol} BUY {lot_qty} @ {emir_fiyat:.2f} | Manuel Onay (Gort Shorts)"
+                                    reasoning = f"{step_name} | User Approved | Lot: {lot_qty} ({lot_percentage}% of position)"
+                                    self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "REDUCEMORE")
                             except Exception as e:
                                 print(f"[REDUCEMORE GORT] ❌ {symbol} emir hatası: {e}")
+                                self.log_psfalgo_activity("EMIR_HATASI", f"{symbol} {e}", "ERROR", str(e), "REDUCEMORE")
                         else:
                             success = self.mode_manager.place_order(
                                 symbol=symbol,
@@ -15412,6 +17632,9 @@ class MainWindow(tk.Tk):
                             if success:
                                 print(f"[REDUCEMORE GORT] ✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
                                 self.log_message(f"✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
+                                details_msg = f"{symbol} BUY {lot_qty} @ {emir_fiyat:.2f} | Manuel Onay (Gort Shorts)"
+                                reasoning = f"{step_name} | User Approved | Lot: {lot_qty} ({lot_percentage}% of position)"
+                                self.log_psfalgo_activity("EMIR_ILETILDI", details_msg, "SUCCESS", reasoning, "REDUCEMORE")
                     
                     print(f"[REDUCEMORE GORT] ✅ {len(order_data)} emir gönderildi")
                     self.log_message(f"✅ REDUCEMORE Gort {step_name}: {len(order_data)} emir gönderildi")
@@ -15449,7 +17672,9 @@ class MainWindow(tk.Tk):
     def karbotu_proceed_to_next_step(self):
         """Sonraki adıma geç"""
         try:
+            print(f"[KARBOTU] 🔍 karbotu_proceed_to_next_step ÇAĞRILDI! current_step={self.karbotu_current_step}, total_steps={self.karbotu_total_steps}")
             if self.karbotu_current_step >= self.karbotu_total_steps:
+                print(f"[KARBOTU] ✅ KARBOTU TAMAMLANDI! current_step={self.karbotu_current_step}, total_steps={self.karbotu_total_steps}")
                 self.log_message("🎯 KARBOTU otomasyonu tamamlandı!")
                 self.karbotu_running = False
                 
@@ -15488,11 +17713,18 @@ class MainWindow(tk.Tk):
                 close_karbotu_windows()
                 
                 # RUNALL'dan çağrıldıysa ADDNEWPOS kontrolü yap (SADECE BİR KEZ)
+                print(f"[KARBOTU] 🔍 KARBOTU tamamlandı! runall_waiting_for_karbotu={hasattr(self, 'runall_waiting_for_karbotu') and self.runall_waiting_for_karbotu}")
                 if hasattr(self, 'runall_waiting_for_karbotu') and self.runall_waiting_for_karbotu:
+                    print(f"[KARBOTU] 🔍 runall_addnewpos_triggered={hasattr(self, 'runall_addnewpos_triggered') and self.runall_addnewpos_triggered}")
                     if not hasattr(self, 'runall_addnewpos_triggered') or not self.runall_addnewpos_triggered:
-                        self.runall_waiting_for_karbotu = False
-                        self.runall_addnewpos_triggered = True  # İşaretle ki tekrar tetiklenmesin
-                        self.after(2000, self.runall_check_karbotu_and_addnewpos)  # 2 saniye sonra kontrol et
+                        # Flag'i runall_check_karbotu_and_addnewpos içinde set edeceğiz, burada sadece tetikle
+                        # Hemen kontrol et (500ms bekle - hızlı geçiş)
+                        print("[KARBOTU] 🔄 RUNALL'dan çağrıldı, ADDNEWPOS kontrolü 500ms sonra yapılacak...")
+                        self.after(500, self.runall_check_karbotu_and_addnewpos)
+                    else:
+                        print("[KARBOTU] ⚠️ ADDNEWPOS zaten tetiklendi, tekrar tetiklenmeyecek")
+                else:
+                    print("[KARBOTU] ⚠️ runall_waiting_for_karbotu False veya yok - ADDNEWPOS tetiklenmeyecek")
                 
                 return
             
@@ -15533,37 +17765,88 @@ class MainWindow(tk.Tk):
     def runall_check_karbotu_and_addnewpos(self):
         """KARBOTU bitince exposure kontrolü yap ve ADDNEWPOS tetikle (SADECE BİR KEZ)"""
         try:
-            # Eğer zaten tetiklendiyse tekrar çalıştırma
-            if hasattr(self, 'runall_addnewpos_triggered') and self.runall_addnewpos_triggered:
-                # Ama henüz start_addnewpos_automation çağrılmadıysa devam et
-                if hasattr(self, 'runall_addnewpos_started') and self.runall_addnewpos_started:
-                    print("[RUNALL] ⚠️ ADDNEWPOS zaten başlatıldı, tekrar tetiklenmeyecek")
-                    return
+            print("[RUNALL] 🔍 runall_check_karbotu_and_addnewpos ÇAĞRILDI!")
+            print(f"[RUNALL] 🔍 DEBUG: runall_addnewpos_started={hasattr(self, 'runall_addnewpos_started') and self.runall_addnewpos_started}")
+            
+            # Eğer zaten başlatıldıysa tekrar çalıştırma
+            if hasattr(self, 'runall_addnewpos_started') and self.runall_addnewpos_started:
+                print("[RUNALL] ⚠️ ADDNEWPOS zaten başlatıldı, tekrar tetiklenmeyecek")
+                return
             
             # KARBOTU veya REDUCEMORE hala çalışıyorsa tekrar kontrol et
             karbotu_running = hasattr(self, 'karbotu_running') and self.karbotu_running
             reducemore_running = hasattr(self, 'reducemore_running') and self.reducemore_running
+            print(f"[RUNALL] 🔍 DEBUG: karbotu_running={karbotu_running}, reducemore_running={reducemore_running}")
             if karbotu_running or reducemore_running:
-                self.after(5000, self.runall_check_karbotu_and_addnewpos)
+                print(f"[RUNALL] ⏳ KARBOTU/REDUCEMORE hala çalışıyor, 300ms sonra tekrar kontrol edilecek...")
+                # 300ms sonra tekrar kontrol et (daha hızlı - performans için optimize)
+                self.after(300, self.runall_check_karbotu_and_addnewpos)
                 return
             
+            # Eğer zaten tetiklendiyse (exposure kontrolü yapılıyor olabilir) tekrar başlatma
+            if hasattr(self, 'runall_addnewpos_triggered') and self.runall_addnewpos_triggered:
+                print("[RUNALL] ⚠️ ADDNEWPOS zaten tetiklendi, exposure kontrolü devam ediyor olabilir...")
+                return
+            
+            # Flag'i set et (sadece bir kez exposure kontrolü yapılması için)
+            self.runall_addnewpos_triggered = True
+            
+            print("[RUNALL] ✅ runall_check_karbotu_and_addnewpos ÇAĞRILDI!")
             print("[RUNALL] 🔍 KARBOTU/REDUCEMORE tamamlandı, exposure kontrolü yapılıyor...")
+            print(f"[RUNALL] 🔍 DEBUG: karbotu_running={karbotu_running}, reducemore_running={reducemore_running}")
+            print(f"[RUNALL] 🔍 DEBUG: runall_addnewpos_triggered={hasattr(self, 'runall_addnewpos_triggered') and self.runall_addnewpos_triggered}")
+            print(f"[RUNALL] 🔍 DEBUG: runall_addnewpos_started={hasattr(self, 'runall_addnewpos_started') and self.runall_addnewpos_started}")
+            print(f"[RUNALL] 🔍 DEBUG: runall_waiting_for_karbotu={hasattr(self, 'runall_waiting_for_karbotu') and self.runall_waiting_for_karbotu}")
             self.log_message("🔍 KARBOTU/REDUCEMORE tamamlandı, exposure kontrolü yapılıyor...")
             
-            # Exposure kontrolünü thread'de yap (bloklayıcı işlem)
+            # Exposure kontrolünü thread'de yap (async - callback ile)
             def check_exposure_thread():
                 try:
-                    exposure_info = self.check_exposure_limits()
+                    print("[RUNALL] 🔍 Exposure kontrolü başlatılıyor...")
+                    # Async exposure kontrolü - callback ile sonuç al
+                    exposure_result = {'ready': False}
+                    def exposure_callback(exposure_info):
+                        print(f"[RUNALL] ✅ Exposure callback çağrıldı: mode={exposure_info.get('mode')}, pot_total={exposure_info.get('pot_total')}")
+                        exposure_result['info'] = exposure_info
+                        exposure_result['ready'] = True
+                    
+                    print("[RUNALL] 🔍 check_exposure_limits_async çağrılıyor...")
+                    self.check_exposure_limits_async(callback=exposure_callback)
+                    
+                    # Sonucu bekle (ama UI'ı bloklamadan)
+                    import time
+                    timeout = 5  # 5 saniye timeout (daha hızlı)
+                    elapsed = 0
+                    check_interval = 0.05  # 50ms bekle (daha sık kontrol - daha hızlı)
+                    print(f"[RUNALL] ⏳ Exposure kontrolü başlatıldı, timeout={timeout}s, check_interval={check_interval*1000}ms")
+                    while not exposure_result['ready'] and elapsed < timeout:
+                        time.sleep(check_interval)
+                        elapsed += check_interval
+                        if int(elapsed * 10) % 10 == 0:  # Her 0.5 saniyede bir log (daha az spam)
+                            print(f"[RUNALL] ⏳ Exposure kontrolü bekleniyor... ({elapsed:.1f}/{timeout}s)")
+                    
+                    if not exposure_result['ready']:
+                        print(f"[RUNALL] ⚠️ Exposure kontrolü timeout! ({timeout} saniye) - Yine de devam ediliyor...")
+                        # Timeout olsa bile devam et - exposure bilgisi olmadan da ADDNEWPOS başlatılabilir
+                        exposure_info = {'mode': 'OFANSIF', 'pot_total': 0, 'pot_max_lot': 63636, 'can_add_positions': True}
+                        print("[RUNALL] ⚠️ Timeout durumunda varsayılan değerler kullanılıyor: mode=OFANSIF, can_add_positions=True")
+                    else:
+                        exposure_info = exposure_result['info']
+                        print(f"[RUNALL] ✅ Exposure kontrolü tamamlandı: mode={exposure_info.get('mode')}, pot_total={exposure_info.get('pot_total')}")
                     pot_total = exposure_info.get('pot_total', 0)
                     pot_max_lot = exposure_info.get('pot_max_lot', 63636)
                     total_lots = exposure_info.get('total_lots', 0)
                     max_lot = exposure_info.get('max_lot', 54545)
                     mode = exposure_info.get('mode', 'UNKNOWN')
                     
-                    # UI thread'ine geçiş yaparak ADDNEWPOS kontrolü yap
-                    def process_addnewpos():
+                    # UI thread'ine geçiş yaparak ADDNEWPOS kontrolü yap (thread-safe)
+                    def process_addnewpos_inner():
+                        print(f"[RUNALL] ✅ process_addnewpos_inner ÇAĞRILDI!")
+                        print(f"[RUNALL] 🔍 DEBUG process_addnewpos_inner: mode={mode}, pot_total={pot_total}, pot_max_lot={pot_max_lot}")
+                        print(f"[RUNALL] 🔍 DEBUG: can_add_positions={exposure_info.get('can_add_positions', False)}")
                         # Pot Toplam kontrolü - Limit dolduracak emirler var mı?
                         if mode == "OFANSIF" and pot_total < pot_max_lot:
+                            print(f"[RUNALL] ✅ ADDNEWPOS koşulu sağlandı: mode=OFANSIF, pot_total={pot_total} < pot_max_lot={pot_max_lot}")
                             # Eğer zaten başlatıldıysa tekrar başlatma
                             if hasattr(self, 'runall_addnewpos_started') and self.runall_addnewpos_started:
                                 print("[RUNALL] ⚠️ ADDNEWPOS zaten başlatıldı, tekrar tetiklenmeyecek")
@@ -15580,7 +17863,9 @@ class MainWindow(tk.Tk):
                             # ADDNEWPOS'u otomatik başlat (RUNALL'dan çağrıldığını belirt)
                             # ADDNEWPOS bitince callback ekle
                             self.runall_addnewpos_callback_set = True
-                            self.after(2000, lambda: self.start_addnewpos_automation(from_runall=True))
+                            # Hemen başlat (200ms bekle - hızlı geçiş)
+                            print("[RUNALL] ⏳ ADDNEWPOS 200ms sonra başlatılacak...")
+                            self.after(200, lambda: self.start_addnewpos_automation(from_runall=True))
                             
                             # Timeout mekanizması: Eğer ADDNEWPOS 5 dakika içinde tamamlanmazsa otomatik restart yap
                             def addnewpos_timeout():
@@ -15605,22 +17890,31 @@ class MainWindow(tk.Tk):
                             print(f"[RUNALL] ℹ️ ADDNEWPOS gerekmiyor: Mode={mode}, Pot Toplam={pot_total:,}, Pot Max={pot_max_lot:,}")
                             self.log_message(f"ℹ️ ADDNEWPOS gerekmiyor: Mode={mode}, Pot Toplam={pot_total:,}, Pot Max={pot_max_lot:,}")
                             
-                            # ADDNEWPOS gerekmiyorsa 2 dakika bekle, sonra emirleri iptal et ve tekrar başla
+                            # ADDNEWPOS gerekmiyorsa direkt Qpcal'i başlat
                             runall_running = hasattr(self, 'runall_loop_running') and self.runall_loop_running
                             runall_allowed = hasattr(self, 'runall_allowed_mode') and self.runall_allowed_mode
                             should_continue = runall_running or runall_allowed
                             
                             if should_continue:
-                                print("[RUNALL] 🔄 ADDNEWPOS gerekmiyor, 2 dakika bekleniyor, sonra emirler iptal edilecek...")
-                                self.log_message("🔄 ADDNEWPOS gerekmiyor, 2 dakika bekleniyor, sonra emirler iptal edilecek...")
-                                # 2 dakika bekle, sonra emirleri iptal et
-                                self.after(120000, lambda: self.runall_cancel_orders_and_restart())
+                                print("[RUNALL] 🔄 ADDNEWPOS gerekmiyor, direkt Qpcal başlatılıyor...")
+                                self.log_message("🔄 ADDNEWPOS gerekmiyor, direkt Qpcal başlatılıyor...")
+                                # Qpcal'i başlat (2 dakika sayacı Qpcal callback'inde başlatılacak)
+                                self.after(2000, self.runall_execute_qpcal)
+                            else:
+                                print("[RUNALL] ⚠️ RUNALL döngüsü durdurulmuş, Qpcal başlatılmayacak")
+                                self.log_message("⚠️ RUNALL döngüsü durdurulmuş, Qpcal başlatılmayacak")
                         
                         print("[RUNALL] ✅ RUNALL sırası tamamlandı!")
                         self.log_message("✅ RUNALL sırası tamamlandı!")
+                        
+                        # RevOrderMod kontrolü (eğer aktifse)
+                        if hasattr(self, 'revorder_mod_var') and self.revorder_mod_var.get():
+                            print("[RUNALL] 🔄 RevOrderMod aktif, RevOrder kontrolü yapılıyor...")
+                            self.log_message("🔄 RevOrderMod aktif, RevOrder kontrolü yapılıyor...")
+                            self.after(2000, self.check_and_open_revorders)  # 2 saniye sonra kontrol et
                     
-                    # UI thread'ine geçiş yap
-                    self.after(0, process_addnewpos)
+                    # UI thread'ine geçiş yap (thread-safe - bot işlemleri normal öncelikli queue'ya gider)
+                    self.safe_ui_call(process_addnewpos_inner)
                     
                 except Exception as e:
                     print(f"[RUNALL] ❌ Exposure kontrolü hatası: {e}")
@@ -15850,9 +18144,9 @@ class MainWindow(tk.Tk):
         if not hasattr(self, '_closed_windows'):
             self._closed_windows = set()
         
-        # Her 200ms'de bir onay mesajlarını kontrol et (daha sık kontrol)
+        # Her 1 saniyede bir onay mesajlarını kontrol et (500ms'den 1 saniyeye çıkarıldı - performans için)
         self.runall_auto_confirm_messagebox()
-        self.after(200, self.start_runall_auto_confirm_loop)
+        self.after(1000, self.start_runall_auto_confirm_loop)  # 500ms'den 1000ms'ye çıkarıldı
     
     def runall_auto_confirm_messagebox(self):
         """Onay mesajlarını otomatik olarak kabul et (Evet/Yes butonuna tıkla)"""
@@ -15887,24 +18181,24 @@ class MainWindow(tk.Tk):
                 except:
                     pass
             
-            # Take Profit pencerelerinden
+            # Take Profit pencerelerinden (direkt olarak ekle - win zaten bir Toplevel)
             if hasattr(self, 'take_profit_longs_panel') and hasattr(self.take_profit_longs_panel, 'win'):
                 try:
                     if self.take_profit_longs_panel.win.winfo_exists():
-                        for widget in self.take_profit_longs_panel.win.winfo_children():
-                            if isinstance(widget, tk.Toplevel):
-                                all_toplevels.append(widget)
-                except:
-                    pass
+                        if self.take_profit_longs_panel.win not in all_toplevels:
+                            all_toplevels.append(self.take_profit_longs_panel.win)
+                            print(f"[RUNALL] ✅ Take Profit Longs penceresi eklendi: '{self.take_profit_longs_panel.win.title()}'")
+                except Exception as e:
+                    print(f"[RUNALL] ⚠️ Take Profit Longs penceresi eklenirken hata: {e}")
             
             if hasattr(self, 'take_profit_shorts_panel') and hasattr(self.take_profit_shorts_panel, 'win'):
                 try:
                     if self.take_profit_shorts_panel.win.winfo_exists():
-                        for widget in self.take_profit_shorts_panel.win.winfo_children():
-                            if isinstance(widget, tk.Toplevel):
-                                all_toplevels.append(widget)
-                except:
-                    pass
+                        if self.take_profit_shorts_panel.win not in all_toplevels:
+                            all_toplevels.append(self.take_profit_shorts_panel.win)
+                            print(f"[RUNALL] ✅ Take Profit Shorts penceresi eklendi: '{self.take_profit_shorts_panel.win.title()}'")
+                except Exception as e:
+                    print(f"[RUNALL] ⚠️ Take Profit Shorts penceresi eklenirken hata: {e}")
             
             # Tüm açık Toplevel pencereleri bul (recursive)
             def find_all_toplevels(parent, found_list, depth=0):
@@ -16010,6 +18304,11 @@ class MainWindow(tk.Tk):
                     buttons = []
                     find_all_buttons_recursive(toplevel, buttons)
                     
+                    # Debug: Take Profit pencerelerinde buton sayısını logla (SADECE İLK KEZ - gereksiz log spam'ini önlemek için)
+                    # Logları kaldırdık - performans için
+                    # if 'take profit' in title.lower():
+                    #     print(f"[RUNALL] 🔍 Take Profit penceresi bulundu: '{title}' - {len(buttons)} buton bulundu")
+                    
                     # Eğer pencere zaten kapatıldıysa atla
                     window_id = id(toplevel)
                     if window_id in self._closed_windows:
@@ -16080,8 +18379,24 @@ class MainWindow(tk.Tk):
                                 'ilerle', 'proceed', 'başlat', 'start', 'çalıştır', 'run'
                             ]
                             
+                            # ÖNEMLİ: Durdur/Stop butonlarını ASLA tıklama! (ama "emirleri gönder" değil!)
+                            stop_keywords = ['durdur', 'stop', 'dur', 'iptal', 'cancel', 'reddet', 'no', 'hayır', 'kapat', 'close', 'exit', 'çık']
+                            # "emirleri gönder" butonunda "durdur" yok, bu yüzden tıklanmalı
+                            if any(stop_keyword in text for stop_keyword in stop_keywords) and 'gönder' not in text:
+                                continue  # Bu butonları ASLA tıklama! (ama "gönder" içerenler hariç)
+                            
+                            # Debug: Buton text'ini kontrol et
+                            matched_keyword = None
+                            for keyword in confirm_keywords:
+                                if keyword in text:
+                                    matched_keyword = keyword
+                                    break
+                            
+                            if matched_keyword:
+                                print(f"[RUNALL] 🔍 Buton eşleşti: '{text}' → keyword: '{matched_keyword}'")
+                            
                             if any(keyword in text for keyword in confirm_keywords):
-                                # İptal/Reddet butonlarını atla
+                                # İptal/Reddet butonlarını atla (ekstra kontrol)
                                 if any(cancel_keyword in text for cancel_keyword in ['iptal', 'cancel', 'reddet', 'no', 'hayır', 'kapat', 'close']):
                                     continue
                                 
@@ -16094,6 +18409,15 @@ class MainWindow(tk.Tk):
                                 if window_id in self._closed_windows:
                                     continue  # Pencere zaten kapatıldı, atla
                                 
+                                # Buton disabled mı kontrol et
+                                try:
+                                    btn_state = str(btn.cget('state')).lower()
+                                    if btn_state == 'disabled':
+                                        print(f"[RUNALL] ⚠️ Buton disabled: '{text}' (Pencere: '{title}') - Tıklama atlanıyor")
+                                        continue
+                                except:
+                                    pass
+                                
                                 print(f"[RUNALL] ✅ Onay butonu bulundu: '{text}' (Pencere: '{title}'), tıklanıyor...")
                                 self.log_message(f"✅ Otomatik onay: '{text}' ({title})")
                                 
@@ -16102,7 +18426,9 @@ class MainWindow(tk.Tk):
                                 
                                 # Butonu tıkla
                                 try:
+                                    print(f"[RUNALL] 🔘 Buton invoke() çağrılıyor: '{text}'")
                                     btn.invoke()
+                                    print(f"[RUNALL] ✅ Buton invoke() başarılı: '{text}'")
                                     # invoke sonrası kısa bir bekleme ekle
                                     self.after(100, lambda: None)
                                     
@@ -16112,10 +18438,12 @@ class MainWindow(tk.Tk):
                                             self._closed_windows.add(window_id)
                                     except:
                                         pass
-                                except:
+                                except Exception as invoke_error:
+                                    print(f"[RUNALL] ⚠️ invoke() hatası: {invoke_error} - event_generate deneniyor...")
                                     # invoke çalışmazsa event_generate dene
                                     try:
                                         btn.event_generate('<Button-1>')
+                                        print(f"[RUNALL] ✅ event_generate başarılı: '{text}'")
                                         self.after(100, lambda: None)
                                         
                                         # Pencere kapatıldıysa işaretle
@@ -16259,9 +18587,14 @@ class MainWindow(tk.Tk):
             return self.addnewpos_mode_var.get()
         return 'addlong_only'  # Varsayılan
     
-    def stop_runall_loop(self):
-        """RUNALL döngüsünü durdur"""
+    def stop_runall_loop(self, from_automation=False):
+        """RUNALL döngüsünü durdur (SADECE KULLANICI TARAFINDAN ÇAĞRILMALI)"""
         try:
+            # Otomatik çağrıldıysa (bot tarafından) durdurma
+            if from_automation:
+                print("[RUNALL] ⚠️ RUNALL durdur butonu otomatik tıklandı, IGNORE ediliyor!")
+                return  # Otomatik tıklama, durdurma
+            
             print("[RUNALL] ⏹️ RUNALL döngüsü durduruluyor...")
             self.log_message("⏹️ RUNALL döngüsü durduruluyor...")
             
@@ -16319,6 +18652,13 @@ class MainWindow(tk.Tk):
             
             print(f"[RUNALL] ✅ {completed_loops}. döngü tamamlandı! Emirler iptal edildi, yeni döngü başlatılıyor...")
             self.log_message(f"✅ {completed_loops}. döngü tamamlandı! Emirler iptal edildi, yeni döngü başlatılıyor...")
+            
+            # Döngü tamamlandığında Alg Raporu'nu CSV'ye kaydet (algraporu.csv - overwrite)
+            try:
+                self._save_psfalgo_log_to_csv(filename="algraporu.csv", show_message=False)
+                print(f"[RUNALL] ✅ Alg Raporu CSV'ye kaydedildi: algraporu.csv")
+            except Exception as e:
+                print(f"[RUNALL] ⚠️ Alg Raporu CSV kaydetme hatası: {e}")
             
             # Döngü sayacı label'ını güncelle
             if hasattr(self, 'runall_loop_label'):
@@ -20144,4 +22484,394 @@ class MainWindow(tk.Tk):
             import traceback
             traceback.print_exc()
             messagebox.showerror("Hata", f"BGGG analiz hatası: {e}")
+    
+    # ============ REVORDER MOD FONKSİYONLARI ============
+    
+    def check_and_open_revorders(self):
+        """RevOrderMod: Bugünkü pozisyon artırımlarını kontrol et ve RevOrder aç"""
+        try:
+            if not (hasattr(self, 'revorder_mod_var') and self.revorder_mod_var.get()):
+                print("[REVORDER] ⏸️ RevOrderMod pasif")
+                return
+            
+            print("[REVORDER] 🔍 Bugünkü pozisyon artırımları kontrol ediliyor...")
+            self.log_message("🔍 RevOrderMod: Bugünkü pozisyon artırımları kontrol ediliyor...")
+            
+            # Tüm pozisyonları al (psfalgo_positions dictionary'sinden)
+            revorder_count = 0
+            for symbol, position_data in self.psfalgo_positions.items():
+                current_qty = position_data.get('current_qty', 0)
+                befday_qty = position_data.get('befday_qty', 0)
+                todays_qty_chg = current_qty - befday_qty
+                
+                # Todays chg != 0 kontrolü (pozisyon artırımı var mı?)
+                if abs(todays_qty_chg) < 200:
+                    continue  # 200 lot'tan küçük artırımlar için RevOrder açma
+                
+                # Pozisyon artırımı yönünü belirle
+                if befday_qty >= 0 and current_qty > befday_qty:
+                    # Long artırım
+                    side = 'LONG'
+                    fill_qty = todays_qty_chg
+                elif befday_qty <= 0 and current_qty < befday_qty:
+                    # Short artırım
+                    side = 'SHORT'
+                    fill_qty = abs(todays_qty_chg)
+                else:
+                    continue  # Pozisyon artırımı değil
+                
+                # Todays Cost'u al (ortalama fill fiyatı)
+                fill_price = self.get_todays_cost_for_psfalgo(symbol, current_qty, befday_qty)
+                if fill_price <= 0:
+                    print(f"[REVORDER] ⚠️ {symbol} için Todays Cost bulunamadı, atlanıyor")
+                    continue
+                
+                # Mevcut RevOrder'ları kontrol et
+                existing_revorder_qty = self.get_existing_revorder_qty(symbol, side)
+                
+                # Eksik RevOrder miktarını hesapla
+                needed_revorder_qty = fill_qty - existing_revorder_qty
+                
+                if needed_revorder_qty > 0:
+                    # RevOrder lot limitlerini uygula
+                    max_revorder_qty = self.calculate_max_revorder_qty(fill_qty)
+                    actual_revorder_qty = min(needed_revorder_qty, max_revorder_qty)
+                    
+                    if actual_revorder_qty >= 200:
+                        print(f"[REVORDER] ✅ {symbol} {side} artırımı için {actual_revorder_qty} lot RevOrder açılıyor (Fill: {fill_qty}, Mevcut: {existing_revorder_qty}, Eksik: {needed_revorder_qty})")
+                        self.log_message(f"✅ {symbol} {side} artırımı için {actual_revorder_qty} lot RevOrder açılıyor")
+                        
+                        # Reasoning: Neden RevOrder açılıyor?
+                        reasoning = f"RevOrderMod kontrolü | {side} artırım: {fill_qty} lot | Mevcut RevOrder: {existing_revorder_qty} | Eksik: {needed_revorder_qty} | Açılacak: {actual_revorder_qty} lot"
+                        self.log_psfalgo_activity("REVORDER_KONTROL", f"{symbol} {side} artırım tespit edildi", "INFO", reasoning, "REVORDER")
+                        
+                        success = self.open_revorder(symbol, side, actual_revorder_qty, fill_price)
+                        if success:
+                            revorder_count += 1
+                else:
+                    print(f"[REVORDER] ℹ️ {symbol} için yeterli RevOrder mevcut (Fill: {fill_qty}, Mevcut: {existing_revorder_qty})")
+                    reasoning = f"RevOrderMod kontrolü | {side} artırım: {fill_qty} lot | Mevcut RevOrder: {existing_revorder_qty} | Eksik: {needed_revorder_qty} | Yeterli RevOrder mevcut, yeni açılmadı"
+                    self.log_psfalgo_activity("REVORDER_KONTROL", f"{symbol} yeterli RevOrder mevcut", "INFO", reasoning, "REVORDER")
+            
+            if revorder_count > 0:
+                print(f"[REVORDER] ✅ {revorder_count} adet RevOrder açıldı")
+                self.log_message(f"✅ {revorder_count} adet RevOrder açıldı")
+                self.log_psfalgo_activity("REVORDER_TOPLAM", f"{revorder_count} adet RevOrder açıldı", "SUCCESS", f"RevOrderMod döngüsü tamamlandı", "REVORDER")
+            else:
+                print("[REVORDER] ℹ️ Açılacak yeni RevOrder bulunamadı")
+                self.log_psfalgo_activity("REVORDER_TOPLAM", "Açılacak yeni RevOrder bulunamadı", "INFO", "RevOrderMod döngüsü: Pozisyon artırımı yok veya yeterli RevOrder mevcut", "REVORDER")
+                
+        except Exception as e:
+            print(f"[REVORDER] ❌ RevOrder kontrol hatası: {e}")
+            import traceback
+            traceback.print_exc()
+            self.log_message(f"❌ RevOrder kontrol hatası: {e}")
+    
+    def get_existing_revorder_qty(self, symbol, side):
+        """Mevcut RevOrder miktarını hesapla"""
+        try:
+            # Açık emirlerden RevOrder'ları bul
+            orders = []
+            if hasattr(self, 'mode_manager'):
+                active_account = self.mode_manager.get_active_account()
+                if active_account in ["IBKR_GUN", "IBKR_PED"]:
+                    if hasattr(self.mode_manager, 'ibkr_native_client') and self.mode_manager.ibkr_native_client.is_connected():
+                        orders = self.mode_manager.ibkr_native_client.get_open_orders()
+                    elif hasattr(self.mode_manager, 'ibkr_client') and self.mode_manager.ibkr_client.is_connected():
+                        orders = self.mode_manager.ibkr_client.get_orders_direct()
+                else:  # HAMPRO
+                    if hasattr(self, 'hammer') and self.hammer and self.hammer.connected:
+                        orders = self.hammer.get_open_orders()
+            
+            # Symbol ve side'a göre RevOrder'ları filtrele
+            total_qty = 0
+            for order in orders:
+                order_symbol = order.get('symbol', '') or order.get('Symbol', '')
+                order_action = order.get('action', '') or order.get('Action', '')
+                order_emir_tipi = order.get('emir_tipi', '')
+                
+                # Symbol eşleştirmesi
+                if order_symbol != symbol:
+                    # Preferred stock formatı kontrolü
+                    if '-' in order_symbol:
+                        base, suffix = order_symbol.split('-', 1)
+                        if base != symbol.replace(' PR', '').split()[0]:
+                            continue
+                    elif ' PR' in symbol and order_symbol == symbol.replace(' PR', ''):
+                        pass  # Eşleşiyor
+                    else:
+                        continue
+                
+                # RevOrder kontrolü (emir_tipi veya order tag'inden)
+                if order_emir_tipi == 'RevOrder' or order.get('revorder', False):
+                    # Side kontrolü
+                    if side == 'LONG' and order_action == 'SELL':
+                        total_qty += abs(float(order.get('quantity', 0) or order.get('qty', 0)))
+                    elif side == 'SHORT' and order_action == 'BUY':
+                        total_qty += abs(float(order.get('quantity', 0) or order.get('qty', 0)))
+            
+            return total_qty
+            
+        except Exception as e:
+            print(f"[REVORDER] ❌ Mevcut RevOrder kontrol hatası ({symbol}): {e}")
+            return 0
+    
+    def calculate_max_revorder_qty(self, fill_qty):
+        """RevOrder lot limitlerini hesapla"""
+        if fill_qty < 1000:
+            return fill_qty
+        elif fill_qty < 3000:
+            return 1000
+        elif fill_qty < 5000:
+            return 1500
+        else:
+            return 2000
+    
+    def open_revorder(self, symbol, side, qty, fill_price):
+        """RevOrder aç - minimum 0.06 cent kar hedefi ile"""
+        try:
+            print(f"[REVORDER] 🔄 {symbol} {side} {qty} lot RevOrder açılıyor (Fill: ${fill_price:.2f})")
+            
+            # Market data al
+            bid = 0
+            ask = 0
+            l2_bids = []
+            l2_asks = []
+            
+            if hasattr(self, 'hammer') and self.hammer and self.hammer.connected:
+                # Hammer client'tan market data al
+                market_data = self.hammer.get_market_data(symbol)
+                if market_data:
+                    bid = float(market_data.get('bid', 0))
+                    ask = float(market_data.get('ask', 0))
+                
+                # L2 data al
+                l2_data = self.hammer.l2_data.get(symbol, {})
+                l2_bids = l2_data.get('bids', [])
+                l2_asks = l2_data.get('asks', [])
+            
+            # Minimum kar hedefi: 0.06 cent
+            min_profit = 0.06
+            
+            # RevOrder fiyatını hesapla
+            if side == 'SHORT':  # Short artırma → Hidden BUY RevOrder
+                # Kar hedefi: fill_price - 0.06
+                target_profit_price = fill_price - min_profit
+                
+                if bid > 0 and bid < target_profit_price:
+                    # İlk bid kar hedefinden düşük → (bid + 0.01) hidden BUY
+                    revorder_price = bid + 0.01
+                    print(f"[REVORDER] ✅ {symbol} Short artırma: İlk bid ({bid:.2f}) < Kar hedefi ({target_profit_price:.2f}) → Hidden BUY @ {revorder_price:.2f}")
+                else:
+                    # İlk bid kar hedefinden yüksek veya eşit → L2'de uygun bid bul
+                    revorder_price = self.find_revorder_buy_price_from_l2(l2_bids, target_profit_price, fill_price)
+                    if revorder_price <= 0:
+                        print(f"[REVORDER] ❌ {symbol} Short artırma: L2'de uygun bid bulunamadı")
+                        return False
+                    print(f"[REVORDER] ✅ {symbol} Short artırma: L2'den bulunan bid → Hidden BUY @ {revorder_price:.2f}")
+                
+                action = 'BUY'
+                
+            else:  # side == 'LONG' - Long artırma → Hidden SELL RevOrder
+                # Kar hedefi: fill_price + 0.06
+                target_profit_price = fill_price + min_profit
+                
+                if ask > 0 and ask > target_profit_price:
+                    # İlk ask kar hedefinden yüksek → (ask - 0.01) hidden SELL
+                    revorder_price = ask - 0.01
+                    print(f"[REVORDER] ✅ {symbol} Long artırma: İlk ask ({ask:.2f}) > Kar hedefi ({target_profit_price:.2f}) → Hidden SELL @ {revorder_price:.2f}")
+                else:
+                    # İlk ask kar hedefinden düşük veya eşit → L2'de uygun ask bul
+                    revorder_price = self.find_revorder_sell_price_from_l2(l2_asks, target_profit_price, fill_price)
+                    if revorder_price <= 0:
+                        print(f"[REVORDER] ❌ {symbol} Long artırma: L2'de uygun ask bulunamadı")
+                        return False
+                    print(f"[REVORDER] ✅ {symbol} Long artırma: L2'den bulunan ask → Hidden SELL @ {revorder_price:.2f}")
+                
+                action = 'SELL'
+            
+            # Emri gönder (hidden order olarak)
+            success = self.place_revorder(symbol, action, qty, revorder_price)
+            
+            if success:
+                print(f"[REVORDER] ✅ {symbol} {action} {qty} lot @ ${revorder_price:.2f} RevOrder başarıyla açıldı")
+                self.log_message(f"✅ {symbol} {action} {qty} lot @ ${revorder_price:.2f} RevOrder açıldı")
+                # Reasoning: Neden bu RevOrder açıldı?
+                reasoning = f"RevOrderMod | {side} artırma fill: {fill_qty} lot @ ${fill_price:.2f} | Kar hedefi: ${abs(revorder_price - fill_price):.2f} (min 0.06) | RevOrder: {qty} lot @ ${revorder_price:.2f}"
+                self.log_psfalgo_activity(
+                    action="REVORDER_ACILDI",
+                    details=f"{symbol} {action} {qty} lot @ ${revorder_price:.2f}",
+                    status="SUCCESS",
+                    reason=reasoning,
+                    category="REVORDER",
+                    symbol=symbol,
+                    step_name="RevOrderMod",
+                    maxalw=None,
+                    revorder_info=f"Side: {side}, Fill Qty: {fill_qty}, Fill Price: ${fill_price:.2f}, RevOrder Price: ${revorder_price:.2f}, Profit Target: ${abs(revorder_price - fill_price):.2f}"
+                )
+                return True
+            else:
+                print(f"[REVORDER] ❌ {symbol} RevOrder açılamadı")
+                return False
+                
+        except Exception as e:
+            print(f"[REVORDER] ❌ {symbol} RevOrder açma hatası: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+    
+    def find_revorder_buy_price_from_l2(self, l2_bids, target_profit_price, fill_price):
+        """L2 bid'lerinden uygun RevOrder BUY fiyatı bul (ilk 5 bid'e bak)"""
+        try:
+            if not l2_bids or len(l2_bids) == 0:
+                return 0
+            
+            # İlk 5 bid'e bak
+            for i, bid_entry in enumerate(l2_bids[:5]):
+                bid_price = float(bid_entry.get('price', 0))
+                if bid_price <= 0:
+                    continue
+                
+                # Bu bid kar hedefini sağlıyor mu? (bid < target_profit_price)
+                if bid_price < target_profit_price:
+                    # (bid + 0.01) hidden BUY
+                    return bid_price + 0.01
+            
+            # Uygun bid bulunamadı
+            return 0
+            
+        except Exception as e:
+            print(f"[REVORDER] ❌ L2 bid fiyat bulma hatası: {e}")
+            return 0
+    
+    def find_revorder_sell_price_from_l2(self, l2_asks, target_profit_price, fill_price):
+        """L2 ask'lerinden uygun RevOrder SELL fiyatı bul (ilk 5 ask'e bak)"""
+        try:
+            if not l2_asks or len(l2_asks) == 0:
+                return 0
+            
+            # İlk 5 ask'e bak
+            for i, ask_entry in enumerate(l2_asks[:5]):
+                ask_price = float(ask_entry.get('price', 0))
+                if ask_price <= 0:
+                    continue
+                
+                # Bu ask kar hedefini sağlıyor mu? (ask > target_profit_price)
+                if ask_price > target_profit_price:
+                    # (ask - 0.01) hidden SELL
+                    return ask_price - 0.01
+            
+            # Uygun ask bulunamadı
+            return 0
+            
+        except Exception as e:
+            print(f"[REVORDER] ❌ L2 ask fiyat bulma hatası: {e}")
+            return 0
+    
+    def place_revorder(self, symbol, action, qty, price):
+        """RevOrder emrini gönder (hidden order olarak)"""
+        try:
+            # Aktif moda göre emir gönder
+            if hasattr(self, 'mode_manager'):
+                active_account = self.mode_manager.get_active_account()
+                if active_account in ["IBKR_GUN", "IBKR_PED"]:
+                    # IBKR için emir gönder
+                    if hasattr(self.mode_manager, 'ibkr_native_client') and self.mode_manager.ibkr_native_client.is_connected():
+                        # IBKR Native Client ile emir gönder
+                        # TODO: IBKR Native Client place_order implementasyonu
+                        print(f"[REVORDER] ⚠️ IBKR Native Client place_order henüz implement edilmedi")
+                        return False
+                    elif hasattr(self.mode_manager, 'ibkr_client') and self.mode_manager.ibkr_client.is_connected():
+                        # IBKR Client ile emir gönder
+                        success = self.mode_manager.ibkr_client.place_order(
+                            symbol=symbol,
+                            action=action,
+                            quantity=qty,
+                            price=price,
+                            order_type='LMT',
+                            hidden=True  # Hidden order
+                        )
+                        
+                        # Emir gönderildikten sonra order'a revorder tag'i ekle
+                        if success:
+                            self.mark_order_as_revorder(symbol, action, qty, price)
+                        
+                        return success
+                else:  # HAMPRO
+                    if hasattr(self, 'hammer') and self.hammer and self.hammer.connected:
+                        # Hammer client ile emir gönder
+                        success = self.hammer.place_order(
+                            symbol=symbol,
+                            action=action,
+                            quantity=qty,
+                            price=price,
+                            order_type='LIMIT',
+                            hidden=True  # Hidden order
+                        )
+                        
+                        # Emir gönderildikten sonra order'a revorder tag'i ekle
+                        if success:
+                            self.mark_order_as_revorder(symbol, action, qty, price)
+                        
+                        return success
+            
+            return False
+            
+        except Exception as e:
+            print(f"[REVORDER] ❌ {symbol} emir gönderme hatası: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+    
+    def mark_order_as_revorder(self, symbol, action, qty, price):
+        """Gönderilen emri RevOrder olarak işaretle"""
+        try:
+            import time
+            time.sleep(0.5)  # Emrin sisteme kaydedilmesi için bekle
+            
+            # Açık emirleri al ve eşleşen emri bul
+            orders = []
+            if hasattr(self, 'mode_manager'):
+                active_account = self.mode_manager.get_active_account()
+                if active_account in ["IBKR_GUN", "IBKR_PED"]:
+                    if hasattr(self.mode_manager, 'ibkr_native_client') and self.mode_manager.ibkr_native_client.is_connected():
+                        orders = self.mode_manager.ibkr_native_client.get_open_orders()
+                    elif hasattr(self.mode_manager, 'ibkr_client') and self.mode_manager.ibkr_client.is_connected():
+                        orders = self.mode_manager.ibkr_client.get_orders_direct()
+                else:  # HAMPRO
+                    if hasattr(self, 'hammer') and self.hammer and self.hammer.connected:
+                        orders = self.hammer.get_open_orders()
+            
+            # Eşleşen emri bul ve revorder tag'i ekle
+            for order in orders:
+                order_symbol = order.get('symbol', '') or order.get('Symbol', '')
+                order_action = order.get('action', '') or order.get('Action', '')
+                order_qty = float(order.get('quantity', 0) or order.get('qty', 0))
+                order_price = float(order.get('limit_price', 0) or order.get('price', 0))
+                
+                # Symbol eşleştirmesi
+                symbol_match = False
+                if order_symbol == symbol:
+                    symbol_match = True
+                elif '-' in order_symbol:
+                    base, suffix = order_symbol.split('-', 1)
+                    if base == symbol.replace(' PR', '').split()[0]:
+                        symbol_match = True
+                elif ' PR' in symbol and order_symbol == symbol.replace(' PR', ''):
+                    symbol_match = True
+                
+                # Eşleşme kontrolü (symbol, action, qty, price toleransı)
+                if (symbol_match and 
+                    order_action.upper() == action.upper() and
+                    abs(order_qty - qty) < 1 and
+                    abs(order_price - price) < 0.02):
+                    
+                    # RevOrder tag'i ekle
+                    order['revorder'] = True
+                    order['emir_tipi'] = 'RevOrder'
+                    print(f"[REVORDER] ✅ {symbol} {action} {qty} @ ${price:.2f} emri RevOrder olarak işaretlendi")
+                    break
+                    
+        except Exception as e:
+            print(f"[REVORDER] ⚠️ Emir işaretleme hatası: {e}")
     
