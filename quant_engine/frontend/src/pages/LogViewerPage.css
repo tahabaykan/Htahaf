@@ -1,0 +1,279 @@
+.log-viewer-page {
+  padding: 20px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.log-viewer-header {
+  margin-bottom: 20px;
+}
+
+.log-viewer-header h1 {
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.log-statistics {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.stat-item.error .stat-value {
+  color: #ff4444;
+}
+
+.stat-item.warning .stat-value {
+  color: #ffaa00;
+}
+
+.stat-item.failed .stat-value {
+  color: #ff6600;
+}
+
+.log-filters {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.filter-group label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.filter-group input[type="text"],
+.filter-group input[type="number"],
+.filter-group select {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.filter-group input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.filter-actions button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background: #4488ff;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.filter-actions button:hover {
+  background: #3366cc;
+}
+
+.filter-actions button.danger {
+  background: #ff4444;
+}
+
+.filter-actions button.danger:hover {
+  background: #cc0000;
+}
+
+.log-error {
+  padding: 10px;
+  background: #ffeeee;
+  border: 1px solid #ffcccc;
+  border-radius: 4px;
+  color: #cc0000;
+  margin-bottom: 20px;
+}
+
+.log-table-container {
+  max-height: 600px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+}
+
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.log-table thead {
+  position: sticky;
+  top: 0;
+  background: #f5f5f5;
+  z-index: 10;
+}
+
+.log-table th {
+  padding: 12px 8px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #ddd;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.log-table td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+
+.log-row:hover {
+  background: #f9f9f9;
+}
+
+.log-row.log-level-error,
+.log-row.log-level-critical {
+  background: #ffeeee;
+}
+
+.log-row.log-level-warning {
+  background: #fff8e1;
+}
+
+.log-timestamp {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #666;
+  white-space: nowrap;
+}
+
+.log-level {
+  font-weight: bold;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.log-module {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #666;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.log-function {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #888;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.log-line {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #999;
+  text-align: right;
+}
+
+.log-message {
+  max-width: 500px;
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+
+.log-keywords {
+  max-width: 200px;
+}
+
+.keyword-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.keyword-tag {
+  padding: 2px 6px;
+  background: #e3f2fd;
+  color: #1976d2;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.no-logs {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-style: italic;
+}
+
+.log-viewer-loading {
+  padding: 40px;
+  text-align: center;
+  color: #666;
+}
+
+/* Scrollbar styling */
+.log-table-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.log-table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.log-table-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.log-table-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+
+
+

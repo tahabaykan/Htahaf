@@ -1,0 +1,154 @@
+.ticker-alert-panel {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 16px;
+  margin: 16px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ticker-alert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #eee;
+}
+
+.ticker-alert-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.ticker-alert-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.ticker-alert-controls .btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.ticker-alert-controls .btn-sm {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.ticker-alert-error {
+  background: #fee;
+  color: #c33;
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+.ticker-alert-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #666;
+}
+
+.ticker-alert-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.ticker-alert-loading,
+.ticker-alert-empty {
+  text-align: center;
+  padding: 32px;
+  color: #999;
+  font-size: 14px;
+}
+
+.ticker-alert-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.ticker-alert-table thead {
+  background: #f5f5f5;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.ticker-alert-table th {
+  padding: 8px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #ddd;
+}
+
+.ticker-alert-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.ticker-alert-row {
+  transition: background-color 0.2s;
+}
+
+.ticker-alert-row:hover {
+  background: #f9f9f9;
+}
+
+.ticker-alert-row.ticker-alert-new_high {
+  background: #f0f9f0;
+}
+
+.ticker-alert-row.ticker-alert-new_low {
+  background: #fff0f0;
+}
+
+.ticker-alert-symbol {
+  font-weight: 600;
+  color: #333;
+}
+
+.ticker-alert-price {
+  font-weight: 600;
+  color: #333;
+}
+
+.ticker-alert-change {
+  font-weight: 600;
+}
+
+.ticker-alert-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.ticker-alert-badge-new_high {
+  background: #4caf50;
+  color: white;
+}
+
+.ticker-alert-badge-new_low {
+  background: #f44336;
+  color: white;
+}
+
+
+
+
+

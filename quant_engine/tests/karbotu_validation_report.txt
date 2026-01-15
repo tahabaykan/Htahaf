@@ -1,0 +1,231 @@
+================================================================================
+KARBOTU v1 VALIDATION REPORT
+================================================================================
+
+Total Tests: 8
+Passed: 8
+Failed: 0
+
+--------------------------------------------------------------------------------
+Test 1: Test Case 1: Cooldown Filter - [PASS]
+Category: COOLDOWN
+Description: Position passes all filters but cooldown is active
+Janall Behavior: SELL (cooldown yok)
+
+Actual Results:
+  Decisions: 0
+  Filtered: 1
+
+  FILTERED Positions:
+    WFC PRY:
+      Step: 2
+      Reasons: Cooldown active (2.0 minutes)
+
+  Step Summary:
+    Step 1 (GORT Filter):
+      Total: 1
+      Eligible: 1
+      Filtered: 0
+    Step 2 (Fbtot < 1.10):
+      Total: 1
+      Decisions: 0
+      Filtered: 1
+
+--------------------------------------------------------------------------------
+Test 2: Test Case 2: Step 1 Strict Gate (Mimari Fark) - [PASS]
+Category: THRESHOLD_EDGE
+Description: Position with Ask Sell Pahalılık = -0.08 (Step 1 strict gate)
+Janall Behavior: FILTERED (Ask Sell Pahalılık <= -0.10)
+
+Actual Results:
+  Decisions: 0
+  Filtered: 1
+
+  FILTERED Positions:
+    BAC PRM:
+      Step: 1
+      Reasons: Ask Sell Pahalılık <= -0.05 (Ask Sell=-0.08)
+
+  Step Summary:
+    Step 1 (GORT Filter):
+      Total: 1
+      Eligible: 0
+      Filtered: 1
+    Step 2 (Fbtot < 1.10):
+      Total: 0
+      Decisions: 0
+      Filtered: 0
+
+--------------------------------------------------------------------------------
+Test 3: Test Case 3: Missing Metrics - [PASS]
+Category: METRICS_MISSING
+Description: Position with missing metrics (fbtot, ask_sell_pahalilik, gort)
+Janall Behavior: FILTERED (metrics not available)
+
+Actual Results:
+  Decisions: 0
+  Filtered: 1
+
+  FILTERED Positions:
+    JPM PRL:
+      Step: 1
+      Reasons: GORT <= -1.0 (GORT=None)
+
+  Step Summary:
+    Step 1 (GORT Filter):
+      Total: 1
+      Eligible: 0
+      Filtered: 1
+    Step 2 (Fbtot < 1.10):
+      Total: 0
+      Decisions: 0
+      Filtered: 0
+
+--------------------------------------------------------------------------------
+Test 4: Test Case 4: Perfect SELL Case - [PASS]
+Category: SELL
+Description: Position passes all filters - should SELL
+Janall Behavior: SELL (50% lot, ASK_SELL)
+
+Actual Results:
+  Decisions: 1
+  Filtered: 0
+
+  SELL Decisions:
+    MS PRK:
+      Action: SELL
+      Lot: 300 (50.0%)
+      Reason: Fbtot < 1.1 (1.05) and Ask Sell Pahalılık > -0.1 (0.0500)
+      Confidence: 0.62
+      Step: 2
+
+  Step Summary:
+    Step 1 (GORT Filter):
+      Total: 1
+      Eligible: 1
+      Filtered: 0
+    Step 2 (Fbtot < 1.10):
+      Total: 1
+      Decisions: 1
+      Filtered: 0
+
+--------------------------------------------------------------------------------
+Test 5: Test Case 5: GORT Filter Fail - [PASS]
+Category: GORT_FILTER
+Description: Position fails GORT filter (Step 1)
+Janall Behavior: FILTERED (GORT <= -1)
+
+Actual Results:
+  Decisions: 0
+  Filtered: 1
+
+  FILTERED Positions:
+    C PRJ:
+      Step: 1
+      Reasons: GORT <= -1.0 (GORT=-1.5)
+
+  Step Summary:
+    Step 1 (GORT Filter):
+      Total: 1
+      Eligible: 0
+      Filtered: 1
+    Step 2 (Fbtot < 1.10):
+      Total: 0
+      Decisions: 0
+      Filtered: 0
+
+--------------------------------------------------------------------------------
+Test 6: Test Case 6: Fbtot Filter Fail - [PASS]
+Category: FBTOT_FILTER
+Description: Position fails Fbtot filter (Step 2 - Fbtot >= 1.10)
+Janall Behavior: FILTERED (Fbtot >= 1.10)
+
+Actual Results:
+  Decisions: 0
+  Filtered: 1
+
+  FILTERED Positions:
+    GS PRA:
+      Step: 2
+      Reasons: Fbtot >= 1.1 (Fbtot=1.15)
+
+  Step Summary:
+    Step 1 (GORT Filter):
+      Total: 1
+      Eligible: 1
+      Filtered: 0
+    Step 2 (Fbtot < 1.10):
+      Total: 1
+      Decisions: 0
+      Filtered: 1
+
+--------------------------------------------------------------------------------
+Test 7: Test Case 7: Qty Filter Fail - [PASS]
+Category: QTY_FILTER
+Description: Position fails quantity filter (Step 2 - Qty < 100)
+Janall Behavior: FILTERED (Qty < 100)
+
+Actual Results:
+  Decisions: 0
+  Filtered: 1
+
+  FILTERED Positions:
+    PNC PRP:
+      Step: 2
+      Reasons: Qty < 100 lots (Qty=50)
+
+  Step Summary:
+    Step 1 (GORT Filter):
+      Total: 1
+      Eligible: 1
+      Filtered: 0
+    Step 2 (Fbtot < 1.10):
+      Total: 1
+      Decisions: 0
+      Filtered: 1
+
+--------------------------------------------------------------------------------
+Test 8: Test Case 8: Multiple Positions - [PASS]
+Category: MIXED
+Description: Multiple positions with mixed outcomes
+Janall Behavior: 2 SELL, 2 FILTERED
+
+Actual Results:
+  Decisions: 2
+  Filtered: 2
+
+  SELL Decisions:
+    WFC PRY:
+      Action: SELL
+      Lot: 200 (50.0%)
+      Reason: Fbtot < 1.1 (1.05) and Ask Sell Pahalılık > -0.1 (0.0200)
+      Confidence: 0.66
+      Step: 2
+    MS PRK:
+      Action: SELL
+      Lot: 300 (50.0%)
+      Reason: Fbtot < 1.1 (1.05) and Ask Sell Pahalılık > -0.1 (0.0500)
+      Confidence: 0.69
+      Step: 2
+
+  FILTERED Positions:
+    BAC PRM:
+      Step: 1
+      Reasons: GORT <= -1.0 (GORT=-1.5)
+    JPM PRL:
+      Step: 1
+      Reasons: GORT <= -1.0 (GORT=None)
+
+  Step Summary:
+    Step 1 (GORT Filter):
+      Total: 4
+      Eligible: 2
+      Filtered: 2
+    Step 2 (Fbtot < 1.10):
+      Total: 2
+      Decisions: 2
+      Filtered: 0
+
+================================================================================
+END OF REPORT
+================================================================================

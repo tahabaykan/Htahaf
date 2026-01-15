@@ -1,0 +1,56 @@
+/**
+ * Decision Helper Page Styles
+ */
+
+.decision-helper-page {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  color: #c9d1d9;
+  background: #0d1117;
+  min-height: 100vh;
+}
+
+.page-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #30363d;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #58a6ff;
+  text-decoration: none;
+  font-size: 12px;
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: #79c0ff;
+}
+
+.page-header h1 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  color: #58a6ff;
+}
+
+.page-description {
+  margin: 0;
+  font-size: 13px;
+  color: #8b949e;
+}
+
+.error-message {
+  background: rgba(248, 81, 73, 0.1);
+  border: 1px solid #f85149;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 16px;
+  color: #f85149;
+  font-size: 13px;
+}
+
+

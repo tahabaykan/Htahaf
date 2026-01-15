@@ -1,0 +1,53 @@
+================================================================================
+KARBOTU VALIDATION - NASIL CALISTIRILIR?
+================================================================================
+
+EN BASIT YONTEM:
+---------------
+
+1. Windows Explorer'da su dosyaya cift tikla:
+   quant_engine/tests/CALISTIR_BASIT.bat
+
+VEYA
+
+2. Terminal'de (PowerShell veya CMD):
+   cd quant_engine
+   python -m tests.karbotu_validation_runner
+
+================================================================================
+NE OLACAK?
+================================================================================
+
+1. Console'da rapor goreceksin
+2. quant_engine/tests/karbotu_validation_report.txt dosyasi olusacak
+3. Bu dosyayi acip okuyabilirsin
+
+================================================================================
+RAPORU OKUMA
+================================================================================
+
+Rapor format:
+- [PASS] = Test gecti
+- [FAIL] = Test basarisiz
+- Differences = Farklar listelenir
+- Step Summary = Her step icin istatistikler
+
+================================================================================
+SORUN MU VAR?
+================================================================================
+
+Eger "Module not found" hatasi alirsan:
+
+1. Proje root dizinine git:
+   cd C:\Users\User\OneDrive\Masaüstü\Proje\StockTracker
+
+2. Sonra calistir:
+   python -m quant_engine.tests.karbotu_validation_runner
+
+================================================================================
+
+
+
+
+
+

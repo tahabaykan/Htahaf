@@ -1,0 +1,241 @@
+.control-bar {
+  background: #000000;  /* Siyah arka plan */
+  padding: 3px 5px;
+  margin: 3px;
+  border-radius: 3px;
+  border: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.control-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.filters-section {
+  border-top: 1px solid #333;
+  padding-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  max-width: 100%;
+}
+
+.control-group {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.control-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.btn {
+  padding: 4px 8px;
+  border: 1px solid #ff8800;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 500;
+  transition: background 0.2s;
+  color: #000000;  /* Siyah yazı */
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #ff8800;  /* Turuncu */
+  color: #000000;  /* Siyah yazı */
+  border-color: #ff8800;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #ff9900;
+}
+
+.btn-secondary {
+  background: #ff8800;  /* Turuncu */
+  color: #000000;  /* Siyah yazı */
+  border-color: #ff8800;
+}
+
+.btn-secondary:hover {
+  background: #ff9900;
+}
+
+.btn-success {
+  background: #ff8800;  /* Turuncu */
+  color: #000000;  /* Siyah yazı */
+  border-color: #ff8800;
+}
+
+.btn-success:hover {
+  background: #ff9900;
+}
+
+.btn-danger {
+  background: #ff5500;  /* Koyu turuncu */
+  color: #000000;  /* Siyah yazı */
+  border-color: #ff5500;
+}
+
+.btn-danger:hover {
+  background: #ff6600;
+}
+
+.filter-input {
+  padding: 4px 6px;
+  border: 1px solid #666;
+  border-radius: 4px;
+  font-size: 10px;
+  min-width: 150px;
+  background: #ffffff;  /* Beyaz iç kısım */
+  color: #000000;  /* Siyah yazı */
+}
+
+.filter-input:focus {
+  outline: none;
+  border-color: #555;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.filter-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: #ffffff;  /* Beyaz yazı (siyah arka plan üzerinde) */
+  white-space: nowrap;
+}
+
+.filter-number-input {
+  padding: 4px 6px;
+  border: 1px solid #666;
+  border-radius: 4px;
+  font-size: 10px;
+  width: 70px;
+  background: #ffffff;  /* Beyaz iç kısım */
+  color: #000000;  /* Siyah yazı */
+}
+
+.filter-number-input:focus {
+  outline: none;
+  border-color: #555;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
+}
+
+.checkbox-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  cursor: pointer;
+  user-select: none;
+  color: #ffffff;  /* Beyaz yazı (siyah arka plan üzerinde) */
+}
+
+.checkbox-label input[type="checkbox"] {
+  cursor: pointer;
+  width: 12px;
+  height: 12px;
+}
+
+.btn-active {
+  background: #ff8800;  /* Turuncu */
+  color: #000000;  /* Siyah yazı */
+  border-color: #ff8800;
+}
+
+.btn-active:hover {
+  background: #ff9900;
+}
+
+.btn-inactive {
+  background: #ff8800;  /* Turuncu */
+  color: #000000;  /* Siyah yazı */
+  border-color: #ff8800;
+  opacity: 0.6;
+}
+
+.btn-inactive:hover {
+  opacity: 0.8;
+}
+
+.execution-mode-select {
+  padding: 4px 6px;
+  border: 1px solid #666;
+  border-radius: 4px;
+  font-size: 10px;
+  background: #ffffff;  /* Beyaz iç kısım */
+  color: #000000;  /* Siyah yazı */
+  cursor: pointer;
+  margin-left: 3px;
+}
+
+.execution-mode-select:focus {
+  outline: none;
+  border-color: #555;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
+}
+
+.preset-group {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 8px;
+}
+
+.preset-select {
+  padding: 4px 6px;
+  border: 1px solid #666;
+  border-radius: 4px;
+  font-size: 10px;
+  background: #ffffff;
+  color: #000000;
+  cursor: pointer;
+  width: 100px;
+}
+
+.preset-select:focus {
+  outline: none;
+  border-color: #555;
+}
+
+.preset-name-input {
+  padding: 4px 6px;
+  border: 1px solid #666;
+  border-radius: 4px;
+  font-size: 10px;
+  background: #ffffff;
+  color: #000000;
+  width: 90px;
+}
+
+.preset-name-input:focus {
+  outline: none;
+  border-color: #555;
+}
+

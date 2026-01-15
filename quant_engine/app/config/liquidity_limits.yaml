@@ -1,0 +1,42 @@
+# LiquidityGuard Configuration
+# Pre-trade sizing constraints to prevent order spam and respect liquidity
+
+# Global settings
+global:
+  min_lot: 200  # Minimum order size (shares)
+  scale_factor: 1000  # Divide avg_adv by this to get base_max
+  residual_close_policy: "defer"  # defer, allow_near_close, always_allow
+
+# Per-bucket settings
+buckets:
+  LT:
+    enabled: true
+    # LT orders: NO upper cap (only base_max from avg_adv)
+    max_cap: null  # null = no cap
+  
+  MM:
+    enabled: true
+    # MM orders: capped at mm_max_cap
+    max_cap: 2000  # Maximum order size for MM intents
+  
+  MM_PURE:
+    enabled: true
+    max_cap: 2000  # Same as MM
+
+# Residual handling
+residual:
+  # Allow small residuals (< min_lot) in these scenarios
+  allow_near_close: true  # Within 2 minutes of close
+  allow_hard_derisk: true  # During HARD_DERISK mode
+  allow_soft_derisk: false  # During SOFT_DERISK mode (generally defer)
+  
+  # Time thresholds (minutes to close)
+  near_close_threshold: 2
+
+# Logging
+logging:
+  log_adjustments: true  # Log when LiquidityGuard adjusts qty
+  log_deferred: true  # Log when orders are deferred due to residual
+
+
+

@@ -1,0 +1,28 @@
+﻿
+­şöÁ TEST 7: Finalize Day Safety Guard
+Blocked as expected: Blocked: Market Open
+Ô£à PASS: Safety Guard Verified
+
+­şöÁ TEST 2: Late Fill Routing
+Ô£à PASS: Event Routing Verified
+
+­şöÁ TEST 3: LT/MM Netting (Opposite)
+Snapshot: Qty=600.0, LT=1000.0, MM=-400.0
+View Mode: NETTED_OPPOSITE, Bucket: LT
+Ô£à PASS: Netting Logic Verified
+
+­şöÁ TEST 5: Missing Price Visibility
+Snapshot Price Status: PositionPriceStatus.NO_PRICE, Price: 0.0
+Ô£à PASS: Missing Price Handling Verified
+
+­şöÁ TEST 6: Negative Path Logging
+Log Call: SKIP - Skipped: Mock Ineligible
+Ô£à PASS: Negative Path Logged
+
+­şöÁ TEST 4: Same Direction Split
+Snapshot: Qty=1700.0, LT=1000.0, MM=700.0
+View Mode: SPLIT_SAME_DIR, Bucket: MIXED
+Ô£à PASS: Split Logic Verified
+
+­şöÁ TEST 1: Strict Account Isolation
+HAMPRO Snaps: []

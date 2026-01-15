@@ -115,3 +115,12 @@ Hangi yaklaşımı tercih edersiniz?
 
 
 
+
+
+
+
+
+
+
+
+

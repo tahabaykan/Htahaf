@@ -137,6 +137,14 @@ class MainWindow(tk.Tk):
         # Cache sistemi - hesaplama boşluklarını önle
         self.last_valid_scores = {}  # Her ticker için son geçerli skorlar
         
+        # Döngü Raporu - RUNALL emir kararlarını takip
+        self.loop_report = []  # Her emir kararı için detaylı log
+        self.loop_report_start_time = None  # Döngü başlangıç zamanı
+        self.loop_report_loop_number = 0  # Döngü numarası
+        
+        # Psfalgo Aktivite Logu - Tüm Psfalgo işlemlerini takip (uygulama kapanınca sıfırlanır)
+        self.psfalgo_activity_log = []  # Her işlem için: {time, action, details, status, reason}
+        
         # Başlangıçta boş DataFrame
         self.df = pd.DataFrame()
         
@@ -3020,12 +3028,33 @@ class MainWindow(tk.Tk):
                     if success:
                         print(f"[CROPLIT] ✅ {symbol}: {side} {quantity} lot @ ${price:.2f}")
                         success_count += 1
+                        
+                        self.log_psfalgo_activity(
+                            action=f"Croplit {position_type} Emir",
+                            details=f"{symbol}: {side} {quantity} lot @ ${price:.2f}",
+                            status="SUCCESS",
+                            category="CROPLIT"
+                        )
                     else:
                         print(f"[CROPLIT] ❌ {symbol}: Emir gönderilemedi")
                         error_count += 1
+                        
+                        self.log_psfalgo_activity(
+                            action=f"Croplit {position_type} Başarısız",
+                            details=f"{symbol}: Emir gönderilemedi",
+                            status="ERROR",
+                            category="CROPLIT"
+                        )
                 else:
                     print(f"[CROPLIT] ❌ Mode manager bulunamadı")
                     error_count += 1
+                    
+                    self.log_psfalgo_activity(
+                        action=f"Croplit {position_type} Hata",
+                        details=f"{symbol}: Mode manager bulunamadı",
+                        status="ERROR",
+                        category="CROPLIT"
+                    )
             
             # Sonuç mesajı
             result_msg = f"Croplit {position_type} Emirleri:\n\n"
@@ -4196,11 +4225,23 @@ class MainWindow(tk.Tk):
                                         style='Accent.TButton', width=15)
         self.bm_shifter_btn.grid(row=1, column=2, padx=2, pady=2, sticky='ew')
         
-        # Üçüncü satır - Kurallar butonu
+        # Üçüncü satır - Kurallar butonu ve Döngü Raporu butonu
         self.kurallar_btn = ttk.Button(buttons_frame, text="📋 Kurallar", 
                                        command=self.show_rules_dialog, 
                                        style='Accent.TButton', width=15)
         self.kurallar_btn.grid(row=2, column=0, padx=2, pady=2, sticky='ew')
+        
+        # Döngü Raporu butonu - RUNALL emirlerinin detaylı raporunu gösterir
+        self.loop_report_btn = ttk.Button(buttons_frame, text="📊 Döngü Raporu", 
+                                          command=self.show_loop_report_window, 
+                                          style='Accent.TButton', width=15)
+        self.loop_report_btn.grid(row=2, column=1, padx=2, pady=2, sticky='ew')
+        
+        # Psfalgo Alg Raporu butonu - Tüm Psfalgo aktivitelerini gösterir
+        self.psfalgo_alg_raporu_btn = ttk.Button(buttons_frame, text="📈 Alg Raporu", 
+                                                 command=self.show_psfalgo_alg_raporu, 
+                                                 style='Accent.TButton', width=15)
+        self.psfalgo_alg_raporu_btn.grid(row=2, column=2, padx=2, pady=2, sticky='ew')
         
         # Dördüncü satır - Croplit butonları
         self.croplit6_btn = ttk.Button(buttons_frame, text="🔪 Croplit6", 
@@ -6582,6 +6623,490 @@ class MainWindow(tk.Tk):
         except Exception:
             pass
     
+    def add_to_loop_report(self, symbol, action, lot, price, status, step_name, conditions_checked, conditions_passed, conditions_failed, final_reason):
+        """
+        Döngü raporuna detaylı emir kararı ekle
+        
+        Args:
+            symbol: Hisse sembolü
+            action: 'BUY' veya 'SELL'
+            lot: Lot miktarı
+            price: Emir fiyatı
+            status: 'SENT' (gönderildi) veya 'BLOCKED' (engellendi)
+            step_name: Hangi adımda (ör: 'KARBOTU Step 2')
+            conditions_checked: Kontrol edilen koşullar listesi
+            conditions_passed: Geçilen koşullar listesi  
+            conditions_failed: Takılan koşullar listesi
+            final_reason: Son karar nedeni
+        """
+        try:
+            report_entry = {
+                'time': datetime.now().strftime('%H:%M:%S'),
+                'symbol': symbol,
+                'action': action,
+                'lot': lot,
+                'price': price,
+                'status': status,
+                'step_name': step_name,
+                'conditions_checked': conditions_checked,
+                'conditions_passed': conditions_passed,
+                'conditions_failed': conditions_failed,
+                'final_reason': final_reason
+            }
+            self.loop_report.append(report_entry)
+            
+            # Kısa log da ekle
+            status_icon = "✅" if status == "SENT" else "❌"
+            print(f"[DÖNGÜ RAPOR] {status_icon} {symbol} {action} {lot} lot @ ${price:.2f} - {final_reason}")
+            
+        except Exception as e:
+            print(f"[DÖNGÜ RAPOR] Hata: {e}")
+    
+    def clear_loop_report(self):
+        """Döngü raporunu temizle - Yeni döngü başlarken çağrılır"""
+        self.loop_report = []
+        self.loop_report_start_time = datetime.now()
+        print(f"[DÖNGÜ RAPOR] 🔄 Rapor temizlendi, yeni döngü başladı: {self.loop_report_start_time.strftime('%H:%M:%S')}")
+    
+    def show_loop_report_window(self):
+        """Döngü Raporu penceresini göster"""
+        try:
+            # Pencere oluştur
+            report_win = tk.Toplevel(self)
+            report_win.title(f"Döngü Raporu - Döngü #{self.loop_report_loop_number}")
+            report_win.geometry("1200x700")
+            
+            # Başlık frame
+            header_frame = ttk.Frame(report_win)
+            header_frame.pack(fill='x', padx=10, pady=5)
+            
+            # Döngü bilgisi
+            start_time_str = self.loop_report_start_time.strftime('%H:%M:%S') if self.loop_report_start_time else 'N/A'
+            ttk.Label(header_frame, text=f"📊 Döngü #{self.loop_report_loop_number} | Başlangıç: {start_time_str}", 
+                     font=('Arial', 12, 'bold')).pack(side='left')
+            
+            # İstatistikler
+            sent_count = sum(1 for r in self.loop_report if r['status'] == 'SENT')
+            blocked_count = sum(1 for r in self.loop_report if r['status'] == 'BLOCKED')
+            ttk.Label(header_frame, text=f"✅ Gönderilen: {sent_count} | ❌ Engellenen: {blocked_count}", 
+                     font=('Arial', 10)).pack(side='right')
+            
+            # Notebook (tabs)
+            notebook = ttk.Notebook(report_win)
+            notebook.pack(fill='both', expand=True, padx=10, pady=5)
+            
+            # Tab 1: Tüm Emirler
+            all_frame = ttk.Frame(notebook)
+            notebook.add(all_frame, text="📋 Tüm Emirler")
+            self._create_report_table(all_frame, self.loop_report)
+            
+            # Tab 2: Gönderilen Emirler
+            sent_frame = ttk.Frame(notebook)
+            notebook.add(sent_frame, text="✅ Gönderilen")
+            sent_reports = [r for r in self.loop_report if r['status'] == 'SENT']
+            self._create_report_table(sent_frame, sent_reports)
+            
+            # Tab 3: Engellenen Emirler
+            blocked_frame = ttk.Frame(notebook)
+            notebook.add(blocked_frame, text="❌ Engellenen")
+            blocked_reports = [r for r in self.loop_report if r['status'] == 'BLOCKED']
+            self._create_report_table(blocked_frame, blocked_reports)
+            
+            # Tab 4: Detaylı Log
+            detail_frame = ttk.Frame(notebook)
+            notebook.add(detail_frame, text="📝 Detaylı Log")
+            self._create_detailed_log(detail_frame)
+            
+            # Alt butonlar
+            btn_frame = ttk.Frame(report_win)
+            btn_frame.pack(fill='x', padx=10, pady=5)
+            
+            ttk.Button(btn_frame, text="🔄 Yenile", command=lambda: self._refresh_report_window(report_win)).pack(side='left', padx=5)
+            ttk.Button(btn_frame, text="💾 CSV'ye Kaydet", command=self._save_loop_report_to_csv).pack(side='left', padx=5)
+            ttk.Button(btn_frame, text="🗑️ Temizle", command=lambda: self._clear_and_refresh(report_win)).pack(side='left', padx=5)
+            ttk.Button(btn_frame, text="❌ Kapat", command=report_win.destroy).pack(side='right', padx=5)
+            
+        except Exception as e:
+            print(f"[DÖNGÜ RAPOR] Pencere hatası: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def _create_report_table(self, parent, reports):
+        """Rapor tablosu oluştur"""
+        # Scrollable frame
+        canvas = tk.Canvas(parent)
+        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Treeview
+        columns = ('time', 'symbol', 'action', 'lot', 'price', 'status', 'step', 'reason')
+        tree = ttk.Treeview(scrollable_frame, columns=columns, show='headings', height=20)
+        
+        tree.heading('time', text='Saat')
+        tree.heading('symbol', text='Sembol')
+        tree.heading('action', text='İşlem')
+        tree.heading('lot', text='Lot')
+        tree.heading('price', text='Fiyat')
+        tree.heading('status', text='Durum')
+        tree.heading('step', text='Adım')
+        tree.heading('reason', text='Sebep')
+        
+        tree.column('time', width=70)
+        tree.column('symbol', width=100)
+        tree.column('action', width=60)
+        tree.column('lot', width=60)
+        tree.column('price', width=80)
+        tree.column('status', width=80)
+        tree.column('step', width=120)
+        tree.column('reason', width=400)
+        
+        # Raporları ekle
+        for report in reports:
+            status_text = "✅ Gönderildi" if report['status'] == 'SENT' else "❌ Engellendi"
+            price_text = f"${report['price']:.2f}" if report['price'] > 0 else "N/A"
+            
+            values = (
+                report['time'],
+                report['symbol'],
+                report['action'],
+                report['lot'],
+                price_text,
+                status_text,
+                report['step_name'],
+                report['final_reason']
+            )
+            
+            tag = 'sent' if report['status'] == 'SENT' else 'blocked'
+            tree.insert('', 'end', values=values, tags=(tag,))
+        
+        tree.tag_configure('sent', background='#90EE90')  # Açık yeşil
+        tree.tag_configure('blocked', background='#FFB6C1')  # Açık kırmızı
+        
+        tree.pack(fill='both', expand=True)
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+    
+    def _create_detailed_log(self, parent):
+        """Detaylı log görünümü oluştur"""
+        text = tk.Text(parent, wrap=tk.WORD, font=('Consolas', 9))
+        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=text.yview)
+        text.configure(yscrollcommand=scrollbar.set)
+        
+        for report in self.loop_report:
+            status_icon = "✅" if report['status'] == 'SENT' else "❌"
+            price_text = f"${report['price']:.2f}" if report['price'] > 0 else "N/A"
+            
+            # Başlık
+            text.insert(tk.END, f"\n{'='*80}\n")
+            text.insert(tk.END, f"{status_icon} {report['time']} | {report['symbol']} | {report['action']} {report['lot']} lot @ {price_text}\n")
+            text.insert(tk.END, f"Adım: {report['step_name']}\n")
+            text.insert(tk.END, f"{'='*80}\n\n")
+            
+            # Kontrol edilen koşullar
+            text.insert(tk.END, "📋 KONTROL EDİLEN KOŞULLAR:\n")
+            for cond in report.get('conditions_checked', []):
+                text.insert(tk.END, f"   • {cond}\n")
+            
+            # Geçilen koşullar
+            text.insert(tk.END, "\n✅ GEÇİLEN KOŞULLAR:\n")
+            for cond in report.get('conditions_passed', []):
+                text.insert(tk.END, f"   ✓ {cond}\n")
+            
+            # Takılan koşullar
+            if report.get('conditions_failed'):
+                text.insert(tk.END, "\n❌ TAKILDIĞI KOŞUL:\n")
+                for cond in report.get('conditions_failed', []):
+                    text.insert(tk.END, f"   ✗ {cond}\n")
+            
+            # Son karar
+            text.insert(tk.END, f"\n📌 SONUÇ: {report['final_reason']}\n")
+        
+        text.config(state='disabled')
+        text.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+    
+    def _refresh_report_window(self, win):
+        """Rapor penceresini yenile"""
+        win.destroy()
+        self.show_loop_report_window()
+    
+    def _clear_and_refresh(self, win):
+        """Raporu temizle ve yenile"""
+        self.loop_report = []
+        win.destroy()
+        self.show_loop_report_window()
+    
+    def _save_loop_report_to_csv(self):
+        """Döngü raporunu CSV'ye kaydet"""
+        try:
+            import pandas as pd
+            if not self.loop_report:
+                messagebox.showinfo("Bilgi", "Kaydedilecek rapor yok!")
+                return
+            
+            df = pd.DataFrame(self.loop_report)
+            filename = f"dongu_raporu_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            df.to_csv(filename, index=False, encoding='utf-8-sig')
+            messagebox.showinfo("Başarılı", f"Rapor kaydedildi: {filename}")
+            
+        except Exception as e:
+            messagebox.showerror("Hata", f"Kaydetme hatası: {e}")
+    
+    # ==================== PSFALGO AKTİVİTE LOGU ====================
+    
+    def log_psfalgo_activity(self, action, details, status="INFO", reason="", category="GENEL"):
+        """
+        Psfalgo'da yapılan her işlemi logla
+        
+        Args:
+            action: İşlem adı (ör: 'KARBOTU Başlatıldı', 'Emir Gönderildi')
+            details: Detaylar (ör: 'AAL: BUY 500 lot @ $15.20')
+            status: 'SUCCESS', 'BLOCKED', 'ERROR', 'INFO', 'WARNING'
+            reason: Engelleme/hata sebebi
+            category: 'KARBOTU', 'REDUCEMORE', 'ADDNEWPOS', 'CROPLIT', 'RUNALL', 'CONTROLLER', 'GENEL'
+        """
+        try:
+            log_entry = {
+                'time': datetime.now().strftime('%H:%M:%S'),
+                'timestamp': datetime.now(),
+                'category': category,
+                'action': action,
+                'details': details,
+                'status': status,
+                'reason': reason
+            }
+            self.psfalgo_activity_log.append(log_entry)
+            
+            # Konsola da yazdır
+            status_icons = {
+                'SUCCESS': '✅',
+                'BLOCKED': '❌',
+                'ERROR': '⚠️',
+                'INFO': 'ℹ️',
+                'WARNING': '⚠️'
+            }
+            icon = status_icons.get(status, '•')
+            print(f"[PSFALGO LOG] {icon} [{category}] {action}: {details}")
+            if reason:
+                print(f"             └─ Sebep: {reason}")
+                
+        except Exception as e:
+            print(f"[PSFALGO LOG] Loglama hatası: {e}")
+    
+    def show_psfalgo_alg_raporu(self):
+        """Psfalgo Algoritma Raporu penceresini göster - Tüm aktiviteleri göster"""
+        try:
+            # Pencere oluştur
+            report_win = tk.Toplevel(self)
+            report_win.title("Psfalgo Algoritma Raporu")
+            report_win.geometry("1400x800")
+            
+            # Başlık frame
+            header_frame = ttk.Frame(report_win)
+            header_frame.pack(fill='x', padx=10, pady=5)
+            
+            # İstatistikler
+            total_count = len(self.psfalgo_activity_log)
+            success_count = sum(1 for r in self.psfalgo_activity_log if r['status'] == 'SUCCESS')
+            blocked_count = sum(1 for r in self.psfalgo_activity_log if r['status'] == 'BLOCKED')
+            error_count = sum(1 for r in self.psfalgo_activity_log if r['status'] == 'ERROR')
+            
+            ttk.Label(header_frame, text="📊 Psfalgo Algoritma Raporu", 
+                     font=('Arial', 14, 'bold')).pack(side='left')
+            
+            stats_text = f"Toplam: {total_count} | ✅ Başarılı: {success_count} | ❌ Engellenen: {blocked_count} | ⚠️ Hata: {error_count}"
+            ttk.Label(header_frame, text=stats_text, font=('Arial', 10)).pack(side='right')
+            
+            # Notebook (tabs)
+            notebook = ttk.Notebook(report_win)
+            notebook.pack(fill='both', expand=True, padx=10, pady=5)
+            
+            # Tab 1: Tüm Aktiviteler
+            all_frame = ttk.Frame(notebook)
+            notebook.add(all_frame, text="📋 Tüm Aktiviteler")
+            self._create_psfalgo_activity_table(all_frame, self.psfalgo_activity_log)
+            
+            # Tab 2: Kategorilere Göre
+            categories = ['KARBOTU', 'REDUCEMORE', 'ADDNEWPOS', 'CROPLIT', 'RUNALL', 'CONTROLLER']
+            for cat in categories:
+                cat_frame = ttk.Frame(notebook)
+                cat_logs = [r for r in self.psfalgo_activity_log if r['category'] == cat]
+                if cat_logs:  # Sadece log varsa tab ekle
+                    notebook.add(cat_frame, text=f"🔹 {cat}")
+                    self._create_psfalgo_activity_table(cat_frame, cat_logs)
+            
+            # Tab: Sadece Başarılı
+            success_frame = ttk.Frame(notebook)
+            success_logs = [r for r in self.psfalgo_activity_log if r['status'] == 'SUCCESS']
+            notebook.add(success_frame, text="✅ Başarılı")
+            self._create_psfalgo_activity_table(success_frame, success_logs)
+            
+            # Tab: Sadece Engellenen
+            blocked_frame = ttk.Frame(notebook)
+            blocked_logs = [r for r in self.psfalgo_activity_log if r['status'] == 'BLOCKED']
+            notebook.add(blocked_frame, text="❌ Engellenen")
+            self._create_psfalgo_activity_table(blocked_frame, blocked_logs)
+            
+            # Tab: Detaylı Log (text view)
+            detail_frame = ttk.Frame(notebook)
+            notebook.add(detail_frame, text="📝 Detaylı Log")
+            self._create_psfalgo_detailed_log(detail_frame)
+            
+            # Alt butonlar
+            btn_frame = ttk.Frame(report_win)
+            btn_frame.pack(fill='x', padx=10, pady=5)
+            
+            ttk.Button(btn_frame, text="🔄 Yenile", 
+                      command=lambda: self._refresh_psfalgo_report(report_win)).pack(side='left', padx=5)
+            ttk.Button(btn_frame, text="💾 CSV'ye Kaydet", 
+                      command=self._save_psfalgo_log_to_csv).pack(side='left', padx=5)
+            ttk.Button(btn_frame, text="🗑️ Temizle", 
+                      command=lambda: self._clear_psfalgo_log(report_win)).pack(side='left', padx=5)
+            ttk.Button(btn_frame, text="❌ Kapat", 
+                      command=report_win.destroy).pack(side='right', padx=5)
+            
+        except Exception as e:
+            print(f"[PSFALGO RAPOR] Pencere hatası: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def _create_psfalgo_activity_table(self, parent, logs):
+        """Psfalgo aktivite tablosu oluştur"""
+        # Frame ve scrollbar
+        table_frame = ttk.Frame(parent)
+        table_frame.pack(fill='both', expand=True, padx=5, pady=5)
+        
+        # Treeview
+        columns = ('time', 'category', 'action', 'details', 'status', 'reason')
+        tree = ttk.Treeview(table_frame, columns=columns, show='headings', height=25)
+        
+        # Scrollbar
+        vsb = ttk.Scrollbar(table_frame, orient="vertical", command=tree.yview)
+        hsb = ttk.Scrollbar(table_frame, orient="horizontal", command=tree.xview)
+        tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+        
+        tree.heading('time', text='Saat')
+        tree.heading('category', text='Kategori')
+        tree.heading('action', text='İşlem')
+        tree.heading('details', text='Detaylar')
+        tree.heading('status', text='Durum')
+        tree.heading('reason', text='Sebep/Açıklama')
+        
+        tree.column('time', width=70, minwidth=70)
+        tree.column('category', width=100, minwidth=80)
+        tree.column('action', width=200, minwidth=150)
+        tree.column('details', width=400, minwidth=200)
+        tree.column('status', width=80, minwidth=60)
+        tree.column('reason', width=350, minwidth=200)
+        
+        # Logları ekle
+        for log in logs:
+            status_map = {
+                'SUCCESS': '✅ Başarılı',
+                'BLOCKED': '❌ Engellendi',
+                'ERROR': '⚠️ Hata',
+                'INFO': 'ℹ️ Bilgi',
+                'WARNING': '⚠️ Uyarı'
+            }
+            status_text = status_map.get(log['status'], log['status'])
+            
+            values = (
+                log['time'],
+                log['category'],
+                log['action'],
+                log['details'],
+                status_text,
+                log.get('reason', '')
+            )
+            
+            # Renk etiketleri
+            if log['status'] == 'SUCCESS':
+                tag = 'success'
+            elif log['status'] == 'BLOCKED':
+                tag = 'blocked'
+            elif log['status'] == 'ERROR':
+                tag = 'error'
+            else:
+                tag = 'info'
+            
+            tree.insert('', 'end', values=values, tags=(tag,))
+        
+        tree.tag_configure('success', background='#90EE90')  # Açık yeşil
+        tree.tag_configure('blocked', background='#FFB6C1')  # Açık kırmızı
+        tree.tag_configure('error', background='#FFD700')    # Sarı
+        tree.tag_configure('info', background='#E0E0E0')     # Açık gri
+        
+        # Pack
+        tree.pack(side='left', fill='both', expand=True)
+        vsb.pack(side='right', fill='y')
+        hsb.pack(side='bottom', fill='x')
+    
+    def _create_psfalgo_detailed_log(self, parent):
+        """Psfalgo detaylı log görünümü"""
+        text = tk.Text(parent, wrap=tk.WORD, font=('Consolas', 9))
+        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=text.yview)
+        text.configure(yscrollcommand=scrollbar.set)
+        
+        for log in self.psfalgo_activity_log:
+            status_icons = {
+                'SUCCESS': '✅',
+                'BLOCKED': '❌',
+                'ERROR': '⚠️',
+                'INFO': 'ℹ️',
+                'WARNING': '⚠️'
+            }
+            icon = status_icons.get(log['status'], '•')
+            
+            text.insert(tk.END, f"\n{'─'*80}\n")
+            text.insert(tk.END, f"{icon} [{log['time']}] [{log['category']}] {log['action']}\n")
+            text.insert(tk.END, f"   Detay: {log['details']}\n")
+            if log.get('reason'):
+                text.insert(tk.END, f"   Sebep: {log['reason']}\n")
+        
+        text.config(state='disabled')
+        text.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+    
+    def _refresh_psfalgo_report(self, win):
+        """Rapor penceresini yenile"""
+        win.destroy()
+        self.show_psfalgo_alg_raporu()
+    
+    def _clear_psfalgo_log(self, win):
+        """Psfalgo logunu temizle"""
+        self.psfalgo_activity_log = []
+        win.destroy()
+        self.show_psfalgo_alg_raporu()
+    
+    def _save_psfalgo_log_to_csv(self):
+        """Psfalgo logunu CSV'ye kaydet"""
+        try:
+            if not self.psfalgo_activity_log:
+                messagebox.showinfo("Bilgi", "Kaydedilecek log yok!")
+                return
+            
+            # timestamp'i çıkar (csv'ye yazılamaz)
+            logs_for_csv = []
+            for log in self.psfalgo_activity_log:
+                log_copy = {k: v for k, v in log.items() if k != 'timestamp'}
+                logs_for_csv.append(log_copy)
+            
+            df = pd.DataFrame(logs_for_csv)
+            filename = f"psfalgo_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            df.to_csv(filename, index=False, encoding='utf-8-sig')
+            messagebox.showinfo("Başarılı", f"Log kaydedildi: {filename}")
+            
+        except Exception as e:
+            messagebox.showerror("Hata", f"Kaydetme hatası: {e}")
+    
     def run_all_sequence(self, from_restart=False):
         """RUNALL butonu: Lot bölücü aç → Controller ON → KARBOTU başlat → ADDNEWPOS → 1 dk bekle → Emirleri iptal et → Tekrar başla (sürekli döngü)
         
@@ -6617,6 +7142,14 @@ class MainWindow(tk.Tk):
             print("[RUNALL] ▶️ RUNALL sırası başlatılıyor...")
             self.log_message("▶️ RUNALL sırası başlatılıyor...")
             
+            # Psfalgo aktivite logu
+            self.log_psfalgo_activity(
+                action="RUNALL Başlatıldı",
+                details=f"Allowed Mode: {self.runall_allowed_mode}",
+                status="INFO",
+                category="RUNALL"
+            )
+            
             # Buton metnini güncelle
             if hasattr(self, 'runall_btn'):
                 self.runall_btn.config(text="▶️ RUNALL", state='disabled')
@@ -6625,6 +7158,10 @@ class MainWindow(tk.Tk):
             
             # Döngü sayacını artır (her zaman artır, restart'tan geliyorsa da)
             self.runall_loop_count += 1
+            
+            # Döngü raporunu temizle (yeni döngü başlıyor)
+            self.clear_loop_report()
+            self.loop_report_loop_number = self.runall_loop_count
             
             print(f"[RUNALL] 🔄 {self.runall_loop_count}. döngü başlatılıyor...")
             self.log_message(f"🔄 {self.runall_loop_count}. döngü başlatılıyor...")
@@ -7950,6 +8487,15 @@ class MainWindow(tk.Tk):
             print("[ADDNEWPOS] ▶️ ADDNEWPOS otomasyonu başlatılıyor...")
             self.log_message("▶️ ADDNEWPOS otomasyonu başlatılıyor...")
             
+            # Psfalgo aktivite logu
+            source = "RUNALL" if from_runall else "Manuel"
+            self.log_psfalgo_activity(
+                action="ADDNEWPOS Başlatıldı",
+                details=f"Kaynak: {source}",
+                status="INFO",
+                category="ADDNEWPOS"
+            )
+            
             # RUNALL'dan çağrılmadıysa (manuel çağrıldıysa) exposure kontrolü yapma, direkt başlat
             if not from_runall:
                 print("[ADDNEWPOS] ℹ️ Manuel olarak başlatıldı, exposure kontrolü yapılmıyor")
@@ -7979,6 +8525,12 @@ class MainWindow(tk.Tk):
         except Exception as e:
             print(f"[ADDNEWPOS] ❌ Otomasyon başlatma hatası: {e}")
             self.log_message(f"❌ ADDNEWPOS başlatma hatası: {e}")
+            self.log_psfalgo_activity(
+                action="ADDNEWPOS Hata",
+                details=str(e),
+                status="ERROR",
+                category="ADDNEWPOS"
+            )
             import traceback
             traceback.print_exc()
             from tkinter import messagebox
@@ -9148,6 +9700,14 @@ class MainWindow(tk.Tk):
             print("[KARBOTU] 🎯 KARBOTU otomasyonu başlatılıyor...")
             self.log_message("🎯 KARBOTU otomasyonu başlatılıyor...")
             
+            # Psfalgo aktivite logu
+            self.log_psfalgo_activity(
+                action="KARBOTU Başlatıldı",
+                details="13 adımlı otomasyon başlıyor",
+                status="INFO",
+                category="KARBOTU"
+            )
+            
             # KARBOTU adımlarını başlat
             self.karbotu_current_step = 1
             self.karbotu_total_steps = 13
@@ -9160,6 +9720,12 @@ class MainWindow(tk.Tk):
         except Exception as e:
             print(f"[KARBOTU] ❌ Otomasyon başlatma hatası: {e}")
             self.log_message(f"❌ KARBOTU başlatma hatası: {e}")
+            self.log_psfalgo_activity(
+                action="KARBOTU Hata",
+                details=str(e),
+                status="ERROR",
+                category="KARBOTU"
+            )
             self.after(0, lambda: messagebox.showerror("Hata", f"KARBOTU başlatılamadı: {e}"))
     
     def karbotu_step_1_open_take_profit_longs(self):
@@ -10729,9 +11295,41 @@ class MainWindow(tk.Tk):
                                 
                                 if success or "new order sent" in str(success):
                                     print(f"[KARBOTU] ✅ {symbol} → {hammer_symbol}: BUY {lot_qty} lot @ ${emir_fiyat:.2f}")
+                                    
+                                    self.log_psfalgo_activity(
+                                        action=f"{step_name} Emir",
+                                        details=f"{symbol}: BUY {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                        status="SUCCESS",
+                                        category="KARBOTU"
+                                    )
                                 else:
                                     print(f"[KARBOTU] ❌ {symbol} → {hammer_symbol}: BUY {lot_qty} lot @ ${emir_fiyat:.2f}")
+                                    
+                                    self.log_psfalgo_activity(
+                                        action=f"{step_name} Başarısız",
+                                        details=f"{symbol}: Emir gönderilemedi",
+                                        status="ERROR",
+                                        category="KARBOTU"
+                                    )
                             except Exception as e:
+                                if "new order sent" in str(e).lower():
+                                    print(f"[KARBOTU] ✅ {symbol} → {hammer_symbol}: BUY {lot_qty} lot @ ${emir_fiyat:.2f}")
+                                    
+                                    self.log_psfalgo_activity(
+                                        action=f"{step_name} Emir",
+                                        details=f"{symbol}: BUY {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                        status="SUCCESS",
+                                        category="KARBOTU"
+                                    )
+                                else:
+                                    print(f"[KARBOTU] ❌ {symbol} hata: {e}")
+                                    
+                                    self.log_psfalgo_activity(
+                                        action=f"{step_name} Hata",
+                                        details=f"{symbol}: {e}",
+                                        status="ERROR",
+                                        category="KARBOTU"
+                                    )
                                 if "new order sent" in str(e).lower():
                                     print(f"[KARBOTU] ✅ {symbol} → {hammer_symbol}: BUY {lot_qty} lot @ ${emir_fiyat:.2f} (new order sent)")
                                 else:
@@ -11292,6 +11890,14 @@ class MainWindow(tk.Tk):
             print("[REDUCEMORE] 📉 REDUCEMORE otomasyonu başlatılıyor...")
             self.log_message("📉 REDUCEMORE otomasyonu başlatılıyor...")
             
+            # Psfalgo aktivite logu
+            self.log_psfalgo_activity(
+                action="REDUCEMORE Başlatıldı",
+                details="13 adımlı otomasyon başlıyor",
+                status="INFO",
+                category="REDUCEMORE"
+            )
+            
             # REDUCEMORE adımlarını başlat
             self.reducemore_current_step = 1
             self.reducemore_total_steps = 13
@@ -11303,6 +11909,12 @@ class MainWindow(tk.Tk):
         except Exception as e:
             print(f"[REDUCEMORE] ❌ Otomasyon başlatma hatası: {e}")
             self.log_message(f"❌ REDUCEMORE başlatma hatası: {e}")
+            self.log_psfalgo_activity(
+                action="REDUCEMORE Hata",
+                details=str(e),
+                status="ERROR",
+                category="REDUCEMORE"
+            )
             messagebox.showerror("Hata", f"REDUCEMORE başlatılamadı: {e}")
     
     def karbotu_gort_check_take_profit_longs(self):
@@ -12694,6 +13306,14 @@ class MainWindow(tk.Tk):
                     if not allowed or adjusted_qty == 0:
                         print(f"[REDUCEMORE] ⚠️ {symbol}: Controller engelledi - {reason}")
                         self.log_message(f"⚠️ {symbol}: Controller engelledi - {reason}")
+                        
+                        self.log_psfalgo_activity(
+                            action=f"{step_name} Engellendi",
+                            details=f"{symbol}: Controller limiti",
+                            status="BLOCKED",
+                            reason=reason,
+                            category="REDUCEMORE"
+                        )
                         continue
                     
                     lot_qty = adjusted_qty if order_side == "SELL" else adjusted_qty
@@ -12713,11 +13333,32 @@ class MainWindow(tk.Tk):
                         if success or "new order sent" in str(success):
                             success_count += 1
                             print(f"[REDUCEMORE] ✅ {symbol}: {order_type} {lot_qty} lot @ ${emir_fiyat:.2f}")
+                            
+                            self.log_psfalgo_activity(
+                                action=f"{step_name} Emir",
+                                details=f"{symbol}: {order_type} {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                status="SUCCESS",
+                                category="REDUCEMORE"
+                            )
                     except Exception as e:
                         if "new order sent" in str(e).lower():
                             success_count += 1
+                            
+                            self.log_psfalgo_activity(
+                                action=f"{step_name} Emir",
+                                details=f"{symbol}: {order_type} {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                status="SUCCESS",
+                                category="REDUCEMORE"
+                            )
                         else:
                             print(f"[REDUCEMORE] ❌ {symbol}: {e}")
+                            
+                            self.log_psfalgo_activity(
+                                action=f"{step_name} Hata",
+                                details=f"{symbol}: {e}",
+                                status="ERROR",
+                                category="REDUCEMORE"
+                            )
                 else:
                     success = self.mode_manager.place_order(
                         symbol=symbol,
@@ -13245,8 +13886,44 @@ class MainWindow(tk.Tk):
                                     order_type="LIMIT",
                                     hidden=True
                                 )
+                                
+                                if success or "new order sent" in str(success):
+                                    print(f"[REDUCEMORE] ✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
+                                    
+                                    self.log_psfalgo_activity(
+                                        action=f"{step_name} Emir",
+                                        details=f"{symbol}: BUY {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                        status="SUCCESS",
+                                        category="REDUCEMORE"
+                                    )
+                                else:
+                                    print(f"[REDUCEMORE] ❌ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
+                                    
+                                    self.log_psfalgo_activity(
+                                        action=f"{step_name} Başarısız",
+                                        details=f"{symbol}: Emir gönderilemedi",
+                                        status="ERROR",
+                                        category="REDUCEMORE"
+                                    )
                             except Exception as e:
-                                pass
+                                if "new order sent" in str(e).lower():
+                                    print(f"[REDUCEMORE] ✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f} (new order sent)")
+                                    
+                                    self.log_psfalgo_activity(
+                                        action=f"{step_name} Emir",
+                                        details=f"{symbol}: BUY {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                        status="SUCCESS",
+                                        category="REDUCEMORE"
+                                    )
+                                else:
+                                    print(f"[REDUCEMORE] ❌ {symbol} hata: {e}")
+                                    
+                                    self.log_psfalgo_activity(
+                                        action=f"{step_name} Hata",
+                                        details=f"{symbol}: {e}",
+                                        status="ERROR",
+                                        category="REDUCEMORE"
+                                    )
                         else:
                             success = self.mode_manager.place_order(
                                 symbol=symbol,
@@ -13256,6 +13933,15 @@ class MainWindow(tk.Tk):
                                 order_type="LIMIT",
                                 hidden=True
                             )
+                            if success:
+                                print(f"[REDUCEMORE] ✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
+                                
+                                self.log_psfalgo_activity(
+                                    action=f"{step_name} Emir",
+                                    details=f"{symbol}: BUY {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                    status="SUCCESS",
+                                    category="REDUCEMORE"
+                                )
                     
                     print(f"[REDUCEMORE] ✅ {step_name} emirleri gönderildi")
                     self.log_message(f"✅ {step_name} emirleri gönderildi")
@@ -13596,6 +14282,14 @@ class MainWindow(tk.Tk):
                     if not allowed or adjusted_qty == 0:
                         print(f"[KARBOTU] ⚠️ {symbol}: Controller engelledi - {reason}")
                         self.log_message(f"⚠️ {symbol}: Controller engelledi - {reason}")
+                        
+                        self.log_psfalgo_activity(
+                            action=f"{step_name} Engellendi",
+                            details=f"{symbol}: Controller limiti",
+                            status="BLOCKED",
+                            reason=reason,
+                            category="KARBOTU"
+                        )
                         continue
                     
                     lot_qty = adjusted_qty if order_side == "SELL" else adjusted_qty
@@ -13615,11 +14309,32 @@ class MainWindow(tk.Tk):
                         if success or "new order sent" in str(success):
                             success_count += 1
                             print(f"[KARBOTU] ✅ {symbol}: {order_type} {lot_qty} lot @ ${emir_fiyat:.2f}")
+                            
+                            self.log_psfalgo_activity(
+                                action=f"{step_name} Emir",
+                                details=f"{symbol}: {order_type} {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                status="SUCCESS",
+                                category="KARBOTU"
+                            )
                     except Exception as e:
                         if "new order sent" in str(e).lower():
                             success_count += 1
+                            
+                            self.log_psfalgo_activity(
+                                action=f"{step_name} Emir",
+                                details=f"{symbol}: {order_type} {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                status="SUCCESS",
+                                category="KARBOTU"
+                            )
                         else:
                             print(f"[KARBOTU] ❌ {symbol}: {e}")
+                            
+                            self.log_psfalgo_activity(
+                                action=f"{step_name} Hata",
+                                details=f"{symbol}: {e}",
+                                status="ERROR",
+                                category="KARBOTU"
+                            )
                 else:
                     success = self.mode_manager.place_order(
                         symbol=symbol,
@@ -13808,8 +14523,22 @@ class MainWindow(tk.Tk):
                         if success:
                             print(f"[REDUCEMORE GORT] ✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
                             self.log_message(f"✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
+                            
+                            self.log_psfalgo_activity(
+                                action=f"REDUCEMORE Gort {step_name} Emir",
+                                details=f"{symbol}: SELL {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                status="SUCCESS",
+                                category="REDUCEMORE"
+                            )
                     except Exception as e:
                         print(f"[REDUCEMORE GORT] ❌ {symbol} emir hatası: {e}")
+                        
+                        self.log_psfalgo_activity(
+                            action=f"REDUCEMORE Gort {step_name} Hata",
+                            details=f"{symbol}: {e}",
+                            status="ERROR",
+                            category="REDUCEMORE"
+                        )
                 else:
                     success = self.mode_manager.place_order(
                         symbol=symbol,
@@ -13821,6 +14550,13 @@ class MainWindow(tk.Tk):
                     if success:
                         print(f"[REDUCEMORE GORT] ✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
                         self.log_message(f"✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
+                        
+                        self.log_psfalgo_activity(
+                            action=f"REDUCEMORE Gort {step_name} Emir",
+                            details=f"{symbol}: SELL {lot_qty} lot @ ${emir_fiyat:.2f}",
+                            status="SUCCESS",
+                            category="REDUCEMORE"
+                        )
             
             print(f"[REDUCEMORE GORT] ✅ {len(order_data)} emir gönderildi")
             self.log_message(f"✅ REDUCEMORE Gort {step_name}: {len(order_data)} emir gönderildi")
@@ -14186,13 +14922,41 @@ class MainWindow(tk.Tk):
                                 
                                 if success or "new order sent" in str(success):
                                     print(f"[KARBOTU] ✅ {symbol} → {hammer_symbol}: SELL {lot_qty} lot @ ${emir_fiyat:.2f}")
+                                    
+                                    self.log_psfalgo_activity(
+                                        action=f"{step_name} Emir",
+                                        details=f"{symbol}: SELL {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                        status="SUCCESS",
+                                        category="KARBOTU"
+                                    )
                                 else:
                                     print(f"[KARBOTU] ❌ {symbol} → {hammer_symbol}: SELL {lot_qty} lot @ ${emir_fiyat:.2f}")
+                                    
+                                    self.log_psfalgo_activity(
+                                        action=f"{step_name} Başarısız",
+                                        details=f"{symbol}: Emir gönderilemedi",
+                                        status="ERROR",
+                                        category="KARBOTU"
+                                    )
                             except Exception as e:
                                 if "new order sent" in str(e).lower():
                                     print(f"[KARBOTU] ✅ {symbol} → {hammer_symbol}: SELL {lot_qty} lot @ ${emir_fiyat:.2f} (new order sent)")
+                                    
+                                    self.log_psfalgo_activity(
+                                        action=f"{step_name} Emir",
+                                        details=f"{symbol}: SELL {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                        status="SUCCESS",
+                                        category="KARBOTU"
+                                    )
                                 else:
                                     print(f"[KARBOTU] ❌ {symbol} → {hammer_symbol}: {e}")
+                                    
+                                    self.log_psfalgo_activity(
+                                        action=f"{step_name} Hata",
+                                        details=f"{symbol}: {e}",
+                                        status="ERROR",
+                                        category="KARBOTU"
+                                    )
                         else:
                             # IBKR
                             success = self.mode_manager.place_order(
@@ -14445,8 +15209,22 @@ class MainWindow(tk.Tk):
                         if success:
                             print(f"[KARBOTU GORT] ✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
                             self.log_message(f"✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
+                            
+                            self.log_psfalgo_activity(
+                                action=f"KARBOTU Gort {step_name} Emir",
+                                details=f"{symbol}: SELL {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                status="SUCCESS",
+                                category="KARBOTU"
+                            )
                     except Exception as e:
                         print(f"[KARBOTU GORT] ❌ {symbol} emir hatası: {e}")
+                        
+                        self.log_psfalgo_activity(
+                            action=f"KARBOTU Gort {step_name} Hata",
+                            details=f"{symbol}: {e}",
+                            status="ERROR",
+                            category="KARBOTU"
+                        )
                 else:
                     success = self.mode_manager.place_order(
                         symbol=symbol,
@@ -14458,6 +15236,13 @@ class MainWindow(tk.Tk):
                     if success:
                         print(f"[KARBOTU GORT] ✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
                         self.log_message(f"✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
+                        
+                        self.log_psfalgo_activity(
+                            action=f"KARBOTU Gort {step_name} Emir",
+                            details=f"{symbol}: SELL {lot_qty} lot @ ${emir_fiyat:.2f}",
+                            status="SUCCESS",
+                            category="KARBOTU"
+                        )
             
             print(f"[KARBOTU GORT] ✅ {len(order_data)} emir gönderildi")
             self.log_message(f"✅ KARBOTU Gort {step_name}: {len(order_data)} emir gönderildi")
@@ -14574,8 +15359,22 @@ class MainWindow(tk.Tk):
                         if success:
                             print(f"[KARBOTU GORT] ✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
                             self.log_message(f"✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
+                            
+                            self.log_psfalgo_activity(
+                                action=f"KARBOTU Gort {step_name} Emir",
+                                details=f"{symbol}: BUY {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                status="SUCCESS",
+                                category="KARBOTU"
+                            )
                     except Exception as e:
                         print(f"[KARBOTU GORT] ❌ {symbol} emir hatası: {e}")
+                        
+                        self.log_psfalgo_activity(
+                            action=f"KARBOTU Gort {step_name} Hata",
+                            details=f"{symbol}: {e}",
+                            status="ERROR",
+                            category="KARBOTU"
+                        )
                 else:
                     success = self.mode_manager.place_order(
                         symbol=symbol,
@@ -14587,6 +15386,13 @@ class MainWindow(tk.Tk):
                     if success:
                         print(f"[KARBOTU GORT] ✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
                         self.log_message(f"✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
+                        
+                        self.log_psfalgo_activity(
+                            action=f"KARBOTU Gort {step_name} Emir",
+                            details=f"{symbol}: BUY {lot_qty} lot @ ${emir_fiyat:.2f}",
+                            status="SUCCESS",
+                            category="KARBOTU"
+                        )
             
             print(f"[KARBOTU GORT] ✅ {len(order_data)} emir gönderildi")
             self.log_message(f"✅ KARBOTU Gort {step_name}: {len(order_data)} emir gönderildi")
@@ -14731,8 +15537,22 @@ class MainWindow(tk.Tk):
                                 if success:
                                     print(f"[KARBOTU GORT] ✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
                                     self.log_message(f"✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
+                                    
+                                    self.log_psfalgo_activity(
+                                        action=f"KARBOTU Gort {step_name} Emir",
+                                        details=f"{symbol}: SELL {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                        status="SUCCESS",
+                                        category="KARBOTU"
+                                    )
                             except Exception as e:
                                 print(f"[KARBOTU GORT] ❌ {symbol} emir hatası: {e}")
+                                
+                                self.log_psfalgo_activity(
+                                    action=f"KARBOTU Gort {step_name} Hata",
+                                    details=f"{symbol}: {e}",
+                                    status="ERROR",
+                                    category="KARBOTU"
+                                )
                         else:
                             success = self.mode_manager.place_order(
                                 symbol=symbol,
@@ -14744,6 +15564,13 @@ class MainWindow(tk.Tk):
                             if success:
                                 print(f"[KARBOTU GORT] ✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
                                 self.log_message(f"✅ {symbol}: SELL {lot_qty} @ ${emir_fiyat:.2f}")
+                                
+                                self.log_psfalgo_activity(
+                                    action=f"KARBOTU Gort {step_name} Emir",
+                                    details=f"{symbol}: SELL {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                    status="SUCCESS",
+                                    category="KARBOTU"
+                                )
                     
                     print(f"[KARBOTU GORT] ✅ {len(order_data)} emir gönderildi")
                     self.log_message(f"✅ KARBOTU Gort {step_name}: {len(order_data)} emir gönderildi")
@@ -14926,8 +15753,22 @@ class MainWindow(tk.Tk):
                                 if success:
                                     print(f"[KARBOTU GORT] ✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
                                     self.log_message(f"✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
+                                    
+                                    self.log_psfalgo_activity(
+                                        action=f"KARBOTU Gort {step_name} Emir",
+                                        details=f"{symbol}: BUY {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                        status="SUCCESS",
+                                        category="KARBOTU"
+                                    )
                             except Exception as e:
                                 print(f"[KARBOTU GORT] ❌ {symbol} emir hatası: {e}")
+                                
+                                self.log_psfalgo_activity(
+                                    action=f"KARBOTU Gort {step_name} Hata",
+                                    details=f"{symbol}: {e}",
+                                    status="ERROR",
+                                    category="KARBOTU"
+                                )
                         else:
                             success = self.mode_manager.place_order(
                                 symbol=symbol,
@@ -14939,6 +15780,13 @@ class MainWindow(tk.Tk):
                             if success:
                                 print(f"[KARBOTU GORT] ✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
                                 self.log_message(f"✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
+                                
+                                self.log_psfalgo_activity(
+                                    action=f"KARBOTU Gort {step_name} Emir",
+                                    details=f"{symbol}: BUY {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                    status="SUCCESS",
+                                    category="KARBOTU"
+                                )
                     
                     print(f"[KARBOTU GORT] ✅ {len(order_data)} emir gönderildi")
                     self.log_message(f"✅ KARBOTU Gort {step_name}: {len(order_data)} emir gönderildi")
@@ -15265,8 +16113,22 @@ class MainWindow(tk.Tk):
                         if success:
                             print(f"[REDUCEMORE GORT] ✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
                             self.log_message(f"✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
+                            
+                            self.log_psfalgo_activity(
+                                action=f"REDUCEMORE Gort {step_name} Emir",
+                                details=f"{symbol}: BUY {lot_qty} lot @ ${emir_fiyat:.2f}",
+                                status="SUCCESS",
+                                category="REDUCEMORE"
+                            )
                     except Exception as e:
                         print(f"[REDUCEMORE GORT] ❌ {symbol} emir hatası: {e}")
+                        
+                        self.log_psfalgo_activity(
+                            action=f"REDUCEMORE Gort {step_name} Hata",
+                            details=f"{symbol}: {e}",
+                            status="ERROR",
+                            category="REDUCEMORE"
+                        )
                 else:
                     success = self.mode_manager.place_order(
                         symbol=symbol,
@@ -15278,6 +16140,13 @@ class MainWindow(tk.Tk):
                     if success:
                         print(f"[REDUCEMORE GORT] ✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
                         self.log_message(f"✅ {symbol}: BUY {lot_qty} @ ${emir_fiyat:.2f}")
+                        
+                        self.log_psfalgo_activity(
+                            action=f"REDUCEMORE Gort {step_name} Emir",
+                            details=f"{symbol}: BUY {lot_qty} lot @ ${emir_fiyat:.2f}",
+                            status="SUCCESS",
+                            category="REDUCEMORE"
+                        )
             
             print(f"[REDUCEMORE GORT] ✅ {len(order_data)} emir gönderildi")
             self.log_message(f"✅ REDUCEMORE Gort {step_name}: {len(order_data)} emir gönderildi")

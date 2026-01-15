@@ -1,0 +1,250 @@
+# Benchmark Rules Configuration
+# Maps primary groups and CGRUP (for heldkuponlu) to benchmark ETF formulas
+# Each formula is a weighted combination of ETFs: {ETF: coefficient}
+# This matches Janall's benchmark_formulas exactly
+
+# Default benchmark (used when no specific mapping exists)
+# Janall DEFAULT: PFF*1.1 - TLT*0.08
+default:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+# Benchmark formulas for heldkuponlu CGRUP values
+# These are coupon-band-specific benchmarks (matching Janall exactly)
+heldkuponlu:
+  c400:
+    formula:
+      PFF: 0.36
+      TLT: 0.36
+      IEF: 0.08
+      IEI: 0.0
+  c425:
+    formula:
+      PFF: 0.368
+      TLT: 0.34
+      IEF: 0.092
+      IEI: 0.0
+  c450:
+    formula:
+      PFF: 0.38
+      TLT: 0.32
+      IEF: 0.10
+      IEI: 0.0
+  c475:
+    formula:
+      PFF: 0.40
+      TLT: 0.30
+      IEF: 0.12
+      IEI: 0.0
+  c500:
+    formula:
+      PFF: 0.32
+      TLT: 0.40
+      IEF: 0.08
+      IEI: 0.0
+  c525:
+    formula:
+      PFF: 0.42
+      TLT: 0.28
+      IEF: 0.14
+      IEI: 0.0
+  c550:
+    formula:
+      PFF: 0.408
+      TLT: 0.2
+      IEF: 0.152
+      IEI: 0.04
+  c575:
+    formula:
+      PFF: 0.44
+      TLT: 0.24
+      IEF: 0.16
+      IEI: 0.0
+  c600:
+    formula:
+      PFF: 0.432
+      TLT: 0.12
+      IEF: 0.168
+      IEI: 0.08
+  c625:
+    formula:
+      PFF: 0.448
+      TLT: 0.08
+      IEF: 0.172
+      IEI: 0.1
+  # Fallback for heldkuponlu without CGRUP
+  default:
+    formula:
+      PFF: 1.1
+      TLT: -0.08
+      IEF: 0.0
+      IEI: 0.0
+
+# Benchmark formulas for other primary groups
+# These are group-specific benchmarks (CGRUP is ignored)
+# Note: heldkuponlukreciliz and heldkuponlukreorta also use CGRUP-based formulas (same as heldkuponlu)
+# They are listed here for reference, but CGRUP logic takes precedence
+
+heldff:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+helddeznff:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+heldnff:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+heldflr:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+heldgarabetaltiyedi:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+heldkuponlukreciliz:
+  # This group uses CGRUP-based formulas (same as heldkuponlu)
+  # Listed here for reference, but CGRUP logic takes precedence
+  default:
+    formula:
+      PFF: 1.1
+      TLT: -0.08
+      IEF: 0.0
+      IEI: 0.0
+
+heldkuponlukreorta:
+  # This group uses CGRUP-based formulas (same as heldkuponlu)
+  # Listed here for reference, but CGRUP logic takes precedence
+  default:
+    formula:
+      PFF: 1.1
+      TLT: -0.08
+      IEF: 0.0
+      IEI: 0.0
+
+heldotelremorta:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+heldsolidbig:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+heldtitrekhc:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+heldbesmaturlu:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+heldcilizyeniyedi:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+heldcommonsuz:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+highmatur:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+notcefilliquid:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+notbesmaturlu:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+nottitrekhc:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+salakilliquid:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+shitremhc:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+rumoreddanger:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+notheldtitrekhc:
+  formula:
+    PFF: 1.1
+    TLT: -0.08
+    IEF: 0.0
+    IEI: 0.0
+
+# Note: For groups not listed above, default formula (PFF*1.1 - TLT*0.08) will be used
+
+
+
+
+
+

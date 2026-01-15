@@ -1,0 +1,45 @@
+# Order Plan Rules Configuration
+# Rules for planning orders based on intent and market conditions
+
+order_plan:
+  # Style selection based on spread
+  style_selection:
+    # If spread <= this, use BID (aggressive)
+    bid_max_spread_percent: 0.2
+    
+    # If spread <= this, use FRONT (mid-spread)
+    front_max_spread_percent: 0.5
+    
+    # If spread <= this, use SOFT_FRONT (slightly above mid)
+    soft_front_max_spread_percent: 1.0
+    
+    # Otherwise, use ASK (conservative)
+  
+  # Size calculation
+  size:
+    # Maximum size as percentage of AVG_ADV
+    max_size_percent_of_adv: 10.0
+    
+    # Minimum size
+    min_size: 1
+    
+    # Maximum size (absolute)
+    max_size: 1000
+  
+  # Price calculation
+  price:
+    # BID style: use bid price
+    # FRONT style: bid + 0.01 (or mid + small offset)
+    # SOFT_FRONT style: mid + (spread * 0.15)
+    # ASK style: ask - (spread * 0.15)
+    
+    # Tick size (minimum price increment)
+    tick_size: 0.01
+
+
+
+
+
+
+
+

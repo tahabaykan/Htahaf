@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quant Engine - Market Scanner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            background: #e7f3ff;
+            color: #004085;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            max-height: 80vh;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            white-space: nowrap;
+        }
+        
+        th {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        th:hover {
+            background: #e9ecef;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quant Engine - Market Scanner</h1>
+        
+        <div class="controls">
+            <button id="loadCsvBtn">Load CSV</button>
+            <button id="refreshBtn">Refresh Data</button>
+            <button id="autoRefreshBtn">Auto Refresh (2s)</button>
+        </div>
+        
+        <div id="status" class="status">Ready</div>
+        <div id="error" class="error" style="display: none;"></div>
+        
+        <div class="table-container">
+            <div id="loading" class="loading">Click "Load CSV" to start</div>
+            <table id="dataTable" style="display: none;">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = '/api/market-data';
+        let autoRefreshInterval = null;
+        let sortConfig = { key: null, direction: 'asc' };
+        
+        // Column definitions
+        const columns = [
+            // Static CSV columns
+            { key: 'PREF_IBKR', label: 'PREF_IBKR', type: 'static' },
+            { key: 'CMON', label: 'CMON', type: 'static' },
+            { key: 'CGRUP', label: 'CGRUP', type: 'static' },
+            { key: 'FINAL_THG', label: 'FINAL_THG', type: 'static' },
+            { key: 'SHORT_FINAL', label: 'SHORT_FINAL', type: 'static' },
+            { key: 'AVG_ADV', label: 'AVG_ADV', type: 'static' },
+            { key: 'SMI', label: 'SMI', type: 'static' },
+            { key: 'SMA63_chg', label: 'SMA63_chg', type: 'static' },
+            { key: 'SMA246_chg', label: 'SMA246_chg', type: 'static' },
+            // Live market columns (from Hammer)
+            { key: 'prev_close', label: 'prev_close', type: 'live' },
+            { key: 'Bid', label: 'Bid', type: 'live' },
+            { key: 'Ask', label: 'Ask', type: 'live' },
+            { key: 'Last', label: 'Last', type: 'live' },
+            { key: 'Volume', label: 'Volume', type: 'live' },
+            { key: 'Spread', label: 'Spread', type: 'live' },
+            // Derived score columns
+            { key: 'FrontBuyScore', label: 'FrontBuyScore', type: 'score' },
+            { key: 'FinalFBScore', label: 'FinalFBScore', type: 'score' },
+            { key: 'BidBuyScore', label: 'BidBuyScore', type: 'score' },
+            { key: 'AskBuyScore', label: 'AskBuyScore', type: 'score' },
+            { key: 'AskSellScore', label: 'AskSellScore', type: 'score' },
+            { key: 'FrontSellScore', label: 'FrontSellScore', type: 'score' },
+            { key: 'BidSellScore', label: 'BidSellScore', type: 'score' }
+        ];
+        
+        function updateStatus(message, isError = false) {
+            const statusEl = document.getElementById('status');
+            const errorEl = document.getElementById('error');
+            
+            if (isError) {
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
+                statusEl.style.display = 'none';
+            } else {
+                statusEl.textContent = message;
+                errorEl.style.display = 'none';
+                statusEl.style.display = 'block';
+            }
+        }
+        
+        function formatValue(value) {
+            if (value === null || value === undefined || value === '') return '-';
+            const num = parseFloat(value);
+            if (!isNaN(num)) {
+                if (value.toString().includes('Score') || ['Spread', 'Bid', 'Ask', 'Last'].includes(value)) {
+                    return num.toFixed(4);
+                }
+                return num.toFixed(2);
+            }
+            return value;
+        }
+        
+        function renderTable(data) {
+            const tableHead = document.getElementById('tableHead');
+            const tableBody = document.getElementById('tableBody');
+            const loadingEl = document.getElementById('loading');
+            const tableEl = document.getElementById('dataTable');
+            
+            if (!data || data.length === 0) {
+                loadingEl.textContent = 'No data available';
+                tableEl.style.display = 'none';
+                return;
+            }
+            
+            // Render header
+            tableHead.innerHTML = '<tr>' + columns.map(col => 
+                `<th onclick="handleSort('${col.key}')">${col.label} ${sortConfig.key === col.key ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}</th>`
+            ).join('') + '</tr>';
+            
+            // Sort data
+            let sortedData = [...data];
+            if (sortConfig.key) {
+                sortedData.sort((a, b) => {
+                    const aVal = a[sortConfig.key];
+                    const bVal = b[sortConfig.key];
+                    const aNum = parseFloat(aVal);
+                    const bNum = parseFloat(bVal);
+                    
+                    if (!isNaN(aNum) && !isNaN(bNum)) {
+                        return sortConfig.direction === 'asc' ? aNum - bNum : bNum - aNum;
+                    }
+                    return sortConfig.direction === 'asc' 
+                        ? String(aVal).localeCompare(String(bVal))
+                        : String(bVal).localeCompare(String(aVal));
+                });
+            }
+            
+            // Render body
+            tableBody.innerHTML = sortedData.map(row => 
+                '<tr>' + columns.map(col => 
+                    `<td>${formatValue(row[col.key])}</td>`
+                ).join('') + '</tr>'
+            ).join('');
+            
+            loadingEl.style.display = 'none';
+            tableEl.style.display = 'table';
+            updateStatus(`Loaded ${data.length} symbols`);
+        }
+        
+        window.handleSort = function(key) {
+            if (sortConfig.key === key) {
+                sortConfig.direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortConfig.key = key;
+                sortConfig.direction = 'asc';
+            }
+            fetchMergedData();
+        };
+        
+        async function loadCsv() {
+            try {
+                updateStatus('Loading CSV...');
+                const response = await fetch(`${API_BASE}/load-csv`, { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateStatus(`CSV loaded: ${result.count} symbols`);
+                    await fetchMergedData();
+                } else {
+                    updateStatus('Failed to load CSV', true);
+                }
+            } catch (error) {
+                updateStatus(`Error loading CSV: ${error.message}`, true);
+            }
+        }
+        
+        async function fetchMergedData() {
+            try {
+                const response = await fetch(`${API_BASE}/merged`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    renderTable(result.data);
+                } else {
+                    updateStatus('Failed to fetch merged data', true);
+                }
+            } catch (error) {
+                updateStatus(`Error fetching data: ${error.message}`, true);
+            }
+        }
+        
+        function toggleAutoRefresh() {
+            const btn = document.getElementById('autoRefreshBtn');
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+                btn.textContent = 'Auto Refresh (2s)';
+                btn.style.background = '#007bff';
+            } else {
+                autoRefreshInterval = setInterval(fetchMergedData, 2000);
+                btn.textContent = 'Stop Auto Refresh';
+                btn.style.background = '#dc3545';
+            }
+        }
+        
+        // Event listeners
+        document.getElementById('loadCsvBtn').addEventListener('click', loadCsv);
+        document.getElementById('refreshBtn').addEventListener('click', fetchMergedData);
+        document.getElementById('autoRefreshBtn').addEventListener('click', toggleAutoRefresh);
+        
+        // Initial load
+        updateStatus('Ready - Click "Load CSV" to start');
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

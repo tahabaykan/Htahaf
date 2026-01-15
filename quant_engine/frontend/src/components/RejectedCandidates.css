@@ -1,0 +1,96 @@
+.rejected-overlay {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 600px;
+    height: 500px;
+    background: #1e1e1e;
+    border: 1px solid #444;
+    border-top-left-radius: 8px;
+    box-shadow: -5px -5px 20px rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+}
+
+.rejected-header {
+    padding: 10px 15px;
+    background: #2d2d2d;
+    border-bottom: 1px solid #444;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rejected-header h3 {
+    margin: 0;
+    font-size: 14px;
+    color: #ff6b6b;
+}
+
+.rejected-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: 12px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.rejected-content {
+    flex: 1;
+    overflow-y: auto;
+    font-size: 12px;
+}
+
+.rejected-content table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.rejected-content th {
+    text-align: left;
+    padding: 8px;
+    background: #252525;
+    position: sticky;
+    top: 0;
+}
+
+.rejected-row {
+    border-bottom: 1px solid #333;
+}
+
+.rejected-row td {
+    padding: 6px 8px;
+    color: #ccc;
+}
+
+.symbol-cell {
+    font-weight: bold;
+    color: #fff !important;
+}
+
+.reason-poo {
+    background: #3a1c1c;
+    color: #ff9999;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 11px;
+}
+
+.detail-tag {
+    display: inline-block;
+    background: #333;
+    padding: 2px 4px;
+    border-radius: 3px;
+    margin-right: 4px;
+    font-family: monospace;
+    font-size: 11px;
+    color: #888;
+}

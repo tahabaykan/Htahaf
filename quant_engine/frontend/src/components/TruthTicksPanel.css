@@ -1,0 +1,205 @@
+.truth-ticks-panel {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.truth-ticks-panel.loading,
+.truth-ticks-panel.empty {
+  padding: 40px;
+  text-align: center;
+}
+
+.loading-message,
+.empty-message {
+  color: #000;
+  font-size: 16px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.stats {
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
+  color: #000;
+}
+
+.controls {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.controls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.controls select {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.table-container {
+  overflow-x: auto;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.truth-ticks-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.truth-ticks-table thead {
+  position: sticky;
+  top: 0;
+  background: #f8f9fa;
+  z-index: 10;
+}
+
+.truth-ticks-table th {
+  padding: 12px 8px;
+  text-align: left;
+  font-weight: 600;
+  color: #000;
+  border-bottom: 2px solid #dee2e6;
+  white-space: nowrap;
+}
+
+.truth-ticks-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.truth-ticks-table th.sortable:hover {
+  background: #e9ecef;
+}
+
+.truth-ticks-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  color: #000;
+}
+
+.truth-ticks-table tbody tr.even {
+  background: #f8f9fa;
+}
+
+.truth-ticks-table tbody tr:hover {
+  background: #e7f3ff;
+}
+
+.truth-ticks-table .symbol {
+  font-weight: 600;
+  color: #007bff;
+}
+
+.truth-ticks-table .symbol.clickable {
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.truth-ticks-table .symbol.clickable:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+.truth-ticks-table .positive {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.truth-ticks-table .negative {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.flag-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  margin-right: 5px;
+}
+
+.flag-badge.insufficient {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.flag-badge.finra {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Dominance Score Styles */
+.dominance-score-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.dominance-score {
+  font-size: 18px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  min-width: 45px;
+  text-align: center;
+}
+
+.dominance-score.dominance-strong-buyer {
+  background: #28a745;
+  color: white;
+}
+
+.dominance-score.dominance-buyer {
+  background: #5cb85c;
+  color: white;
+}
+
+.dominance-score.dominance-neutral {
+  background: #ffc107;
+  color: #000;
+}
+
+.dominance-score.dominance-seller {
+  background: #f0ad4e;
+  color: #000;
+}
+
+.dominance-score.dominance-strong-seller {
+  background: #dc3545;
+  color: white;
+}
+
+.dominance-label {
+  font-size: 10px;
+  color: #666;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.no-dominance {
+  color: #999;
+  font-style: italic;
+}
+
+

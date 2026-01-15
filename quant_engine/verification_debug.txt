@@ -1,0 +1,22 @@
+﻿
+­şöÁ TEST 7: Finalize Day Safety Guard
+Blocked as expected: Blocked: Market Open
+Ô£à PASS: Safety Guard Verified
+
+­şöÁ TEST 2: Late Fill Routing
+Ô£à PASS: Event Routing Verified
+
+­şöÁ TEST 3: LT/MM Netting (Opposite)
+Snapshot is NONE! Checking logger...
+Logger Error Args: call("Error enriching position WFC PRZ: name 'resolve_primary_group' is not defined", exc_info=True)
+
+­şöÁ TEST 5: Missing Price Visibility
+
+­şöÁ TEST 6: Negative Path Logging
+Log Call: SKIP - Skipped: Mock Ineligible
+Ô£à PASS: Negative Path Logged
+
+­şöÁ TEST 4: Same Direction Split
+
+­şöÁ TEST 1: Strict Account Isolation
+HAMPRO Snaps: []

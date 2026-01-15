@@ -991,3 +991,12 @@ Bu dokümantasyon, her script'in ne yaptığını ve oluşturduğu CSV kolonlar�
 
 
 
+
+
+
+
+
+
+
+
+

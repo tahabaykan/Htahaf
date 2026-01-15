@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JanAll Web - Future iOS</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Modern Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="app-logo">
+                    <i class="fa-solid fa-chart-line"></i> JanAll
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-item active" data-page="dashboard">
+                    <span class="nav-icon"><i class="fa-solid fa-grid-2"></i></span>
+                    Dashboard
+                </button>
+                <button class="nav-item" data-page="positions">
+                    <span class="nav-icon"><i class="fa-solid fa-briefcase"></i></span>
+                    Pozisyonlar
+                </button>
+                <button class="nav-item" data-page="orders">
+                    <span class="nav-icon"><i class="fa-solid fa-list-check"></i></span>
+                    Emirler
+                </button>
+                
+                <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 10px 0;"></div>
+                <div style="font-size: 11px; color: var(--ios-text-tertiary); padding-left: 12px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Paneller</div>
+                
+                <button class="nav-item" data-panel="take-profit-longs">
+                    <span class="nav-icon"><i class="fa-solid fa-arrow-trend-up"></i></span> TP Longs
+                </button>
+                <button class="nav-item" data-panel="take-profit-shorts">
+                    <span class="nav-icon"><i class="fa-solid fa-arrow-trend-down"></i></span> TP Shorts
+                </button>
+                <button class="nav-item" data-panel="spreadkusu">
+                    <span class="nav-icon"><i class="fa-solid fa-crow"></i></span> Spreadkusu
+                </button>
+                <button class="nav-item" data-panel="port-adjuster">
+                    <span class="nav-icon"><i class="fa-solid fa-sliders"></i></span> Port Adjuster
+                </button>
+                <button class="nav-item" data-panel="majbina">
+                    <span class="nav-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></span> MAJBINA
+                </button>
+                <button class="nav-item" data-panel="mini450">
+                    <span class="nav-icon"><i class="fa-solid fa-table-cells"></i></span> mini450
+                </button>
+                <button class="nav-item" data-panel="psfalgo">
+                    <span class="nav-icon"><i class="fa-solid fa-robot"></i></span> Psfalgo
+                </button>
+                <button class="nav-item" data-panel="compare-it">
+                    <span class="nav-icon"><i class="fa-solid fa-scale-balanced"></i></span> Compare It
+                </button>
+                <button class="nav-item" data-panel="srpan">
+                    <span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span> SRPAN
+                </button>
+                <button class="nav-item" data-panel="pressure">
+                    <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span> Pressure
+                </button>
+                <button class="nav-item" data-panel="bggg">
+                    <span class="nav-icon"><i class="fa-solid fa-arrow-up-right-dots"></i></span> BGGG
+                </button>
+                <button class="nav-item" data-panel="ticker-alerts">
+                    <span class="nav-icon"><i class="fa-solid fa-bell"></i></span> Alerts
+                </button>
+                <button class="nav-item" data-panel="etf-cardinal">
+                    <span class="nav-icon"><i class="fa-solid fa-compass"></i></span> ETF Cardinal
+                </button>
+                <button class="nav-item" data-panel="tgfilterer">
+                    <span class="nav-icon"><i class="fa-solid fa-filter"></i></span> TGFilterer
+                </button>
+                <button class="nav-item" data-panel="jdata">
+                    <span class="nav-icon"><i class="fa-solid fa-database"></i></span> jdata Analiz
+                </button>
+                <button class="nav-item" data-panel="exception-list">
+                    <span class="nav-icon"><i class="fa-solid fa-list-ul"></i></span> Exception List
+                </button>
+                <button class="nav-item" data-panel="stock-data-status">
+                    <span class="nav-icon"><i class="fa-solid fa-server"></i></span> Data Status
+                </button>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="status-indicator" id="connectionStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Bağlantı Yok</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <h1 class="page-title" id="pageTitle">Dashboard</h1>
+                <div class="top-actions">
+                    <button class="btn btn-secondary btn-ghost" id="refreshBtn">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Scrollable Content Area -->
+            <div class="content-scroll-area">
+                <!-- Dashboard Page -->
+                <div id="dashboardPage" class="page active">
+                    
+                    <!-- Control Panel Card -->
+                    <div class="ios-card">
+                        <!-- Top Controls -->
+                        <div class="toolbar">
+<div class="toolbar-group">
+    <button class="btn btn-primary" id="connectBtn" onclick="toggleHammerConnection()">
+        <i class="fa-solid fa-link"></i> Hammer Bağlan
+    </button>
+    <button class="btn btn-secondary" id="liveDataBtn" onclick="toggleLiveData()">
+        <i class="fa-solid fa-satellite-dish"></i> Live Data
+    </button>
+    <button class="btn btn-secondary" id="prevCloseBtn">
+        <i class="fa-solid fa-clock-rotate-left"></i> Prev Close
+    </button>
+</div>
+                            
+                            <div class="toolbar-group">
+                                <button class="btn btn-secondary" id="bdataExportBtn">BDATA Exp</button>
+                                <button class="btn btn-secondary" id="befdayExportBtn">BEFDAY Exp</button>
+                                <button class="btn btn-secondary" id="bdataClearBtn">BDATA Clr</button>
+                            </div>
+
+                            <div class="toolbar-group">
+                                <button class="btn btn-secondary" id="loadCsvBtn">
+                                    <i class="fa-solid fa-file-csv"></i> CSV Yükle
+                                </button>
+                                <div class="input-group">
+                                    <select class="ios-select" id="modeSelect">
+                                        <option value="HAMPRO">HAMPRO</option>
+                                        <option value="IBKR_GUN">IBKR GUN</option>
+                                        <option value="IBKR_PED">IBKR PED</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order Buttons Grid -->
+                        <div class="toolbar" style="justify-content: space-between;">
+                            <div class="toolbar-group">
+                                <button class="btn btn-success" data-order="bid-buy">Bid Buy</button>
+                                <button class="btn btn-success" data-order="front-buy">Front Buy</button>
+                                <button class="btn btn-success" data-order="ask-buy">Ask Buy</button>
+                                <button class="btn btn-danger" data-order="ask-sell">Ask Sell</button>
+                                <button class="btn btn-danger" data-order="front-sell">Front Sell</button>
+                                <button class="btn btn-danger" data-order="bid-sell">Bid Sell</button>
+                                <button class="btn btn-success" data-order="softfront-buy">SoftFront Buy</button>
+                                <button class="btn btn-danger" data-order="softfront-sell">SoftFront Sell</button>
+                            </div>
+                        </div>
+
+                        <!-- Lot & Selection Controls -->
+                        <div class="toolbar">
+                            <div class="toolbar-group">
+                                <div class="input-group">
+                                    <label style="font-size: 12px; color: var(--ios-text-secondary);">Lot:</label>
+                                    <input type="number" class="ios-input" id="lotInput" value="200" style="width: 80px;">
+                                </div>
+                                <button class="btn btn-secondary btn-ghost" data-lot="25">%25</button>
+                                <button class="btn btn-secondary btn-ghost" data-lot="50">%50</button>
+                                <button class="btn btn-secondary btn-ghost" data-lot="75">%75</button>
+                                <button class="btn btn-secondary btn-ghost" data-lot="100">%100</button>
+                                <button class="btn btn-secondary btn-ghost" id="avgAdvBtn">Avg Adv</button>
+                            </div>
+                            
+                            <div class="toolbar-group" style="margin-left: auto;">
+                                <button class="btn btn-secondary" id="selectAllBtn">Tümünü Seç</button>
+                                <button class="btn btn-secondary" id="deselectAllBtn">Tümünü Kaldır</button>
+                                <span class="badge badge-warning" style="margin-left: 8px;">Seçili: <strong id="selectedCount">0</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CSV Files Card -->
+                    <div class="ios-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h3 style="font-size: 14px; font-weight: 600; color: var(--ios-text-secondary);">Veri Dosyaları</h3>
+                            <span class="badge badge-info" id="exposureInfo">Long: 0.00 | Short: 0.00 | Total: 0.00</span>
+                        </div>
+                        
+                        <div class="toolbar">
+                             <button class="btn btn-primary" id="janalldataBtn">JANALLDATA</button>
+                             <button class="btn btn-purple" id="mini450Btn">mini450</button>
+                             <button class="btn btn-purple" id="majbinaBtn">MAJBINA</button>
+                             <button class="btn btn-purple" id="psfalgoBtn">Psfalgo</button>
+                             <button class="btn btn-purple" id="compareItBtn">Compare It</button>
+                             <button class="btn btn-secondary" id="lotDividerBtn">Lot Bölücü: OFF</button>
+                        </div>
+
+                        <!-- CSV Grid -->
+                        <div class="csv-grid" id="csvGroupButtons">
+                            <!-- JS ile doldurulacak -->
+                        </div>
+                    </div>
+
+                    <!-- ETF Panel -->
+                    <div class="ios-card" id="etfPanel">
+                        <h3 style="font-size: 14px; font-weight: 600; color: var(--ios-text-secondary); margin-bottom: 10px;">ETF Panel</h3>
+                        <div class="etf-grid" id="etfGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px;">
+                            <!-- JS ile doldurulacak -->
+                        </div>
+                    </div>
+
+                    <!-- Main Table Card -->
+                    <div class="ios-card">
+                        <div class="toolbar" style="border: none; background: transparent; padding: 0; margin-bottom: 15px;">
+                            <div class="toolbar-group">
+                                <h2 style="font-size: 16px; font-weight: 600;">Hisse Tablosu</h2>
+                            </div>
+                            <div class="toolbar-group" style="margin-left: auto;">
+                                <input type="text" class="ios-input" id="searchInput" placeholder="Sembol Ara..." style="width: 200px;">
+                                <select class="ios-select" id="sortSelect">
+                                    <option value="">Sırala...</option>
+                                    <option value="symbol">Sembol</option>
+                                    <option value="score">Skor</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="table-wrapper">
+                            <table class="ios-table" id="stockTable">
+                                <thead id="stockTableHead">
+                                    <!-- JS ile -->
+                                </thead>
+                                <tbody id="stockTableBody">
+                                    <tr>
+                                        <td colspan="100">
+                                            <div class="empty-state">
+                                                <div class="empty-icon"><i class="fa-solid fa-chart-simple"></i></div>
+                                                <p>Veri yüklenmedi</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div style="display: flex; justify-content: center; align-items: center; margin-top: 20px; gap: 10px;">
+                            <button class="btn btn-secondary" id="prevPage"><i class="fa-solid fa-chevron-left"></i></button>
+                            <span style="font-size: 12px; color: var(--ios-text-secondary);">Sayfa <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
+                            <button class="btn btn-secondary" id="nextPage"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Positions Page -->
+                <div id="positionsPage" class="page">
+                    <div class="ios-card">
+                        <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 15px;">Açık Pozisyonlar</h2>
+                        <div class="table-wrapper">
+                            <table class="ios-table" id="positionsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Qty</th>
+                                        <th>Avg Cost</th>
+                                        <th>Current</th>
+                                        <th>PnL</th>
+                                        <th>AVG_ADV</th>
+                                        <th>MAXALW</th>
+                                        <th>SMI</th>
+                                        <th>Final FB</th>
+                                        <th>Final SFS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="positionsTableBody">
+                                    <!-- JS ile -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Page -->
+                <div id="ordersPage" class="page">
+                    <div class="ios-card">
+                        <div class="toolbar" style="margin-bottom: 15px;">
+                            <button class="btn btn-primary active" id="tabPending">Pending</button>
+                            <button class="btn btn-secondary" id="tabCompleted">Completed</button>
+                            <button class="btn btn-secondary" id="tabJData">JDataLog</button>
+                        </div>
+
+                        <div id="pendingTabContent">
+                            <div class="table-wrapper">
+                                <table class="ios-table" id="pendingOrdersTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Symbol</th>
+                                            <th>Side</th>
+                                            <th>Quantity</th>
+                                            <th>Price</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pendingOrdersTableBody">
+                                        <!-- JS ile -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Side Panel Overlay -->
+    <div id="sidePanelOverlay" class="side-panel-overlay" style="position: fixed; top: 0; right: -600px; width: 600px; height: 100vh; background: var(--ios-card-bg); backdrop-filter: blur(40px); z-index: 500; transition: right 0.3s var(--anim-spring); border-left: 1px solid var(--ios-card-border); padding: 20px; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 id="sidePanelTitle" style="font-size: 18px; font-weight: 600;">Panel</h3>
+            <button class="btn btn-secondary" id="closeSidePanel"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="sidePanelContent">
+            <!-- Panel içeriği -->
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p style="color: white; font-weight: 500;">Yükleniyor...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

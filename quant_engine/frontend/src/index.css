@@ -1,0 +1,38 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 12px; /* Base font size - more compact */
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #1a1a1a;
+  color: #ddd;
+  font-size: 11px; /* Default body font size - more compact */
+  line-height: 1.3;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+  font-size: 11px;
+}
+
+/* Global smaller text utility classes */
+.text-xs { font-size: 8px; }
+.text-sm { font-size: 9px; }
+.text-base { font-size: 10px; }
+.text-lg { font-size: 11px; }
+.text-xl { font-size: 12px; }
+
+
+
+

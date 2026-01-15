@@ -1,0 +1,296 @@
+.psfalgo-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.psfalgo-modal-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  max-width: 700px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.psfalgo-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+}
+
+.psfalgo-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.psfalgo-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.psfalgo-modal-close:hover {
+  background-color: #e9ecef;
+}
+
+.psfalgo-modal-body {
+  padding: 24px;
+  flex: 1;
+}
+
+.modal-section {
+  margin-bottom: 24px;
+}
+
+.modal-section:last-child {
+  margin-bottom: 0;
+}
+
+.modal-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.modal-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modal-info-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.modal-info-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.modal-info-value.positive {
+  color: #28a745;
+}
+
+.modal-info-value.negative {
+  color: #dc3545;
+}
+
+.action-breakdown-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.action-breakdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.action-type-label {
+  font-weight: 600;
+  color: #333;
+  min-width: 120px;
+}
+
+.action-type-count {
+  color: #666;
+  font-size: 14px;
+}
+
+.action-type-lots {
+  color: #999;
+  font-size: 13px;
+  margin-left: auto;
+}
+
+.exposure-comparison {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.exposure-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.exposure-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.exposure-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.exposure-value.positive {
+  color: #28a745;
+}
+
+.exposure-value.negative {
+  color: #dc3545;
+}
+
+.exposure-arrow {
+  font-size: 20px;
+  color: #999;
+}
+
+.exposure-delta {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 16px;
+  border-left: 1px solid #dee2e6;
+}
+
+.risk-flags-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.risk-flag-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fff3cd;
+  border-left: 3px solid #ffc107;
+  border-radius: 4px;
+}
+
+.risk-flag-icon {
+  font-size: 16px;
+}
+
+.risk-flag-message {
+  font-size: 13px;
+  color: #856404;
+}
+
+.modal-warning {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  border-radius: 4px;
+  margin-top: 20px;
+}
+
+.warning-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.warning-text {
+  font-size: 13px;
+  color: #856404;
+  line-height: 1.5;
+}
+
+.warning-text strong {
+  font-weight: 600;
+}
+
+.warning-execution {
+  color: #721c24;
+  font-weight: 500;
+}
+
+.psfalgo-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #f8f9fa;
+  border-radius: 0 0 8px 8px;
+}
+
+.psfalgo-modal-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.psfalgo-modal-btn.cancel-btn {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.psfalgo-modal-btn.cancel-btn:hover {
+  background: #dee2e6;
+}
+
+.psfalgo-modal-btn.confirm-btn {
+  background: #007bff;
+  color: white;
+}
+
+.psfalgo-modal-btn.confirm-btn:hover {
+  background: #0056b3;
+}
+
+
+
+
+
+
+

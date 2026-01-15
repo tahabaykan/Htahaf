@@ -3773,9 +3773,25 @@ class FinalThgLotDistributor:
                                         if success:
                                             success_count += 1
                                             print(f"[JFIN] ✅ {symbol}: {part_lot} lot {order_type} @ ${price:.2f} - Parça {i}/{len(lot_parts)} - Başarılı")
+                                            
+                                            if self.main_window and hasattr(self.main_window, 'log_psfalgo_activity'):
+                                                self.main_window.log_psfalgo_activity(
+                                                    action=f"ADDNEWPOS {order_type} Parça {i}",
+                                                    details=f"{symbol}: {part_lot} lot @ ${price:.2f}",
+                                                    status="SUCCESS",
+                                                    category="ADDNEWPOS"
+                                                )
                                         else:
                                             error_count += 1
                                             print(f"[JFIN] ❌ {symbol}: {part_lot} lot {order_type} @ ${price:.2f} - Parça {i}/{len(lot_parts)} - Başarısız")
+                                            
+                                            if self.main_window and hasattr(self.main_window, 'log_psfalgo_activity'):
+                                                self.main_window.log_psfalgo_activity(
+                                                    action=f"ADDNEWPOS {order_type} Parça {i} Hata",
+                                                    details=f"{symbol}: Başarısız",
+                                                    status="ERROR",
+                                                    category="ADDNEWPOS"
+                                                )
                                     else:
                                         error_count += 1
                                         print(f"[JFIN] ❌ Mode manager bulunamadı!")
@@ -3795,9 +3811,25 @@ class FinalThgLotDistributor:
                                     if success:
                                         success_count += 1
                                         print(f"[JFIN] ✅ {symbol}: {lot} lot {order_type} @ ${price:.2f} - Başarılı")
+                                        
+                                        if self.main_window and hasattr(self.main_window, 'log_psfalgo_activity'):
+                                            self.main_window.log_psfalgo_activity(
+                                                action=f"ADDNEWPOS {order_type} Emir",
+                                                details=f"{symbol}: {lot} lot @ ${price:.2f}",
+                                                status="SUCCESS",
+                                                category="ADDNEWPOS"
+                                            )
                                     else:
                                         error_count += 1
                                         print(f"[JFIN] ❌ {symbol}: {lot} lot {order_type} @ ${price:.2f} - Başarısız")
+                                        
+                                        if self.main_window and hasattr(self.main_window, 'log_psfalgo_activity'):
+                                            self.main_window.log_psfalgo_activity(
+                                                action=f"ADDNEWPOS {order_type} Başarısız",
+                                                details=f"{symbol}: Başarısız",
+                                                status="ERROR",
+                                                category="ADDNEWPOS"
+                                            )
                                 else:
                                     error_count += 1
                                     print(f"[JFIN] ❌ Mode manager bulunamadı!")
@@ -3805,6 +3837,14 @@ class FinalThgLotDistributor:
                         except Exception as e:
                             error_count += 1
                             print(f"[JFIN] ❌ Emir gönderme hatası ({order['symbol']}): {e}")
+                            
+                            if self.main_window and hasattr(self.main_window, 'log_psfalgo_activity'):
+                                self.main_window.log_psfalgo_activity(
+                                    action=f"ADDNEWPOS {order['symbol']} Hata",
+                                    details=f"{e}",
+                                    status="ERROR",
+                                    category="ADDNEWPOS"
+                                )
                     
                     # Sonuç mesajı
                     print(f"[JFIN] 📊 Emir gönderme sonucu: success_count={success_count}, error_count={error_count}")

@@ -1,0 +1,349 @@
+/**
+ * Deeper Analysis Panel Styles - SLOW PATH
+ * 🔵 Blue theme for SLOW PATH components
+ */
+
+.deeper-analysis-panel {
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 16px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  color: #c9d1d9;
+}
+
+.deeper-analysis-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #30363d;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-left h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #58a6ff;
+}
+
+.path-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.path-badge.slow {
+  background: rgba(56, 139, 253, 0.15);
+  color: #58a6ff;
+  border: 1px solid #388bfd;
+}
+
+.toggle-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn.disabled {
+  background: #21262d;
+  color: #8b949e;
+  border: 1px solid #30363d;
+}
+
+.toggle-btn.enabled {
+  background: rgba(56, 139, 253, 0.2);
+  color: #58a6ff;
+  border: 1px solid #388bfd;
+}
+
+.toggle-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.toggle-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.not-enabled-message {
+  text-align: center;
+  padding: 32px 16px;
+  background: rgba(56, 139, 253, 0.05);
+  border-radius: 6px;
+  border: 1px dashed #30363d;
+}
+
+.not-enabled-message p {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+}
+
+.not-enabled-message .hint {
+  color: #8b949e;
+  font-size: 11px;
+}
+
+.not-enabled-message small {
+  color: #6e7681;
+}
+
+.analysis-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 11px;
+  color: #8b949e;
+}
+
+.group-filter-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.group-filter-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #c9d1d9;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  transition: border-color 0.2s ease;
+}
+
+.group-filter-input:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+.group-filter-input::placeholder {
+  color: #6e7681;
+}
+
+.clear-filter-btn {
+  padding: 6px 10px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #8b949e;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.clear-filter-btn:hover {
+  background: #30363d;
+  color: #c9d1d9;
+}
+
+.symbol-analysis {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.symbol-analysis h4 {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  color: #58a6ff;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.metric-card {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  padding: 10px;
+  text-align: center;
+}
+
+.metric-card label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #58a6ff;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.metric-card .value {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: #c9d1d9;
+  margin-bottom: 4px;
+}
+
+.metric-card small {
+  font-size: 9px;
+  color: #6e7681;
+}
+
+.no-selection {
+  text-align: center;
+  padding: 24px;
+  color: #8b949e;
+  font-size: 12px;
+}
+
+.analysis-table-container {
+  margin-top: 16px;
+  max-height: 600px;
+  overflow-y: auto;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+}
+
+.analysis-table {
+  margin-top: 0;
+}
+
+.analysis-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.analysis-table th {
+  background: #161b22;
+  padding: 8px 6px;
+  text-align: left;
+  font-weight: 600;
+  color: #8b949e;
+  border-bottom: 1px solid #30363d;
+  text-transform: uppercase;
+  font-size: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.analysis-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+.analysis-table th.sortable:hover {
+  background: #21262d;
+  color: #58a6ff;
+}
+
+.analysis-table th.sortable.active {
+  color: #58a6ff;
+  background: rgba(56, 139, 253, 0.1);
+}
+
+.analysis-table td {
+  padding: 6px;
+  border-bottom: 1px solid #21262d;
+  color: #c9d1d9;
+}
+
+.analysis-table tr:hover {
+  background: rgba(56, 139, 253, 0.05);
+}
+
+.analysis-table tr.selected {
+  background: rgba(56, 139, 253, 0.1);
+}
+
+.analysis-table .symbol {
+  font-weight: 600;
+  color: #58a6ff;
+}
+
+.more-hint {
+  text-align: center;
+  font-size: 10px;
+  color: #6e7681;
+  margin-top: 8px;
+}
+
+/* Scrollbar styling for table container */
+.analysis-table-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.analysis-table-container::-webkit-scrollbar-track {
+  background: #0d1117;
+  border-radius: 4px;
+}
+
+.analysis-table-container::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
+}
+
+.analysis-table-container::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+.error-message {
+  background: rgba(248, 81, 73, 0.1);
+  border: 1px solid #f85149;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-top: 12px;
+  font-size: 11px;
+  color: #f85149;
+}
+
+/* SRPAN Score Colors */
+.srpan-excellent {
+  background-color: #32CD32 !important; /* Lime green - SRPAN ≥70 */
+  color: #000;
+  font-weight: bold;
+}
+
+.srpan-good {
+  background-color: #90EE90 !important; /* Light green - SRPAN ≥50 */
+  color: #000;
+  font-weight: bold;
+}
+
+.srpan-fair {
+  background-color: #FFFFE0 !important; /* Light yellow - SRPAN ≥30 */
+  color: #000;
+}
+
+.srpan-low {
+  background-color: #FFD700 !important; /* Gold - SRPAN <30 */
+  color: #000;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
+
+
+

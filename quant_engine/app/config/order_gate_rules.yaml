@@ -1,0 +1,26 @@
+# Order Gate Rules Configuration
+# Pre-execution decision layer - human-in-the-loop safety
+
+gate:
+  # AUTO_APPROVED conditions
+  auto_approved:
+    min_urgency: HIGH
+    max_spread_percent: 0.3
+  
+  # MANUAL_REVIEW conditions
+  manual_review:
+    urgency: MEDIUM
+  
+  # BLOCKED conditions
+  blocked:
+    max_spread_percent: 1.5
+    min_final_thg: 0.0
+    # user_global_block is runtime flag (not in config)
+
+
+
+
+
+
+
+

@@ -1,0 +1,116 @@
+.take-profit-tab {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.take-profit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #333;
+}
+
+.take-profit-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.take-profit-table-container {
+  flex: 1;
+  overflow: auto;
+}
+
+.take-profit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.take-profit-table thead {
+  position: sticky;
+  top: 0;
+  background: #222;
+  z-index: 10;
+}
+
+.take-profit-table th {
+  padding: 10px 8px;
+  text-align: left;
+  font-weight: 600;
+  color: #ccc;
+  border-bottom: 2px solid #333;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.take-profit-table td {
+  padding: 8px;
+  border-bottom: 1px solid #2a2a2a;
+  color: #ddd;
+}
+
+.take-profit-table tbody tr:hover {
+  background: #252525;
+}
+
+.take-profit-symbol {
+  font-weight: 600;
+  color: #0066cc;
+  font-family: 'Courier New', monospace;
+}
+
+.take-profit-actions {
+  min-width: 400px;
+}
+
+.take-profit-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.take-profit-buttons .btn-small {
+  padding: 4px 10px;
+  font-size: 11px;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #ccc;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.take-profit-buttons .btn-small:hover {
+  background: #333;
+  border-color: #555;
+}
+
+.take-profit-loading,
+.take-profit-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #666;
+  font-size: 14px;
+}
+
+.take-profit-error {
+  background: #4a1a1a;
+  color: #ff6b6b;
+  padding: 12px;
+  border-radius: 4px;
+  margin: 16px 0;
+  font-size: 14px;
+}
+
+
+
+
+

@@ -1,0 +1,234 @@
+.trading-page {
+  min-height: 100vh;
+  background: #1a1a1a; /* Dark background */
+  padding: 20px;
+  color: #fff;
+}
+
+.card.two-column {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.card.two-column > div {
+  flex: 1 1 480px;
+  min-width: 360px;
+}
+
+.table-scroll {
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.simple-table input[type="number"] {
+  width: 90px;
+}
+
+.trading-page-header {
+  background: #1a1a1a; /* Dark background */
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid #333;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.trading-page-header h1 {
+  margin: 0;
+  font-size: 12px;
+  color: #fff;
+  flex: 1;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 600;
+}
+
+.trading-mode-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 4px;
+  background: #e3f2fd;
+  color: #1976d2;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.back-button {
+  padding: 8px 16px;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  transition: all 0.2s;
+}
+
+.back-button:hover {
+  background: #e0e0e0;
+}
+
+.trading-page-content {
+  background: #1a1a1a; /* Dark background */
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #333;
+}
+
+.loading-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+  font-size: 14px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+  font-style: italic;
+  font-size: 14px;
+}
+
+.trading-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.trading-table th {
+  background: #fff; /* White header */
+  padding: 4px 6px;
+  text-align: left;
+  font-size: 9px;
+  font-weight: 600;
+  color: #000; /* Black text */
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid #ddd;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.trading-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 10px;
+  color: #000; /* Black text */
+  background: #fff; /* White background */
+}
+
+.trading-table tbody tr {
+  background: #fff; /* White background */
+}
+
+.trading-table tbody tr:hover {
+  background: #f5f5f5;
+}
+
+.trading-table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.trading-table tbody tr:nth-child(even):hover {
+  background: #f0f0f0;
+}
+
+.symbol-cell {
+  font-weight: 600;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+}
+
+.order-id-cell {
+  font-family: monospace;
+  font-size: 11px;
+  color: #666;
+}
+
+.positive {
+  color: #4ade80; /* Green for positive P&L */
+  font-weight: 500;
+}
+
+.negative {
+  color: #f87171; /* Red for negative P&L */
+  font-weight: 500;
+}
+
+.quantity-long {
+  color: #4ade80; /* Green for long positions */
+  font-weight: 500;
+  font-family: 'Courier New', monospace;
+}
+
+.quantity-short {
+  color: #f87171; /* Red for short positions */
+  font-weight: 500;
+  font-family: 'Courier New', monospace;
+}
+
+.exposure-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.metric-card {
+  background: #f8f9fa;
+  padding: 24px;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  transition: all 0.2s;
+}
+
+.metric-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.metric-card.positive {
+  border-color: #28a745;
+  background: #f0f9f4;
+}
+
+.metric-card.negative {
+  border-color: #dc3545;
+  background: #fff5f5;
+}
+
+.metric-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.metric-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+}
+
+.metric-value.large {
+  font-size: 32px;
+}
+
+.metric-value.positive {
+  color: #28a745;
+}
+
+.metric-value.negative {
+  color: #dc3545;
+}
+
+

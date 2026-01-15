@@ -265,3 +265,12 @@ alpha = portfolio_return - spy_return
 
 
 
+
+
+
+
+
+
+
+
+

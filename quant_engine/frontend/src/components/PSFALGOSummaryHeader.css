@@ -1,0 +1,139 @@
+.psfalgo-summary-header {
+  background: #fff;
+  border-bottom: 2px solid #e0e0e0;
+  padding: 16px 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.summary-loading {
+  text-align: center;
+  padding: 12px;
+  color: #666;
+  font-size: 14px;
+}
+
+.summary-row {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.summary-row.cycle-result-row {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e9ecef;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+}
+
+.summary-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.summary-value.positive {
+  color: #28a745;
+}
+
+.summary-value.negative {
+  color: #dc3545;
+}
+
+.summary-value-small {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+}
+
+.summary-value-small.positive {
+  color: #28a745;
+}
+
+.summary-value-small.negative {
+  color: #dc3545;
+}
+
+.summary-badge {
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Exposure Mode Badges */
+.exposure-mode-defensive {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.exposure-mode-transition {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.exposure-mode-offensive {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.exposure-mode-unknown {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+/* AutoCycle Badges */
+.autocycle-running {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.autocycle-waiting {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.autocycle-executing {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.autocycle-stopped {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+/* Pending Approval Badge */
+.pending-approval-badge {
+  background-color: #f8d7da;
+  color: #721c24;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+
+
+
+
+
+

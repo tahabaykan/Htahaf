@@ -1,0 +1,29 @@
+# Intent Rules Configuration
+# Rules for determining trading intent based on state and market conditions
+
+# Intent thresholds
+intent:
+  # WATCH state rules
+  watch:
+    # If spread is too high, wait
+    max_spread_percent_for_intent: 2.0
+    
+  # CANDIDATE state rules
+  candidate:
+    # Conditions for WANT_BUY
+    want_buy:
+      max_spread_percent: 0.5
+      min_volume: 1000
+      
+    # Conditions for WANT_SELL (not used in v1)
+    want_sell:
+      max_spread_percent: 0.5
+      min_volume: 1000
+
+
+
+
+
+
+
+

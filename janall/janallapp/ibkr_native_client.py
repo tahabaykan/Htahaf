@@ -49,6 +49,10 @@ class IBKRNativeClient(EWrapper, EClient):
         self.positions = []
         self.orders = []
         
+        # Bugünkü filled emirleri sakla (execution'lar)
+        self.todays_filled_orders = []  # Bugünkü filled emirler listesi
+        self.todays_filled_date = None  # Bugünkü tarih (gün değiştiğinde temizlemek için)
+        
         # Order ID yönetimi
         self.next_order_id = 1
         self.order_id_initialized = False
@@ -301,7 +305,8 @@ class IBKRNativeClient(EWrapper, EClient):
     
     def orderStatus(self, orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld, mktCapPrice):
         """Order status callback'i - Emir durumu güncellemesi"""
-        print(f"[IBKR-NATIVE] 📊 Order Status: ID={orderId}, Status={status}, Filled={filled}, Remaining={remaining}")
+        # DEBUG: Sadece önemli durumları logla (Filled, Cancelled, Rejected)
+        # Sürekli güncelleme logları kapatıldı - terminal loglarını dolduruyordu
         
         # Mevcut emiri bul ve güncelle
         for i, order in enumerate(self.orders):
@@ -310,17 +315,20 @@ class IBKRNativeClient(EWrapper, EClient):
                 self.orders[i]['filled'] = float(filled) if filled else 0.0
                 self.orders[i]['remaining'] = float(remaining) if remaining else 0.0
                 self.orders[i]['status'] = status.upper() if status else 'UNKNOWN'
-                print(f"[IBKR-NATIVE] 🔄 Order {orderId} güncellendi: Filled={filled}, Remaining={remaining}")
+                # Fill price bilgilerini güncelle
+                self.orders[i]['avg_fill_price'] = float(avgFillPrice) if avgFillPrice and avgFillPrice > 0 else 0.0
+                self.orders[i]['last_fill_price'] = float(lastFillPrice) if lastFillPrice and lastFillPrice > 0 else 0.0
+                # DEBUG: Güncelleme logu kapatıldı
                 break
         
-        if status in ['Submitted', 'Filled', 'PartiallyFilled']:
-            print(f"[IBKR-NATIVE] ✅ Order {orderId} başarılı: {status}")
+        # Sadece önemli durumları logla
+        if status in ['Filled', 'PartiallyFilled']:
+            print(f"[IBKR-NATIVE] ✅ Order {orderId} {status}: Filled={filled}, Remaining={remaining}, AvgFillPrice={avgFillPrice}")
         elif status in ['Cancelled', 'Rejected', 'ApiCancelled']:
-            print(f"[IBKR-NATIVE] ❌ Order {orderId} başarısız: {status}")
+            print(f"[IBKR-NATIVE] ❌ Order {orderId} {status}")
             # İptal edilen emirleri listeden çıkar
             self.orders = [ord for ord in self.orders if ord.get('order_id') != orderId]
-        else:
-            print(f"[IBKR-NATIVE] ⏳ Order {orderId} bekliyor: {status}")
+        # Submitted ve diğer durumlar loglanmıyor - terminal loglarını dolduruyordu
     
     def updateAccountValue(self, key, val, currency, accountName):
         """Account value callback'i"""
@@ -400,7 +408,9 @@ class IBKRNativeClient(EWrapper, EClient):
     
     def positionEnd(self):
         """Position callback'i bittiğinde çağrılır"""
-        print("[IBKR-NATIVE] ✅ Tüm pozisyonlar alındı")
+        # DEBUG: Log kapatıldı - sürekli terminal loglarını dolduruyordu
+        # print("[IBKR-NATIVE] ✅ Tüm pozisyonlar alındı")
+        pass
     
     def openOrder(self, orderId, contract, order, orderState):
         """Open order callback'i"""
@@ -444,9 +454,12 @@ class IBKRNativeClient(EWrapper, EClient):
                 'Side': order.action,  # Alias
                 'order_type': order.orderType,  # LMT, MKT, etc.
                 'limit_price': float(order.lmtPrice) if order.lmtPrice else 0.0,
+                'price': float(order.lmtPrice) if order.lmtPrice else 0.0,  # Emir fiyatı (limit_price ile aynı)
                 'status': status,
                 'filled': filled_qty,
                 'remaining': remaining_qty,
+                'avg_fill_price': 0.0,  # orderStatus callback'inde güncellenecek
+                'last_fill_price': 0.0,  # orderStatus callback'inde güncellenecek
                 'account': order.account if hasattr(order, 'account') else '',
                 'order_id': orderId,
             }
@@ -463,14 +476,17 @@ class IBKRNativeClient(EWrapper, EClient):
             else:
                 self.orders.append(order_data)
             
-            print(f"[IBKR-NATIVE] 📋 Open Order: {symbol} {order.action} {order.totalQuantity} @ {order.lmtPrice if order.lmtPrice else 'MKT'} (Status: {orderState.status})")
+            # DEBUG: Open Order logu kapatıldı - sürekli terminal loglarını dolduruyordu
+            # print(f"[IBKR-NATIVE] 📋 Open Order: {symbol} {order.action} {order.totalQuantity} @ {order.lmtPrice if order.lmtPrice else 'MKT'} (Status: {orderState.status})")
             
         except Exception as e:
             print(f"[IBKR-NATIVE] ❌ Open order callback hatası: {e}")
     
     def openOrderEnd(self):
         """Open order callback'i bittiğinde çağrılır"""
-        print(f"[IBKR-NATIVE] ✅ Tüm açık emirler alındı ({len(self.orders)} emir)")
+        # DEBUG: Log kapatıldı - sürekli terminal loglarını dolduruyordu
+        # print(f"[IBKR-NATIVE] ✅ Tüm açık emirler alındı ({len(self.orders)} emir)")
+        pass
     
     def get_open_orders(self, account_id=None):
         """Açık emirleri getir"""
@@ -483,13 +499,15 @@ class IBKRNativeClient(EWrapper, EClient):
             self.orders = []
             
             # Açık emirleri iste
-            print("[IBKR-NATIVE] 🔄 Açık emirler isteniyor...")
+            # DEBUG: Log kapatıldı - sürekli terminal loglarını dolduruyordu
+            # print("[IBKR-NATIVE] 🔄 Açık emirler isteniyor...")
             self.reqAllOpenOrders()
             
             # Emirlerin gelmesini bekle (openOrder callback'i ile dolduruluyor)
             time.sleep(1.5)  # Emirlerin gelmesi için bekle
             
-            print(f"[IBKR-NATIVE] 📋 {len(self.orders)} açık emir bulundu")
+            # DEBUG: Log kapatıldı - sürekli terminal loglarını dolduruyordu
+            # print(f"[IBKR-NATIVE] 📋 {len(self.orders)} açık emir bulundu")
             return self.orders
             
         except Exception as e:
@@ -597,6 +615,106 @@ class IBKRNativeClient(EWrapper, EClient):
             traceback.print_exc()
             return False
     
+    def request_executions(self):
+        """Execution (fill) bilgilerini iste - IBKR Native API"""
+        try:
+            if not self.is_connected():
+                print("[IBKR-NATIVE] ❌ Bağlantı yok, execution'lar istenemez!")
+                return
+            
+            # reqExecutions() ile execution bilgilerini iste
+            # reqExecutions(reqId, execFilter) - execFilter boş ise tüm execution'lar gelir
+            print("[IBKR-NATIVE] 🔄 Execution'lar isteniyor...")
+            self.reqExecutions(1, None)  # reqId=1, execFilter=None (tüm execution'lar)
+            
+        except Exception as e:
+            print(f"[IBKR-NATIVE] ❌ Execution isteği hatası: {e}")
+    
+    def execDetails(self, reqId, contract, execution):
+        """Execution details callback'i - Fill bilgileri"""
+        try:
+            from datetime import datetime
+            
+            # Bugünkü tarihi kontrol et - gün değiştiyse listeyi temizle
+            today = datetime.now().date()
+            if self.todays_filled_date != today:
+                self.todays_filled_orders = []
+                self.todays_filled_date = today
+                print(f"[IBKR-NATIVE] 📅 Yeni gün başladı, filled emirler listesi temizlendi")
+            
+            # Symbol bilgisini al
+            symbol = contract.symbol
+            if contract.secType == "STK" and contract.exchange == "SMART":
+                # Preferred stock formatını düzelt
+                if hasattr(contract, 'localSymbol') and contract.localSymbol and '-' in contract.localSymbol:
+                    base, suffix = contract.localSymbol.split('-')
+                    symbol = f"{base} PR{suffix}"
+            
+            # Execution bilgilerini al
+            exec_id = execution.execId
+            order_id = execution.orderId
+            time_str = execution.time
+            side = execution.side  # BOT (BUY) veya SLD (SELL)
+            shares = float(execution.shares)
+            price = float(execution.price)
+            avg_price = float(execution.avgPrice) if execution.avgPrice else price
+            
+            # Side'ı BUY/SELL formatına çevir
+            action = 'BUY' if side == 'BOT' else 'SELL'
+            
+            print(f"[IBKR-NATIVE] 📊 Execution: {symbol} {action} {shares} @ ${price:.2f} (Order ID: {order_id}, Exec ID: {exec_id})")
+            
+            # Execution verisini hazırla
+            exec_data = {
+                'symbol': symbol,
+                'action': action,
+                'side': action.lower(),
+                'qty': shares,
+                'fill_qty': shares,
+                'price': price,
+                'fill_price': price,
+                'avg_price': avg_price,
+                'order_id': order_id,
+                'exec_id': exec_id,
+                'time': time_str,
+                'fill_time': time_str,
+                'date': today.isoformat()  # Bugünkü tarih
+            }
+            
+            # Bugünkü filled emirler listesine ekle (duplicate kontrolü ile)
+            # Aynı exec_id varsa ekleme (duplicate execution'ları önle)
+            if not any(fill.get('exec_id') == exec_id for fill in self.todays_filled_orders):
+                self.todays_filled_orders.append(exec_data.copy())
+                print(f"[IBKR-NATIVE] ✅ Filled emir eklendi: {symbol} {action} {shares} @ ${price:.2f} (Toplam: {len(self.todays_filled_orders)} filled emir)")
+            
+            # Execution callback'i varsa çağır
+            if callable(self.on_execution):
+                try:
+                    self.on_execution(exec_data)
+                except Exception as e:
+                    print(f"[IBKR-NATIVE] ❌ Execution callback hatası: {e}")
+            
+        except Exception as e:
+            print(f"[IBKR-NATIVE] ❌ Execution details callback hatası: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def get_todays_filled_orders(self):
+        """Bugünkü filled emirleri döndür"""
+        from datetime import datetime
+        today = datetime.now().date()
+        
+        # Gün değiştiyse listeyi temizle
+        if self.todays_filled_date != today:
+            self.todays_filled_orders = []
+            self.todays_filled_date = today
+        
+        return self.todays_filled_orders.copy()  # Copy döndür ki değişmesin
+    
+    def execDetailsEnd(self, reqId):
+        """Execution details callback'i bittiğinde çağrılır"""
+        print(f"[IBKR-NATIVE] ✅ Execution details tamamlandı (reqId: {reqId})")
+    
     def get_positions(self, account_id=None):
         """Pozisyonları getir - Grok'un önerisi ile native API"""
         try:
@@ -608,14 +726,16 @@ class IBKRNativeClient(EWrapper, EClient):
             self.positions = []
             
             # Grok'un önerisi: reqPositions() ile position callback'i kullan
-            print("[IBKR-NATIVE] 🔄 Pozisyonlar isteniyor (Grok'un önerisi)...")
+            # DEBUG: Log kapatıldı - sürekli terminal loglarını dolduruyordu
+            # print("[IBKR-NATIVE] 🔄 Pozisyonlar isteniyor (Grok'un önerisi)...")
             self.reqPositions()
             
             # Pozisyonların gelmesini bekle (position callback'i ile dolduruluyor)
             import time
             time.sleep(2.0)  # Pozisyonların gelmesi için bekle
             
-            print(f"[IBKR-NATIVE] 📊 {len(self.positions)} pozisyon bulundu")
+            # DEBUG: Log kapatıldı - sürekli terminal loglarını dolduruyordu
+            # print(f"[IBKR-NATIVE] 📊 {len(self.positions)} pozisyon bulundu")
             return self.positions
             
         except Exception as e:

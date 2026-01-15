@@ -1,0 +1,23 @@
+# Rank Engine Rules
+# Configuration for normalizing Fbtot and SFStot ranks within groups
+
+rank_direction:
+  # For Fbtot: higher is better (descending rank)
+  fbtot: descending
+  # For SFStot: lower is better (ascending rank)
+  sfstot: ascending
+
+normalization_method: minmax
+
+# Optional: rank smoothing parameters (for future use)
+# smoothing:
+#   enabled: false
+#   window_size: 5
+
+
+
+
+
+
+
+

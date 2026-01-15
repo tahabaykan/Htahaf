@@ -1,0 +1,28 @@
+# Order Queue Rules Configuration
+# Rules for queuing and throttling orders (simulation-only)
+
+queue:
+  # Global rate limiting
+  max_orders_per_minute: 60
+  
+  # Per-symbol cooldown (seconds between orders for same symbol)
+  per_symbol_cooldown_seconds: 5
+  
+  # Batch processing interval (milliseconds)
+  batch_interval_ms: 500
+  
+  # Queue size limits
+  max_queue_size: 1000
+  
+  # Priority rules (future: can prioritize by urgency, spread, etc.)
+  priority:
+    # Higher urgency = higher priority
+    urgency_weight: 1.0
+
+
+
+
+
+
+
+
