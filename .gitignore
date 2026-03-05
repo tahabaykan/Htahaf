@@ -1,107 +1,32 @@
-# Python
+﻿# Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
+*.pyc
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-# Virtual Environments
-tf_env/
-.env
-.venv
-env/
+# Virtual env
+.venv/
 venv/
-ENV/
-env.bak/
-venv.bak/
 
-# Data Files
-*.csv
-# But keep important CSV files
-!Htahaf/*.csv
-!Htahaf/data/*.csv
-!run_weekly_*.csv
-!common_*.csv
-!extlt_*.csv
-!final_*.csv
-!mastermind_*.csv
-!normalize_*.csv
-!scored_*.csv
+# Node
+node_modules/
 
-*.json
-# But keep important JSON files  
-!Htahaf/data/*.json
-
-mastermind_data/
-
-# Log Files
+# Logs
 *.log
 logs/
-psf_reasoning.log
+log/
 
-# Backup and Temporary Files
-*.bak
-*.backup
-*.original
-temp_*
-*_temp.csv
-*_checkpoint.py
+# Secrets
+.env
+secrets/
+*.key
+*.pem
 
-# Test Files (specific patterns that look temporary)
-test_*.py
-analyze_*.py
-ibkr_contract_test.py
-
-# Image Files
-*.png
-*.jpg
-*.jpeg
-*.gif
-
-# IDE / Editor
+# OS / IDE
+.DS_Store
 .vscode/
 .idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Project specific files that look temporary or generated
-level2_venue_data_*.json
-real_venue_data_*.json
-trades_*.csv
-tokens.txt
-requirements.txt
-
-# Specific temporary/development files
-Uyanik.py
-spreadci.py
-venuelik.py
-modular_changes.txt
-fix_instructions.txt
-ozet.txt
-
-# Multiple similar project directories (keeping main ones, ignoring duplicates)
-Altahaf/
-Otahaf/
-Sptahaf/
-Tahaf/
-Tahafhammer/
-Tahafhammerlast/
-Tahafhmr/
-polstream/
-polyadam/
-polyt/
-
-# Keep only main hammerib projects
-# hammerib/
-# hammerib_hammer/ 
