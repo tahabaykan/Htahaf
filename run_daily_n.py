@@ -55,6 +55,7 @@ scripts = [
     "ntumcsvport.py",  # SSFINEK dosyalarından LONG/SHORT hisseleri seçer
     "npreviousadd.py",  # SSFINEK dosyalarına prev_close kolonu ekler ve janek_ prefix ile kaydeder
     "merge_csvs.py",  # janek_ssfinek dosyalarını birleştirir ve janalldata.csv oluşturur
+    "exdiv_info.py",  # Bugün ex-dividend olan hisseleri bulur → exdiv_today.json
     "gorter.py",  # janalldata.csv'den her CGRUP için en yüksek ve en düşük 3 GORT değerine sahip hisseleri bulur
 ]
 
