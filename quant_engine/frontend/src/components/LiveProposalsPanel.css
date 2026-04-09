@@ -256,7 +256,7 @@
 .score-tag {
   background: #2c3e50;
   border: 1px solid #4a6278;
-  color: #ecf0f1;
+  color: #ffffff;
   padding: 1px 5px;
   border-radius: 3px;
   font-family: monospace;
@@ -266,12 +266,10 @@
 
 .score-tag.ucuzluk {
   border-color: #27ae60;
-  color: #2ecc71;
 }
 
 .score-tag.pahalilik {
   border-color: #c0392b;
-  color: #e74c3c;
 }
 
 /* Action Line */

@@ -159,7 +159,7 @@ class ExecutionService:
             # Extract classification (MUST be present)
             classification = data.get("classification", "")
             bucket = data.get("bucket", "LT")
-            effect = data.get("effect", "DECREASE")
+            effect = data.get("effect", "DEC")
             direction = data.get("dir", "LONG")
             risk_delta_notional = data.get("risk_delta_notional", 0.0)
             risk_delta_gross_pct = data.get("risk_delta_gross_pct", 0.0)
@@ -333,7 +333,7 @@ class ExecutionService:
                 # Preserve classification in fill events
                 classification = order_data.get("classification", "")
                 bucket = order_data.get("bucket", "LT")
-                effect = order_data.get("effect", "DECREASE")
+                effect = order_data.get("effect", "DEC")
                 direction = order_data.get("direction", "LONG")
                 risk_delta_notional = order_data.get("risk_delta_notional", 0.0)
                 risk_delta_gross_pct = order_data.get("risk_delta_gross_pct", 0.0)
@@ -472,7 +472,7 @@ class ExecutionService:
             # Preserve classification in cancel event
             classification = order_data.get("classification", "")
             bucket = order_data.get("bucket", "LT")
-            effect = order_data.get("effect", "DECREASE")
+            effect = order_data.get("effect", "DEC")
             direction = order_data.get("direction", "LONG")
             risk_delta_notional = order_data.get("risk_delta_notional", 0.0)
             risk_delta_gross_pct = order_data.get("risk_delta_gross_pct", 0.0)

@@ -1,0 +1,17 @@
+Connected: True
+Authenticated: True
+
+=== CIM PRB ===
+Raw ticks: 50
+First tick: price=23.5226, size=300.0, exch=FNRA, time=2026-02-10T20:08:26.038
+Truth ticks: 22/50
+
+=== NLY PRD ===
+No result (None returned)
+
+=== PSEC PRA ===
+Raw ticks: 50
+First tick: price=17.8, size=100.0, exch=EDGX, time=2026-02-10T17:26:29.783
+Truth ticks: 30/50
+
+DONE

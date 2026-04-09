@@ -16,6 +16,10 @@ import GenobsPanel from '../components/GenobsPanel'
 import BenchmarkFillsPanel from '../components/BenchmarkFillsPanel'
 import QeBenchPanel from '../components/QeBenchPanel'
 import SnapBidAskModal from '../components/SnapBidAskModal'
+import ExcludedListModal from '../components/ExcludedListModal'
+import GeneralLogicModal from '../components/GeneralLogicModal'
+import PatternSuggestionsModal from '../components/PatternSuggestionsModal'
+import ExDivInfoModal from '../components/ExDivInfoModal'
 import '../App.css'
 
 // Force Update
@@ -35,6 +39,12 @@ function ScannerPage() {
   const [showBenchmarkFills, setShowBenchmarkFills] = useState(false)
   const [showQeBench, setShowQeBench] = useState(false)
   const [showSnapBidAsk, setShowSnapBidAsk] = useState(false)
+  const [showExcludedList, setShowExcludedList] = useState(false)
+  const [showGeneralLogic, setShowGeneralLogic] = useState(false)
+  const [showPatternSuggestions, setShowPatternSuggestions] = useState(false)
+  const [showExDivInfo, setShowExDivInfo] = useState(false)
+  const [showTSSScreen, setShowTSSScreen] = useState(false)
+  const [tssData, setTssData] = useState(null)
 
   // Lifeless Mode State
   const [lifelessMode, setLifelessMode] = useState(false)
@@ -293,11 +303,22 @@ function ScannerPage() {
   const [executionModeInitialized, setExecutionModeInitialized] = useState(false)
 
   // Trading Account Mode
-  const [tradingMode, setTradingMode] = useState('HAMMER_TRADING')
+  const [tradingMode, setTradingMode] = useState('HAMMER_PRO')
 
   // Trading Panels Overlay
   const [overlayOpen, setOverlayOpen] = useState(false)
   const [overlayPanelType, setOverlayPanelType] = useState('positions')
+
+  // Dual Process: alternate XNL between IBKR_PED and HAMPRO (3.5 min per account)
+  const [dualProcessState, setDualProcessState] = useState({
+    state: 'STOPPED',
+    account_a: 'IBKR_PED',
+    account_b: 'HAMPRO',
+    current_account: null,
+    loop_count: 0
+  })
+  const [dualProcessLoading, setDualProcessLoading] = useState(false)
+  const [ibkrAccount, setIbkrAccount] = useState(() => localStorage.getItem('dual_process_ibkr_account') || 'IBKR_PED')
 
   // Group Navigation
   const [selectedGroup, setSelectedGroup] = useState(null)
@@ -380,6 +401,58 @@ function ScannerPage() {
     }
   }, [executionModeInitialized])
 
+  // Dual Process: fetch state and poll
+  const fetchDualProcessState = useCallback(async () => {
+    try {
+      const response = await fetch('/api/xnl/dual-process/state')
+      const data = await response.json()
+      if (data && typeof data.state !== 'undefined') {
+        setDualProcessState(prev => ({
+          ...prev,
+          state: data.state || 'STOPPED',
+          account_a: data.account_a || prev.account_a,
+          account_b: data.account_b || prev.account_b,
+          current_account: data.current_account ?? null,
+          loop_count: data.loop_count ?? 0
+        }))
+      }
+    } catch (err) {
+      console.error('Scanner: Error fetching Dual Process state:', err)
+    }
+  }, [])
+  useEffect(() => {
+    fetchDualProcessState()
+    const interval = setInterval(fetchDualProcessState, 3000)
+    return () => clearInterval(interval)
+  }, [fetchDualProcessState])
+
+  const handleStartDualProcess = async () => {
+    setDualProcessLoading(true)
+    try {
+      const response = await fetch('/api/xnl/dual-process/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ account_a: ibkrAccount, account_b: 'HAMPRO' })
+      })
+      const result = await response.json()
+      if (result.success) await fetchDualProcessState()
+    } catch (err) {
+      console.error('Scanner: Dual Process start error:', err)
+    } finally {
+      setDualProcessLoading(false)
+    }
+  }
+  const handleStopDualProcess = async () => {
+    setDualProcessLoading(true)
+    try {
+      await fetch('/api/xnl/dual-process/stop', { method: 'POST' })
+      await fetchDualProcessState()
+    } catch (err) {
+      console.error('Scanner: Dual Process stop error:', err)
+    } finally {
+      setDualProcessLoading(false)
+    }
+  }
 
   // Lifeless Mode Handlers
   const toggleLifelessMode = async () => {
@@ -1066,6 +1139,20 @@ function ScannerPage() {
           >
             🔍 Truth Ticks
           </Link>
+          <button
+            type="button"
+            onClick={() => {
+              setShowTSSScreen(!showTSSScreen)
+              if (!showTSSScreen) {
+                fetch('/tss-v2').then(r => r.json()).then(d => { if (d.success) setTssData(d) }).catch(console.error)
+              }
+            }}
+            className="psfalgo-link-button"
+            title="TSS - RTS Truth Shift Score Dashboard"
+            style={{ background: showTSSScreen ? 'linear-gradient(135deg, #059669 0%, #047857 100%)' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', padding: '4px 10px', borderRadius: '4px' }}
+          >
+            📈 TSS-RTS
+          </button>
           <Link
             to="/aura-mm"
             target="_blank"
@@ -1084,6 +1171,68 @@ function ScannerPage() {
           >
             🤖 PSFALGO
           </Link>
+          <button
+            type="button"
+            onClick={() => window.open('http://localhost:8000/fill-report.html', '_blank')}
+            className="psfalgo-link-button"
+            title="Open Execution Quality Report (Fills with Bid/Ask analysis) in new tab"
+            style={{ background: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', padding: '4px 10px', borderRadius: '4px' }}
+          >
+            📋 Fill Report
+          </button>
+          {/* IBKR Account Selector */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', marginLeft: '6px', padding: '2px 5px', background: 'rgba(124, 58, 237, 0.12)', borderRadius: '4px', border: '1px solid rgba(124, 58, 237, 0.25)' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '2px', cursor: dualProcessState.state === 'RUNNING' ? 'not-allowed' : 'pointer', color: ibkrAccount === 'IBKR_PED' ? '#a78bfa' : '#888', fontSize: '10px', fontWeight: ibkrAccount === 'IBKR_PED' ? 'bold' : 'normal' }}>
+              <input
+                type="radio"
+                name="ibkr-account-scanner"
+                value="IBKR_PED"
+                checked={ibkrAccount === 'IBKR_PED'}
+                onChange={() => { setIbkrAccount('IBKR_PED'); localStorage.setItem('dual_process_ibkr_account', 'IBKR_PED') }}
+                disabled={dualProcessState.state === 'RUNNING'}
+                style={{ width: '11px', height: '11px', accentColor: '#7c3aed' }}
+              />
+              PED
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '2px', cursor: dualProcessState.state === 'RUNNING' ? 'not-allowed' : 'pointer', color: ibkrAccount === 'IBKR_GUN' ? '#a78bfa' : '#888', fontSize: '10px', fontWeight: ibkrAccount === 'IBKR_GUN' ? 'bold' : 'normal' }}>
+              <input
+                type="radio"
+                name="ibkr-account-scanner"
+                value="IBKR_GUN"
+                checked={ibkrAccount === 'IBKR_GUN'}
+                onChange={() => { setIbkrAccount('IBKR_GUN'); localStorage.setItem('dual_process_ibkr_account', 'IBKR_GUN') }}
+                disabled={dualProcessState.state === 'RUNNING'}
+                style={{ width: '11px', height: '11px', accentColor: '#7c3aed' }}
+              />
+              GUN
+            </label>
+          </div>
+          {(dualProcessState.state !== 'RUNNING' && dualProcessState.state !== 'STOPPING') ? (
+            <button
+              type="button"
+              onClick={handleStartDualProcess}
+              disabled={dualProcessLoading}
+              title={`Start Dual Process: XNL alternates between ${ibkrAccount} and HAMPRO (3.5 min per account)`}
+              style={{ marginLeft: '4px', padding: '4px 8px', borderRadius: '4px', background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+            >
+              {dualProcessLoading ? '⏳' : '🔄'} Dual Process
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleStopDualProcess}
+              disabled={dualProcessLoading}
+              title="Stop Dual Process (will halt after current step)"
+              style={{ marginLeft: '4px', padding: '4px 8px', borderRadius: '4px', background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+            >
+              {dualProcessLoading ? '⏳' : '⏹️'} Dual Process
+            </button>
+          )}
+          {dualProcessState.state === 'RUNNING' && (
+            <span style={{ marginLeft: '4px', fontSize: '11px', color: '#a0aec0' }}>
+              {dualProcessState.current_account || '—'} | #{dualProcessState.loop_count}
+            </span>
+          )}
           <span className={`status-badge ${wsConnected ? 'connected' : 'disconnected'}`}>
             WS: {wsConnected ? 'Connected' : 'Disconnected'}
           </span>
@@ -1135,6 +1284,35 @@ function ScannerPage() {
             style={{ cursor: 'pointer', background: showSnapBidAsk ? '#554422' : '#333', color: '#fc0' }}
           >
             📸 SnapBidAsk
+          </button>
+          <button
+            className={`status-badge ${showGeneralLogic ? 'active' : ''}`}
+            onClick={() => setShowGeneralLogic(!showGeneralLogic)}
+            style={{ cursor: 'pointer', background: showGeneralLogic ? '#6366f1' : '#333', color: '#6366f1', border: showGeneralLogic ? '1px solid #6366f1' : '1px solid #444' }}
+          >
+            ⚡ QE Gen Logic
+          </button>
+
+          <button
+            className={`status-badge ${showExcludedList ? 'active' : ''}`}
+            onClick={() => setShowExcludedList(!showExcludedList)}
+            style={{ cursor: 'pointer', background: showExcludedList ? '#ef4444' : '#333', color: '#ef4444', border: showExcludedList ? '1px solid #ef4444' : '1px solid #444' }}
+          >
+            🚫 Excluded List
+          </button>
+          <button
+            className={`status-badge ${showPatternSuggestions ? 'active' : ''}`}
+            onClick={() => setShowPatternSuggestions(!showPatternSuggestions)}
+            style={{ cursor: 'pointer', background: showPatternSuggestions ? '#7c3aed' : '#333', color: '#a78bfa', border: showPatternSuggestions ? '1px solid #a78bfa' : '1px solid #444' }}
+          >
+            🔮 Pattern Suggestions
+          </button>
+          <button
+            className={`status-badge ${showExDivInfo ? 'active' : ''}`}
+            onClick={() => setShowExDivInfo(!showExDivInfo)}
+            style={{ cursor: 'pointer', background: showExDivInfo ? '#d97706' : '#333', color: '#fbbf24', border: showExDivInfo ? '1px solid #fbbf24' : '1px solid #444' }}
+          >
+            💰 Ex-Div Info Today
           </button>
 
           <div style={{ width: '1px', height: '20px', background: '#444', margin: '0 10px' }}></div>
@@ -1338,6 +1516,129 @@ function ScannerPage() {
         isOpen={showQeBench}
         onClose={() => setShowQeBench(false)}
       />
+
+      {/* Excluded List Modal */}
+      <ExcludedListModal
+        isOpen={showExcludedList}
+        onClose={() => setShowExcludedList(false)}
+      />
+
+      {/* General Logic Modal */}
+      <GeneralLogicModal
+        isOpen={showGeneralLogic}
+        onClose={() => setShowGeneralLogic(false)}
+      />
+
+      {/* Pattern Suggestions Modal */}
+      <PatternSuggestionsModal
+        isOpen={showPatternSuggestions}
+        onClose={() => setShowPatternSuggestions(false)}
+      />
+
+      {/* Ex-Div Info Modal */}
+      <ExDivInfoModal
+        isOpen={showExDivInfo}
+        onClose={() => setShowExDivInfo(false)}
+      />
+
+      {/* TSS - RTS Screen */}
+      {showTSSScreen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: '#0d1117', zIndex: 2000, overflow: 'auto', padding: '20px',
+          fontFamily: "'JetBrains Mono', 'Fira Code', monospace"
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h2 style={{ color: '#4ade80', margin: 0 }}>📈 Truth Shift Score v2 — Real-Time Dashboard</h2>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={() => {
+                fetch('/tss-v2').then(r => r.json()).then(d => { if (d.success) setTssData(d) }).catch(console.error)
+              }} style={{ padding: '6px 12px', background: '#1a7a3a', color: '#fff', border: '1px solid #4ade80', borderRadius: '4px', cursor: 'pointer' }}>
+                🔄 Refresh
+              </button>
+              <button onClick={() => setShowTSSScreen(false)} style={{
+                padding: '6px 16px', background: '#e53e3e', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold'
+              }}>Close</button>
+            </div>
+          </div>
+
+          {!tssData ? (
+            <div style={{ color: '#888', textAlign: 'center', padding: '60px' }}>
+              <p>⏳ TSS v2 verisi bekleniyor...</p>
+              <p style={{ fontSize: '12px' }}>Engine henüz hesaplama yapmamış olabilir veya truth tick verisi eksik.</p>
+            </div>
+          ) : (
+            <div>
+              {Object.entries(tssData.market_scores || {}).map(([wname, mkt]) => (
+                <div key={wname} style={{ background: '#161b22', borderRadius: '8px', padding: '16px', marginBottom: '20px', border: '1px solid #30363d' }}>
+                  <h3 style={{ color: '#c9d1d9', marginTop: 0 }}>
+                    🌐 {wname} — Market TSS: <span style={{ color: mkt.tss >= 55 ? '#4ade80' : mkt.tss >= 45 ? '#fbbf24' : '#ef4444', fontSize: '24px' }}>{mkt.tss}</span>
+                    <span style={{ color: '#8b949e', fontSize: '14px', marginLeft: '16px' }}>{mkt.symbol_count} symbols, {mkt.group_count} groups</span>
+                  </h3>
+                  {mkt.top_group && <div style={{ color: '#4ade80' }}>▲ Most Bullish: {mkt.top_group.name} = {mkt.top_group.tss}</div>}
+                  {mkt.bottom_group && <div style={{ color: '#ef4444' }}>▼ Most Bearish: {mkt.bottom_group.name} = {mkt.bottom_group.tss}</div>}
+                  {mkt.groups_ranked && (
+                    <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '12px', fontSize: '13px' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid #30363d' }}>
+                          <th style={{ textAlign: 'left', padding: '6px', color: '#8b949e' }}>#</th>
+                          <th style={{ textAlign: 'left', padding: '6px', color: '#8b949e' }}>Group</th>
+                          <th style={{ textAlign: 'center', padding: '6px', color: '#8b949e' }}>TSS</th>
+                          <th style={{ textAlign: 'left', padding: '6px', color: '#8b949e' }}>Signal</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {mkt.groups_ranked.map((g, i) => (
+                          <tr key={g.name} style={{ borderBottom: '1px solid #21262d' }}>
+                            <td style={{ padding: '4px 6px', color: '#8b949e' }}>{i + 1}</td>
+                            <td style={{ padding: '4px 6px', color: '#c9d1d9' }}>{g.name}</td>
+                            <td style={{ padding: '4px 6px', textAlign: 'center', fontWeight: 'bold', color: g.tss >= 55 ? '#4ade80' : g.tss >= 45 ? '#fbbf24' : '#ef4444' }}>{g.tss}</td>
+                            <td style={{ padding: '4px 6px', color: g.tss >= 55 ? '#4ade80' : g.tss >= 45 ? '#fbbf24' : '#ef4444' }}>
+                              {g.tss >= 70 ? '🟢🟢 STRONG BUY' : g.tss >= 55 ? '🟢 Bullish' : g.tss >= 45 ? '↔️ Neutral' : g.tss >= 30 ? '🔴 Bearish' : '🔴🔴 STRONG SELL'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              ))}
+              {tssData.symbol_scores && Object.keys(tssData.symbol_scores).length > 0 && (() => {
+                const allSyms = Object.entries(tssData.symbol_scores)
+                  .filter(([, d]) => d.W_15M || d.W_1H || d.W_FULL_DAY)
+                  .map(([sym, d]) => {
+                    const w = d.W_15M || d.W_1H || d.W_FULL_DAY || {}
+                    return { sym, tss: w.tss || 50, rec: w.recency_factor }
+                  })
+                  .sort((a, b) => b.tss - a.tss)
+                const n5 = Math.max(5, Math.ceil(allSyms.length * 0.05))
+                return (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '16px' }}>
+                    <div style={{ background: '#0a1f0a', borderRadius: '8px', padding: '16px', border: '1px solid #1a4a1a' }}>
+                      <h4 style={{ color: '#4ade80', marginTop: 0 }}>▲ TOP {n5} (Most Bullish)</h4>
+                      {allSyms.slice(0, n5).map((s, i) => (
+                        <div key={s.sym} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', color: '#4ade80', fontSize: '13px' }}>
+                          <span>{i + 1}. {s.sym}</span>
+                          <span style={{ fontWeight: 'bold' }}>{s.tss?.toFixed(1)} {s.rec < 1 ? `(rec=${s.rec})` : ''}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ background: '#1f0a0a', borderRadius: '8px', padding: '16px', border: '1px solid #4a1a1a' }}>
+                      <h4 style={{ color: '#ef4444', marginTop: 0 }}>▼ BOTTOM {n5} (Most Bearish)</h4>
+                      {allSyms.slice(-n5).reverse().map((s, i) => (
+                        <div key={s.sym} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', color: '#ef4444', fontSize: '13px' }}>
+                          <span>{i + 1}. {s.sym}</span>
+                          <span style={{ fontWeight: 'bold' }}>{s.tss?.toFixed(1)} {s.rec < 1 ? `(rec=${s.rec})` : ''}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })()}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

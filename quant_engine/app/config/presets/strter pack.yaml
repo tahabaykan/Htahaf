@@ -219,19 +219,19 @@ rules:
         order_type: FRONT_SELL
         score_column: Final_SFS_skor
     tumcsv:
-      heldkuponlu_pair_count: 8
+      heldkuponlu_pair_count: 16
       min_selection: 2
       presets:
         v10:
-          heldkuponlu_pair_count: 8
+          heldkuponlu_pair_count: 16
           min_selection: 2
           selection_percent: 0.1
         v15:
-          heldkuponlu_pair_count: 10
+          heldkuponlu_pair_count: 20
           min_selection: 2
           selection_percent: 0.12
         v20:
-          heldkuponlu_pair_count: 12
+          heldkuponlu_pair_count: 24
           min_selection: 3
           selection_percent: 0.15
       selection_percent: 0.1

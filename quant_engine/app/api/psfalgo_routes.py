@@ -13,7 +13,7 @@ Key Principles:
 
 from fastapi import APIRouter, HTTPException, Query
 from typing import Dict, Any, Optional, List
-from datetime import datetime
+from datetime import datetime, timedelta
 from dataclasses import asdict
 
 from app.core.logger import logger
@@ -48,6 +48,97 @@ async def get_runall_state() -> Dict[str, Any]:
     if not snapshot:
         raise HTTPException(status_code=503, detail="RunallEngine not available")
     
+    # Build account_state with Port Adjuster max exposure (same as /jfin/state)
+    account_state = None
+    if snapshot.exposure:
+        # Convert ExposureSnapshot to dict if needed
+        if hasattr(snapshot.exposure, 'dict'):
+            account_state = snapshot.exposure.dict()
+        elif hasattr(snapshot.exposure, '__dict__'):
+            account_state = snapshot.exposure.__dict__.copy()
+        else:
+            account_state = {
+                'pot_total': getattr(snapshot.exposure, 'pot_total', 0),
+                'pot_max': getattr(snapshot.exposure, 'pot_max', 0),
+            }
+    
+    # Convert ExposureSnapshot dataclass to dict for proper serialization
+    exposure_dict = None
+    if snapshot.exposure:
+        from dataclasses import asdict
+        try:
+            exposure_dict = asdict(snapshot.exposure)
+            # Convert datetime to ISO string for JSON serialization
+            if exposure_dict.get('timestamp'):
+                exposure_dict['timestamp'] = str(exposure_dict['timestamp'])
+        except Exception as e:
+            logger.debug(f"[PSFALGO STATE] Could not convert exposure to dict: {e}")
+            exposure_dict = {
+                'pot_total': getattr(snapshot.exposure, 'pot_total', 0),
+                'pot_max': getattr(snapshot.exposure, 'pot_max', 0),
+                'long_lots': getattr(snapshot.exposure, 'long_lots', 0),
+                'short_lots': getattr(snapshot.exposure, 'short_lots', 0),
+                'long_value': getattr(snapshot.exposure, 'long_value', 0),
+                'short_value': getattr(snapshot.exposure, 'short_value', 0),
+                'net_exposure': getattr(snapshot.exposure, 'net_exposure', 0),
+                'mode': getattr(snapshot.exposure, 'mode', 'OFANSIF'),
+            }
+    
+    # Get Max Exposure from Port Adjuster V2 (account-aware - single source of truth)
+    try:
+        from app.port_adjuster.port_adjuster_store_v2 import get_port_adjuster_store_v2
+        from app.trading.trading_account_context import get_trading_context
+        account_id = get_trading_context().trading_mode.value
+        pa_store = get_port_adjuster_store_v2()
+        pa_config = pa_store.get_config(account_id)
+        if pa_config:
+            max_exposure_from_pa = pa_config.total_exposure_usd
+            if account_state is None:
+                account_state = {}
+            account_state['limit_max_exposure'] = max_exposure_from_pa
+            account_state['pot_max'] = max_exposure_from_pa  # Override with PA value
+            if exposure_dict:
+                exposure_dict['pot_max'] = max_exposure_from_pa
+            logger.debug(f"[PSFALGO STATE] Max exposure from Port Adjuster V2 ({account_id}): ${max_exposure_from_pa:,.0f}")
+    except Exception as e:
+        logger.warning(f"[PSFALGO STATE] Could not get Port Adjuster V2 config: {e}")
+        # Fallback to V1 store
+        try:
+            from app.port_adjuster.port_adjuster_store import get_port_adjuster_store
+            pa_store = get_port_adjuster_store()
+            pa_config = pa_store.get_config()
+            if pa_config:
+                max_exposure_from_pa = pa_config.total_exposure_usd
+                if account_state is None:
+                    account_state = {}
+                account_state['limit_max_exposure'] = max_exposure_from_pa
+                account_state['pot_max'] = max_exposure_from_pa
+                if exposure_dict:
+                    exposure_dict['pot_max'] = max_exposure_from_pa
+        except Exception as e2:
+            logger.warning(f"[PSFALGO STATE] Could not get Port Adjuster V1 config: {e2}")
+    
+    # Max cur exp / max pot exp (single source - Set & Check Rules / Port Adjuster sync)
+    # V2: Account-aware exposure thresholds
+    try:
+        from app.psfalgo.exposure_threshold_service_v2 import get_exposure_threshold_service_v2
+        from app.trading.trading_account_context import get_trading_context
+        account_id = get_trading_context().trading_mode.value
+        thresh = get_exposure_threshold_service_v2()
+        limits = thresh.get_limits_for_api(account_id)
+        if exposure_dict:
+            exposure_dict['max_cur_exp_pct'] = limits['max_cur_exp_pct']
+            exposure_dict['max_pot_exp_pct'] = limits['max_pot_exp_pct']
+            if exposure_dict.get('pot_max') and exposure_dict.get('pot_max') > 0:
+                exposure_dict['current_exposure_pct'] = round(
+                    100.0 * (exposure_dict.get('pot_total') or 0) / exposure_dict['pot_max'], 2
+                )
+        if account_state is not None:
+            account_state['max_cur_exp_pct'] = limits['max_cur_exp_pct']
+            account_state['max_pot_exp_pct'] = limits['max_pot_exp_pct']
+    except Exception as e:
+        logger.debug(f"[PSFALGO STATE] Exposure limits: {e}")
+
     return {
         'success': True,
         'state': {
@@ -61,10 +152,193 @@ async def get_runall_state() -> Dict[str, Any]:
             'next_cycle_time': snapshot.next_cycle_time,
             'last_error': snapshot.last_error,
             'last_error_time': snapshot.last_error_time,
-            'exposure': snapshot.exposure,
+            'exposure': exposure_dict,
+            'account_state': account_state,
             'timestamp': snapshot.timestamp
         }
     }
+
+
+@router.get("/exposure-limits")
+async def get_exposure_limits(account_id: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Get exposure limits for account (single source for Set & Check Rules, Port Adjuster, and UI).
+    V2: Account-aware - pass account_id or uses current trading context.
+
+    Response includes:
+    - max_cur_exp_pct: Current exposure threshold (%)
+    - max_pot_exp_pct: Potential exposure threshold (%)
+    - pot_max: Maximum exposure limit ($)
+    - cur_max_dollars: Derived current limit in dollars (pot_max × max_cur_exp_pct / 100)
+    """
+    try:
+        from app.psfalgo.exposure_threshold_service_v2 import get_exposure_threshold_service_v2
+        from app.trading.trading_account_context import get_trading_context
+        acc = account_id or get_trading_context().trading_mode.value
+        thresh = get_exposure_threshold_service_v2()
+        limits = thresh.get_limits_for_api(acc)
+        
+        # Add derived dollar values
+        pot_max = limits.get('pot_max', 1400000.0)
+        cur_pct = limits.get('max_cur_exp_pct', 92.0)
+        limits['cur_max_dollars'] = round(pot_max * (cur_pct / 100.0), 2)
+        limits['derisk_at_dollars'] = round(pot_max * 0.849, 2)
+        limits['hard_stop_at_dollars'] = round(pot_max * (cur_pct / 100.0), 2)
+        
+        return {"success": True, "account_id": acc, **limits}
+    except Exception as e:
+        logger.error(f"[PSFALGO] get_exposure_limits: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/hard-risk-status")
+async def get_hard_risk_status(account_id: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Hard risk modu: cur >= max_cur_exp OR pot >= max_pot_exp.
+    REV saved/reload (INC) atlanmalı; sadece REV take profit (DEC) çalışır.
+    V2: Account-aware thresholds - pass account_id or uses current trading context.
+    """
+    try:
+        from app.trading.trading_account_context import get_trading_context
+        from app.psfalgo.exposure_calculator import get_current_and_potential_exposure_pct
+        from app.psfalgo.exposure_threshold_service_v2 import get_exposure_threshold_service_v2
+
+        acc = account_id or get_trading_context().trading_mode.value
+        _, cur_pct, pot_pct = await get_current_and_potential_exposure_pct(acc)
+        thresh = get_exposure_threshold_service_v2()
+        hard_risk = thresh.is_hard_risk_mode(acc, cur_pct, pot_pct)
+        limits = thresh.get_limits_for_api(acc)
+        return {
+            "success": True,
+            "hard_risk": hard_risk,
+            "account_id": acc,
+            "current_exposure_pct": round(cur_pct, 2),
+            "potential_exposure_pct": round(pot_pct, 2),
+            "max_cur_exp_pct": limits['max_cur_exp_pct'],
+            "max_pot_exp_pct": limits['max_pot_exp_pct'],
+        }
+    except Exception as e:
+        logger.error(f"[PSFALGO] hard-risk-status: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/free-exposure")
+async def get_free_exposure(account_id: Optional[str] = None, symbol: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Free Exposure Status — boş kapasite ve MM lot limitleri.
+    
+    Döndürür:
+    - free_cur_pct: Mevcut boş kapasite (%)
+    - free_pot_pct: Potansiyel boş kapasite (%)
+    - effective_free_pct: Bağlayıcı minimum (%)
+    - divisor: AVG_ADV böleni (None = BLOCKED)
+    - tier_label: Kademe açıklaması
+    - blocked: True ise tüm INCREASE emirleri yasak
+    - mm_lot: (opsiyonel) Belirtilen sembol için hesaplanan MM lot
+    """
+    try:
+        from app.trading.trading_account_context import get_trading_context
+        from app.psfalgo.free_exposure_engine import get_free_exposure_engine
+
+        acc = account_id or get_trading_context().trading_mode.value
+        engine = get_free_exposure_engine()
+        snapshot = await engine.calculate_free_exposure(acc)
+        
+        result = {"success": True, **snapshot}
+        
+        # Opsiyonel: belirli bir sembol için lot hesapla
+        if symbol:
+            mm_lot = await engine.get_mm_lot_for_symbol(acc, symbol, use_cache=True)
+            result['mm_lot'] = mm_lot
+            result['mm_lot_symbol'] = symbol
+        
+        return result
+    except Exception as e:
+        logger.error(f"[PSFALGO] free-exposure: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/free-exposure/all-accounts")
+async def get_free_exposure_all_accounts() -> Dict[str, Any]:
+    """Tüm hesapların free exposure durumunu döndür (cache'den)."""
+    try:
+        from app.psfalgo.free_exposure_engine import get_free_exposure_engine
+        engine = get_free_exposure_engine()
+        return {"success": True, "accounts": engine.get_status_summary()}
+    except Exception as e:
+        logger.error(f"[PSFALGO] free-exposure/all-accounts: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/exposure-limits")
+async def set_exposure_limits(request: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Set exposure limits per account. V2: Account-aware.
+
+    Body: {
+        "account_id": "IBKR_PED",
+        "max_cur_exp_pct": 92,
+        "max_pot_exp_pct": 100,
+        "pot_max": 5000000
+    }
+
+    pot_max = maximum exposure limit in dollars ($).
+    max_cur_exp_pct = current exposure threshold (%) — when reached, ADDNEWPOS disabled.
+    max_pot_exp_pct = potential exposure threshold (%) — when reached, hard risk mode ON.
+
+    Example: pot_max=$5M + max_cur_exp_pct=92% → derisk starts at $4.6M.
+    If account_id not provided, uses current trading context.
+    """
+    try:
+        from app.psfalgo.exposure_threshold_service_v2 import get_exposure_threshold_service_v2
+        from app.trading.trading_account_context import get_trading_context
+        
+        account_id = request.get("account_id") or get_trading_context().trading_mode.value
+        thresh = get_exposure_threshold_service_v2()
+        cur = request.get("max_cur_exp_pct")
+        pot = request.get("max_pot_exp_pct")
+        pot_max = request.get("pot_max")
+        
+        if cur is not None:
+            cur = float(cur)
+        if pot is not None:
+            pot = float(pot)
+        if pot_max is not None:
+            pot_max = float(pot_max)
+        
+        if cur is None and pot is None and pot_max is None:
+            return {"success": False, "error": "Provide at least one of: max_cur_exp_pct, max_pot_exp_pct, pot_max"}
+        
+        # Get current thresholds for this account
+        current_thresholds = thresh.get_thresholds(account_id)
+        cur = cur if cur is not None else current_thresholds.get("current_threshold", 92.0)
+        pot = pot if pot is not None else current_thresholds.get("potential_threshold", 100.0)
+        
+        thresh.save_thresholds(account_id, current=cur, potential=pot, pot_max=pot_max)
+        
+        # Recalculate derived values for response
+        saved = thresh.get_thresholds(account_id)
+        actual_pot_max = saved['pot_max']
+        cur_max_dollars = actual_pot_max * (cur / 100.0)
+        
+        logger.info(
+            f"[PSFALGO] Exposure limits set for {account_id}: "
+            f"cur={cur}%, pot={pot}%, pot_max=${actual_pot_max:,.0f}, "
+            f"cur_max_dollars=${cur_max_dollars:,.0f}"
+        )
+        return {
+            "success": True,
+            "account_id": account_id,
+            "max_cur_exp_pct": cur,
+            "max_pot_exp_pct": pot,
+            "pot_max": actual_pot_max,
+            "cur_max_dollars": round(cur_max_dollars, 2),
+            "derisk_at_dollars": round(actual_pot_max * 0.849, 2),
+            "hard_stop_at_dollars": round(actual_pot_max * (cur / 100.0), 2),
+        }
+    except Exception as e:
+        logger.error(f"[PSFALGO] set_exposure_limits: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/start")
@@ -199,6 +473,65 @@ async def set_active_engines(engines: List[str]) -> Dict[str, Any]:
         return {'success': False, 'error': str(e)}
 
 
+@router.post("/reset-active-engines")
+async def reset_active_engines() -> Dict[str, Any]:
+    """
+    Reset active engines to defaults (LT_TRIM, KARBOTU, MM_ENGINE, ADDNEWPOS_ENGINE).
+    Persisted to Redis.
+    """
+    from app.psfalgo.runall_state_api import get_runall_state_api
+    try:
+        state_api = get_runall_state_api()
+        if not state_api or not state_api.runall_engine:
+            return {'success': False, 'error': 'RunallEngine not initialized'}
+        
+        engines = state_api.runall_engine.reset_active_engines_to_default()
+        return {'success': True, 'active_engines': engines}
+    except Exception as e:
+        logger.error(f"[API] reset_active_engines error: {e}", exc_info=True)
+        return {'success': False, 'error': str(e)}
+
+
+# ============================================================================
+# L/S RATIO SETTINGS (Per-Engine Long/Short Allocation)
+# ============================================================================
+
+@router.get("/ls-ratio")
+async def get_ls_ratio() -> Dict[str, Any]:
+    """
+    Get Long/Short ratio for all increase engines.
+    Returns: { MM_ENGINE: {long_pct, short_pct}, PATADD_ENGINE: ..., ADDNEWPOS_ENGINE: ... }
+    """
+    try:
+        from app.xnl.ls_ratio_settings import get_ls_ratio_store
+        store = get_ls_ratio_store()
+        return {'success': True, 'ratios': store.get_all()}
+    except Exception as e:
+        logger.error(f"[API] get_ls_ratio error: {e}", exc_info=True)
+        return {'success': False, 'error': str(e)}
+
+
+@router.post("/ls-ratio")
+async def set_ls_ratio(request: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Set Long/Short ratio for an increase engine.
+    Body: { "engine": "MM_ENGINE", "long_pct": 30 }
+    short_pct is automatically computed as 100 - long_pct.
+    """
+    try:
+        from app.xnl.ls_ratio_settings import get_ls_ratio_store
+        engine_name = request.get('engine')
+        long_pct = request.get('long_pct')
+        if not engine_name or long_pct is None:
+            return {'success': False, 'error': 'engine and long_pct required'}
+        store = get_ls_ratio_store()
+        result = store.set_ratio(engine_name, int(long_pct))
+        return {'success': True, 'engine': engine_name, **result, 'ratios': store.get_all()}
+    except Exception as e:
+        logger.error(f"[API] set_ls_ratio error: {e}", exc_info=True)
+        return {'success': False, 'error': str(e)}
+
+
 # ============================================================================
 # EXECUTION OBSERVABILITY
 # ============================================================================
@@ -330,6 +663,67 @@ async def get_rejected_candidates(limit: int = 100) -> Dict[str, Any]:
 
 
 # ============================================================================
+# NOT FOUND STOCKS (Zero/Missing Metrics)
+# ============================================================================
+
+@router.get("/not-found")
+async def get_not_found_stocks() -> Dict[str, Any]:
+    """
+    Get stocks with missing/zero critical metrics (DATA_INCOMPLETE).
+    
+    These stocks are excluded from KARBOTU, REDUCEMORE, ADDNEWPOS proposals
+    because their Fbtot, SFStot, GORT, or SMA values are None or exactly 0.00.
+    
+    Returns:
+        List of not found stocks with their missing metrics
+    """
+    from app.core.redis_client import get_redis_client
+    import json
+    
+    try:
+        redis = get_redis_client().sync
+        
+        not_found_list = []
+        
+        # Get from all engine sources
+        for source in ['karbotu', 'addnewpos', 'reducemore']:
+            key = f"psfalgo:not_found:{source}"
+            data = redis.get(key)
+            if data:
+                try:
+                    items = json.loads(data)
+                    for item in items:
+                        item['source'] = source.upper()
+                        not_found_list.append(item)
+                except json.JSONDecodeError:
+                    logger.warning(f"Invalid JSON in {key}")
+        
+        # Deduplicate by symbol (keep first occurrence)
+        seen = set()
+        unique_list = []
+        for item in not_found_list:
+            if item['symbol'] not in seen:
+                seen.add(item['symbol'])
+                unique_list.append(item)
+        
+        return {
+            'success': True,
+            'count': len(unique_list),
+            'not_found': unique_list
+        }
+        
+    except Exception as e:
+        logger.error(f"[NOT_FOUND] Error fetching not found stocks: {e}", exc_info=True)
+        return {
+            'success': False,
+            'count': 0,
+            'not_found': [],
+            'error': str(e)
+        }
+
+
+
+# ============================================================================
 # AUDIT TRAIL
 # ============================================================================
 
@@ -438,6 +832,27 @@ async def get_shadow_live_status() -> Dict[str, Any]:
 # ORDER PROPOSALS (Human-in-the-Loop)
 # ============================================================================
 
+def _get_active_account_id() -> Optional[str]:
+    """
+    Get the currently active account ID from Redis.
+    Returns: 'HAMPRO', 'IBKR_PED', 'IBKR_GUN', or None if not set.
+    
+    CRITICAL: Used for per-account proposal filtering.
+    When user switches account mode in the UI, only that account's proposals should be visible.
+    """
+    try:
+        from app.core.redis_client import get_redis_client
+        redis = get_redis_client()
+        if redis and redis.sync:
+            mode = redis.sync.get("psfalgo:trading:account_mode")
+            if mode:
+                if isinstance(mode, bytes):
+                    mode = mode.decode("utf-8")
+                return mode.strip()
+    except Exception:
+        pass
+    return None
+
 @router.get("/proposals")
 async def get_proposals(
     status: Optional[str] = None,
@@ -448,6 +863,10 @@ async def get_proposals(
     """
     Get order proposals with optional filters.
     
+    CRITICAL: Automatically filters by active account.
+    When user is viewing IBKR_PED, only IBKR_PED proposals are shown.
+    When user is viewing HAMPRO, only HAMPRO proposals are shown.
+    
     Args:
         status: Filter by status (PROPOSED, ACCEPTED, REJECTED, EXPIRED)
         engine: Filter by engine (KARBOTU, REDUCEMORE, ADDNEWPOS)
@@ -455,7 +874,7 @@ async def get_proposals(
         limit: Maximum number of proposals to return (default: 100, max: 500)
     
     Returns:
-        List of OrderProposals
+        List of OrderProposals for the active account
     """
     from app.psfalgo.proposal_store import get_proposal_store
     
@@ -466,32 +885,144 @@ async def get_proposals(
             'count': 0,
             'proposals': []
         }
+    
+    # CRITICAL: Filter by active account
+    active_account = _get_active_account_id()
     
     limit = min(limit, 500)  # Cap at 500
     proposals = proposal_store.get_all_proposals(
         status=status,
         engine=engine,
         cycle_id=cycle_id,
+        account_id=active_account,
         limit=limit
     )
-    
+    # Son 60 sn icinde uretilmis proposal'lar; eskiler listede gorunmez
+    proposals = _drop_stale_proposals(proposals, max_age_seconds=60)
+    # Unique (hisse, yon): ayni hisse+yon icin sadece |lot| buyuk olan; birebir ayni emir tekrar etmesin
+    proposals = _unique_proposals_by_symbol_side_max_abs_lot(proposals, proposal_store)
+    out = [p.to_dict() for p in proposals]
+    out = _enrich_proposals_with_live_l1(out)
     return {
         'success': True,
-        'count': len(proposals),
-        'proposals': [p.to_dict() for p in proposals]
+        'count': len(out),
+        'proposals': out,
+        'active_account': active_account
     }
+
+
+def _drop_stale_proposals(plist: List, max_age_seconds: int = 60) -> List:
+    """Son max_age_seconds (varsayilan 60 sn) icinde uretilmis proposal'lari tutar; eskileri atmaz."""
+    if not plist:
+        return plist
+    now_ts = datetime.utcnow().timestamp()
+    cutoff_ts = now_ts - max_age_seconds
+    out = []
+    for p in plist:
+        pt = getattr(p, "proposal_ts", None)
+        if pt is None:
+            continue
+        ts = pt.timestamp() if hasattr(pt, "timestamp") else (float(pt) if pt else 0)
+        if ts >= cutoff_ts:
+            out.append(p)
+    return out
+
+
+def _unique_proposals_by_symbol_side_max_abs_lot(plist: List, proposal_store=None) -> List:
+    """
+    Ayni (hisse, yon) icin tek oneri: mutlak lotu buyuk olan kalir, kucuk olan esgecilir.
+    Birebir ayni emir (ayni hisse, ayni lot, ayni yon) zaten tek kayit olur.
+    Tie-break: LT_STAGE yuksek, sonra en guncel proposal_ts.
+    """
+    if not plist:
+        return plist
+    by_sym_side = {}
+    for p in plist:
+        sym = (getattr(p, "symbol", None) or "").strip().upper()
+        side = (getattr(p, "side", None) or "SELL").upper()
+        k = (sym, side)
+        qty = int(getattr(p, "qty", 0) or 0)
+        abs_qty = abs(qty)
+        ts = 0.0
+        pt = getattr(p, "proposal_ts", None)
+        if pt is not None:
+            ts = pt.timestamp() if hasattr(pt, "timestamp") else (float(pt) if pt else 0.0)
+        r = proposal_store.get_lt_stage_rank(p) if proposal_store else 0
+        if k not in by_sym_side:
+            by_sym_side[k] = (p, abs_qty, r, ts)
+        else:
+            _cur, cur_abs, cur_r, cur_ts = by_sym_side[k]
+            if abs_qty > cur_abs or (abs_qty == cur_abs and (r > cur_r or (r == cur_r and ts > cur_ts))):
+                by_sym_side[k] = (p, abs_qty, r, ts)
+    return [v[0] for v in by_sym_side.values()]
+
+
+def _enrich_proposals_with_live_l1(proposal_dicts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Her proposal icin guncel L1 bid/ask/last DataFabric'ten alinir; Redis'teki eski degerler
+    uzerine yazilir. Emir onerisi fiyati her zaman guncel tahtaya gore yeniden hesaplanir:
+    SELL = ask - spread*0.15, BUY = bid + spread*0.15. Boylece UI tahta ve son print ile uyumlu gorur.
+    """
+    if not proposal_dicts:
+        return proposal_dicts
+    try:
+        from app.core.data_fabric import get_data_fabric
+        fabric = get_data_fabric()
+        if not fabric:
+            return proposal_dicts
+        SPREAD_FACTOR = 0.15
+        for d in proposal_dicts:
+            sym = (d.get("symbol") or "").strip()
+            if not sym:
+                continue
+            snap = fabric.get_fast_snapshot(sym)
+            if not snap:
+                continue
+            bid = snap.get("bid")
+            ask = snap.get("ask")
+            last = snap.get("last")
+            try:
+                bid_f = float(bid) if bid is not None else None
+                ask_f = float(ask) if ask is not None else None
+                last_f = float(last) if last is not None else None
+            except (TypeError, ValueError):
+                bid_f, ask_f, last_f = None, None, None
+            if bid_f is not None:
+                d["bid"] = bid_f
+            if ask_f is not None:
+                d["ask"] = ask_f
+            if last_f is not None:
+                d["last"] = last_f
+            # Emir onerisi: SELL = ask - spread*0.15, BUY = bid + spread*0.15 (her zaman guncel L1)
+            if bid_f is not None and ask_f is not None and bid_f > 0 and ask_f > 0:
+                spread = ask_f - bid_f
+                mid = (bid_f + ask_f) / 2
+                side = (d.get("side") or "SELL").upper()
+                if "SELL" in side:
+                    proposed = round(ask_f - spread * SPREAD_FACTOR, 2)
+                else:
+                    proposed = round(bid_f + spread * SPREAD_FACTOR, 2)
+                d["proposed_price"] = proposed
+                d["price"] = proposed
+                d["spread"] = round(spread, 4)
+                if mid > 0:
+                    d["spread_percent"] = round((spread / mid) * 100, 4)
+    except Exception as e:
+        logger.warning(f"[PROPOSALS] Enrich L1 failed: {e}")
+    return proposal_dicts
 
 
 @router.get("/proposals/latest")
 async def get_latest_proposals(limit: int = 10) -> Dict[str, Any]:
     """
-    Get latest N order proposals.
+    Get latest N order proposals from CURRENT CYCLE ONLY.
+    Only shows proposals from the most recent cycle to avoid showing stale proposals.
     
     Args:
-        limit: Number of latest proposals (default: 10, max: 100)
+        limit: Number of latest proposals (default: 10, max: 500)
     
     Returns:
-        Latest OrderProposals
+        Latest OrderProposals from current cycle
     """
     from app.psfalgo.proposal_store import get_proposal_store
     
@@ -503,13 +1034,84 @@ async def get_latest_proposals(limit: int = 10) -> Dict[str, Any]:
             'proposals': []
         }
     
-    limit = min(limit, 100)  # Cap at 100
-    proposals = proposal_store.get_latest_proposals(limit=limit)
+    limit = min(limit, 500)  # Increased cap to 500 to accommodate all pending
     
+    # CRITICAL: Filter by active account
+    active_account = _get_active_account_id()
+    
+    # Get current cycle_id from RUNALL state
+    current_cycle_id = None
+    try:
+        state_api = get_runall_state_api()
+        if state_api:
+            snapshot = state_api.get_state_snapshot()
+            if snapshot:
+                current_cycle_id = snapshot.cycle_id
+    except Exception as e:
+        logger.warning(f"[PROPOSALS] Could not get current cycle_id: {e}")
+    
+    def _drop_stale(plist, max_age_seconds: int = 60):
+        """Sadece son veriler: max_age_seconds (varsayilan 1 dk) dan eski onerileri at; eski Redis verisi donmez."""
+        if not plist:
+            return plist
+        now_ts = datetime.utcnow().timestamp()
+        cutoff_ts = now_ts - max_age_seconds
+        out = []
+        for p in plist:
+            ts = getattr(p, "proposal_ts", None)
+            if ts is None:
+                continue
+            pt = ts.timestamp() if hasattr(ts, "timestamp") else (float(ts) if ts else 0)
+            if pt >= cutoff_ts:
+                out.append(p)
+        return out
+
+    # Sadece son 1 dakika: eski Redis verisi (chg 0.09 vs 0.40 gibi) donmesin; tekil ve en guncel
+    MAX_AGE_SECONDS = 60  # 1 dk
+
+    # If we have a current cycle_id, filter by it
+    if current_cycle_id is not None:
+        proposals = proposal_store.get_all_proposals(
+            cycle_id=current_cycle_id,
+            account_id=active_account,
+            limit=limit * 2
+        )
+        proposals = _drop_stale(proposals, MAX_AGE_SECONDS)
+        # Unique (hisse, yon): ayni hisse+yon icin sadece |lot| buyuk olan; birebir ayni emir tek olur
+        proposals = _unique_proposals_by_symbol_side_max_abs_lot(proposals, proposal_store)
+        proposals.sort(key=lambda x: x.proposal_ts, reverse=True)
+        proposals = proposals[:limit]
+        out = [p.to_dict() for p in proposals]
+        out = _enrich_proposals_with_live_l1(out)
+        return {
+            'success': True,
+            'count': len(out),
+            'proposals': out,
+            'cycle_id': current_cycle_id
+        }
+
+    # Fallback: Get latest proposals (if cycle_id not available)
+    pending = proposal_store.get_all_proposals(status='PROPOSED', account_id=active_account, limit=1000)
+    history_limit = 50
+    history = proposal_store.get_all_proposals(account_id=active_account, limit=history_limit)
+    merged_map = {p.id: p for p in pending}
+    for p in history:
+        if p.id not in merged_map:
+            merged_map[p.id] = p
+    final_proposals = list(merged_map.values())
+    final_proposals = _drop_stale(final_proposals, MAX_AGE_SECONDS)
+    # Unique (hisse, yon): ayni hisse+yon icin sadece |lot| buyuk olan; birebir ayni emir tek olur
+    final_proposals = _unique_proposals_by_symbol_side_max_abs_lot(final_proposals, proposal_store)
+    final_proposals.sort(key=lambda x: x.proposal_ts, reverse=True)
+    if len(final_proposals) > limit and len(pending) < limit:
+        final_proposals = final_proposals[:limit]
+
+    out = [p.to_dict() for p in final_proposals]
+    out = _enrich_proposals_with_live_l1(out)
     return {
         'success': True,
-        'count': len(proposals),
-        'proposals': [p.to_dict() for p in proposals]
+        'count': len(out),
+        'proposals': out
     }
 
 
@@ -663,6 +1265,255 @@ async def get_data_readiness() -> Dict[str, Any]:
         'success': True,
         'report': report
     }
+
+
+# ============================================================================
+# JFIN STATE API (For ADDNEWPOS UI Tab)
+# ============================================================================
+
+@router.get("/jf/state")
+async def get_jfin_state() -> Dict[str, Any]:
+    """
+    Get current JFIN state for ADDNEWPOS tab.
+    
+    Returns JFIN intents from last RUNALL cycle:
+    - bb_stocks: BB pool stocks
+    - fb_stocks: FB pool stocks  
+    - sas_stocks: SAS pool stocks
+    - sfs_stocks: SFS pool stocks
+    - percentage: Current JFIN percentage
+    """
+    from app.core.redis_client import get_redis_client
+    import json
+    
+    try:
+        redis = get_redis_client().sync
+        
+        # Get JFIN state from Redis
+        state_json = redis.get("psfalgo:jfin:current_state")
+        
+        if not state_json:
+            # Check if RUNALL is running
+            state_api = get_runall_state_api()
+            runall_running = False
+            if state_api:
+                snapshot = state_api.get_state_snapshot()
+                runall_running = snapshot.loop_running if snapshot else False
+            
+            return {
+                "success": True,
+                "is_empty": True,
+                "state": None,
+                "runall_running": runall_running,
+                "message": "JFIN state not populated. Start RUNALL to generate ADDNEWPOS data."
+            }
+        
+        # Parse state
+        state = json.loads(state_json)
+        
+        # ADDED: Enhance state with Account Exposure info (for UI estimation)
+        state_api = get_runall_state_api()
+        account_state = None
+        if state_api:
+            snapshot = state_api.get_state_snapshot()
+            if snapshot and snapshot.exposure:
+                # Convert ExposureSnapshot to dict if needed
+                if hasattr(snapshot.exposure, 'dict'):
+                    account_state = snapshot.exposure.dict()
+                elif hasattr(snapshot.exposure, '__dict__'):
+                    account_state = snapshot.exposure.__dict__.copy()
+                else:
+                    account_state = {
+                        'pot_total': getattr(snapshot.exposure, 'pot_total', 0),
+                        'pot_max': getattr(snapshot.exposure, 'pot_max', 0),
+                    }
+        
+        # Get Max Exposure from Port Adjuster (single source of truth)
+        try:
+            from app.port_adjuster.port_adjuster_store import get_port_adjuster_store
+            pa_store = get_port_adjuster_store()
+            pa_config = pa_store.get_config()
+            if pa_config:
+                max_exposure_from_pa = pa_config.total_exposure_usd
+                if account_state is None:
+                    account_state = {}
+                account_state['limit_max_exposure'] = max_exposure_from_pa
+                account_state['pot_max'] = max_exposure_from_pa  # Override with PA value
+                logger.debug(f"[JFIN STATE] Max exposure from Port Adjuster: ${max_exposure_from_pa:,.0f}")
+        except Exception as e:
+            logger.warning(f"[JFIN STATE] Could not get Port Adjuster config: {e}")
+        
+        state['account_state'] = account_state
+        
+        return {
+            "success": True,
+            "is_empty": False,
+            "state": state,
+            "percentage": state.get("percentage", 50)
+        }
+        
+    except Exception as e:
+        logger.error(f"[JFIN STATE] Error fetching JFIN state: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/jfin/update-percentage")
+async def update_jfin_percentage(request: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Update JFIN percentage and recalculate lots.
+    
+    Args:
+        request: {"percentage": 25|50|75|100}
+    
+    Returns:
+        Updated JFIN state
+    """
+    from app.core.redis_client import get_redis_client
+    from app.psfalgo.jfin_engine import get_jfin_engine
+    import json
+    
+    try:
+        percentage = request.get("percentage")
+        if percentage not in [25, 50, 75, 100]:
+            raise HTTPException(status_code=400, detail="Percentage must be 25, 50, 75, or 100")
+        
+        redis = get_redis_client().sync
+        
+        # Get current state
+        state_json = redis.get("psfalgo:jfin:current_state")
+        if not state_json:
+            raise HTTPException(status_code=404, detail="JFIN state not found. Run RUNALL first.")
+        
+        state = json.loads(state_json)
+        
+        # Update percentage
+        state["percentage"] = percentage
+        
+        # Recalculate lots for each pool based on new percentage
+        engine = get_jfin_engine()
+        if engine:
+            engine.config.jfin_percentage = percentage
+            
+            # Recalculate lots (apply percentage scaling)
+            for pool_key in ["bb_stocks", "fb_stocks", "sas_stocks", "sfs_stocks"]:
+                if pool_key in state and state[pool_key]:
+                    for stock in state[pool_key]:
+                        if "calculated_lot" in stock:
+                            # Scale lot by percentage
+                            stock["final_lot"] = int(stock["calculated_lot"] * (percentage / 100))
+                            # Round to lot_rounding (default 100)
+                            lot_rounding = engine.config.lot_rounding
+                            stock["final_lot"] = (stock["final_lot"] // lot_rounding) * lot_rounding
+                            # Min lot check
+                            if stock["final_lot"] < engine.config.min_lot_per_order:
+                                stock["final_lot"] = 0
+        
+        # Save updated state
+        redis.setex("psfalgo:jfin:current_state", 3600, json.dumps(state))
+        
+        return {
+            "success": True,
+            "percentage": percentage,
+            "state": state
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[JFIN STATE] Error updating percentage: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# ADDNEWPOS FILTERS (Save/Load)
+# ============================================================================
+
+@router.get("/addnewpos/filters")
+async def get_addnewpos_filters() -> Dict[str, Any]:
+    """
+    Get saved ADDNEWPOS filters (Fbtot, SFStot, GORT, SMA min/max).
+    
+    Returns:
+        Saved filter configuration
+    """
+    from app.core.redis_client import get_redis_client
+    import json
+    
+    try:
+        redis = get_redis_client().sync
+        
+        filters_json = redis.get("psfalgo:addnewpos:filters")
+        
+        if not filters_json:
+            return {
+                "success": True,
+                "filters": None,
+                "message": "No saved filters found"
+            }
+        
+        filters = json.loads(filters_json)
+        
+        return {
+            "success": True,
+            "filters": filters
+        }
+        
+    except Exception as e:
+        logger.error(f"[ADDNEWPOS FILTERS] Error getting filters: {e}", exc_info=True)
+        return {
+            "success": False,
+            "filters": None,
+            "error": str(e)
+        }
+
+
+@router.post("/addnewpos/filters")
+async def save_addnewpos_filters(filters: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Save ADDNEWPOS filters (Fbtot, SFStot, GORT, SMA min/max).
+    
+    Args:
+        filters: Filter configuration dict with keys like fbtot_min, fbtot_max, etc.
+    
+    Returns:
+        Result dict
+    """
+    from app.core.redis_client import get_redis_client
+    import json
+    
+    try:
+        redis = get_redis_client().sync
+        
+        # Validate filter keys
+        valid_keys = {
+            'fbtot_min', 'fbtot_max', 
+            'sfstot_min', 'sfstot_max',
+            'gort_min', 'gort_max',
+            'sma63_min', 'sma63_max',
+            'sma246_min', 'sma246_max'
+        }
+        
+        # Filter only valid keys
+        clean_filters = {k: v for k, v in filters.items() if k in valid_keys}
+        
+        # Save to Redis (no expiry - persistent)
+        redis.set("psfalgo:addnewpos:filters", json.dumps(clean_filters))
+        
+        logger.info(f"[ADDNEWPOS FILTERS] Saved filters: {clean_filters}")
+        
+        return {
+            "success": True,
+            "message": "Filters saved successfully",
+            "filters": clean_filters
+        }
+        
+    except Exception as e:
+        logger.error(f"[ADDNEWPOS FILTERS] Error saving filters: {e}", exc_info=True)
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
 
 
 # ============================================================================
@@ -836,7 +1687,8 @@ async def get_trader_proposals(
             'cycle_id': proposal.cycle_id,
             'explanation': explanation
         })
-    
+
+    trader_proposals = _enrich_proposals_with_live_l1(trader_proposals)
     return {
         'success': True,
         'count': len(trader_proposals),
@@ -1015,7 +1867,7 @@ async def get_account_mode() -> Dict[str, Any]:
     Get current account mode.
     
     Returns:
-        Current account mode info
+        Current account mode info including IBKR connection status
     """
     try:
         from app.psfalgo.account_mode import get_account_mode_manager
@@ -1030,8 +1882,29 @@ async def get_account_mode() -> Dict[str, Any]:
                 'is_ibkr_gun': False,
                 'is_ibkr_ped': False,
                 'is_ibkr': False,
+                'ibkr_gun_connected': False,
+                'ibkr_ped_connected': False,
                 'warning': 'AccountModeManager not initialized, using default HAMMER_PRO'
             }
+        
+        # Get actual IBKR connection status from DualConnectionManager
+        ibkr_gun_connected = False
+        ibkr_ped_connected = False
+        try:
+            from app.psfalgo.dual_connection_manager import get_dual_connection_manager
+            dual_mgr = get_dual_connection_manager()
+            if dual_mgr:
+                ibkr_gun_connected = dual_mgr.is_account_connected('IBKR_GUN')
+                ibkr_ped_connected = dual_mgr.is_account_connected('IBKR_PED')
+            else:
+                # Fallback: check connectors directly
+                from app.psfalgo.ibkr_connector import get_ibkr_connector
+                gun_conn = get_ibkr_connector(account_type='IBKR_GUN', create_if_missing=False)
+                ped_conn = get_ibkr_connector(account_type='IBKR_PED', create_if_missing=False)
+                ibkr_gun_connected = gun_conn.is_connected() if gun_conn else False
+                ibkr_ped_connected = ped_conn.is_connected() if ped_conn else False
+        except Exception as conn_err:
+            logger.debug(f"Could not check IBKR connection status: {conn_err}")
         
         return {
             'success': True,
@@ -1039,7 +1912,9 @@ async def get_account_mode() -> Dict[str, Any]:
             'is_hammer': manager.is_hammer(),
             'is_ibkr_gun': manager.is_ibkr_gun(),
             'is_ibkr_ped': manager.is_ibkr_ped(),
-            'is_ibkr': manager.is_ibkr()
+            'is_ibkr': manager.is_ibkr(),
+            'ibkr_gun_connected': ibkr_gun_connected,
+            'ibkr_ped_connected': ibkr_ped_connected
         }
     except Exception as e:
         logger.error(f"Error getting account mode: {e}", exc_info=True)
@@ -1051,6 +1926,8 @@ async def get_account_mode() -> Dict[str, Any]:
             'is_ibkr_gun': False,
             'is_ibkr_ped': False,
             'is_ibkr': False,
+            'ibkr_gun_connected': False,
+            'ibkr_ped_connected': False,
             'error': str(e)
         }
 
@@ -1105,6 +1982,26 @@ async def set_account_mode(
         except Exception as sync_err:
              logger.error(f"[PSFALGO_ROUTES] Failed to sync TradingAccountContext: {sync_err}")
         
+        # Mark that account has been selected by user
+        try:
+            from app.core.redis_client import get_redis
+            redis = get_redis()
+            if redis:
+                redis.set("psfalgo:account_selected", "true", ex=86400)  # 24 hours expiry
+                logger.info(f"[PSFALGO_ROUTES] ✅ Account selection flag set in Redis")
+        except Exception as redis_err:
+            logger.warning(f"[PSFALGO_ROUTES] Failed to set account selection flag: {redis_err}")
+        
+        # Start Runall Engine when account is selected (if not already running)
+        try:
+            from app.psfalgo.runall_engine import get_runall_engine
+            runall_engine = get_runall_engine()
+            if runall_engine and not runall_engine.loop_running:
+                logger.info(f"[PSFALGO_ROUTES] 🚀 Starting Runall Engine (account selected: {mode})")
+                await runall_engine.start()
+        except Exception as start_err:
+            logger.error(f"[PSFALGO_ROUTES] Failed to start Runall Engine: {start_err}")
+        
         if not result.get('success'):
             raise HTTPException(status_code=400, detail=result.get('error', 'Failed to set account mode'))
         
@@ -1135,53 +2032,60 @@ async def connect_hammer() -> Dict[str, Any]:
                 'message': 'Hammer client not initialized'
             }
         
-        # Check if already connected
-        if hammer_client.is_connected():
-            return {
-                'success': True,
-                'connected': True,
-                'message': 'Already connected to Hammer Pro',
-                'befday_tracked': False
-            }
+        # Check if already connected — still proceed to BEFDAY tracking!
+        already_connected = hammer_client.is_connected()
         
-        # Connect to Hammer Pro
-        logger.info("[HAMMER_API] Connecting to Hammer Pro...")
-        try:
-            connected = hammer_client.connect()
-        except Exception as connect_err:
-            logger.error(f"Error during Hammer connect: {connect_err}", exc_info=True)
-            return {
-                'success': True,  # Return success with error message
-                'connected': False,
-                'message': f'Connection error: {str(connect_err)}'
-            }
+        if already_connected:
+            logger.info("[HAMMER_API] Already connected to Hammer Pro, checking BEFDAY...")
+            # Don't return early! Fall through to BEFDAY tracking below.
         
-        if not connected:
-            return {
-                'success': True,  # Return success with error message
-                'connected': False,
-                'message': 'Failed to connect to Hammer Pro. Check if Hammer Pro is running.'
-            }
+        if not already_connected:
+            # Connect to Hammer Pro
+            logger.info("[HAMMER_API] Connecting to Hammer Pro...")
+            try:
+                connected = hammer_client.connect()
+            except Exception as connect_err:
+                logger.error(f"Error during Hammer connect: {connect_err}", exc_info=True)
+                return {
+                    'success': True,  # Return success with error message
+                    'connected': False,
+                    'message': f'Connection error: {str(connect_err)}'
+                }
+            
+            if not connected:
+                return {
+                    'success': True,  # Return success with error message
+                    'connected': False,
+                    'message': 'Failed to connect to Hammer Pro. Check if Hammer Pro is running.'
+                }
+            
+            # Wait a bit for authentication
+            import asyncio
+            await asyncio.sleep(2)
+            
+            if not hammer_client.is_authenticated():
+                return {
+                    'success': True,  # Return success with error message
+                    'connected': False,
+                    'message': 'Connected but authentication failed. Check password.'
+                }
+            
+            # Connection successful - mark account as open for recovery (en az 1 hesap açık bekle)
+            from app.core.redis_client import get_redis_client
+            try:
+                r = get_redis_client()
+                if r and r.sync:
+                    r.sync.set("psfalgo:recovery:account_open", "HAMPRO")
+            except Exception as _:
+                pass
         
-        # Wait a bit for authentication
-        import asyncio
-        await asyncio.sleep(2)
-        
-        if not hammer_client.is_authenticated():
-            return {
-                'success': True,  # Return success with error message
-                'connected': False,
-                'message': 'Connected but authentication failed. Check password.'
-            }
-        
-        # Connection successful - now track BEFDAY positions
-        logger.info("[HAMMER_API] Connection successful, tracking BEFDAY positions...")
+        logger.info("[HAMMER_API] Proceeding with BEFDAY tracking...")
         
         try:
             # Get positions from Hammer
             positions_service = get_hammer_positions_service()
             if positions_service:
-                positions = await positions_service.get_positions()
+                positions = positions_service.get_positions()
                 
                 if positions:
                     # Convert to BEFDAY format
@@ -1200,17 +2104,169 @@ async def connect_hammer() -> Dict[str, Any]:
                             'account': pos.get('account', '')
                         })
                     
-                    # Track BEFDAY (günde 1 kez)
-                    befday_tracked = await track_befday_positions(
-                        positions=befday_positions,
-                        mode='hampro',
-                        account='HAMMER_PRO'
-                    )
+                    # BEFDAY — GUNDE 1 KEZ, İLK TIKLAMADA ÇEK, ASLA OVERWRITE ETME!
+                    import os
+                    from pathlib import Path
+                    from datetime import datetime as dt_cls, date as date_cls
                     
-                    if befday_tracked:
-                        logger.info(f"[HAMMER_API] ✅ BEFDAY tracked: {len(befday_positions)} positions saved to befham.csv")
+                    befham_path = Path("C:/StockTracker/befham.csv")
+                    needs_befday = False
+                    
+                    # CHECK 1: Redis key already exists for TODAY?
+                    # ═══════════════════════════════════════════════════════
+                    # CRITICAL FIX: Check companion date key to ensure the
+                    # Redis data is from TODAY, not yesterday (24h TTL issue)
+                    # ═══════════════════════════════════════════════════════
+                    redis_befday_exists = False
+                    try:
+                        from app.core.redis_client import get_redis_client
+                        r = get_redis_client()
+                        if r and r.sync:
+                            existing_redis = r.sync.get("psfalgo:befday:positions:HAMPRO")
+                            if existing_redis:
+                                # Verify date key matches today
+                                stored_date = r.sync.get("psfalgo:befday:date:HAMPRO")
+                                stored_date_str = stored_date.decode() if isinstance(stored_date, bytes) else stored_date if stored_date else None
+                                today_str = date_cls.today().strftime("%Y%m%d")
+                                if stored_date_str == today_str:
+                                    redis_befday_exists = True
+                                    logger.info("[HAMMER_API] ℹ️ BEFDAY Redis key zaten mevcut (today's date matches) — ASLA üzerine yazılmayacak")
+                                else:
+                                    # Stale key from yesterday — delete it
+                                    r.sync.delete("psfalgo:befday:positions:HAMPRO")
+                                    r.sync.delete("psfalgo:befday:date:HAMPRO")
+                                    logger.warning(f"[HAMMER_API] 🗑️ Deleted STALE Redis BEFDAY key: stored_date={stored_date_str}, today={today_str}")
+                    except Exception:
+                        pass
+                    
+                    # CHECK 2: CSV file exists for today?
+                    csv_today_exists = False
+                    if befham_path.exists():
+                        old_mtime = os.path.getmtime(befham_path)
+                        old_date = dt_cls.fromtimestamp(old_mtime).date()
+                        if old_date == date_cls.today():
+                            csv_today_exists = True
+                            logger.info("[HAMMER_API] ℹ️ befham.csv bugün zaten mevcut — BEFDAY atlanıyor")
+                        else:
+                            # Dünden kalan eski CSV → sil (ama Redis'i SİLME!)
+                            logger.info(f"[HAMMER_API] 🗑️ Stale befham.csv siliniyor (from {old_date})")
+                            os.remove(befham_path)
+                    
+                    # KURAL: Eğer Redis VEYA CSV bugün için varsa → BEFDAY YAZILMAZ
+                    if redis_befday_exists or csv_today_exists:
+                        needs_befday = False
+                        logger.info("[HAMMER_API] BEFDAY bugün zaten alınmış — tekrar yazılmayacak (SACRED)")
+                    elif not befham_path.exists():
+                        needs_befday = True
+                        logger.info("[HAMMER_API] BEFDAY ilk kez oluşturulacak (ne CSV ne Redis mevcut)")
+                    
+                    befday_tracked = False
+                    if needs_befday:
+                        # Redis stale veriyi temizle (SADECE yeni gün için, ve SADECE kayıt yoksa)
+                        try:
+                            from app.core.redis_client import get_redis_client
+                            r = get_redis_client()
+                            if r and r.sync:
+                                # Eğer Redis'te eski günün datası varsa temizle
+                                existing = r.sync.get("psfalgo:befday:positions:HAMPRO")
+                                if not existing:
+                                    logger.info("[HAMMER_API] Redis'te BEFDAY yok, yeni yazılacak")
+                                else:
+                                    # Redis key var ama CSV yoktu → Redis eski günden olabilir
+                                    # Ama redis_befday_exists = True olsaydı buraya girmezdik
+                                    # Yani burada Redis stale → temizleyebiliriz
+                                    r.sync.delete("psfalgo:befday:positions:HAMPRO")
+                                    logger.info("[HAMMER_API] Stale Redis BEFDAY temizlendi (yeni gün)")
+                        except Exception:
+                            pass
+                        
+                        # Tracker flag'ini resetle
+                        tracker = get_befday_tracker()
+                        if tracker:
+                            tracker._checked_today['hampro'] = False
+                        
+                        # Şimdi track et — CSV silindi + flag reset = başarılı olacak
+                        befday_tracked = await track_befday_positions(
+                            positions=befday_positions,
+                            mode='hampro',
+                            account='HAMPRO'
+                        )
+                        
+                        if befday_tracked:
+                            logger.info(f"[HAMMER_API] ✅ BEFDAY tracked: {len(befday_positions)} positions → befham.csv")
+                            # ALSO write to Redis psfalgo:befday:positions:HAMPRO (for terminals)
+                            try:
+                                import json as _json
+                                r3 = get_redis_client()
+                                if r3 and r3.sync:
+                                    befday_redis_list = [{"symbol": bp.get('symbol',''), "qty": float(bp.get('qty',0)),
+                                                          "avg_cost": bp.get('avg_cost', 0)} for bp in befday_positions if bp.get('symbol')]
+                                    r3.sync.set("psfalgo:befday:positions:HAMPRO", _json.dumps(befday_redis_list), ex=86400)
+                                    r3.sync.set("psfalgo:befday:date:HAMPRO", date_cls.today().strftime("%Y%m%d"), ex=86400)
+                                    logger.info(f"[HAMMER_API] ✅ BEFDAY Redis written: {len(befday_redis_list)} entries + date key (first & only write of the day)")
+                            except Exception as re3:
+                                logger.warning(f"[HAMMER_API] Redis BEFDAY write failed: {re3}")
+                        else:
+                            # FALLBACK: Tracker failed — write befham.csv DIRECTLY
+                            logger.warning("[HAMMER_API] ⚠️ Tracker failed, writing befham.csv directly as fallback...")
+                            try:
+                                import pandas as pd
+                                import json as _json
+                                rows = []
+                                for bp in befday_positions:
+                                    sym = bp.get('symbol', '')
+                                    qty = float(bp.get('qty', 0))
+                                    side = "Short" if qty < 0 else "Long"
+                                    ptype = "SHORT" if qty < 0 else "LONG"
+                                    rows.append({
+                                        'Symbol': sym,
+                                        'Quantity': qty,
+                                        'Avg_Cost': bp.get('avg_cost', 0),
+                                        'Position_Type': ptype,
+                                        'Side': side,
+                                        'Book': 'LT',
+                                        'Strategy': 'LT',
+                                        'Origin': 'OV',
+                                        'Full_Taxonomy': f"LT OV {side}",
+                                        'Account': 'HAMPRO',
+                                        'Last_Price': bp.get('last_price', 0),
+                                        'Exchange': bp.get('exchange', ''),
+                                    })
+                                df = pd.DataFrame(rows)
+                                df.to_csv(befham_path, index=False, encoding='utf-8-sig')
+                                logger.info(f"[HAMMER_API] ✅ FALLBACK befham.csv written: {len(rows)} positions")
+                                befday_tracked = True
+                                
+                                # Also write to Redis BEFDAY cache (ONLY since this is first write)
+                                try:
+                                    from app.core.redis_client import get_redis_client
+                                    r2 = get_redis_client()
+                                    if r2:
+                                        befday_list = [{"symbol": bp.get('symbol',''), "qty": float(bp.get('qty',0)),
+                                                        "avg_cost": bp.get('avg_cost', 0)} for bp in befday_positions if bp.get('symbol')]
+                                        r2.set("psfalgo:befday:positions:HAMPRO", _json.dumps(befday_list), ex=86400)
+                                        r2.set("psfalgo:befday:date:HAMPRO", date_cls.today().strftime("%Y%m%d"), ex=86400)
+                                        logger.info(f"[HAMMER_API] ✅ FALLBACK Redis BEFDAY written: {len(befday_list)} entries + date key")
+                                except Exception as re2:
+                                    logger.warning(f"[HAMMER_API] Redis fallback write failed: {re2}")
+                                    
+                            except Exception as fb_err:
+                                logger.error(f"[HAMMER_API] ❌ FALLBACK befham.csv write ALSO failed: {fb_err}")
                     else:
-                        logger.info(f"[HAMMER_API] ℹ️ BEFDAY already tracked today or outside window")
+                        logger.info("[HAMMER_API] BEFDAY zaten bugün alınmış, tekrar çekilmiyor")
+                    
+                    # CRITICAL: Trigger position snapshot to write to Redis (for RevnBookCheck terminal)
+                    try:
+                        from app.psfalgo.position_snapshot_api import get_position_snapshot_api, initialize_position_snapshot_api
+                        pos_api = get_position_snapshot_api()
+                        if not pos_api:
+                            initialize_position_snapshot_api()
+                            pos_api = get_position_snapshot_api()
+                        if pos_api:
+                            await pos_api.get_position_snapshot(account_id="HAMPRO", include_zero_positions=False)
+                            logger.info("[HAMMER_API] ✅ Position snapshot written to Redis for RevnBookCheck")
+                    except Exception as snap_err:
+                        logger.warning(f"[HAMMER_API] Position snapshot to Redis failed: {snap_err}")
                     
                     return {
                         'success': True,
@@ -1284,7 +2340,14 @@ async def disconnect_hammer() -> Dict[str, Any]:
         
         # Disconnect
         hammer_client.disconnect()
-        
+        try:
+            from app.core.redis_client import get_redis_client
+            r = get_redis_client()
+            cur = r.sync.get("psfalgo:recovery:account_open")
+            if cur and (cur.decode() if isinstance(cur, bytes) else cur) == "HAMPRO":
+                r.sync.delete("psfalgo:recovery:account_open")
+        except Exception:
+            pass
         logger.info("[HAMMER_API] Disconnected from Hammer Pro")
         
         return {
@@ -1359,25 +2422,39 @@ async def connect_ibkr(
     Returns:
         Connection result
     """
-    from app.psfalgo.ibkr_connector import get_ibkr_connector
-    
+    from app.psfalgo.ibkr_connector import get_ibkr_connector, connect_isolated_sync
+    import asyncio
+
     if account_type not in ["IBKR_GUN", "IBKR_PED"]:
         raise HTTPException(status_code=400, detail="Invalid account_type. Must be IBKR_GUN or IBKR_PED")
-    
-    connector = get_ibkr_connector(account_type=account_type)
-    if not connector:
-        raise HTTPException(status_code=503, detail="IBKR connector not initialized")
-    
+
     # PHASE 10.1: Default port if not provided (same for both GUN and PED)
     if port is None:
         port = 4001  # Default Gateway port
-    
-    result = await connector.connect(host=host, port=port, client_id=client_id)
+
+    # CRITICAL: Use connect_isolated_sync in a thread to avoid FastAPI event loop conflicts
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(
+        None,
+        lambda: connect_isolated_sync(account_type=account_type, host=host, port=port, client_id=client_id)
+    )
+
+    connector = get_ibkr_connector(account_type=account_type)
     
     if not result.get('success'):
         raise HTTPException(status_code=500, detail=result.get('error', 'Failed to connect to IBKR'))
     
-    # Connection successful - now track BEFDAY positions (günde 1 kez)
+    # Connection successful - mark account as open for recovery (en az 1 hesap açık bekle)
+    if result.get('connected'):
+        try:
+            from app.core.redis_client import get_redis_client
+            r = get_redis_client()
+            if r and r.sync:
+                r.sync.set("psfalgo:recovery:account_open", account_type)
+        except Exception:
+            pass
+    
+    # Track BEFDAY positions (günde 1 kez)
     if result.get('connected'):
         logger.info(f"[IBKR_API] Connection successful, tracking BEFDAY positions for {account_type}...")
         
@@ -1430,6 +2507,20 @@ async def connect_ibkr(
             result['befday_tracked'] = False
             result['error'] = f'Connected but BEFDAY tracking failed: {str(e)}'
     
+    # CRITICAL: Trigger position snapshot to write to Redis (for RevnBookCheck terminal)
+    if result.get('connected'):
+        try:
+            from app.psfalgo.position_snapshot_api import get_position_snapshot_api, initialize_position_snapshot_api
+            pos_api = get_position_snapshot_api()
+            if not pos_api:
+                initialize_position_snapshot_api()
+                pos_api = get_position_snapshot_api()
+            if pos_api:
+                await pos_api.get_position_snapshot(account_id=account_type, include_zero_positions=False)
+                logger.info(f"[IBKR_API] ✅ Position snapshot written to Redis for RevnBookCheck ({account_type})")
+        except Exception as snap_err:
+            logger.warning(f"[IBKR_API] Position snapshot to Redis failed: {snap_err}")
+    
     return result
 
 
@@ -1454,7 +2545,15 @@ async def disconnect_ibkr(account_type: str = "IBKR_GUN") -> Dict[str, Any]:
         raise HTTPException(status_code=503, detail="IBKR connector not initialized")
     
     await connector.disconnect()
-    
+    try:
+        from app.core.redis_client import get_redis_client
+        r = get_redis_client()
+        if r and r.sync:
+            cur = r.sync.get("psfalgo:recovery:account_open")
+            if cur and (cur.decode() if isinstance(cur, bytes) else cur) == account_type:
+                r.sync.delete("psfalgo:recovery:account_open")
+    except Exception:
+        pass
     return {
         'success': True,
         'account_type': account_type,
@@ -1465,18 +2564,51 @@ async def disconnect_ibkr(account_type: str = "IBKR_GUN") -> Dict[str, Any]:
 @router.get("/account/ibkr/status")
 async def get_ibkr_status() -> Dict[str, Any]:
     """
-    Get IBKR connection status for both accounts.
+    Get IBKR connection status for both accounts (PHASE 11: Dual Connections).
+    
+    IMPORTANT: Both IBKR_PED and IBKR_GUN can be connected simultaneously.
+    Active account determines which one is used for data/orders.
     
     Returns:
-        Connection status for IBKR_GUN and IBKR_PED
+        Connection status for IBKR_GUN and IBKR_PED, plus active account info
     """
-    from app.psfalgo.ibkr_connector import get_ibkr_connector
+    from app.psfalgo.ibkr_connector import get_ibkr_connector, get_active_ibkr_account
+    from app.psfalgo.dual_connection_manager import get_dual_connection_manager
+
+    # Get dual connection manager status (preferred)
+    dual_conn_mgr = get_dual_connection_manager()
+    if dual_conn_mgr:
+        status = dual_conn_mgr.get_status()
+        active_account = get_active_ibkr_account()
+        
+        return {
+            'success': True,
+            'active_account': active_account,
+            'IBKR_GUN': {
+                'connected': status['ibkr_gun']['connected'],
+                'status': status['ibkr_gun']['status'],
+                'error': status['ibkr_gun']['error']
+            },
+            'IBKR_PED': {
+                'connected': status['ibkr_ped']['connected'],
+                'status': status['ibkr_ped']['status'],
+                'error': status['ibkr_ped']['error']
+            },
+            'HAMMER_PRO': {
+                'connected': status['hammer_pro']['connected'],
+                'status': status['hammer_pro']['status'],
+                'error': status['hammer_pro']['error']
+            }
+        }
     
-    gun_connector = get_ibkr_connector("IBKR_GUN")
-    ped_connector = get_ibkr_connector("IBKR_PED")
-    
+    # Fallback: Check connectors directly
+    gun_connector = get_ibkr_connector("IBKR_GUN", create_if_missing=False)
+    ped_connector = get_ibkr_connector("IBKR_PED", create_if_missing=False)
+    active_account = get_active_ibkr_account()
+
     return {
         'success': True,
+        'active_account': active_account,
         'IBKR_GUN': {
             'connected': gun_connector.is_connected() if gun_connector else False,
             'error': gun_connector.connection_error if gun_connector else None
@@ -1486,6 +2618,7 @@ async def get_ibkr_status() -> Dict[str, Any]:
             'error': ped_connector.connection_error if ped_connector else None
         }
     }
+
 
 
 @router.get("/account/ibkr/positions")
@@ -1525,6 +2658,7 @@ async def get_ibkr_positions(account_type: str = "IBKR_GUN") -> Dict[str, Any]:
 async def get_ibkr_orders(account_type: str = "IBKR_GUN") -> Dict[str, Any]:
     """
     Get open orders from IBKR (READ-ONLY).
+    Uses isolated executor to avoid "event loop already running" when called from FastAPI.
     
     Args:
         account_type: IBKR_GUN or IBKR_PED
@@ -1532,7 +2666,8 @@ async def get_ibkr_orders(account_type: str = "IBKR_GUN") -> Dict[str, Any]:
     Returns:
         List of open orders
     """
-    from app.psfalgo.ibkr_connector import get_ibkr_connector
+    import asyncio
+    from app.psfalgo.ibkr_connector import get_ibkr_connector, get_open_orders_isolated_sync
     
     if account_type not in ["IBKR_GUN", "IBKR_PED"]:
         raise HTTPException(status_code=400, detail="Invalid account_type. Must be IBKR_GUN or IBKR_PED")
@@ -1544,13 +2679,14 @@ async def get_ibkr_orders(account_type: str = "IBKR_GUN") -> Dict[str, Any]:
     if not connector.is_connected():
         raise HTTPException(status_code=503, detail=f"IBKR {account_type} not connected")
     
-    orders = await connector.get_open_orders()
+    loop = asyncio.get_event_loop()
+    orders = await loop.run_in_executor(None, lambda: get_open_orders_isolated_sync(account_type))
     
     return {
         'success': True,
         'account_type': account_type,
-        'count': len(orders),
-        'orders': orders
+        'count': len(orders or []),
+        'orders': orders or []
     }
 
 
@@ -1999,7 +3135,8 @@ async def get_jfin_state() -> Dict[str, Any]:
     try:
         from app.psfalgo.jfin_store import get_jfin_store
         from app.psfalgo.jfin_engine import get_jfin_engine, initialize_jfin_engine
-        from app.psfalgo.addnewpos_engine import addnewpos_decision_engine
+        # NOTE: addnewpos_decision_engine is a CLASS METHOD, not a top-level function
+        # It was never actually used in this endpoint — removed dead import that caused 500 errors
         from app.psfalgo.position_snapshot_api import get_position_snapshot_api
         from app.psfalgo.metrics_snapshot_api import get_metrics_snapshot_api
         from app.psfalgo.exposure_calculator import get_exposure_calculator
@@ -2033,7 +3170,7 @@ async def get_jfin_state() -> Dict[str, Any]:
                         if tumcsv:
                             jfin_config['selection_percent'] = tumcsv.get('selection_percent', 0.10)
                             jfin_config['min_selection'] = tumcsv.get('min_selection', 2)
-                            jfin_config['heldkuponlu_pair_count'] = tumcsv.get('heldkuponlu_pair_count', 8)
+                            jfin_config['heldkuponlu_pair_count'] = tumcsv.get('heldkuponlu_pair_count', 16)
                         
                         # Janall selection criteria (two-step intersection)
                         jfin_config['long_percent'] = tumcsv.get('long_percent', 25.0) if tumcsv else 25.0
@@ -2102,12 +3239,14 @@ async def get_jfin_state() -> Dict[str, Any]:
                         'message': 'No symbols available. Please ensure static data is loaded.'
                     }
                 
-                # Step 3: Get position snapshot
+                # Step 3: Get position snapshot — 3-account isolation: active account only
+                from app.trading.trading_account_context import get_trading_context
+                account_id = get_trading_context().trading_mode.value
                 position_api = get_position_snapshot_api()
-                position_snapshot = await position_api.get_position_snapshot() if position_api else None
+                position_snapshot = await position_api.get_position_snapshot(account_id=account_id) if position_api else None
                 positions = {pos.symbol: {'qty': pos.qty, 'quantity': pos.qty} for pos in (position_snapshot if position_snapshot else [])}
                 
-                # Step 4: Get metrics snapshot for all symbols
+                # Step 4: Get metrics snapshot for all symbols (market data = single source Hammer, no account)
                 metrics_api = get_metrics_snapshot_api()
                 snapshot_ts = datetime.now()
                 metrics = await metrics_api.get_metrics_snapshot(all_symbols, snapshot_ts=snapshot_ts) if metrics_api else {}
@@ -2278,7 +3417,7 @@ async def get_jfin_state() -> Dict[str, Any]:
                     max_addable_total = int(exposure.pot_max - exposure.pot_total)
                     logger.debug(f"[JFIN_API] Max addable total: {max_addable_total} (pot_max={exposure.pot_max}, pot_total={exposure.pot_total})")
                 
-                # Step 10: Set group weights from Port Adjuster (automatic TUMCSV)
+                # Step 10: Set group weights AND lot ratios from Port Adjuster (automatic TUMCSV)
                 # Get group weights from Port Adjuster config
                 from app.port_adjuster.port_adjuster_store import get_port_adjuster_store
                 port_store = get_port_adjuster_store()
@@ -2288,8 +3427,33 @@ async def get_jfin_state() -> Dict[str, Any]:
                         # PortAdjusterConfig is a Pydantic model, access attributes directly
                         long_weights = snapshot.config.long_groups if hasattr(snapshot.config, 'long_groups') else {}
                         short_weights = snapshot.config.short_groups if hasattr(snapshot.config, 'short_groups') else {}
+                        
+                        # 🔍 DEBUG: Log non-zero weights
+                        long_nz = {k: v for k, v in long_weights.items() if v > 0}
+                        short_nz = {k: v for k, v in short_weights.items() if v > 0}
+                        logger.info(f"[JFIN_API] 📊 Port Adjuster long non-zero: {long_nz}")
+                        logger.info(f"[JFIN_API] 📊 Port Adjuster short non-zero: {short_nz}")
+                        
                         jfin_engine.set_group_weights(long_weights, short_weights)
                         logger.info(f"[JFIN_API] Group weights loaded from Port Adjuster: {len(long_weights)} long, {len(short_weights)} short")
+                        
+                        # 🎯 NEW: Set total lot rights based on Port Adjuster long/short ratio
+                        # Get LT Long/Short ratio from Port Adjuster (e.g., 85% / 15%)
+                        long_ratio_pct = getattr(snapshot.config, 'long_ratio_pct', 85.0)
+                        short_ratio_pct = getattr(snapshot.config, 'short_ratio_pct', 15.0)
+                        
+                        # Calculate total lot rights based on ratio (using base of 40000 total lots)
+                        # This ensures 85/15 split is respected
+                        TOTAL_LOT_RIGHTS = 40000  # Base total
+                        total_long_rights = int(TOTAL_LOT_RIGHTS * (long_ratio_pct / 100.0))
+                        total_short_rights = int(TOTAL_LOT_RIGHTS * (short_ratio_pct / 100.0))
+                        
+                        # Update JFIN engine config with calculated values
+                        jfin_engine.update_config({
+                            'total_long_rights': total_long_rights,
+                            'total_short_rights': total_short_rights
+                        })
+                        logger.info(f"[JFIN_API] 📊 Lot rights from Port Adjuster: long={total_long_rights} ({long_ratio_pct}%), short={total_short_rights} ({short_ratio_pct}%)")
                     else:
                         # Fallback: Use rules store
                         from app.psfalgo.rules_store import get_rules_store
@@ -2515,24 +3679,23 @@ async def apply_jfin_ntumcsv(request: Dict[str, Any]) -> Dict[str, Any]:
 @router.get("/take-profit/longs")
 async def get_take_profit_longs() -> Dict[str, Any]:
     """
-    Get long positions for take profit.
-    
-    Returns:
-        List of long positions
+    Get long positions for take profit — 3-account isolation: active account only.
+    Market data (bid/ask/last) = Hammer; positions = account-scoped.
     """
     try:
         from app.psfalgo.take_profit_engine import get_take_profit_engine, initialize_take_profit_engine
-        
+        from app.trading.trading_account_context import get_trading_context
+
+        account_id = get_trading_context().trading_mode.value
         engine = get_take_profit_engine()
         if not engine:
             engine = initialize_take_profit_engine()
-        
-        positions = engine.get_long_positions()
-        
+        positions = await engine.get_long_positions_async(account_id)
         return {
             'success': True,
             'positions': [pos.to_dict() for pos in positions],
-            'count': len(positions)
+            'count': len(positions),
+            'account_id': account_id
         }
     except Exception as e:
         logger.error(f"Error getting long positions: {e}", exc_info=True)
@@ -2542,24 +3705,22 @@ async def get_take_profit_longs() -> Dict[str, Any]:
 @router.get("/take-profit/shorts")
 async def get_take_profit_shorts() -> Dict[str, Any]:
     """
-    Get short positions for take profit.
-    
-    Returns:
-        List of short positions
+    Get short positions for take profit — 3-account isolation: active account only.
     """
     try:
         from app.psfalgo.take_profit_engine import get_take_profit_engine, initialize_take_profit_engine
-        
+        from app.trading.trading_account_context import get_trading_context
+
+        account_id = get_trading_context().trading_mode.value
         engine = get_take_profit_engine()
         if not engine:
             engine = initialize_take_profit_engine()
-        
-        positions = engine.get_short_positions()
-        
+        positions = await engine.get_short_positions_async(account_id)
         return {
             'success': True,
             'positions': [pos.to_dict() for pos in positions],
-            'count': len(positions)
+            'count': len(positions),
+            'account_id': account_id
         }
     except Exception as e:
         logger.error(f"Error getting short positions: {e}", exc_info=True)
@@ -2569,57 +3730,73 @@ async def get_take_profit_shorts() -> Dict[str, Any]:
 @router.post("/take-profit/send-order")
 async def send_take_profit_order(request: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Send take profit order.
-    
-    Args:
-        request: { symbol, side, qty, price, order_type }
-    
-    Returns:
-        Order result
+    Send take profit (REV) order. Hesap moduna göre yönlendirir:
+    - IBKR_PED / IBKR_GUN → Gateway (aynı mantık, port 4001)
+    - HAMPRO (HAMMER_PRO) → Hammer Pro emir mantığı
     """
     try:
         symbol = request.get('symbol')
         side = request.get('side')  # BUY or SELL
         qty = request.get('qty')
         price = request.get('price')
-        order_type = request.get('order_type')
+        order_type = request.get('order_type', 'LIMIT')
+        account_id = request.get('account_id')  # RevnBookCheck gönderir: IBKR_PED, IBKR_GUN, HAMPRO
         
         if not all([symbol, side, qty, price]):
             raise HTTPException(status_code=400, detail="Missing required fields: symbol, side, qty, price")
         
-        # Send order via execution engine
-        from app.psfalgo.execution_engine import get_execution_engine
-        from app.execution.execution_models import ExecutionIntent, IntentSide, OrderType
+        from app.execution.execution_router import get_execution_router, ExecutionMode
+        from app.trading.trading_account_context import get_trading_context, TradingAccountMode
         
-        execution_engine = get_execution_engine()
-        if not execution_engine:
-            raise HTTPException(status_code=503, detail="ExecutionEngine not available")
+        ctx = get_trading_context()
+        # account_id request'te varsa context'i ona göre ayarla (RevnBookCheck hangi hesaba REV atacaksa)
+        if account_id:
+            try:
+                mode_enum = TradingAccountMode.HAMPRO if account_id in ("HAMPRO", "HAMMER_PRO") else TradingAccountMode(account_id)
+                if ctx.trading_mode != mode_enum:
+                    ctx.set_trading_mode(mode_enum)
+            except ValueError:
+                pass  # Geçersiz account_id ise mevcut context kullanılır
         
-        # Create execution intent
-        intent_side = IntentSide.BUY if side == 'BUY' else IntentSide.SELL
-        intent = ExecutionIntent(
-            symbol=symbol,
-            side=intent_side,
-            quantity=qty,
-            price=price,
-            order_type=OrderType.LIMIT,
-            reason_code="TAKE_PROFIT",
-            reason_text=f"Take Profit {order_type}"
-        )
+        order_plan = {
+            'symbol': symbol,
+            'action': side,
+            'size': int(qty),
+            'price': float(price),
+            'style': order_type or 'LIMIT',
+            'psfalgo_source': True,
+            'psfalgo_action': 'TAKE_PROFIT',
+            'strategy_tag': 'REV_TP'
+        }
+        gate_status = {'gate_status': 'MANUAL_APPROVE'}
+        router = get_execution_router()
+        # Run in executor so IBKR provider can block waiting for real order result without blocking event loop
+        import asyncio
+        loop = asyncio.get_event_loop()
+        try:
+            result = await loop.run_in_executor(
+                None,
+                lambda: router.handle(
+                    order_plan=order_plan,
+                    gate_status=gate_status,
+                    user_action='APPROVE',
+                    symbol=symbol
+                )
+            )
+        except Exception as exec_err:
+            logger.error(f"[TAKE_PROFIT] Execution router error: {exec_err}", exc_info=True)
+            raise HTTPException(status_code=500, detail=f"Execution router error: {str(exec_err)}")
         
-        # Send order
-        result = await execution_engine.send_order(intent)
-        
-        if result.get('success'):
-            logger.info(f"[TAKE_PROFIT] Order sent: {side} {qty} {symbol} @ ${price:.2f}")
+        if result.get('execution_status') == 'EXECUTED':
+            logger.info(f"[TAKE_PROFIT] Order sent: {side} {qty} {symbol} @ ${price:.2f} (account: {ctx.trading_mode.value})")
             return {
                 'success': True,
                 'order_id': result.get('order_id'),
                 'message': f"Order sent: {side} {qty} {symbol} @ ${price:.2f}"
             }
-        else:
-            raise HTTPException(status_code=500, detail=result.get('error', 'Failed to send order'))
-            
+        detail = result.get('execution_reason') or result.get('provider_error') or result.get('detail') or 'Failed to send order'
+        logger.warning(f"[TAKE_PROFIT] Order not executed: status={result.get('execution_status')!r} reason={detail!r} full_result={result}")
+        raise HTTPException(status_code=500, detail=detail)
     except HTTPException:
         raise
     except Exception as e:
@@ -2726,3 +3903,321 @@ async def get_clean_logs(
     except Exception as e:
         logger.error(f"Error getting cleanlogs: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+# ============================================================================
+# ENGINE DIAGNOSTIC API (Phase 2)
+# ============================================================================
+
+@router.get("/engines/diagnostic")
+async def get_engines_diagnostic() -> Dict[str, Any]:
+    """
+    Get diagnostic information for all engines.
+    Shows why engines may not be generating proposals.
+    
+    Returns comprehensive status and diagnostic data for:
+    - RUNALL orchestrator
+    - KARBOTU engine
+    - REDUCEMORE engine
+    - ADDNEWPOS engine
+    - LT_TRIM engine
+    """
+    try:
+        from app.psfalgo.runall_engine import get_runall_engine
+        from app.psfalgo.karbotu_engine import get_karbotu_engine
+        from app.psfalgo.reducemore_engine import get_reducemore_engine
+        
+        runall = get_runall_engine()
+        karbotu = get_karbotu_engine()
+        reducemore = get_reducemore_engine()
+        
+        # Build diagnostic response
+        diagnostic = {
+            'runall': {
+                'loop_running': runall.loop_running if hasattr(runall, 'loop_running') else False,
+                'loop_count': runall.loop_count if hasattr(runall, 'loop_count') else 0,
+                'active_engines': runall.active_engines if hasattr(runall, 'active_engines') else [],
+                'last_cycle': runall.loop_count if hasattr(runall, 'loop_count') else 0
+            },
+            'karbotu': {
+                'status': 'ENABLED' if 'KARBOTU' in (runall.active_engines if hasattr(runall, 'active_engines') else []) else 'DISABLED',
+                'last_diagnostic': karbotu.last_diagnostic if hasattr(karbotu, 'last_diagnostic') else None
+            },
+            'reducemore': {
+                'status': 'ENABLED' if 'REDUCEMORE' in (runall.active_engines if hasattr(runall, 'active_engines') else []) else 'DISABLED',
+                'last_diagnostic': reducemore.last_diagnostic if hasattr(reducemore, 'last_diagnostic') else None
+            },
+            'addnewpos': {
+                'status': 'ENABLED' if 'MM_ENGINE' in (runall.active_engines if hasattr(runall, 'active_engines') else []) else 'DISABLED',
+                'last_diagnostic': None  # ADDNEWPOS doesn't have diagnostic yet
+            },
+            'lt_trim': {
+                'status': 'ENABLED' if 'LT_TRIM' in (runall.active_engines if hasattr(runall, 'active_engines') else []) else 'DISABLED',
+                'last_diagnostic': None  # LT_TRIM doesn't have diagnostic yet
+            }
+        }
+        
+        return {
+            'success': True,
+            'diagnostic': diagnostic,
+            'timestamp': datetime.now().isoformat()
+        }
+    
+    except Exception as e:
+        logger.error(f"[DIAGNOSTIC API] Error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Diagnostic error: {str(e)}")
+
+
+@router.get("/engines/{engine_name}/status")
+async def get_engine_status(engine_name: str) -> Dict[str, Any]:
+    """
+    Get detailed status for a specific engine.
+    
+    Args:
+        engine_name: KARBOTU, REDUCEMORE, LT_TRIM, ADDNEWPOS_ENGINE, MM_ENGINE
+        
+    Returns:
+        Detailed engine status including:
+        - Enabled/disabled status
+        - Recent proposals count
+        - Engine-specific diagnostic data
+        - Last cycle metrics
+    """
+    try:
+        from app.psfalgo.runall_engine import get_runall_engine
+        from app.psfalgo.karbotu_engine import get_karbotu_engine
+        from app.psfalgo.reducemore_engine import get_reducemore_engine
+        from app.psfalgo.proposal_store import get_proposal_store
+        
+        runall = get_runall_engine()
+        proposal_store = get_proposal_store()
+        
+        # Check if enabled
+        active_engines = runall.active_engines if hasattr(runall, 'active_engines') else []
+        enabled = engine_name in active_engines
+        
+        # Get recent proposals from this engine
+        recent_proposals = []
+        if proposal_store:
+            # Map engine_name to proposal filter
+            engine_filter = engine_name
+            if engine_name == 'MM_ENGINE':
+                engine_filter = 'ADDNEWPOS_ENGINE'  # MM_ENGINE maps to ADDNEWPOS_ENGINE
+            
+            try:
+                proposals = proposal_store.get_all_proposals(
+                    engine=engine_filter,
+                    limit=10
+                )
+                recent_proposals = [
+                    {
+                        'symbol': p.symbol,
+                        'side': p.side,
+                        'qty': p.proposed_qty,
+                        'status': p.status,
+                        'timestamp': p.proposal_ts.isoformat() if hasattr(p.proposal_ts, 'isoformat') else str(p.proposal_ts)
+                    } for p in proposals
+                ]
+            except Exception as e:
+                logger.warning(f"[ENGINE STATUS] Could not fetch proposals for {engine_name}: {e}")
+        
+        # Get engine-specific diagnostic
+        engine_diagnostic = None
+        if engine_name == 'KARBOTU':
+            karbotu = get_karbotu_engine()
+            if hasattr(karbotu, 'last_diagnostic'):
+                engine_diagnostic = karbotu.last_diagnostic
+        elif engine_name == 'REDUCEMORE':
+            reducemore = get_reducemore_engine()
+            if hasattr(reducemore, 'last_diagnostic'):
+                engine_diagnostic = reducemore.last_diagnostic
+        
+        return {
+            'success': True,
+            'engine': engine_name,
+            'enabled': enabled,
+            'recent_proposals_count': len(recent_proposals),
+            'recent_proposals': recent_proposals,
+            'diagnostic': engine_diagnostic,
+            'timestamp': datetime.now().isoformat()
+        }
+    
+    except Exception as e:
+        logger.error(f"[ENGINE STATUS] Error for {engine_name}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Engine status error: {str(e)}")
+
+
+# ============================================================================
+# SETTINGS BASELINE (Capture current as default, Reset with diff report)
+# ============================================================================
+
+@router.post("/settings/capture-baseline")
+async def capture_settings_baseline():
+    """
+    Snapshot ALL current settings as the 'baseline default'.
+    Future reset operations restore to this exact state.
+    Call this once when the system is configured as desired.
+    """
+    try:
+        from app.psfalgo.settings_baseline_service import get_settings_baseline_service
+        svc = get_settings_baseline_service()
+        snapshot = svc.capture_baseline()
+        return {
+            'success': True,
+            'message': f"✅ Baseline captured at {snapshot['captured_at']}",
+            'baseline': snapshot
+        }
+    except Exception as e:
+        logger.error(f"[BASELINE API] Capture error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/settings/reset-to-baseline")
+async def reset_settings_to_baseline(category: Optional[str] = None):
+    """
+    Reset ALL (or specific category) settings to the captured baseline.
+    Returns a diff report showing every field that was changed.
+    
+    Query params:
+        category: Optional - 'heavy', 'active_engines', 'mm_settings', 
+                  'exposure_thresholds', 'addnewpos'. If omitted, resets ALL.
+    """
+    try:
+        from app.psfalgo.settings_baseline_service import get_settings_baseline_service
+        svc = get_settings_baseline_service()
+        result = svc.reset_to_baseline(category)
+        return result
+    except Exception as e:
+        logger.error(f"[BASELINE API] Reset error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/settings/baseline-diff")
+async def get_baseline_diff():
+    """
+    Compare current settings vs baseline WITHOUT changing anything.
+    Shows what has drifted from the captured default.
+    """
+    try:
+        from app.psfalgo.settings_baseline_service import get_settings_baseline_service
+        svc = get_settings_baseline_service()
+        return svc.get_current_vs_baseline()
+    except Exception as e:
+        logger.error(f"[BASELINE API] Diff error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# EX-DIVIDEND INFO TODAY
+# ============================================================================
+
+@router.get("/exdiv-today")
+async def get_exdiv_today() -> Dict[str, Any]:
+    """
+    Get today's ex-dividend stocks and their 0.85 * DIV AMOUNT values.
+    Data sourced from exdiv_today.json (generated daily by exdiv_info.py pipeline).
+    
+    Falls back to scanning ek*.csv files directly if JSON is missing or stale.
+    
+    Returns:
+        { success, date, stocks: [{symbol, div_amount, adjusted_div, source_file}], count }
+    """
+    import json
+    import os
+    from datetime import datetime
+    
+    today_str = datetime.now().strftime('%Y-%m-%d')
+    
+    # Try JSON file first (fastest path)
+    json_paths = [
+        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
+                      '..', 'janall', 'exdiv_today.json'),
+        r'C:\StockTracker\janall\exdiv_today.json',
+        r'C:\StockTracker\exdiv_today.json',
+    ]
+    
+    for json_path in json_paths:
+        try:
+            json_path = os.path.abspath(json_path)
+            if os.path.exists(json_path):
+                with open(json_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                
+                # Verify it's today's data
+                if data.get('date') == today_str:
+                    logger.info(f"[EXDIV] Loaded {data.get('count', 0)} ex-div stocks from {json_path}")
+                    return {
+                        'success': True,
+                        'date': data['date'],
+                        'date_display': data.get('date_display', today_str),
+                        'stocks': data.get('stocks', []),
+                        'count': data.get('count', 0),
+                        'source': 'json_cache',
+                        'generated_at': data.get('generated_at')
+                    }
+                else:
+                    logger.warning(
+                        f"[EXDIV] Stale JSON: file date={data.get('date')} vs today={today_str}"
+                    )
+        except Exception as e:
+            logger.debug(f"[EXDIV] Could not load {json_path}: {e}")
+            continue
+    
+    # Fallback: Live scan from CSV files
+    try:
+        import glob
+        import pandas as pd
+        
+        today_mm_dd_yyyy = datetime.now().strftime('%m/%d/%Y')
+        csv_dir = r'C:\StockTracker'
+        
+        exdiv_stocks = {}
+        csv_patterns = [os.path.join(csv_dir, 'ek*.csv'), os.path.join(csv_dir, 'sek*.csv')]
+        all_files = []
+        for pattern in csv_patterns:
+            all_files.extend(glob.glob(pattern))
+        
+        for csv_file in set(all_files):
+            try:
+                df = pd.read_csv(csv_file)
+                if not all(c in df.columns for c in ['PREF IBKR', 'EX-DIV DATE', 'DIV AMOUNT']):
+                    continue
+                
+                for _, row in df.iterrows():
+                    ex_div_date = str(row.get('EX-DIV DATE', '')).strip()
+                    symbol = str(row.get('PREF IBKR', '')).strip()
+                    div_amount = row.get('DIV AMOUNT', 0)
+                    
+                    if not symbol or not ex_div_date:
+                        continue
+                    
+                    if ex_div_date == today_mm_dd_yyyy and symbol not in exdiv_stocks:
+                        div_float = float(div_amount) if pd.notna(div_amount) else 0.0
+                        exdiv_stocks[symbol] = {
+                            'symbol': symbol,
+                            'div_amount': div_float,
+                            'adjusted_div': round(0.85 * div_float, 4),
+                            'ex_div_date': ex_div_date,
+                            'source_file': os.path.basename(csv_file)
+                        }
+            except Exception:
+                continue
+        
+        stocks_list = list(exdiv_stocks.values())
+        logger.info(f"[EXDIV] Live scan found {len(stocks_list)} ex-div stocks for {today_str}")
+        
+        return {
+            'success': True,
+            'date': today_str,
+            'date_display': today_mm_dd_yyyy,
+            'stocks': stocks_list,
+            'count': len(stocks_list),
+            'source': 'live_csv_scan'
+        }
+    except Exception as e:
+        logger.error(f"[EXDIV] Error scanning CSVs: {e}", exc_info=True)
+        return {
+            'success': False,
+            'date': today_str,
+            'stocks': [],
+            'count': 0,
+            'error': str(e)
+        }

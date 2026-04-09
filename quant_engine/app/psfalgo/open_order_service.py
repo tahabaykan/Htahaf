@@ -5,7 +5,6 @@ Abstracts the retrieval of open orders from different brokers (IBKR vs Hammer).
 
 from typing import List, Dict, Any, Optional
 from app.core.logger import logger
-from app.psfalgo.ibkr_connector import get_ibkr_connector
 # Hammer imports - lazy to avoid circular deps
 from app.trading.hammer_orders_service import HammerOrdersService
 from app.live.hammer_client import HammerClient
@@ -91,49 +90,25 @@ class OpenOrderService:
         return total_pending
 
     def _get_ibkr_orders(self, account_id: str) -> List[Dict[str, Any]]:
-        """Fetch orders from IBKR Connector"""
-        connector = get_ibkr_connector(account_id)
-        if not connector:
-            logger.warning(f"[OpenOrderService] No connector for {account_id}")
-            return []
-            
-        # IBKR get_open_orders is async, but we might be in sync context?
-        # The connector methods are async. We need to run them properly.
-        # If we are in an async loop, await it. If not, run_until_complete?
-        # IMPORTANT: PSFAlgo architecture usually runs engines in async loops.
-        # But ActionPlanner is often sync.
-        # IBKRConnector.get_open_orders() is async.
-        
-        # Checking calling context... ActionPlanner.plan_action is sync.
-        # We need a sync wrapper for this call if called from sync context.
-        
+        """Fetch orders from IBKR via isolated helper. Must NOT be called from the event loop thread (deadlock)."""
         import asyncio
+        from app.psfalgo.ibkr_connector import get_open_orders_isolated_sync
         try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                # We are in a running loop (e.g. FastAPI request)
-                # We can't verify open orders synchronously without blocking/nesting issues.
-                # However, IBKRConnector internally caches or makes sync calls via its client?
-                # No, it uses `await`.
-                # FIX: We should rely on `ActionPlanner` being called from an async context (ProposalEngine)
-                # and make this method async too?
-                # User requirement: "ActionPlanner... soracak".
-                # To be safe, for now we will try to get the result.
-                
-                # If we are effectively in async code, we should await. 
-                # But this method signature is sync for compatibility.
-                # Let's trust that the caller can handle a future if we updated the signature? 
-                # No, let's look at `ibkr_connector.py`. It has `async def get_open_orders`.
-                
-                # For this implementation, I will assume we can block on a new logical thread or 
-                # use a sync bridge if absolutely necessary.
-                # BETTER: Modify this service to contain `async def` and update callers.
-                pass
-        except:
-            pass
-            
-        # For simplify/safety: We'll implement a sync-bridge helper
-        return self._run_async(connector.get_open_orders())
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = None
+            if loop is not None:
+                # Called from event loop thread: get_open_orders_isolated_sync would deadlock (loop waits for executor, executor waits for loop).
+                logger.warning(
+                    "[OpenOrderService] get_open_orders called from event loop thread; returning [] to avoid deadlock. "
+                    "Caller should use run_in_executor for the code path that needs open orders."
+                )
+                return []
+            return get_open_orders_isolated_sync(account_id)
+        except Exception as e:
+            logger.warning(f"[OpenOrderService] get_open_orders_isolated_sync failed: {e}")
+            return []
 
     def _get_hammer_orders(self, account_id: str) -> List[Dict[str, Any]]:
         """Fetch orders from Hammer Service"""
@@ -151,23 +126,41 @@ class OpenOrderService:
         return self._hammer_service.get_orders()
 
     def _run_async(self, coro):
-        """Helper to run async code from sync context"""
+        """Run async code from sync context. When already in a running loop, run coro in a thread to avoid 'coroutine was never awaited'."""
         import asyncio
         import concurrent.futures
-        
+
         try:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
         except RuntimeError:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
 
         if loop.is_running():
-             # Cannot block here. Return empty list to be safe.
-             # Caller should ideally be async.
-             logger.warning("[OpenOrderService] Called from running loop but method is sync. Returning empty list.")
-             return []
+            # Run coro in a dedicated thread with its own loop so we don't drop the coroutine.
+            # IBKRConnector.get_open_orders() uses _run_on_ib_thread and can run in any loop.
+            def _run_in_thread():
+                th_loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(th_loop)
+                try:
+                    return th_loop.run_until_complete(coro)
+                except Exception as e:
+                    logger.warning(f"[OpenOrderService] Thread-run async failed: {e}")
+                    return []
+                finally:
+                    th_loop.close()
+            try:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                    fut = pool.submit(_run_in_thread)
+                    return fut.result(timeout=5)
+            except concurrent.futures.TimeoutError:
+                logger.warning("[OpenOrderService] get_open_orders timed out (20s)")
+                return []
+            except Exception as e:
+                logger.warning(f"[OpenOrderService] Failed to run async in thread: {e}")
+                return []
         else:
-             return loop.run_until_complete(coro)
+            return loop.run_until_complete(coro)
 
 # Global instance
 _open_order_service = OpenOrderService()

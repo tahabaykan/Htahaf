@@ -1,0 +1,154 @@
+════════════════════════════════════════════════════════════════════════════════
+ADIM 1: VERİ YÜKLEME
+  v5_summary: 418 hisse (backtest sonuçları)
+  base_exdiv_map: 447 ticker (baz ex-div tarihleri)
+  held_tickers: 319 ticker (ekheld CSV'lerinden)
+  Bugün: 2026-02-25
+  Plan sonu: 2026-03-27
+
+════════════════════════════════════════════════════════════════════════════════
+ADIM 2: v5_summary İÇERİĞİ (patternların backtest sonuçları)
+  Sütunlar: ['ticker', 'div_amount', 'yield_pct', 'avg_price', 'n_exdivs', 'quality', 'avg_cycle', 'pattern_strength', 'best_long_name', 'best_long_entry', 'best_long_exit', 'best_long_ret', 'best_long_sharpe', 'best_long_win', 'best_long_pval', 'best_short_name', 'best_short_entry', 'best_short_exit', 'best_short_ret', 'best_short_sharpe', 'best_short_win', 'best_short_pval']
+  Long sinyal adayı: 402 hisse (sharpe>=0.3, pval<=0.15)
+  Short sinyal adayı: 271 hisse (sharpe>=0.3)
+
+  TOP 5 LONG PATTERN (en yüksek sharpe):
+    RPT PRC        [HELD    ] sharpe=+51.30 ret=+2.02% win=100% entry=d-5 exit=d+0 pval=0.000 yield=7.8%
+    KKRT           [HELD    ] sharpe=+37.43 ret=+2.16% win=100% entry=d-2 exit=d+2 pval=0.000 yield=6.7%
+    RF PRF         [HELD    ] sharpe=+24.16 ret=+1.09% win=100% entry=d-3 exit=d+3 pval=0.000 yield=6.7%
+    CIMN           [NOT-HELD] sharpe=+21.47 ret=+2.65% win=100% entry=d-5 exit=d+0 pval=0.000 yield=8.9%
+    ATHS           [HELD    ] sharpe=+16.39 ret=+1.87% win=100% entry=d-5 exit=d+0 pval=0.000 yield=7.1%
+
+  TOP 5 SHORT PATTERN (en yüksek sharpe):
+    CIMN           [NOT-HELD] sharpe=+8.12 ret=+1.77%
+    MITP           [NOT-HELD] sharpe=+7.97 ret=+1.60%
+    NREF PRA       [NOT-HELD] sharpe=+5.41 ret=+2.85%
+    RPT PRC        [HELD    ] sharpe=+5.22 ret=+1.10%
+    CIMO           [NOT-HELD] sharpe=+3.59 ret=+1.48%
+
+════════════════════════════════════════════════════════════════════════════════
+ADIM 3: PLAN OLUŞTUR (50L/50S, Held=50%)
+  Toplam Long aday: 205
+  Toplam Short aday: 176
+
+  ⚡ BUGÜN AKTİF SİNYALLER:
+    🟢 BUY  RF PRF         [H] ret=+1.09% shrp=24.2 win=100% exdiv=2026-03-02 entry=2026-02-26 exit=2026-03-06
+    🟢 BUY  NEE PRU        [H] ret=+1.15% shrp=6.6 win=100% exdiv=2026-02-28 entry=2026-02-26 exit=2026-03-25
+    🟢 BUY  ACP PRA        [NH] ret=+3.16% shrp=4.9 win=100% exdiv=2026-03-16 entry=2026-02-26 exit=2026-03-16
+    🟢 BUY  PRIF PRD       [NH] ret=+3.29% shrp=4.5 win=100% exdiv=2026-03-20 entry=2026-02-25 exit=2026-04-15
+    🟢 BUY  WHFCL          [NH] ret=+1.84% shrp=4.9 win=100% exdiv=2026-02-28 entry=2026-02-24 exit=2026-03-02
+    Bugün short penceresi açık hisse yok
+
+  📋 SEÇİLEN PORTFÖY:
+    Long:  16 hisse  (HELD: 8 / NOT-HELD: 8)
+    Short: 16 hisse  (HELD: 8 / NOT-HELD: 8)
+
+    Selected LONG hisseler:
+      KKRT           [HELD] score=18.620 ret=+2.16% shrp=37.4 entry=2026-03-11 exit=2026-03-16 exdiv=2026-03-13 d_until=16d
+      RF PRF         [HELD] score=12.991 ret=+1.09% shrp=24.2 entry=2026-02-26 exit=2026-03-06 exdiv=2026-03-02 d_until=5d
+      ATHS           [HELD] score=10.118 ret=+1.87% shrp=16.4 entry=2026-03-05 exit=2026-03-12 exdiv=2026-03-12 d_until=15d
+      RWT PRA        [NTHD] score=8.244 ret=+3.16% shrp=10.7 entry=2026-03-20 exit=2026-03-27 exdiv=2026-03-27 d_until=30d
+      TRINI          [NTHD] score=7.592 ret=+2.23% shrp=9.8 entry=2026-03-05 exit=2026-03-12 exdiv=2026-03-12 d_until=15d
+      PMTV           [NTHD] score=7.182 ret=+2.26% shrp=8.8 entry=2026-03-09 exit=2026-03-17 exdiv=2026-03-13 d_until=16d
+      MBINL          [HELD] score=6.542 ret=+2.54% shrp=7.0 entry=2026-03-02 exit=2026-04-13 exdiv=2026-03-15 d_until=18d
+      SEAL PRA       [HELD] score=6.364 ret=+2.77% shrp=6.3 entry=2026-03-20 exit=2026-03-27 exdiv=2026-03-27 d_until=30d
+      BK PRK         [HELD] score=6.339 ret=+1.10% shrp=7.5 entry=2026-03-09 exit=2026-03-26 exdiv=2026-03-05 d_until=8d
+      EFC PRA        [HELD] score=6.183 ret=+2.40% shrp=6.2 entry=2026-03-25 exit=2026-03-27 exdiv=2026-03-27 d_until=30d
+      GECCI          [NTHD] score=6.172 ret=+2.04% shrp=6.4 entry=2026-03-06 exit=2026-03-13 exdiv=2026-03-13 d_until=16d
+      ALL PRB        [HELD] score=6.130 ret=+2.31% shrp=6.1 entry=2026-03-20 exit=2026-03-27 exdiv=2026-03-27 d_until=30d
+      GDV PRH        [NTHD] score=5.994 ret=+2.27% shrp=5.8 entry=2026-03-09 exit=2026-03-16 exdiv=2026-03-16 d_until=19d
+      ACP PRA        [NTHD] score=5.904 ret=+3.16% shrp=4.9 entry=2026-02-26 exit=2026-03-16 exdiv=2026-03-16 d_until=19d
+      HOVNP          [NTHD] score=5.890 ret=+2.55% shrp=5.3 entry=2026-03-25 exit=2026-03-30 exdiv=2026-03-27 d_until=30d
+      OXLCL          [NTHD] score=5.828 ret=+2.28% shrp=5.4 entry=2026-03-06 exit=2026-03-13 exdiv=2026-03-13 d_until=16d
+
+    Selected SHORT hisseler:
+      FHN PRF        [HELD] score=3.053 ret=+3.57% shrp=2.5 entry=2026-03-20 exit=2026-03-27 exdiv=2026-03-20 d_until=23d
+      TDS PRU        [HELD] score=2.914 ret=+4.11% shrp=1.7 entry=2026-03-13 exit=2026-03-20 exdiv=2026-03-13 d_until=16d
+      HFRO PRA       [NTHD] score=2.893 ret=+3.38% shrp=2.4 entry=2026-03-20 exit=2026-03-27 exdiv=2026-03-20 d_until=23d
+      TDS PRV        [HELD] score=2.833 ret=+3.99% shrp=1.7 entry=2026-03-13 exit=2026-03-20 exdiv=2026-03-13 d_until=16d
+      CRBD           [HELD] score=2.765 ret=+4.53% shrp=1.0 entry=2026-03-02 exit=2026-03-09 exdiv=2026-02-28 d_until=3d
+      CHMI PRA       [NTHD] score=2.459 ret=+2.59% shrp=2.3 entry=2026-03-27 exit=2026-04-03 exdiv=2026-03-27 d_until=30d
+      PMT PRC        [HELD] score=2.448 ret=+2.62% shrp=2.3 entry=2026-03-02 exit=2026-03-09 exdiv=2026-02-28 d_until=3d
+      CFR PRB        [HELD] score=2.399 ret=+3.01% shrp=1.8 entry=2026-02-27 exit=2026-03-06 exdiv=2026-02-27 d_until=2d
+      FCNCO          [HELD] score=2.372 ret=+2.45% shrp=2.3 entry=2026-02-27 exit=2026-03-06 exdiv=2026-02-27 d_until=2d
+      KEY PRK        [HELD] score=2.348 ret=+2.63% shrp=2.1 entry=2026-02-27 exit=2026-03-06 exdiv=2026-02-27 d_until=2d
+      TRINI          [NTHD] score=2.224 ret=+1.38% shrp=3.1 entry=2026-03-12 exit=2026-03-19 exdiv=2026-03-12 d_until=15d
+      EFSCP          [NTHD] score=2.021 ret=+2.84% shrp=1.2 entry=2026-02-27 exit=2026-03-06 exdiv=2026-02-27 d_until=2d
+      GUT PRC        [NTHD] score=2.015 ret=+1.69% shrp=2.3 entry=2026-03-16 exit=2026-03-23 exdiv=2026-03-16 d_until=19d
+      BANFP          [NTHD] score=1.997 ret=+1.91% shrp=2.1 entry=2026-03-27 exit=2026-04-03 exdiv=2026-03-27 d_until=30d
+      RWT PRA        [NTHD] score=1.879 ret=+1.56% shrp=2.2 entry=2026-03-27 exit=2026-04-03 exdiv=2026-03-27 d_until=30d
+      ECCW           [NTHD] score=1.857 ret=+1.79% shrp=1.9 entry=2026-03-13 exit=2026-03-20 exdiv=2026-03-13 d_until=16d
+
+════════════════════════════════════════════════════════════════════════════════
+ADIM 4: AKSİYON TAKVİMİ (ilk 10 gün)
+
+  📌 2026-02-26
+    🟢 BUY    RF PRF         ret=+1.09% shrp=24.2
+    🟢 BUY    ACP PRA        ret=+3.16% shrp=4.9
+
+  📌 2026-02-27
+    🔴 SHORT  CFR PRB        ret=+3.01% shrp=1.8
+    🔴 SHORT  FCNCO          ret=+2.45% shrp=2.3
+    🔴 SHORT  KEY PRK        ret=+2.63% shrp=2.1
+    🔴 SHORT  EFSCP          ret=+2.84% shrp=1.2
+
+  📌 2026-03-02
+    🟢 BUY    MBINL          ret=+2.54% shrp=7.0
+    🔴 SHORT  CRBD           ret=+4.53% shrp=1.0
+    🔴 SHORT  PMT PRC        ret=+2.62% shrp=2.3
+
+  📌 2026-03-05
+    🟢 BUY    ATHS           ret=+1.87% shrp=16.4
+    🟢 BUY    TRINI          ret=+2.23% shrp=9.8
+
+  📌 2026-03-06
+    🟢 BUY    GECCI          ret=+2.04% shrp=6.4
+    🟢 BUY    OXLCL          ret=+2.28% shrp=5.4
+    📥 COVER  CFR PRB        ret=+3.01% shrp=1.8
+    📥 COVER  FCNCO          ret=+2.45% shrp=2.3
+    📥 COVER  KEY PRK        ret=+2.63% shrp=2.1
+    📥 COVER  EFSCP          ret=+2.84% shrp=1.2
+    📤 SELL   RF PRF         ret=+1.09% shrp=24.2
+
+  📌 2026-03-09
+    🟢 BUY    PMTV           ret=+2.26% shrp=8.8
+    🟢 BUY    BK PRK         ret=+1.10% shrp=7.5
+    🟢 BUY    GDV PRH        ret=+2.27% shrp=5.8
+    📥 COVER  CRBD           ret=+4.53% shrp=1.0
+    📥 COVER  PMT PRC        ret=+2.62% shrp=2.3
+
+  📌 2026-03-11
+    🟢 BUY    KKRT           ret=+2.16% shrp=37.4
+
+  📌 2026-03-12
+    📤 SELL   ATHS           ret=+1.87% shrp=16.4
+    📤 SELL   TRINI          ret=+2.23% shrp=9.8
+    🔴 SHORT  TRINI          ret=+1.38% shrp=3.1
+
+  📌 2026-03-13
+    📤 SELL   GECCI          ret=+2.04% shrp=6.4
+    📤 SELL   OXLCL          ret=+2.28% shrp=5.4
+    🔴 SHORT  TDS PRU        ret=+4.11% shrp=1.7
+    🔴 SHORT  TDS PRV        ret=+3.99% shrp=1.7
+    🔴 SHORT  ECCW           ret=+1.79% shrp=1.9
+
+  📌 2026-03-16
+    📤 SELL   KKRT           ret=+2.16% shrp=37.4
+    📤 SELL   GDV PRH        ret=+2.27% shrp=5.8
+    📤 SELL   ACP PRA        ret=+3.16% shrp=4.9
+    🔴 SHORT  GUT PRC        ret=+1.69% shrp=2.3
+    ...
+
+════════════════════════════════════════════════════════════════════════════════
+ADIM 5: HELD ORAN KARŞILAŞTIRMA
+  Held=20%: Long=16 (H:3/NH:13) | Short=16 (H:3/NH:13)
+  Held=50%: Long=16 (H:8/NH:8) | Short=16 (H:8/NH:8)
+  Held=80%: Long=16 (H:13/NH:3) | Short=16 (H:13/NH:3)
+  Held=100%: Long=16 (H:16/NH:0) | Short=16 (H:16/NH:0)
+
+════════════════════════════════════════════════════════════════════════════════
+ADIM 6: LONG/SHORT ORAN KARŞILAŞTIRMA (held=50%)
+  30L/70S: Long slots=10 sel=10 | Short slots=23 sel=23
+  50L/50S: Long slots=16 sel=16 | Short slots=16 sel=16
+  70L/30S: Long slots=23 sel=23 | Short slots=10 sel=10
+  100L/0S: Long slots=33 sel=33 | Short slots=0 sel=0

@@ -72,7 +72,7 @@ class DailyLedger:
                 effect_str = fill_data.get("effect", "")
                 
                 # Determine action from classification
-                if (dir_str == "LONG" and effect_str == "INCREASE") or (dir_str == "SHORT" and effect_str == "DECREASE"):
+                if (dir_str == "LONG" and effect_str == "INC") or (dir_str == "SHORT" and effect_str == "DEC"):
                     action = "BUY"
                 else:
                     action = "SELL"

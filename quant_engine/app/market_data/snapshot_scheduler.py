@@ -177,10 +177,35 @@ class SnapshotScheduler:
                     snapshot['timestamp'] = ts_str # Human readable
                     snapshot['ts_epoch'] = time.time()
                     
-                    # 1. Redis Update (Live)
+                    # 1. Redis Update (Live) — 10 min TTL (cycle runs every 1-5 min)
                     redis_key = f"market_data:snapshot:{symbol}"
                     snapshot_json = json.dumps(snapshot)
-                    redis_pipeline.set(redis_key, snapshot_json)
+                    redis_pipeline.setex(redis_key, 600, snapshot_json)
+                    
+                    # 1b. L1 Data for RevnBookCheck Terminal
+                    # Write bid/ask/spread to market:l1:{symbol} for REV order calculations
+                    bid = snapshot.get('bid', 0.0)
+                    ask = snapshot.get('ask', 0.0)
+                    spread = ask - bid if (bid and ask and ask > bid) else 0.0
+                    
+                    l1_data = {
+                        'bid': bid,
+                        'ask': ask,
+                        'spread': round(spread, 4),
+                        'last': snapshot.get('last', 0.0),
+                        'ts': time.time()
+                    }
+                    l1_json = json.dumps(l1_data)
+                    
+                    # 🔑 TICKER CONVENTION: Write BOTH Hammer and PREF_IBKR keys
+                    from app.live.symbol_mapper import SymbolMapper
+                    hammer_sym = SymbolMapper.to_hammer_symbol(symbol)
+                    
+                    # Primary: Hammer format (canonical for market data)
+                    redis_pipeline.setex(f"market:l1:{hammer_sym}", 600, l1_json)
+                    # Secondary: PREF_IBKR format (backward compat)
+                    if hammer_sym != symbol:
+                        redis_pipeline.setex(f"market:l1:{symbol}", 600, l1_json)
                     
                     # 2. Redis History (Full Day History)
                     # Use a List: LPUSH (prepend)

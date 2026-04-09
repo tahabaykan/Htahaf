@@ -80,6 +80,12 @@ class GRPANTickFetcher:
         # Track if symbol has been bootstrapped: {symbol: bool}
         self.bootstrapped_symbols: Set[str] = set()
         
+        # ═══ Circuit Breaker ═══
+        self._consecutive_failures = 0
+        self._circuit_breaker_threshold = 3     # Pause after N consecutive failures
+        self._circuit_breaker_cooldown = 30.0   # Seconds to wait when circuit opens
+        self._last_circuit_break = 0.0
+        
         # Metrics
         self.metrics = {
             'total_fetches': 0,
@@ -89,6 +95,7 @@ class GRPANTickFetcher:
             'recovery_fetches': 0,
             'polling_fetches': 0,
             'total_ticks_processed': 0,
+            'circuit_breaks': 0,
             'last_fetch_time': None
         }
     
@@ -97,21 +104,22 @@ class GRPANTickFetcher:
         Add symbols to fetch list.
         Args:
             symbols: List of symbols (in display format, e.g., "CIM PRB")
-            bootstrap: If True, immediately bootstrap these symbols
+            bootstrap: If True, mark symbols for bootstrap on next fetch cycle (NON-BLOCKING)
         """
         with self._symbols_lock:
+            new_count = 0
             for symbol in symbols:
                 if symbol not in self.symbols_to_fetch:
                     self.symbols_to_fetch.append(symbol)
                     self.last_trade_time[symbol] = time.time()  # Initialize
+                    new_count += 1
             
-            if bootstrap:
-                # Bootstrap new symbols immediately
-                for symbol in symbols:
-                    if symbol not in self.bootstrapped_symbols:
-                        self._bootstrap_symbol(symbol)
+            # NOTE: Bootstrap happens automatically in _fetch_loop when it sees
+            # symbols not in bootstrapped_symbols. No need to block here.
+            # Old behavior: called _bootstrap_symbol() synchronously for EACH symbol
+            # which caused 22+ minute blocking (2500 ticks × 66 symbols × 20s each).
             
-            logger.info(f"📊 GRPAN tick fetcher: {len(symbols)} symbols added, total: {len(self.symbols_to_fetch)}")
+            logger.info(f"📊 GRPAN tick fetcher: {new_count} new symbols added, total: {len(self.symbols_to_fetch)}")
 
     def _bootstrap_symbol(self, symbol: str):
         """Bootstrap a symbol (fetch initial ticks)"""
@@ -260,9 +268,21 @@ class GRPANTickFetcher:
                     except Exception as e:
                         logger.error(f"Error checking/fetching ticks for {symbol}: {e}", exc_info=True)
                         self.metrics['failed_fetches'] += 1
+                        self._consecutive_failures += 1
                     
-                    # Small delay between symbols to avoid Hammer rate limits
-                    time.sleep(0.05) 
+                    # ═══ Circuit Breaker Check ═══
+                    if self._consecutive_failures >= self._circuit_breaker_threshold:
+                        logger.warning(
+                            f"⚡ GRPAN circuit breaker OPEN: {self._consecutive_failures} consecutive failures. "
+                            f"Pausing {self._circuit_breaker_cooldown}s to let Hammer API recover."
+                        )
+                        self.metrics['circuit_breaks'] += 1
+                        self._last_circuit_break = time.time()
+                        self._consecutive_failures = 0
+                        time.sleep(self._circuit_breaker_cooldown)
+                    
+                    # Adaptive delay between symbols
+                    time.sleep(0.5)  # Was 0.05s — too aggressive for sequential API calls
                 
                 if fetched_count > 0:
                     logger.debug(f"GRPAN tick fetcher: Fetched {fetched_count} symbols (Polling: {self.polling_mode})")
@@ -287,39 +307,37 @@ class GRPANTickFetcher:
             # Determine limit
             limit_to_use = limit_override if limit_override else self.last_few_ticks
             
-            # Retry logic with aggressive fallback
+            # ═══ OPTIMIZED Retry Logic ═══
+            # Old: 6 retry levels × 10s timeout = 60s per failed symbol!
+            # New: max 3 levels × 5s timeout = 15s max per failed symbol
             tick_data = None
             amounts_to_try = [limit_to_use]
             
-            # Always add fallbacks, even for small requests
-            if limit_to_use > 1000:
-                amounts_to_try.extend([1500, 500, 100, 10])
-            elif limit_to_use > 500:
-                amounts_to_try.extend([300, 100, 10])
-            elif limit_to_use > 100:
-                amounts_to_try.extend([50, 10])
-            elif limit_to_use > 10:
+            # Only 1-2 fallbacks (was 4-5)
+            if limit_to_use > 500:
+                amounts_to_try.append(100)
+            elif limit_to_use > 50:
                 amounts_to_try.append(10)
             
-            # Additional safety for extreme illiquidity
-            if 1 not in amounts_to_try and 5 not in amounts_to_try:
-                amounts_to_try.append(5)
-
             # Deduplicate and sort descending
             amounts_to_try = sorted(list(set(amounts_to_try)), reverse=True)
             
             for count in amounts_to_try:
                 try:
-                    # Use slightly longer timeout for larger requests if possible, but HammerClient defaults to 10s
-                    # We rely on the fallback amounts to solve the timeout, not extending the timer indefinitely.
+                    # Shorter timeout for smaller requests
+                    req_timeout = 8.0 if count > 500 else 5.0
+                    
                     tick_data = self.hammer_client.get_ticks(
                         symbol,
                         lastFew=count,
                         tradesOnly=True,  # CRITICAL: Only want trades
-                        regHoursOnly=False # CRITICAL: Get ALL hours (avoid missing trades due to session flags)
+                        regHoursOnly=False, # CRITICAL: Get ALL hours
+                        timeout=req_timeout
                     )
                     
                     if tick_data and 'data' in tick_data:
+                        # Success — reset circuit breaker
+                        self._consecutive_failures = 0
                         if count < limit_to_use:
                             logger.info(f"⚠️ GRPAN fetch {symbol}: Succeeded with fallback limit {count} (requested {limit_to_use})")
                         break # Success
@@ -329,6 +347,8 @@ class GRPANTickFetcher:
             
             # ... rest of logic ...
             if not tick_data or 'data' not in tick_data:
+                 # Track failure for circuit breaker
+                 self._consecutive_failures += 1
                  # Be less spammy in polling mode logs unless robust failure
                  if not self.polling_mode:
                     logger.error(f"❌ GRPAN tick fetcher: All fetch attempts failed for {symbol}")

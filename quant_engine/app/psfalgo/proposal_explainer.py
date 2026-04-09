@@ -156,6 +156,27 @@ class ProposalExplainer:
                         'passed': True,
                         'reason': 'FBTOT > 1.10 indicates stock is relatively expensive (good for buying)'
                     })
+
+        elif proposal.engine in ['GREATEST_MM', 'MM_ENGINE']:
+            explanation_parts.append("Bu trade önerildi çünkü Market Maker (MM) puanı yüksek:")
+            
+            score = metrics_used.get('score')
+            son5_tick = metrics_used.get('son5_tick')
+            new_print = metrics_used.get('new_print')
+            
+            if score is not None:
+                explanation_parts.append(f"- MM SKOR = {score:.2f} ✅")
+            
+            if new_print is not None:
+                explanation_parts.append(f"- Truth Tick (new truth) = {new_print:.2f} ✅")
+            
+            if son5_tick is not None:
+                explanation_parts.append(f"- Son5 Tick = {son5_tick:.2f} ✅")
+            
+            explanation_parts.append("\nKriterler:")
+            explanation_parts.append("- Son5Tick ile giriş noktası arasındaki mesafe")
+            explanation_parts.append("- Ucuzluk/Pahalılık katsayıları")
+            explanation_parts.append("- Trend uyumu (Benchmark Chg)")
         
         # SMA analysis
         if sma63_chg is not None:

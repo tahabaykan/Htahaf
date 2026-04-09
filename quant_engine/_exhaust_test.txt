@@ -1,0 +1,91 @@
+
+================================================================================
+  JSM
+================================================================================
+  Detected cycles: 11
+
+  LONG stratejiler (8 adet):
+    OPTIMAL_LONG         d-18 -> d+1  ret=+2.26%  shrp=3.1  win=91%  n=11  pval=0.0000
+    CAPTURE_PRE          d-7 -> d-1  ret=+0.47%  shrp=0.5  win=64%  n=11  pval=0.4268
+    DIV_HOLD             d-2 -> d+2  ret=+0.52%  shrp=0.4  win=64%  n=11  pval=0.4658
+    CAPTURE_HOLD         d-5 -> d+0  ret=+0.23%  shrp=0.2  win=82%  n=11  pval=0.7553
+    QUICK_FLIP           d-3 -> d+3  ret=+0.01%  shrp=0.0  win=64%  n=11  pval=0.9939
+    RECOVERY             d+0 -> d+10  ret=-0.03%  shrp=-0.0  win=46%  n=11  pval=0.9700
+    FULL_CYCLE           d-10 -> d+20  ret=-2.35%  shrp=-0.7  win=50%  n=10  pval=0.2397
+    RECOVERY_LATE        d+3 -> d+15  ret=-1.73%  shrp=-0.9  win=40%  n=10  pval=0.1677
+
+  SHORT stratejiler (2 adet):
+    OPTIMAL_SHORT        d+7 -> d+9  ret=+1.15%  shrp=1.5  win=73%  n=11  pval=0.0143
+    WASHOUT_SHORT        d+0 -> d+5  ret=-0.17%  shrp=-0.1  win=46%  n=11  pval=0.8289
+
+  >>> BEST LONG:  OPTIMAL_LONG d-18->d+1 ret=+2.26% sharpe=3.1
+  >>> BEST SHORT: OPTIMAL_SHORT d+7->d+9 ret=+1.15% sharpe=1.5
+
+================================================================================
+  RF PRF
+================================================================================
+  Detected cycles: 3
+
+  LONG stratejiler (8 adet):
+    OPTIMAL_LONG         d-8 -> d+2  ret=+2.02%  shrp=16.9  win=100%  n=4  pval=0.0000
+    DIV_HOLD             d-2 -> d+2  ret=+2.18%  shrp=7.8  win=100%  n=4  pval=0.0000
+    CAPTURE_HOLD         d-5 -> d+0  ret=+2.08%  shrp=6.7  win=100%  n=4  pval=0.0000
+    QUICK_FLIP           d-3 -> d+3  ret=+2.15%  shrp=5.7  win=100%  n=4  pval=0.0000
+    FULL_CYCLE           d-10 -> d+20  ret=+0.84%  shrp=1.0  win=75%  n=4  pval=0.3255
+    CAPTURE_PRE          d-7 -> d-1  ret=+0.17%  shrp=0.6  win=50%  n=4  pval=0.5784
+    RECOVERY_LATE        d+3 -> d+15  ret=+0.11%  shrp=0.3  win=75%  n=4  pval=0.7806
+    RECOVERY             d+0 -> d+10  ret=-0.38%  shrp=-0.7  win=50%  n=4  pval=0.4624
+
+  SHORT stratejiler (2 adet):
+    OPTIMAL_SHORT        d+6 -> d+9  ret=+1.03%  shrp=6.9  win=100%  n=4  pval=0.0000
+    WASHOUT_SHORT        d+0 -> d+5  ret=+0.03%  shrp=0.1  win=50%  n=4  pval=0.9612
+
+  >>> BEST LONG:  OPTIMAL_LONG d-8->d+2 ret=+2.02% sharpe=16.9
+  >>> BEST SHORT: OPTIMAL_SHORT d+6->d+9 ret=+1.03% sharpe=6.9
+
+================================================================================
+  ATHS
+================================================================================
+  Detected cycles: 5
+
+  LONG stratejiler (8 adet):
+    OPTIMAL_LONG         d-9 -> d+16  ret=+0.88%  shrp=14.1  win=100%  n=5  pval=0.0000
+    CAPTURE_HOLD         d-5 -> d+0  ret=+0.82%  shrp=6.4  win=100%  n=6  pval=0.0000
+    QUICK_FLIP           d-3 -> d+3  ret=+1.20%  shrp=3.5  win=100%  n=6  pval=0.0000
+    DIV_HOLD             d-2 -> d+2  ret=+0.95%  shrp=2.8  win=100%  n=6  pval=0.0005
+    CAPTURE_PRE          d-7 -> d-1  ret=+0.28%  shrp=1.8  win=83%  n=6  pval=0.0243
+    FULL_CYCLE           d-10 -> d+20  ret=+0.70%  shrp=1.2  win=60%  n=5  pval=0.1921
+    RECOVERY             d+0 -> d+10  ret=+0.23%  shrp=0.7  win=71%  n=7  pval=0.3728
+    RECOVERY_LATE        d+3 -> d+15  ret=-0.17%  shrp=-0.3  win=50%  n=6  pval=0.7416
+
+  SHORT stratejiler (2 adet):
+    OPTIMAL_SHORT        d+8 -> d+11  ret=+0.67%  shrp=8.8  win=100%  n=7  pval=0.0000
+    WASHOUT_SHORT        d+0 -> d+5  ret=-0.99%  shrp=-1.7  win=14%  n=7  pval=0.0270
+
+  >>> BEST LONG:  OPTIMAL_LONG d-9->d+16 ret=+0.88% sharpe=14.1
+  >>> BEST SHORT: OPTIMAL_SHORT d+8->d+11 ret=+0.67% sharpe=8.8
+
+================================================================================
+  FHN PRF
+================================================================================
+  Detected cycles: 8
+
+  LONG stratejiler (8 adet):
+    OPTIMAL_LONG         d-10 -> d+2  ret=+2.35%  shrp=4.0  win=100%  n=10  pval=0.0000
+    DIV_HOLD             d-2 -> d+2  ret=+1.40%  shrp=2.2  win=90%  n=10  pval=0.0005
+    CAPTURE_HOLD         d-5 -> d+0  ret=+1.25%  shrp=1.4  win=90%  n=10  pval=0.0254
+    QUICK_FLIP           d-3 -> d+3  ret=+1.23%  shrp=1.4  win=80%  n=10  pval=0.0268
+    CAPTURE_PRE          d-7 -> d-1  ret=+0.40%  shrp=1.3  win=80%  n=10  pval=0.0414
+    FULL_CYCLE           d-10 -> d+20  ret=+0.23%  shrp=0.1  win=30%  n=10  pval=0.8411
+    RECOVERY_LATE        d+3 -> d+15  ret=-1.56%  shrp=-1.4  win=20%  n=10  pval=0.0215
+    RECOVERY             d+0 -> d+10  ret=-2.33%  shrp=-1.9  win=20%  n=10  pval=0.0025
+
+  SHORT stratejiler (2 adet):
+    OPTIMAL_SHORT        d+3 -> d+5  ret=+1.87%  shrp=1.2  win=70%  n=10  pval=0.0622
+    WASHOUT_SHORT        d+0 -> d+5  ret=+3.13%  shrp=1.1  win=60%  n=10  pval=0.0924
+
+  >>> BEST LONG:  OPTIMAL_LONG d-10->d+2 ret=+2.35% sharpe=4.0
+  >>> BEST SHORT: OPTIMAL_SHORT d+3->d+5 ret=+1.87% sharpe=1.2
+
+
+Elapsed: 5.5s

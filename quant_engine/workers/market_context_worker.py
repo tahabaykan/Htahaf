@@ -173,11 +173,19 @@ class MarketContextWorker:
             universe_info = self.universe.get(symbol, {})
             prev_close = universe_info.get('prev_close', 0)
             
+            # Skip logging if critical data is missing (Wait for next L1 update)
+            bid = data.get('bid')
+            ask = data.get('ask')
+            last = data.get('last')
+            
+            if bid is None or ask is None or last is None:
+                 continue
+
             entry = {
                 'ts': timestamp,
-                'bid': data['bid'],
-                'ask': data['ask'],
-                'last': data['last'],
+                'bid': bid,
+                'ask': ask,
+                'last': last,
                 'vol': data.get('vol', data.get('volume', 0)),
                 'prev_close': prev_close  # From CSV PRVDAY column
             }
@@ -227,12 +235,14 @@ class MarketContextWorker:
             group = info['group']
             
             # Calculate daily chg for this symbol
-            last = data['last']
+            last = data.get('last')
+            if last is None: continue # Safety
+            
             prev_close = data.get('prev_close', 0)
             daily_chg = 0.0
             daily_chg_pct = 0.0
             
-            if prev_close > 0:
+            if prev_close and prev_close > 0:
                 daily_chg = last - prev_close
                 daily_chg_pct = (daily_chg / prev_close) * 100
 
@@ -240,10 +250,9 @@ class MarketContextWorker:
                 group_aggregates[group] = {'sum_price': 0.0, 'sum_vol': 0, 'sum_chg': 0.0, 'count': 0}
             
             group_aggregates[group]['sum_price'] += last
-            group_aggregates[group]['sum_vol'] += data.get('vol', data.get('volume', 0))
+            vol = data.get('vol') or data.get('volume') or 0
+            group_aggregates[group]['sum_vol'] += vol
             # Use daily_chg NOT percentage for bench_chg (in cents) if we want absolute change overlay
-            # User said "AVG DAILY CHG". Usually bench_chg is used as subtraction from pf_buy_chg (which is in cents).
-            # So we should probably average the CENTS change.
             group_aggregates[group]['sum_chg'] += daily_chg
             group_aggregates[group]['count'] += 1
             

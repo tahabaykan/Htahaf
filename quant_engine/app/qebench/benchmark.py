@@ -2,139 +2,145 @@
 QeBench Benchmark Price Module
 
 Fetches DOS Group average prices for benchmark calculations.
+
+v2: Uses DataFabric as primary source (already computed by JanallMetricsEngine),
+    with Redis fallback for when DataFabric isn't available.
 """
-from typing import Optional
+from typing import Optional, Tuple
 from loguru import logger
-import redis
-from app.config.settings import settings
 
 
 class BenchmarkPriceFetcher:
-    """Fetches benchmark (DOS Group average) prices"""
+    """Fetches benchmark (DOS Group average) prices from DataFabric or Redis"""
     
     def __init__(self):
-        self.redis_client = redis.Redis(
-            host=settings.REDIS_HOST,
-            port=settings.REDIS_PORT,
-            decode_responses=True
-        )
+        self._redis_client = None
+    
+    def _get_redis(self):
+        """Lazy Redis client initialization"""
+        if self._redis_client is None:
+            try:
+                from app.config.settings import settings
+                import redis
+                self._redis_client = redis.Redis(
+                    host=settings.REDIS_HOST,
+                    port=settings.REDIS_PORT,
+                    decode_responses=True
+                )
+            except Exception as e:
+                logger.warning(f"[Benchmark] Redis init failed: {e}")
+        return self._redis_client
     
     def get_current_benchmark_price(self, symbol: str) -> Optional[float]:
         """
-        Get current benchmark price for a symbol.
+        Get current benchmark price (DOS Group average) for a symbol.
         
-        Uses DOS Group average from market_context_worker.
-        For heldkuponlu stocks, uses CGRUP-specific average.
-        
-        Args:
-            symbol: Stock symbol
+        Priority:
+        1. DataFabric derived data (fastest, already computed every 2s)
+        2. Redis fallback (janall:metrics or bench:dos_group keys)
         
         Returns:
-            Benchmark average price or None
+            Group average price, or None if unavailable
         """
+        # === PRIORITY 1: DataFabric (best source) ===
         try:
-            # Get symbol DOS Group and CGRUP
-            dos_group = self._get_dos_group(symbol)
-            cgrup = self._get_cgrup(symbol)
-            
-            # Build Redis key
-            if cgrup and dos_group == 'heldkuponlu':
-                redis_key = f"bench:dos_group:heldkuponlu:{cgrup}:current_avg"
-            else:
-                redis_key = f"bench:dos_group:{dos_group}:current_avg"
-            
-            # Fetch from Redis
-            bench_price = self.redis_client.get(redis_key)
-            
-            if bench_price:
-                return float(bench_price)
-            
-            # Fallback: calculate from individual prices
-            logger.warning(f"[Benchmark] No cached bench for {symbol}, calculating from group")
-            return self._calculate_group_average(dos_group, cgrup)
-            
+            from app.core.data_fabric import get_data_fabric
+            fabric = get_data_fabric()
+            if fabric:
+                derived = fabric.get_derived(symbol)
+                if derived:
+                    # bench_chg is the group avg daily change (cents)
+                    # For QeBench we need "group avg price" not "group avg change"
+                    # Check if group_avg_price is stored
+                    group_avg_price = derived.get('group_avg_price')
+                    if group_avg_price and float(group_avg_price) > 0:
+                        return float(group_avg_price)
+                    
+                    # Fallback: compute from bench_source group stats
+                    bench_source = derived.get('bench_source', '')
+                    group_key = derived.get('group_key')
+                    
+                    if group_key:
+                        # Try to get group stats from JanallMetricsEngine cache
+                        price = self._get_group_avg_from_janall(group_key)
+                        if price:
+                            return price
         except Exception as e:
-            logger.error(f"[Benchmark] Error fetching for {symbol}: {e}")
-            return None
-    
-    def _get_dos_group(self, symbol: str) -> Optional[str]:
-        """Get DOS Group for symbol from static data"""
-        try:
-            group = self.redis_client.hget(f"static:{symbol}", "dos_group")
-            return group if group else None
-        except:
-            return None
-    
-    def _get_cgrup(self, symbol: str) -> Optional[str]:
-        """Get CGRUP for heldkuponlu symbols"""
-        try:
-            cgrup = self.redis_client.hget(f"static:{symbol}", "cgrup")
-            return cgrup if cgrup else None
-        except:
-            return None
-    
-    def _calculate_group_average(self, dos_group: str, cgrup: Optional[str] = None) -> Optional[float]:
-        """
-        Calculate benchmark by averaging all symbols in group.
+            logger.debug(f"[Benchmark] DataFabric lookup failed for {symbol}: {e}")
         
-        Fallback method when cached average not available.
+        # === PRIORITY 2: Redis fallback ===
+        return self._get_from_redis(symbol)
+    
+    def get_benchmark_data(self, symbol: str) -> Tuple[Optional[float], Optional[float], Optional[str]]:
+        """
+        Get full benchmark data for a symbol.
+        
+        Returns:
+            (bench_price, bench_chg, bench_source)
+            - bench_price: DOS Group average price
+            - bench_chg: DOS Group average daily change (cents)
+            - bench_source: Source description (e.g., "Group: heldkuponlu:c525 (n=23)")
         """
         try:
-            # Get all symbols in group
-            if cgrup and dos_group == 'heldkuponlu':
-                # Filter by CGRUP
-                symbols = self._get_symbols_by_cgrup(cgrup)
-            else:
-                symbols = self._get_symbols_by_dos_group(dos_group)
-            
-            if not symbols:
+            from app.core.data_fabric import get_data_fabric
+            fabric = get_data_fabric()
+            if fabric:
+                derived = fabric.get_derived(symbol)
+                if derived:
+                    bench_chg = derived.get('bench_chg')
+                    bench_source = derived.get('bench_source')
+                    bench_price = self.get_current_benchmark_price(symbol)
+                    
+                    if bench_chg is not None:
+                        bench_chg = float(bench_chg)
+                    
+                    return bench_price, bench_chg, bench_source
+        except Exception as e:
+            logger.debug(f"[Benchmark] Full data lookup failed for {symbol}: {e}")
+        
+        return None, None, None
+    
+    def _get_group_avg_from_janall(self, group_key: str) -> Optional[float]:
+        """Get group average price from JanallMetricsEngine cache"""
+        try:
+            from app.market_data.janall_metrics_engine import get_janall_metrics_engine
+            engine = get_janall_metrics_engine()
+            if engine and engine.group_stats_cache:
+                stats = engine.group_stats_cache.get(group_key)
+                if stats:
+                    avg_price = stats.get('group_avg_price')
+                    if avg_price and float(avg_price) > 0:
+                        return float(avg_price)
+        except Exception as e:
+            logger.debug(f"[Benchmark] JanallMetrics lookup failed for {group_key}: {e}")
+        return None
+    
+    def _get_from_redis(self, symbol: str) -> Optional[float]:
+        """Fallback: Get benchmark from Redis"""
+        try:
+            redis_client = self._get_redis()
+            if not redis_client:
                 return None
             
-            # Get current prices
-            prices = []
-            for sym in symbols:
-                price = self.redis_client.hget(f"live:{sym}", "last")
-                if price:
-                    prices.append(float(price))
+            # Try janall:metrics:{symbol} first
+            import json
+            metrics_json = redis_client.get(f"janall:metrics:{symbol}")
+            if metrics_json:
+                metrics = json.loads(metrics_json)
+                group_key = metrics.get('group_key')
+                
+                if group_key:
+                    # Try cached group average
+                    redis_key = f"bench:dos_group:{group_key}:current_avg"
+                    bench_price = redis_client.get(redis_key)
+                    if bench_price:
+                        return float(bench_price)
             
-            if not prices:
-                return None
-            
-            avg_price = sum(prices) / len(prices)
-            logger.info(f"[Benchmark] Calculated {dos_group}/{cgrup} avg: {avg_price:.2f} from {len(prices)} symbols")
-            
-            return avg_price
+            return None
             
         except Exception as e:
-            logger.error(f"[Benchmark] Error calculating group avg: {e}")
+            logger.debug(f"[Benchmark] Redis fallback failed for {symbol}: {e}")
             return None
-    
-    def _get_symbols_by_dos_group(self, dos_group: str) -> list:
-        """Get all symbols in a DOS Group"""
-        try:
-            # Scan all static keys
-            symbols = []
-            for key in self.redis_client.scan_iter("static:*"):
-                sym = key.replace("static:", "")
-                group = self.redis_client.hget(key, "dos_group")
-                if group == dos_group:
-                    symbols.append(sym)
-            return symbols
-        except:
-            return []
-    
-    def _get_symbols_by_cgrup(self, cgrup: str) -> list:
-        """Get all heldkuponlu symbols in a CGRUP"""
-        try:
-            symbols = []
-            for key in self.redis_client.scan_iter("static:*"):
-                sym = key.replace("static:", "")
-                sym_cgrup = self.redis_client.hget(key, "cgrup")
-                if sym_cgrup == cgrup:
-                    symbols.append(sym)
-            return symbols
-        except:
-            return []
 
 
 # Singleton instance

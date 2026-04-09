@@ -5,8 +5,8 @@ Standardizes interaction with different broker backends.
 
 Supported Providers:
 - HAMPRO (Hammer Pro)
-- IBKR_PED (IBKR Paper)
-- IBKR_GUN (IBKR Live)
+- IBKR_PED (IBKR PED, port 4001)
+- IBKR_GUN (IBKR GUN, port 4001)
 """
 from abc import ABC, abstractmethod
 from enum import Enum

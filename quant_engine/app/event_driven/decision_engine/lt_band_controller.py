@@ -75,55 +75,55 @@ class LTBandController:
         action_params = {}
         
         if lt_short_pct > short_max:
-            # LT short too high: prefer LT_SHORT_DECREASE and/or LT_LONG_INCREASE
+            # LT short too high: prefer LT_SHORT_DEC and/or LT_LONG_INC
             action_type = "LT_SHORT_TOO_HIGH"
             action_params = {
                 "prefer_classifications": [
-                    OrderClassification.LT_SHORT_DECREASE.value,
-                    OrderClassification.LT_LONG_INCREASE.value
+                    OrderClassification.LT_SHORT_DEC.value,
+                    OrderClassification.LT_LONG_INC.value
                 ],
                 "avoid_classifications": [
-                    OrderClassification.LT_SHORT_INCREASE.value,
-                    OrderClassification.LT_LONG_DECREASE.value
+                    OrderClassification.LT_SHORT_INC.value,
+                    OrderClassification.LT_LONG_DEC.value
                 ]
             }
         elif lt_short_pct < short_min:
-            # LT short too low: prefer LT_SHORT_INCREASE and/or LT_LONG_DECREASE
+            # LT short too low: prefer LT_SHORT_INC and/or LT_LONG_DEC
             action_type = "LT_SHORT_TOO_LOW"
             action_params = {
                 "prefer_classifications": [
-                    OrderClassification.LT_SHORT_INCREASE.value,
-                    OrderClassification.LT_LONG_DECREASE.value
+                    OrderClassification.LT_SHORT_INC.value,
+                    OrderClassification.LT_LONG_DEC.value
                 ],
                 "avoid_classifications": [
-                    OrderClassification.LT_SHORT_DECREASE.value,
-                    OrderClassification.LT_LONG_INCREASE.value
+                    OrderClassification.LT_SHORT_DEC.value,
+                    OrderClassification.LT_LONG_INC.value
                 ]
             }
         elif lt_long_pct > long_max:
-            # LT long too high: prefer LT_LONG_DECREASE and/or LT_SHORT_INCREASE
+            # LT long too high: prefer LT_LONG_DEC and/or LT_SHORT_INC
             action_type = "LT_LONG_TOO_HIGH"
             action_params = {
                 "prefer_classifications": [
-                    OrderClassification.LT_LONG_DECREASE.value,
-                    OrderClassification.LT_SHORT_INCREASE.value
+                    OrderClassification.LT_LONG_DEC.value,
+                    OrderClassification.LT_SHORT_INC.value
                 ],
                 "avoid_classifications": [
-                    OrderClassification.LT_LONG_INCREASE.value,
-                    OrderClassification.LT_SHORT_DECREASE.value
+                    OrderClassification.LT_LONG_INC.value,
+                    OrderClassification.LT_SHORT_DEC.value
                 ]
             }
         elif lt_long_pct < long_min:
-            # LT long too low: prefer LT_LONG_INCREASE and/or LT_SHORT_DECREASE
+            # LT long too low: prefer LT_LONG_INC and/or LT_SHORT_DEC
             action_type = "LT_LONG_TOO_LOW"
             action_params = {
                 "prefer_classifications": [
-                    OrderClassification.LT_LONG_INCREASE.value,
-                    OrderClassification.LT_SHORT_DECREASE.value
+                    OrderClassification.LT_LONG_INC.value,
+                    OrderClassification.LT_SHORT_DEC.value
                 ],
                 "avoid_classifications": [
-                    OrderClassification.LT_LONG_DECREASE.value,
-                    OrderClassification.LT_SHORT_INCREASE.value
+                    OrderClassification.LT_LONG_DEC.value,
+                    OrderClassification.LT_SHORT_INC.value
                 ]
             }
         

@@ -1,0 +1,214 @@
+.fake-orders-list {
+    background: #1e2832;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.orders-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.orders-header h3 {
+    color: #fff;
+    margin: 0;
+    font-size: 20px;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.filter-buttons button {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.filter-buttons button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+.filter-buttons button.active {
+    background: #3498db;
+    color: #fff;
+    font-weight: bold;
+}
+
+.btn-refresh {
+    padding: 8px 16px;
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+    border: 1px solid #2ecc71;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.btn-refresh:hover:not(:disabled) {
+    background: rgba(46, 204, 113, 0.3);
+}
+
+.btn-refresh:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.empty-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.empty-state p {
+    font-size: 18px;
+    margin: 8px 0;
+}
+
+.empty-state small {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.orders-table-container {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.orders-table thead {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.orders-table th {
+    padding: 12px 16px;
+    text-align: left;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.orders-table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s ease;
+}
+
+.orders-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.orders-table tbody tr.pending {
+    background: rgba(243, 156, 18, 0.05);
+}
+
+.orders-table tbody tr.filled {
+    background: rgba(46, 204, 113, 0.05);
+}
+
+.orders-table td {
+    padding: 12px 16px;
+    color: #fff;
+    font-size: 14px;
+}
+
+.order-id {
+    font-family: 'Courier New', monospace;
+    color: #95a5a6;
+    font-size: 12px;
+}
+
+.symbol {
+    font-weight: bold;
+    color: #3498db;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-pending {
+    background: rgba(243, 156, 18, 0.2);
+    color: #f39c12;
+}
+
+.status-filled {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+}
+
+.status-cancelled {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+}
+
+.side-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.side-buy {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+}
+
+.side-sell {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+}
+
+.qty {
+    font-weight: 600;
+    color: #ecf0f1;
+}
+
+.price,
+.fill-price {
+    font-family: 'Courier New', monospace;
+    color: #3498db;
+}
+
+.tag {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    font-family: 'Courier New', monospace;
+}
+
+.time {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+}

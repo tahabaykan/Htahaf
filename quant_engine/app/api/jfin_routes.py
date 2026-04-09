@@ -153,9 +153,9 @@ async def apply_jfin_preset(preset_name: str):
     """
     try:
         presets = {
-            "v10": {"selection_percent": 0.10, "min_selection": 2, "heldkuponlu_pair_count": 8},
-            "v15": {"selection_percent": 0.12, "min_selection": 2, "heldkuponlu_pair_count": 10},
-            "v20": {"selection_percent": 0.15, "min_selection": 3, "heldkuponlu_pair_count": 12},
+            "v10": {"selection_percent": 0.10, "min_selection": 2, "heldkuponlu_pair_count": 16},
+            "v15": {"selection_percent": 0.12, "min_selection": 2, "heldkuponlu_pair_count": 20},
+            "v20": {"selection_percent": 0.15, "min_selection": 3, "heldkuponlu_pair_count": 24},
         }
         
         if preset_name not in presets:

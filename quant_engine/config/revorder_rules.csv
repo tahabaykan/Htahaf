@@ -1,0 +1,6 @@
+setting,value
+inc_min_profit,0.04
+dec_min_save,0.06
+orderbook_max_levels,10
+spread_wide_threshold,0.20
+spread_factor,0.15

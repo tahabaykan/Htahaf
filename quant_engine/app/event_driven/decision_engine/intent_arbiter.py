@@ -16,7 +16,7 @@ class IntentPriority:
     CAP_RECOVERY = 100
     HARD_DERISK = 80
     SOFT_DERISK = 60
-    RISK_REDUCING = 40  # Any *_DECREASE
+    RISK_REDUCING = 40  # Any *_DEC
     LT_BAND_DRIFT = 20
     MM_CHURN = 10  # Lowest priority
 
@@ -67,8 +67,8 @@ class IntentArbiter:
         if intent_type == "SOFT_DERISK":
             return IntentPriority.SOFT_DERISK
         
-        # Risk-reducing (any *_DECREASE)
-        if effect == "DECREASE":
+        # Risk-reducing (any *_DEC)
+        if effect == "DEC":
             return IntentPriority.RISK_REDUCING
         
         # LT Band Drift corrective
@@ -85,7 +85,7 @@ class IntentArbiter:
     def is_risk_increasing(self, intent_data: Dict[str, Any]) -> bool:
         """Check if intent is risk-increasing"""
         effect = intent_data.get("effect", "")
-        return effect == "INCREASE"
+        return effect == "INC"
     
     def is_cap_recovery_active(self, current_gross_exposure_pct: float) -> bool:
         """Check if CAP_RECOVERY should be active"""
@@ -211,9 +211,9 @@ class IntentArbiter:
                 continue
             
             # If both are risk-reducing, choose one with lower expected cost
-            if effect == "DECREASE" and len(resolved) > 0:
+            if effect == "DEC" and len(resolved) > 0:
                 existing = resolved[0]
-                if existing.get("effect") == "DECREASE":
+                if existing.get("effect") == "DEC":
                     # Compare costs (if available in metadata)
                     existing_cost = existing.get("metadata", {}).get("estimated_cost", float('inf'))
                     intent_cost = intent.get("metadata", {}).get("estimated_cost", float('inf'))

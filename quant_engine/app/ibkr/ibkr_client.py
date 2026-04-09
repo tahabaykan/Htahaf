@@ -1,8 +1,37 @@
 """app/ibkr/ibkr_client.py
 
-IBKR client wrapper using ib_insync.
-Handles connection, account info, positions, and order management.
+⚠️ DEPRECATED — DO NOT USE FOR NEW CODE ⚠️
+
+This module is the OLD IBKR client (Phase 1). It has been superseded by:
+    app.psfalgo.ibkr_connector.IBKRConnector
+
+IBKRConnector provides:
+- Account-aware connections (IBKR_GUN / IBKR_PED)
+- Proper event loop isolation (thread-safe)
+- orderRef tagging for REV order identification
+- Redis auto-push for UI visibility
+
+This file is kept only for backward compatibility with legacy modules:
+- app/ibkr/__init__.py (re-export)
+- app/ibkr/ibkr_order_router.py (unused)
+- app/ibkr/ibkr_sync.py (unused)
+- app/live/ibkr_execution_adapter.py (unused)
+- app/engine/engine_loop.py (unused)
+
+TODO: Migrate remaining references and delete this file.
 """
+import asyncio
+import warnings
+
+warnings.warn(
+    "ibkr_client is DEPRECATED. Use app.psfalgo.ibkr_connector.get_ibkr_connector() instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
+
+# NOTE: The old monkey-patch `asyncio.get_event_loop = asyncio.get_running_loop`
+# was REMOVED because it corrupted the entire process's asyncio behavior.
+# ibkr_connector handles event loop isolation properly per-thread.
 
 from typing import Optional, List, Dict, Any
 from ib_insync import IB, Stock, MarketOrder, LimitOrder
@@ -21,35 +50,51 @@ class IBKRClient:
     
     def connect(self) -> bool:
         """
-        Connect to IBKR TWS/Gateway.
+        Connect to IBKR TWS/Gateway using nbefore_common_adv.py pattern.
         
         Returns:
             True if connected successfully
         """
         try:
-            logger.info(f"Connecting to IBKR: {settings.IBKR_HOST}:{settings.IBKR_PORT} (Client ID: {settings.IBKR_CLIENT_ID})")
+            # Try multiple ports
+            ports = [4001, 7496]  # Gateway and TWS ports
+            connected = False
             
-            self.ib = IB()
-            self.ib.connect(
-                settings.IBKR_HOST,
-                settings.IBKR_PORT,
-                clientId=settings.IBKR_CLIENT_ID,
-                timeout=15
-            )
+            for port in ports:
+                try:
+                    client_id = settings.IBKR_CLIENT_ID
+                    logger.info(f"[IBKR] Connecting to {settings.IBKR_HOST}:{port} (ClientID: {client_id})...")
+                    
+                    self.ib = IB()
+                    self.ib.connect(
+                        settings.IBKR_HOST,
+                        port,
+                        clientId=client_id,
+                        readonly=True
+                    )
+                    
+                    if self.ib.isConnected():
+                        connected = True
+                        # Set delayed data mode
+                        self.ib.reqMarketDataType(3)
+                        logger.info(f"✅ IBKR {port} portu ile bağlantı başarılı!")
+                        break
+                        
+                except Exception as e:
+                    logger.warning(f"❌ IBKR {port} bağlantı hatası: {e}")
             
-            if self.ib.isConnected():
-                self.connected = True
-                logger.info("✅ Connected to IBKR successfully")
-                
-                # Get accounts
-                account_values = self.ib.accountValues()
-                self.accounts = list(set([av.account for av in account_values]))
-                logger.info(f"Accounts: {self.accounts}")
-                
-                return True
-            else:
-                logger.error("❌ IBKR connection failed")
+            if not connected:
+                logger.error("! Hiçbir porta bağlanılamadı. TWS veya Gateway çalışıyor mu?")
                 return False
+            
+            self.connected = True
+            
+            # Get accounts
+            account_values = self.ib.accountValues()
+            self.accounts = list(set([av.account for av in account_values]))
+            logger.info(f"Accounts: {self.accounts}")
+            
+            return True
                 
         except Exception as e:
             logger.error(f"IBKR connection error: {e}")
@@ -139,9 +184,3 @@ class IBKRClient:
 
 # Global IBKR client instance
 ibkr_client = IBKRClient()
-
-
-
-
-
-

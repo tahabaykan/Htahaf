@@ -1,0 +1,25 @@
+============================================================
+CLAUDE HAIKU OBSERVER — ENHANCED METRICS TEST
+============================================================
+Provider: claude
+Durum: UYARI
+Skor: 55
+Ozet: Sistem genelinde önemli anomaliler tespit edildi, manuel inceleme gerekiyor.
+
+GOZLEMLER (3):
+  📊 Her iki hesapta da düşük emir kapsamı var (IBKR_PED %5.2, HAMPRO %17.9), toplam 147 pozisyon emirsiz
+  📊 HAMPRO hesabında 24 adet BEFDAY sağlık açığı var (13 UNDERFILL, 11 OVERFILL)
+  📊 Sistemde 13 adet aktif REV emri bulunuyor, bu yüksek bir sayı
+
+ANOMALILER (3):
+  ⚠️ Düşük emir kapsamı: IBKR_PED %5.2, HAMPRO %17.9
+  ⚠️ Yüksek BEFDAY sağlık açıkları: HAMPRO hesabında 24 adet
+  ⚠️ Çok sayıda aktif REV emri: 13 adet
+
+ONERILER (3):
+  💡 Emir kapsamını artırmak için gerekli aksiyonlar alınmalı
+  💡 BEFDAY sağlık açıklarını kapatmak için REV emirleri gözden geçirilmeli
+  💡 REV emirlerinin sayısı azaltılmalı, sağlık durumu yakından izlenmeli
+
+Duration: 3455ms
+============================================================

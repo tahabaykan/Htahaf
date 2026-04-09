@@ -3,27 +3,16 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
+dist/
+build/
 *.egg
 
-# Virtualenv
-.venv/
+# Virtual envs
 venv/
-ENV/
+venv312/
+venv314/
+.venv/
 env/
 
 # IDE
@@ -31,26 +20,28 @@ env/
 .idea/
 *.swp
 *.swo
-*~
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
 
 # Logs
 *.log
 logs/
 
-# Environment
-.env
-.env.local
+# Output data (regenerable)
+output/
 
-# OS
-.DS_Store
-Thumbs.db
+# Node
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
 
-# Redis/Postgres data (Docker volumes)
-redis_data/
-postgres_data/
+# Redis dumps
+*.rdb
 
-
-
-
-
-
+# Temp
+*.tmp
+*.bak

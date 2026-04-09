@@ -1,0 +1,26 @@
+Symbol,Group,Round_Lots_Count,Execution_Mode,Profit_Target,Strategy_Desc,Trend_Status,Mid_Point_Action,Gem_Davg,Size_Adjustment,Group_Vol_Alert,Avg_Inter_Arrival_Sec,Persistence_Risk_Score,OFI_Score,Optimal_Spread,PM_Transition_Plan,ADV
+ACP PRA,notcefilliquid,73,NORMAL,0.10,Balanced approach. | DETECTED MID-POINT ACTION -> FRONT RUN EXIT! | GROUP VOL ALERT (Spread Widened),RANGE,FRONT_RUN_EXIT,0.398,ASYM_SELL_HEAVY (Bid 100 / Ask 300),True,1799.0,0.5,0.17,0.08,NORMAL,4064.0
+BCV PRA,notcefilliquid,6,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,0.037,NEUTRAL,True,26880.0,1.0,1.0,0.3,STRICT_3H_EXIT,1658.0
+ECC PRD,notcefilliquid,56,NORMAL,0.10,Balanced approach. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.026,NEUTRAL,True,2773.0,0.77,-0.25,0.08,STRICT_3H_EXIT,14814.0
+ECF PRA,notcefilliquid,1,NORMAL,0.10,Balanced approach. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.139,NEUTRAL,True,0.0,0.0,0.0,0.08,NORMAL,1551.0
+ENJ,notcefilliquid,4,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.055,NEUTRAL,True,29212.0,1.0,0.0,0.3,STRICT_3H_EXIT,2448.0
+ETI PR,notcefilliquid,22,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,0.174,ASYM_SELL_HEAVY (Bid 100 / Ask 300),True,13870.0,1.0,-0.33,0.3,STRICT_3H_EXIT,1674.0
+AGM PRE,notcefilliquid,5,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,0.047,NEUTRAL,True,22573.0,1.0,0.14,0.3,STRICT_3H_EXIT,4965.0
+GDV PRH,notcefilliquid,43,NORMAL,0.10,Balanced approach. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.025,NEUTRAL,True,3037.0,0.84,0.53,0.08,STRICT_3H_EXIT,3002.0
+GDV PRK,notcefilliquid,46,NORMAL,0.10,Balanced approach. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.03,NEUTRAL,True,2782.0,0.77,0.23,0.08,STRICT_3H_EXIT,7186.0
+GAB PRH,notcefilliquid,32,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | GROUP VOL ALERT (Spread Widened) | UP_LADDER DETECTED (Hide 3 lvls),UP_LADDER,NONE,0.035,NEUTRAL,True,4870.0,1.0,0.24,0.3,STRICT_3H_EXIT,8418.0
+GAB PRG,notcefilliquid,17,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,0.028,NEUTRAL,True,5959.0,1.0,-0.08,0.3,STRICT_3H_EXIT,3957.0
+GAB PRK,notcefilliquid,31,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | DETECTED MID-POINT ACTION -> FRONT RUN EXIT! | GROUP VOL ALERT (Spread Widened),RANGE,FRONT_RUN_EXIT,-0.001,NEUTRAL,True,5520.0,1.0,-0.19,0.3,STRICT_3H_EXIT,6991.0
+GGT PRE,notcefilliquid,4,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.124,NEUTRAL,True,49017.0,1.0,1.0,0.3,STRICT_3H_EXIT,1336.0
+GGT PRG,notcefilliquid,10,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,0.065,NEUTRAL,True,12947.0,1.0,0.0,0.3,STRICT_3H_EXIT,1240.0
+GUT PRC,notcefilliquid,26,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.036,NEUTRAL,True,5035.0,1.0,-0.11,0.3,STRICT_3H_EXIT,4093.0
+GGN PRB,notcefilliquid,28,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | DETECTED MID-POINT ACTION -> FRONT RUN EXIT! | GROUP VOL ALERT (Spread Widened),RANGE,FRONT_RUN_EXIT,-0.051,NEUTRAL,True,5706.0,1.0,0.66,0.3,STRICT_3H_EXIT,5130.0
+GNT PRA,notcefilliquid,1,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,0.06,NEUTRAL,True,0.0,0.0,0.0,0.3,NORMAL,1130.0
+OPP PRA,notcefilliquid,17,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | DETECTED MID-POINT ACTION -> FRONT RUN EXIT! | GROUP VOL ALERT (Spread Widened),RANGE,FRONT_RUN_EXIT,0.047,NEUTRAL,True,10350.0,1.0,0.2,0.3,STRICT_3H_EXIT,5935.0
+OPP PRB,notcefilliquid,5,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.095,NEUTRAL,True,43648.0,1.0,-0.33,0.3,STRICT_3H_EXIT,4035.0
+NCV PRA,notcefilliquid,71,NORMAL,0.10,Balanced approach. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.018,NEUTRAL,True,2713.0,0.75,-0.19,0.08,STRICT_3H_EXIT,3168.0
+NCZ PRA,notcefilliquid,85,NORMAL,0.10,Balanced approach. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,0.026,NEUTRAL,True,2705.0,0.75,0.35,0.08,STRICT_3H_EXIT,6017.0
+AGM PRD,notcefilliquid,94,NORMAL,0.10,Balanced approach. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,0.096,NEUTRAL,True,1526.0,0.42,0.2,0.08,NORMAL,6520.0
+REXR PRB,notcefilliquid,58,NORMAL,0.10,Balanced approach. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.215,ASYM_BUY_HEAVY (Bid 300 / Ask 100),True,2129.0,0.59,-0.05,0.08,NORMAL,1939.0
+REXR PRC,notcefilliquid,56,NORMAL,0.10,Balanced approach. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.032,NEUTRAL,True,2372.0,0.66,0.3,0.08,NORMAL,2220.0
+RIV PRA,notcefilliquid,12,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.166,ASYM_BUY_HEAVY (Bid 300 / Ask 100),True,9190.0,1.0,0.33,0.3,STRICT_3H_EXIT,6302.0

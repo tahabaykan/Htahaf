@@ -1,0 +1,150 @@
+TTL remaining: 70556s (19.6h)
+Total befday positions: 141
+
+Total current positions: 0
+
+MISMATCHES:
+  ACGLO           BEF=      1724.0  CUR= MISSING_CUR
+  ACP PRA         BEF=       200.0  CUR= MISSING_CUR
+  AFGB            BEF=      -905.0  CUR= MISSING_CUR
+  AFGD            BEF=      -200.0  CUR= MISSING_CUR
+  AFGE            BEF=        29.0  CUR= MISSING_CUR
+  AGM PRE         BEF=        40.0  CUR= MISSING_CUR
+  AHH PRA         BEF=      -200.0  CUR= MISSING_CUR
+  AIZN            BEF=      -300.0  CUR= MISSING_CUR
+  ALL PRB         BEF=       200.0  CUR= MISSING_CUR
+  ALL PRH         BEF=       546.0  CUR= MISSING_CUR
+  AMH PRG         BEF=       100.0  CUR= MISSING_CUR
+  AMH PRH         BEF=       -92.0  CUR= MISSING_CUR
+  AOMD            BEF=       203.0  CUR= MISSING_CUR
+  ASB PRE         BEF=       179.0  CUR= MISSING_CUR
+  ASTI            BEF=      -500.0  CUR= MISSING_CUR
+  ATLCZ           BEF=       -57.0  CUR= MISSING_CUR
+  AXS PRE         BEF=       200.0  CUR= MISSING_CUR
+  BAC PRE         BEF=       -20.0  CUR= MISSING_CUR
+  BFS PRE         BEF=      -199.0  CUR= MISSING_CUR
+  BHFAL           BEF=       416.0  CUR= MISSING_CUR
+  BHFAM           BEF=       200.0  CUR= MISSING_CUR
+  BHFAN           BEF=       800.0  CUR= MISSING_CUR
+  BHFAO           BEF=       500.0  CUR= MISSING_CUR
+  BHFAP           BEF=       400.0  CUR= MISSING_CUR
+  BOH PRB         BEF=      -200.0  CUR= MISSING_CUR
+  BWBBP           BEF=        -1.0  CUR= MISSING_CUR
+  CGABL           BEF=        65.0  CUR= MISSING_CUR
+  CHSCO           BEF=       288.0  CUR= MISSING_CUR
+  CIM PRA         BEF=        41.0  CUR= MISSING_CUR
+  CIM PRB         BEF=       272.0  CUR= MISSING_CUR
+  CIM PRC         BEF=     -1136.0  CUR= MISSING_CUR
+  CMRE PRC        BEF=       102.0  CUR= MISSING_CUR
+  CNOBP           BEF=       100.0  CUR= MISSING_CUR
+  COF PRJ         BEF=       552.0  CUR= MISSING_CUR
+  COF PRK         BEF=      -200.0  CUR= MISSING_CUR
+  CRBD            BEF=      -400.0  CUR= MISSING_CUR
+  CTO PRA         BEF=      -100.0  CUR= MISSING_CUR
+  CUBB            BEF=       400.0  CUR= MISSING_CUR
+  DCOMP           BEF=       -49.0  CUR= MISSING_CUR
+  DDT             BEF=        52.0  CUR= MISSING_CUR
+  DSX PRB         BEF=       -20.0  CUR= MISSING_CUR
+  EFSCP           BEF=      -200.0  CUR= MISSING_CUR
+  ELC             BEF=        50.0  CUR= MISSING_CUR
+  EQH PRA         BEF=       200.0  CUR= MISSING_CUR
+  EQH PRC         BEF=       417.0  CUR= MISSING_CUR
+  FHN PRE         BEF=       -58.0  CUR= MISSING_CUR
+  FITBO           BEF=      1443.0  CUR= MISSING_CUR
+  FITBP           BEF=      -203.0  CUR= MISSING_CUR
+  FLG PRA         BEF=        -7.0  CUR= MISSING_CUR
+  FRT PRC         BEF=      -110.0  CUR= MISSING_CUR
+  GAM PRB         BEF=        87.0  CUR= MISSING_CUR
+  GECCI           BEF=      -200.0  CUR= MISSING_CUR
+  GECCO           BEF=        -1.0  CUR= MISSING_CUR
+  GGN PRB         BEF=       -34.0  CUR= MISSING_CUR
+  GL PRD          BEF=      -200.0  CUR= MISSING_CUR
+  GNL PRB         BEF=      -149.0  CUR= MISSING_CUR
+  GNL PRE         BEF=      -100.0  CUR= MISSING_CUR
+  GOODN           BEF=      -190.0  CUR= MISSING_CUR
+  GOODO           BEF=      -200.0  CUR= MISSING_CUR
+  GPJA            BEF=        52.0  CUR= MISSING_CUR
+  GRBK PRA        BEF=       122.0  CUR= MISSING_CUR
+  GUT PRC         BEF=       156.0  CUR= MISSING_CUR
+  HBANL           BEF=      -299.0  CUR= MISSING_CUR
+  HFRO PRA        BEF=      -200.0  CUR= MISSING_CUR
+  HOVNP           BEF=       100.0  CUR= MISSING_CUR
+  HTFC            BEF=      -280.0  CUR= MISSING_CUR
+  HWCPZ           BEF=       -31.0  CUR= MISSING_CUR
+  INN PRF         BEF=      -200.0  CUR= MISSING_CUR
+  JAGX            BEF=      7441.0  CUR= MISSING_CUR
+  KEY PRJ         BEF=       346.0  CUR= MISSING_CUR
+  KEY PRK         BEF=      -600.0  CUR= MISSING_CUR
+  KMPB            BEF=      -200.0  CUR= MISSING_CUR
+  LANDO           BEF=      -103.0  CUR= MISSING_CUR
+  LFT PRA         BEF=       -33.0  CUR= MISSING_CUR
+  MET PRF         BEF=      -149.0  CUR= MISSING_CUR
+  METCZ           BEF=      -200.0  CUR= MISSING_CUR
+  MFA PRC         BEF=       562.0  CUR= MISSING_CUR
+  MGRD            BEF=       -19.0  CUR= MISSING_CUR
+  MHLA            BEF=      -200.0  CUR= MISSING_CUR
+  MHNC            BEF=       199.0  CUR= MISSING_CUR
+  MITP            BEF=       -65.0  CUR= MISSING_CUR
+  MNSBP           BEF=        29.0  CUR= MISSING_CUR
+  MS PRA          BEF=       789.0  CUR= MISSING_CUR
+  MS PRP          BEF=       -20.0  CUR= MISSING_CUR
+  MSBIP           BEF=     -2500.0  CUR= MISSING_CUR
+  NCV PRA         BEF=       390.0  CUR= MISSING_CUR
+  NEE PRN         BEF=       100.0  CUR= MISSING_CUR
+  NEWTG           BEF=       -63.0  CUR= MISSING_CUR
+  NHPAP           BEF=        25.0  CUR= MISSING_CUR
+  NREF PRA        BEF=      -179.0  CUR= MISSING_CUR
+  NSA PRA         BEF=       378.0  CUR= MISSING_CUR
+  OFSSO           BEF=      -309.0  CUR= MISSING_CUR
+  OPP PRB         BEF=      -300.0  CUR= MISSING_CUR
+  ORCL            BEF=       100.0  CUR= MISSING_CUR
+  OXLCN           BEF=       -25.0  CUR= MISSING_CUR
+  PEB PRE         BEF=      -149.0  CUR= MISSING_CUR
+  PEB PRF         BEF=       -33.0  CUR= MISSING_CUR
+  PEB PRG         BEF=      -368.0  CUR= MISSING_CUR
+  PMT PRB         BEF=      -200.0  CUR= MISSING_CUR
+  PNFP PRC        BEF=       -13.0  CUR= MISSING_CUR
+  PRH             BEF=      -464.0  CUR= MISSING_CUR
+  PSA PRI         BEF=       -60.0  CUR= MISSING_CUR
+  PSA PRO         BEF=       -20.0  CUR= MISSING_CUR
+  PSEC PRA        BEF=      -100.0  CUR= MISSING_CUR
+  REXR PRB        BEF=       386.0  CUR= MISSING_CUR
+  REXR PRC        BEF=       -70.0  CUR= MISSING_CUR
+  RNR PRF         BEF=      -200.0  CUR= MISSING_CUR
+  RPT PRC         BEF=       167.0  CUR= MISSING_CUR
+  RWTN            BEF=       200.0  CUR= MISSING_CUR
+  RWTO            BEF=      -275.0  CUR= MISSING_CUR
+  RWTP            BEF=      -363.0  CUR= MISSING_CUR
+  SB PRD          BEF=      -800.0  CUR= MISSING_CUR
+  SF PRC          BEF=      -200.0  CUR= MISSING_CUR
+  SHO PRH         BEF=      -400.0  CUR= MISSING_CUR
+  SHO PRI         BEF=      -200.0  CUR= MISSING_CUR
+  SLV             BEF=       400.0  CUR= MISSING_CUR
+  SOJC            BEF=       -66.0  CUR= MISSING_CUR
+  SREA            BEF=      -200.0  CUR= MISSING_CUR
+  STRD            BEF=      -690.0  CUR= MISSING_CUR
+  SYF PRB         BEF=       200.0  CUR= MISSING_CUR
+  TBB             BEF=      8573.0  CUR= MISSING_CUR
+  TPGXL           BEF=      -129.0  CUR= MISSING_CUR
+  TRTN PRA        BEF=       -50.0  CUR= MISSING_CUR
+  TRTN PRB        BEF=      -198.0  CUR= MISSING_CUR
+  TRTN PRD        BEF=       -22.0  CUR= MISSING_CUR
+  TRTX PRC        BEF=        39.0  CUR= MISSING_CUR
+  UMBFO           BEF=      -252.0  CUR= MISSING_CUR
+  UNMA            BEF=      1115.0  CUR= MISSING_CUR
+  USB PRH         BEF=       349.0  CUR= MISSING_CUR
+  USB PRP         BEF=       121.0  CUR= MISSING_CUR
+  USB PRS         BEF=      -733.0  CUR= MISSING_CUR
+  VLYPO           BEF=      -274.0  CUR= MISSING_CUR
+  VNO PRN         BEF=      -200.0  CUR= MISSING_CUR
+  WAFDP           BEF=       200.0  CUR= MISSING_CUR
+  WAL PRA         BEF=      -100.0  CUR= MISSING_CUR
+  WBS PRF         BEF=       309.0  CUR= MISSING_CUR
+  WFC PRY         BEF=       200.0  CUR= MISSING_CUR
+  WHLRD           BEF=      -300.0  CUR= MISSING_CUR
+  WRB PRF         BEF=       218.0  CUR= MISSING_CUR
+  WRB PRG         BEF=      -171.0  CUR= MISSING_CUR
+  WTFCN           BEF=       100.0  CUR= MISSING_CUR
+
+Total mismatches: 141
+Total matching: 0

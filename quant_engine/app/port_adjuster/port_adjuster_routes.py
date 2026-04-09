@@ -8,12 +8,21 @@ from typing import Dict, Any, Optional, List
 from fastapi import APIRouter, HTTPException, Query, UploadFile, File
 from fastapi.responses import FileResponse
 from pathlib import Path
+from pydantic import BaseModel
 from app.core.logger import logger
-from app.port_adjuster.port_adjuster_store import get_port_adjuster_store
+from app.port_adjuster.port_adjuster_store import (
+    get_port_adjuster_store,
+    get_last_port_adjuster_csv_path,
+    set_last_port_adjuster_csv_path,
+)
 from app.port_adjuster.port_adjuster_models import PortAdjusterConfig, PortAdjusterSnapshot
 from app.port_adjuster.port_adjuster_csv import load_config_from_csv, save_config_to_csv
 
 router = APIRouter(prefix="/api/psfalgo/port-adjuster", tags=["Port Adjuster"])
+
+
+class SaveCsvRequest(BaseModel):
+    filename: str
 
 
 @router.get("/snapshot", response_model=PortAdjusterSnapshot)
@@ -179,10 +188,11 @@ async def import_csv(
                 detail=f"Failed to load configuration from CSV: {import_path}"
             )
         
-        # Update store with loaded config
+        # Update store with loaded config and set as last-used
         store = get_port_adjuster_store()
         store.config_source = f"csv:{Path(import_path).name}"
         snapshot = store.update_config(config)
+        set_last_port_adjuster_csv_path(import_path)
         
         if temp_file and temp_file.exists():
             temp_file.unlink(missing_ok=True)
@@ -191,13 +201,67 @@ async def import_csv(
             "success": True,
             "message": "Configuration imported from CSV",
             "config": config,
-            "snapshot": snapshot
+            "snapshot": snapshot,
+            "filename": Path(import_path).name
         }
         
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"[PORT_ADJUSTER_API] Error importing CSV: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/save-csv")
+async def save_csv(request: SaveCsvRequest) -> Dict[str, Any]:
+    """Save current config to a named CSV and set as last-used. Body: { \"filename\": \"isim\" }."""
+    try:
+        filename = (request.filename or "exposureadjuster").strip()
+        if not filename:
+            raise HTTPException(status_code=400, detail="filename required")
+        store = get_port_adjuster_store()
+        path = store.save_to_named_csv(filename)
+        if not path:
+            raise HTTPException(status_code=500, detail="Failed to save CSV")
+        return {"success": True, "path": path, "filename": Path(path).name}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[PORT_ADJUSTER_API] save-csv error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/last-csv")
+async def last_csv() -> Dict[str, Any]:
+    """Return last-used CSV path for default/load-last."""
+    try:
+        path = get_last_port_adjuster_csv_path()
+        if not path:
+            return {"success": True, "path": None, "filename": None}
+        return {"success": True, "path": path, "filename": Path(path).name}
+    except Exception as e:
+        logger.error(f"[PORT_ADJUSTER_API] last-csv error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/load-last-csv")
+async def load_last_csv() -> Dict[str, Any]:
+    """Load config from last-used CSV (server-side path)."""
+    try:
+        store = get_port_adjuster_store()
+        snapshot = store.load_from_last_csv()
+        if snapshot is None:
+            raise HTTPException(status_code=404, detail="No last CSV or file missing")
+        return {
+            "success": True,
+            "message": "Loaded from last CSV",
+            "config": store.get_config(),
+            "snapshot": snapshot,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[PORT_ADJUSTER_API] load-last-csv error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

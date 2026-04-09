@@ -1,0 +1,65 @@
+{
+  "captured_at": "2026-02-20T03:31:14.992745",
+  "heavy": {
+    "HAMPRO": {
+      "heavy_long_dec": true,
+      "heavy_short_dec": false,
+      "heavy_lot_pct": 30,
+      "heavy_long_threshold": 0.02,
+      "heavy_short_threshold": -0.02
+    },
+    "IBKR_PED": {
+      "heavy_long_dec": true,
+      "heavy_short_dec": false,
+      "heavy_lot_pct": 30,
+      "heavy_long_threshold": 0.02,
+      "heavy_short_threshold": -0.02
+    },
+    "IBKR_MAIN": {
+      "heavy_long_dec": false,
+      "heavy_short_dec": false,
+      "heavy_lot_pct": 30,
+      "heavy_long_threshold": 0.02,
+      "heavy_short_threshold": -0.02
+    }
+  },
+  "active_engines": [
+    "LT_TRIM",
+    "KARBOTU",
+    "MM_ENGINE",
+    "ADDNEWPOS_ENGINE"
+  ],
+  "mm_settings": {
+    "enabled": true,
+    "est_cur_ratio": 44.0,
+    "min_stock_count": 5,
+    "max_stock_count": 100,
+    "lot_per_stock": 200,
+    "lot_mode": "fixed"
+  },
+  "exposure_thresholds": {
+    "version": 2,
+    "accounts": {
+      "HAMPRO": {
+        "current_threshold": 92.0,
+        "potential_threshold": 100.0,
+        "pot_max": 1400000.0
+      },
+      "IBKR_PED": {
+        "current_threshold": 92.0,
+        "potential_threshold": 100.0,
+        "pot_max": 1400000.0
+      },
+      "IBKR_GUN": {
+        "current_threshold": 92.0,
+        "potential_threshold": 100.0,
+        "pot_max": 1400000.0
+      }
+    }
+  },
+  "addnewpos": {
+    "HAMPRO": null,
+    "IBKR_PED": null,
+    "IBKR_MAIN": null
+  }
+}

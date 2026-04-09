@@ -1,0 +1,58 @@
+============================================================
+  F PRB - EX-DIV PIPELINE v5
+============================================================
+  Div: $0.3900
+  Detected: 12 ex-divs (quality=poor)
+  Avg cycle: 116 days (std=79)
+  Peers: HNNAZ, NREF PRA, EFC PRA, TWO PRC, SHO PRH
+
+  Ex-div windows:
+    2022-05: 2022-05-16 gap=-1.2% peer=+0.2% div=-1.3% [HIGH]
+    2022-08: 2022-08-16 gap=-0.9% peer=+0.0% div=-0.9% [HIGH]
+    2022-11: 2022-11-11 gap=-0.6% peer=+0.9% div=-1.5% [HIGH]
+    2023-02: 2023-02-13 gap=-1.1% peer=+0.4% div=-1.4% [HIGH]
+    2024-02: 2024-02-13 gap=-1.3% peer=-0.2% div=-1.1% [HIGH]
+    2024-05: 2024-05-16 gap=-1.3% peer=+0.0% div=-1.3% [HIGH]
+    2024-08: 2024-08-16 gap=-1.2% peer=+0.0% div=-1.3% [HIGH]
+    2024-11: 2024-11-15 gap=-2.1% peer=+0.2% div=-2.3% [HIGH]
+    2025-02: 2025-02-14 gap=-0.8% peer=+0.1% div=-0.9% [HIGH]
+    2025-05: 2025-05-16 gap=-1.0% peer=+0.2% div=-1.2% [HIGH]
+    2025-08: 2025-08-15 gap=-1.2% peer=+0.2% div=-1.3% [HIGH]
+    2025-11: 2025-11-14 gap=-1.3% peer=-0.0% div=-1.3% [HIGH]
+
+  Pattern strength: 19.5%
+  Ex-divs used: 12
+
+  STRATEGIES (sorted by Sharpe):
+    OPTIMAL_LONG     d -4->d -8 ret=+2.12% win=75% sharpe=+1.45 p=0.012 n=12 ***
+    CAPTURE_HOLD     d -5->d +0 ret=+0.67% win=83% sharpe=+1.30 p=0.024 n=12 ***
+    WASHOUT_SHORT    d +0->d +5 ret=+1.49% win=75% sharpe=+1.11 p=0.055 n=12 **
+    DIV_HOLD         d -2->d +2 ret=+0.59% win=67% sharpe=+1.06 p=0.067 n=12 **
+    RECOVERY_LATE    d +3->d+15 ret=+0.49% win=58% sharpe=+0.53 p=0.356 n=12 
+    FULL_CYCLE       d-10->d+20 ret=+0.45% win=58% sharpe=+0.40 p=0.487 n=12 
+    QUICK_FLIP       d -3->d +3 ret=+0.29% win=42% sharpe=+0.31 p=0.593 n=12 
+    RECOVERY         d +0->d+10 ret=-0.63% win=33% sharpe=-0.55 p=0.343 n=12 
+    CAPTURE_PRE      d -7->d -1 ret=-1.04% win=25% sharpe=-1.38 p=0.017 n=12 ***
+
+  DAILY PATTERN (d-10 to d+10):
+    Day-10: avg=+0.3273% cum=+0.577% pos=67% n=12 p=0.181 
+    Day -9: avg=+0.1690% cum=+0.746% pos=58% n=12 p=0.496 
+    Day -8: avg=+0.3408% cum=+1.087% pos=58% n=12 p=0.206 
+    Day -7: avg=-0.0178% cum=+1.069% pos=50% n=12 p=0.925 
+    Day -6: avg=-0.9037% cum=+0.165% pos=17% n=12 p=0.002 *
+    Day -5: avg=-0.1957% cum=-0.030% pos=33% n=12 p=0.302 
+    Day -4: avg=-0.1105% cum=-0.141% pos=58% n=12 p=0.431 
+    Day -3: avg=+0.1093% cum=-0.032% pos=67% n=12 p=0.594 
+    Day -2: avg=-0.0352% cum=-0.067% pos=50% n=12 p=0.884 
+    Day -1: avg=+0.1083% cum=+0.042% pos=67% n=12 p=0.610 
+    Day +0: avg=+0.5929% cum=+0.634% pos=92% n=12 p=0.004 *
+    Day +1: avg=-0.0657% cum=+0.569% pos=58% n=12 p=0.777 
+    Day +2: avg=-0.0519% cum=+0.517% pos=58% n=12 p=0.785 
+    Day +3: avg=-0.2721% cum=+0.245% pos=33% n=12 p=0.086 *
+    Day +4: avg=-0.0722% cum=+0.172% pos=50% n=12 p=0.632 
+    Day +5: avg=-0.1718% cum=+0.001% pos=50% n=12 p=0.502 
+    Day +6: avg=+0.2610% cum=+0.262% pos=75% n=12 p=0.244 
+    Day +7: avg=+0.0170% cum=+0.279% pos=42% n=12 p=0.941 
+    Day +8: avg=-0.2795% cum=-0.001% pos=33% n=12 p=0.107 
+    Day +9: avg=+0.1280% cum=+0.127% pos=42% n=12 p=0.655 
+    Day+10: avg=-0.1247% cum=+0.003% pos=67% n=12 p=0.570 

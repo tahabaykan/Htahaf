@@ -1,0 +1,4951 @@
+{
+  "raw_analysis": {
+    "analysis_time": "2026-02-16T19:20:55.822413",
+    "elapsed_seconds": 303.1,
+    "mode": "backtest",
+    "lookback_trading_days": 5,
+    "total_symbols_analyzed": 405,
+    "total_groups": 19,
+    "groups": {
+      "heldcilizyeniyedi": {
+        "member_count": 8,
+        "active_count": 8,
+        "total_ticks_group": 766,
+        "group_busiest_window": "14:30-15:00",
+        "group_direction": "buyer_dominant",
+        "buyer_vs_seller": "6B / 0S",
+        "window_summary": {
+          "14:30-15:00": {
+            "ticks": 26,
+            "volume": 5122,
+            "buyers": 3,
+            "sellers": 0
+          },
+          "15:00-15:30": {
+            "ticks": 48,
+            "volume": 4998,
+            "buyers": 1,
+            "sellers": 0
+          },
+          "15:30-16:00": {
+            "ticks": 25,
+            "volume": 2256,
+            "buyers": 2,
+            "sellers": 0
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "BIPJ",
+            "interest_score": 4.65,
+            "mm_score": 3.2,
+            "total_ticks": 74,
+            "days_covered": 2,
+            "vol_adv_total_pct": 28.65,
+            "overall_spread_bps": 11.2,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "FNRA": 0.378,
+              "MEMX": 0.014,
+              "NYSE": 0.216,
+              "BATY": 0.068,
+              "EDGX": 0.108,
+              "NQBX": 0.027,
+              "NSDQ": 0.108,
+              "IEXG": 0.014,
+              "ARCA": 0.027,
+              "BATS": 0.041
+            },
+            "fbtot": 1315.18,
+            "sfstot": 1714.58,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -3.29,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 8.0,
+                "vol": 693.0,
+                "vol_adv_pct": 6.08,
+                "vwap": 24.5425,
+                "range": 0.2199,
+                "spread": 0.0147,
+                "spread_bps": 6.0,
+                "direction": "buyer"
+              },
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 32.0,
+                "vol_adv_pct": 0.28,
+                "vwap": 24.93,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "CRBD",
+            "interest_score": 3.15,
+            "mm_score": 3.83,
+            "total_ticks": 171,
+            "days_covered": 2,
+            "vol_adv_total_pct": 20.12,
+            "overall_spread_bps": 5.8,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "NYSE": 0.509,
+              "IEXG": 0.058,
+              "FNRA": 0.158,
+              "NSDQ": 0.064,
+              "EDGX": 0.053,
+              "BATY": 0.012,
+              "ARCA": 0.064,
+              "BATS": 0.07,
+              "MEMX": 0.006,
+              "NQBX": 0.006
+            },
+            "fbtot": 1229.7,
+            "sfstot": 1274.4,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -0.92,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 3.0,
+                "vol": 1074.0,
+                "vol_adv_pct": 2.34,
+                "vwap": 24.0527,
+                "range": 0.07,
+                "spread": 0.014,
+                "spread_bps": 5.8,
+                "direction": "buyer"
+              },
+              "15:00-15:30": {
+                "ticks": 6.0,
+                "vol": 410.0,
+                "vol_adv_pct": 0.9,
+                "vwap": 23.9982,
+                "range": 0.14,
+                "spread": 0.0245,
+                "spread_bps": 10.2,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 34.0,
+                "vol_adv_pct": 0.07,
+                "vwap": 23.94,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "FGSN",
+            "interest_score": 2.78,
+            "mm_score": 2.7,
+            "total_ticks": 112,
+            "days_covered": 2,
+            "vol_adv_total_pct": 16.97,
+            "overall_spread_bps": 10.1,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "NYSE": 0.277,
+              "FNRA": 0.42,
+              "ARCA": 0.027,
+              "EDGX": 0.009,
+              "IEXG": 0.071,
+              "NSDQ": 0.152,
+              "MEMX": 0.027,
+              "BATY": 0.018
+            },
+            "fbtot": 1419.4,
+            "sfstot": 1452.5,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -4.31,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 1.0,
+                "vol": 60.0,
+                "vol_adv_pct": 0.16,
+                "vwap": 22.13,
+                "range": 0.06,
+                "spread": 0.06,
+                "spread_bps": 27.1,
+                "direction": "buyer"
+              },
+              "15:30-16:00": {
+                "ticks": 1.0,
+                "vol": 40.0,
+                "vol_adv_pct": 0.11,
+                "vwap": 22.2199,
+                "range": 0.0,
+                "spread": 0.14,
+                "spread_bps": 63.1,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "AHL PRF",
+            "interest_score": 2.42,
+            "mm_score": 0.92,
+            "total_ticks": 21,
+            "days_covered": 2,
+            "vol_adv_total_pct": 6.47,
+            "overall_spread_bps": 5.6,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "NSDQ": 0.143,
+              "NYSE": 0.524,
+              "MEMX": 0.048,
+              "FNRA": 0.238,
+              "IEXG": 0.048
+            },
+            "fbtot": 1125.32,
+            "sfstot": 1204.4199999999998,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -3.69,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 1.0,
+                "vol": 200.0,
+                "vol_adv_pct": 1.15,
+                "vwap": 24.435,
+                "range": 0.06,
+                "spread": 0.06,
+                "spread_bps": 24.5,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "MGRE",
+            "interest_score": 2.02,
+            "mm_score": 3.03,
+            "total_ticks": 60,
+            "days_covered": 2,
+            "vol_adv_total_pct": 11.38,
+            "overall_spread_bps": 8.6,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.6,
+              "FNRA": 0.217,
+              "ARCA": 0.017,
+              "NSDQ": 0.15,
+              "IEXG": 0.017
+            },
+            "fbtot": 1332.6,
+            "sfstot": 1376.9,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -1.1,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 52.0,
+                "vol_adv_pct": 0.21,
+                "vwap": 24.42,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 1.0,
+                "vol": 100.0,
+                "vol_adv_pct": 0.41,
+                "vwap": 24.49,
+                "range": 0.0001,
+                "spread": 0.0001,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 2.0,
+                "vol": 203.0,
+                "vol_adv_pct": 0.83,
+                "vwap": 24.4895,
+                "range": 0.0001,
+                "spread": 0.0401,
+                "spread_bps": 16.4,
+                "direction": "buyer"
+              }
+            }
+          }
+        ]
+      },
+      "heldcommonsuz": {
+        "member_count": 16,
+        "active_count": 16,
+        "total_ticks_group": 1144,
+        "group_busiest_window": "15:30-16:00",
+        "group_direction": "seller_dominant",
+        "buyer_vs_seller": "1B / 3S",
+        "window_summary": {
+          "14:30-15:00": {
+            "ticks": 25,
+            "volume": 3066,
+            "buyers": 0,
+            "sellers": 0
+          },
+          "15:00-15:30": {
+            "ticks": 23,
+            "volume": 2448,
+            "buyers": 0,
+            "sellers": 1
+          },
+          "15:30-16:00": {
+            "ticks": 40,
+            "volume": 6944,
+            "buyers": 1,
+            "sellers": 2
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "PSEC PRA",
+            "interest_score": 5.98,
+            "mm_score": 3.1,
+            "total_ticks": 55,
+            "days_covered": 2,
+            "vol_adv_total_pct": 57.9,
+            "overall_spread_bps": 24.8,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "FNRA": 0.236,
+              "ARCA": 0.236,
+              "EDGX": 0.345,
+              "NSDQ": 0.036,
+              "IEXG": 0.018,
+              "NYSE": 0.127
+            },
+            "fbtot": 973.34,
+            "sfstot": 1079.74,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": 3.61,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 0.76,
+                "vwap": 17.55,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 3.5,
+                "vol": 350.0,
+                "vol_adv_pct": 5.34,
+                "vwap": 17.6254,
+                "range": 0.315,
+                "spread": 0.0608,
+                "spread_bps": 34.5,
+                "direction": "seller"
+              }
+            }
+          },
+          {
+            "symbol": "VNO PRL",
+            "interest_score": 2.95,
+            "mm_score": 2.78,
+            "total_ticks": 64,
+            "days_covered": 2,
+            "vol_adv_total_pct": 22.84,
+            "overall_spread_bps": 6.1,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "ARCA": 0.141,
+              "FNRA": 0.188,
+              "NYSE": 0.266,
+              "BATY": 0.016,
+              "IEXG": 0.031,
+              "NSDQ": 0.125,
+              "MEMX": 0.016,
+              "EDGX": 0.062,
+              "BATS": 0.016,
+              "NQBX": 0.016,
+              "EDGA": 0.125
+            },
+            "fbtot": 1251.05,
+            "sfstot": 1266.45,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -0.76,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 0.5,
+                "vol": 58.0,
+                "vol_adv_pct": 0.31,
+                "vwap": 18.03,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 3.0,
+                "vol": 200.0,
+                "vol_adv_pct": 1.09,
+                "vwap": 18.0059,
+                "range": 0.0788,
+                "spread": 0.0238,
+                "spread_bps": 13.2,
+                "direction": "seller"
+              }
+            }
+          },
+          {
+            "symbol": "AHL PRD",
+            "interest_score": 2.46,
+            "mm_score": 2.7,
+            "total_ticks": 60,
+            "days_covered": 2,
+            "vol_adv_total_pct": 33.51,
+            "overall_spread_bps": 7.3,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.233,
+              "FNRA": 0.117,
+              "EDGX": 0.033,
+              "NSDQ": 0.333,
+              "BATS": 0.1,
+              "MEMX": 0.017,
+              "IEXG": 0.05,
+              "ARCA": 0.117
+            },
+            "fbtot": 1390.51,
+            "sfstot": 1445.61,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -1.9,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 22.0,
+                "vol_adv_pct": 0.16,
+                "vwap": 19.77,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 2.0,
+                "vol": 106.0,
+                "vol_adv_pct": 0.75,
+                "vwap": 19.8054,
+                "range": 0.005,
+                "spread": 0.03,
+                "spread_bps": 15.1,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "TDS PRV",
+            "interest_score": 2.04,
+            "mm_score": 3.5,
+            "total_ticks": 141,
+            "days_covered": 2,
+            "vol_adv_total_pct": 22.1,
+            "overall_spread_bps": 3.8,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "FNRA": 0.241,
+              "NYSE": 0.504,
+              "NSDQ": 0.128,
+              "ARCA": 0.028,
+              "IEXG": 0.043,
+              "EDGX": 0.035,
+              "MEMX": 0.007,
+              "BATS": 0.014
+            },
+            "fbtot": 1034.63,
+            "sfstot": 1049.5300000000002,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": 1.95,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 1.0,
+                "vol": 150.0,
+                "vol_adv_pct": 0.39,
+                "vwap": 20.1066,
+                "range": 0.0099,
+                "spread": 0.0099,
+                "spread_bps": 4.9,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 1.0,
+                "vol": 100.0,
+                "vol_adv_pct": 0.26,
+                "vwap": 20.085,
+                "range": 0.0,
+                "spread": 0.05,
+                "spread_bps": 24.9,
+                "direction": "seller"
+              }
+            }
+          },
+          {
+            "symbol": "VNO PRO",
+            "interest_score": 1.8,
+            "mm_score": 4.44,
+            "total_ticks": 97,
+            "days_covered": 2,
+            "vol_adv_total_pct": 28.37,
+            "overall_spread_bps": 7.0,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "NYSE": 0.361,
+              "FNRA": 0.299,
+              "ARCA": 0.041,
+              "NSDQ": 0.278,
+              "BATS": 0.01,
+              "MEMX": 0.01
+            },
+            "fbtot": 1233.28,
+            "sfstot": 1339.08,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": 1.06,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 7.5,
+                "vol": 1200.0,
+                "vol_adv_pct": 6.46,
+                "vwap": 14.9842,
+                "range": 0.1,
+                "spread": 0.0071,
+                "spread_bps": 4.8,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 0.27,
+                "vwap": 15.07,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          }
+        ]
+      },
+      "helddeznff": {
+        "member_count": 28,
+        "active_count": 28,
+        "total_ticks_group": 2985,
+        "group_busiest_window": "15:30-16:00",
+        "group_direction": "buyer_dominant",
+        "buyer_vs_seller": "9B / 3S",
+        "window_summary": {
+          "14:30-15:00": {
+            "ticks": 44,
+            "volume": 4630,
+            "buyers": 3,
+            "sellers": 1
+          },
+          "15:00-15:30": {
+            "ticks": 136,
+            "volume": 16694,
+            "buyers": 3,
+            "sellers": 1
+          },
+          "15:30-16:00": {
+            "ticks": 209,
+            "volume": 31320,
+            "buyers": 3,
+            "sellers": 1
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "DCOMG",
+            "interest_score": 5.46,
+            "mm_score": 2.11,
+            "total_ticks": 5,
+            "days_covered": 2,
+            "vol_adv_total_pct": 7.31,
+            "overall_spread_bps": 30.4,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "NSDQ": 0.6,
+              "NQBX": 0.2,
+              "MEMX": 0.2
+            },
+            "fbtot": 629.3,
+            "sfstot": 696.6999999999999,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -0.67,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 1.5,
+                "vol": 116.0,
+                "vol_adv_pct": 4.81,
+                "vwap": 26.3326,
+                "range": 0.13,
+                "spread": 0.065,
+                "spread_bps": 24.7,
+                "direction": "seller"
+              },
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 2.08,
+                "vwap": 26.35,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "UMBFO",
+            "interest_score": 4.18,
+            "mm_score": 2.84,
+            "total_ticks": 67,
+            "days_covered": 2,
+            "vol_adv_total_pct": 14.14,
+            "overall_spread_bps": 7.3,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "NSDQ": 0.582,
+              "FNRA": 0.224,
+              "ARCA": 0.045,
+              "EDGX": 0.06,
+              "NYSE": 0.015,
+              "BATS": 0.06,
+              "IEXG": 0.015
+            },
+            "fbtot": 672.08,
+            "sfstot": 741.6800000000001,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": null,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 10.0,
+                "vol": 1031.0,
+                "vol_adv_pct": 4.54,
+                "vwap": 26.9418,
+                "range": 0.14,
+                "spread": 0.0095,
+                "spread_bps": 3.5,
+                "direction": "seller"
+              },
+              "15:00-15:30": {
+                "ticks": 1.0,
+                "vol": 75.0,
+                "vol_adv_pct": 0.33,
+                "vwap": 26.92,
+                "range": 0.0,
+                "spread": 0.0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "LOB PRA",
+            "interest_score": 3.89,
+            "mm_score": 3.83,
+            "total_ticks": 143,
+            "days_covered": 2,
+            "vol_adv_total_pct": 81.77,
+            "overall_spread_bps": 4.6,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "EDGX": 0.545,
+              "FNRA": 0.084,
+              "IEXG": 0.098,
+              "NYSE": 0.133,
+              "ARCA": 0.049,
+              "NSDQ": 0.084,
+              "MEMX": 0.007
+            },
+            "fbtot": 724.01,
+            "sfstot": 792.81,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": null,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 1.0,
+                "vol": 150.0,
+                "vol_adv_pct": 1.0,
+                "vwap": 25.5667,
+                "range": 0.0,
+                "spread": 0.2,
+                "spread_bps": 78.1,
+                "direction": "buyer"
+              },
+              "15:00-15:30": {
+                "ticks": 12.0,
+                "vol": 1850.0,
+                "vol_adv_pct": 12.38,
+                "vwap": 25.4959,
+                "range": 0.05,
+                "spread": 0.003,
+                "spread_bps": 1.2,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 6.0,
+                "vol": 888.0,
+                "vol_adv_pct": 5.94,
+                "vwap": 25.5479,
+                "range": 0.1,
+                "spread": 0.0318,
+                "spread_bps": 12.4,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "LNC PRD",
+            "interest_score": 3.63,
+            "mm_score": 2.5,
+            "total_ticks": 291,
+            "days_covered": 2,
+            "vol_adv_total_pct": 76.53,
+            "overall_spread_bps": 2.7,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "FNRA": 0.241,
+              "ARCA": 0.01,
+              "AMEX": 0.003,
+              "NSDQ": 0.103,
+              "NYSE": 0.299,
+              "MEMX": 0.076,
+              "BATS": 0.021,
+              "IEXG": 0.076,
+              "EDGX": 0.12,
+              "BATY": 0.038,
+              "NSX": 0.014
+            },
+            "fbtot": 935.11,
+            "sfstot": 952.91,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -2.2,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 4.5,
+                "vol": 450.0,
+                "vol_adv_pct": 1.77,
+                "vwap": 27.0717,
+                "range": 0.06,
+                "spread": 0.0188,
+                "spread_bps": 6.9,
+                "direction": "buyer"
+              },
+              "15:30-16:00": {
+                "ticks": 1.0,
+                "vol": 583.0,
+                "vol_adv_pct": 2.3,
+                "vwap": 27.1163,
+                "range": 0.0,
+                "spread": 0.08,
+                "spread_bps": 29.5,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "BOH PRB",
+            "interest_score": 3.16,
+            "mm_score": 2.53,
+            "total_ticks": 68,
+            "days_covered": 2,
+            "vol_adv_total_pct": 24.96,
+            "overall_spread_bps": 8.1,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "NYSE": 0.647,
+              "EDGX": 0.118,
+              "FNRA": 0.088,
+              "NSDQ": 0.103,
+              "ARCA": 0.029,
+              "MEMX": 0.015
+            },
+            "fbtot": 738.47,
+            "sfstot": 840.07,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -1.33,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 2.5,
+                "vol": 150.0,
+                "vol_adv_pct": 1.38,
+                "vwap": 26.4661,
+                "range": 0.14,
+                "spread": 0.035,
+                "spread_bps": 13.2,
+                "direction": "buyer"
+              },
+              "15:00-15:30": {
+                "ticks": 1.5,
+                "vol": 150.0,
+                "vol_adv_pct": 1.37,
+                "vwap": 26.3486,
+                "range": 0.0377,
+                "spread": 0.0289,
+                "spread_bps": 11.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 1.0,
+                "vol": 98.0,
+                "vol_adv_pct": 0.9,
+                "vwap": 26.4208,
+                "range": 0.0,
+                "spread": 0.06,
+                "spread_bps": 22.7,
+                "direction": "buyer"
+              }
+            }
+          }
+        ]
+      },
+      "heldff": {
+        "member_count": 31,
+        "active_count": 31,
+        "total_ticks_group": 2406,
+        "group_busiest_window": "15:00-15:30",
+        "group_direction": "buyer_dominant",
+        "buyer_vs_seller": "3B / 1S",
+        "window_summary": {
+          "14:30-15:00": {
+            "ticks": 55,
+            "volume": 12918,
+            "buyers": 0,
+            "sellers": 1
+          },
+          "15:00-15:30": {
+            "ticks": 99,
+            "volume": 17330,
+            "buyers": 1,
+            "sellers": 0
+          },
+          "15:30-16:00": {
+            "ticks": 67,
+            "volume": 10576,
+            "buyers": 2,
+            "sellers": 0
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "DDT",
+            "interest_score": 3.82,
+            "mm_score": 2.52,
+            "total_ticks": 33,
+            "days_covered": 2,
+            "vol_adv_total_pct": 21.37,
+            "overall_spread_bps": 17.9,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "NYSE": 0.333,
+              "ARCA": 0.061,
+              "EDGX": 0.091,
+              "NSDQ": 0.242,
+              "IEXG": 0.03,
+              "NSX": 0.061,
+              "FNRA": 0.061,
+              "MEMX": 0.121
+            },
+            "fbtot": 649.19,
+            "sfstot": 744.8900000000001,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -0.46,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 2.5,
+                "vol": 257.0,
+                "vol_adv_pct": 3.97,
+                "vwap": 26.2541,
+                "range": 0.13,
+                "spread": 0.0525,
+                "spread_bps": 20.0,
+                "direction": "buyer"
+              },
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 0.77,
+                "vwap": 26.22,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "CHSCO",
+            "interest_score": 2.88,
+            "mm_score": 1.42,
+            "total_ticks": 46,
+            "days_covered": 2,
+            "vol_adv_total_pct": 13.88,
+            "overall_spread_bps": 6.1,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "NSDQ": 0.326,
+              "FNRA": 0.217,
+              "ARCA": 0.087,
+              "BATY": 0.043,
+              "BATS": 0.065,
+              "EDGX": 0.065,
+              "IEXG": 0.174,
+              "AMEX": 0.022
+            },
+            "fbtot": 703.61,
+            "sfstot": 743.21,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -0.66,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 2.5,
+                "vol": 479.0,
+                "vol_adv_pct": 3.22,
+                "vwap": 26.3711,
+                "range": 0.09,
+                "spread": 0.035,
+                "spread_bps": 13.3,
+                "direction": "seller"
+              }
+            }
+          },
+          {
+            "symbol": "RITM PRA",
+            "interest_score": 2.36,
+            "mm_score": 3.88,
+            "total_ticks": 69,
+            "days_covered": 2,
+            "vol_adv_total_pct": 65.71,
+            "overall_spread_bps": 3.5,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "NSDQ": 0.116,
+              "EDGX": 0.145,
+              "NYSE": 0.507,
+              "FNRA": 0.159,
+              "IEXG": 0.014,
+              "MEMX": 0.029,
+              "ARCA": 0.029
+            },
+            "fbtot": 812.45,
+            "sfstot": 840.5500000000001,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -1.06,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 13.0,
+                "vol": 3884.0,
+                "vol_adv_pct": 36.09,
+                "vwap": 25.2623,
+                "range": 0.03,
+                "spread": 0.0032,
+                "spread_bps": 1.3,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 0.46,
+                "vwap": 25.26,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "VLYPO",
+            "interest_score": 2.23,
+            "mm_score": 3.8,
+            "total_ticks": 65,
+            "days_covered": 2,
+            "vol_adv_total_pct": 86.08,
+            "overall_spread_bps": 5.0,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NSDQ": 0.4,
+              "BATY": 0.015,
+              "NQBX": 0.015,
+              "EDGX": 0.215,
+              "FNRA": 0.2,
+              "NYSE": 0.046,
+              "IEXG": 0.031,
+              "BATS": 0.046,
+              "ARCA": 0.031
+            },
+            "fbtot": 953.94,
+            "sfstot": 997.84,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -1.58,
+            "active_windows": {
+              "15:30-16:00": {
+                "ticks": 2.5,
+                "vol": 221.0,
+                "vol_adv_pct": 4.87,
+                "vwap": 25.0924,
+                "range": 0.0506,
+                "spread": 0.0203,
+                "spread_bps": 8.1,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "FITBI",
+            "interest_score": 2.15,
+            "mm_score": 4.5,
+            "total_ticks": 346,
+            "days_covered": 1,
+            "vol_adv_total_pct": 107.33,
+            "overall_spread_bps": 1.8,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NSDQ": 0.829,
+              "IEXG": 0.029,
+              "FNRA": 0.058,
+              "ARCA": 0.04,
+              "EDGX": 0.04,
+              "NQBX": 0.003
+            },
+            "fbtot": 895.5,
+            "sfstot": 957.7,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -1.36,
+            "active_windows": {
+              "15:30-16:00": {
+                "ticks": 1.0,
+                "vol": 100.0,
+                "vol_adv_pct": 0.41,
+                "vwap": 25.73,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          }
+        ]
+      },
+      "heldflr": {
+        "member_count": 12,
+        "active_count": 12,
+        "total_ticks_group": 1342,
+        "group_busiest_window": "15:30-16:00",
+        "group_direction": "buyer_dominant",
+        "buyer_vs_seller": "4B / 1S",
+        "window_summary": {
+          "13:00-13:30": {
+            "ticks": 1,
+            "volume": 100,
+            "buyers": 0,
+            "sellers": 0
+          },
+          "14:30-15:00": {
+            "ticks": 48,
+            "volume": 12630,
+            "buyers": 0,
+            "sellers": 0
+          },
+          "15:00-15:30": {
+            "ticks": 37,
+            "volume": 5636,
+            "buyers": 1,
+            "sellers": 0
+          },
+          "15:30-16:00": {
+            "ticks": 104,
+            "volume": 27362,
+            "buyers": 3,
+            "sellers": 1
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "BML PRG",
+            "interest_score": 3.16,
+            "mm_score": 2.39,
+            "total_ticks": 32,
+            "days_covered": 2,
+            "vol_adv_total_pct": 21.62,
+            "overall_spread_bps": 12.7,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "NYSE": 0.531,
+              "EDGX": 0.094,
+              "BATY": 0.062,
+              "FNRA": 0.25,
+              "NSDQ": 0.062
+            },
+            "fbtot": 731.73,
+            "sfstot": 1063.23,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -0.14,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 3.5,
+                "vol": 496.0,
+                "vol_adv_pct": 5.06,
+                "vwap": 19.6002,
+                "range": 0.08,
+                "spread": 0.02,
+                "spread_bps": 10.2,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 1.0,
+                "vol": 79.0,
+                "vol_adv_pct": 0.81,
+                "vwap": 19.7302,
+                "range": 0.0,
+                "spread": 0.0635,
+                "spread_bps": 32.2,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "BAC PRE",
+            "interest_score": 2.81,
+            "mm_score": 3.19,
+            "total_ticks": 56,
+            "days_covered": 2,
+            "vol_adv_total_pct": 13.23,
+            "overall_spread_bps": 11.9,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.464,
+              "EDGX": 0.018,
+              "NSDQ": 0.179,
+              "IEXG": 0.071,
+              "FNRA": 0.214,
+              "BATS": 0.036,
+              "MEMX": 0.018
+            },
+            "fbtot": 863.48,
+            "sfstot": 908.58,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -0.89,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 300.0,
+                "vol_adv_pct": 1.29,
+                "vwap": 19.84,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 0.5,
+                "vol": 48.0,
+                "vol_adv_pct": 0.2,
+                "vwap": 19.77,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 1.0,
+                "vol": 100.0,
+                "vol_adv_pct": 0.43,
+                "vwap": 19.7525,
+                "range": 0.065,
+                "spread": 0.065,
+                "spread_bps": 32.9,
+                "direction": "seller"
+              }
+            }
+          },
+          {
+            "symbol": "GS PRC",
+            "interest_score": 2.79,
+            "mm_score": 1.8,
+            "total_ticks": 65,
+            "days_covered": 2,
+            "vol_adv_total_pct": 21.85,
+            "overall_spread_bps": 4.0,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.631,
+              "EDGX": 0.138,
+              "FNRA": 0.046,
+              "ARCA": 0.015,
+              "BATS": 0.015,
+              "CHX": 0.092,
+              "NSDQ": 0.031,
+              "IEXG": 0.031
+            },
+            "fbtot": 612.9,
+            "sfstot": 728.8,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": 0.47,
+            "active_windows": {
+              "15:30-16:00": {
+                "ticks": 8.5,
+                "vol": 899.0,
+                "vol_adv_pct": 4.13,
+                "vwap": 20.3127,
+                "range": 0.01,
+                "spread": 0.0137,
+                "spread_bps": 6.8,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "MET PRA",
+            "interest_score": 2.15,
+            "mm_score": 3.5,
+            "total_ticks": 240,
+            "days_covered": 2,
+            "vol_adv_total_pct": 22.37,
+            "overall_spread_bps": 3.4,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "IEXG": 0.058,
+              "NYSE": 0.55,
+              "NSDQ": 0.133,
+              "FNRA": 0.075,
+              "BATS": 0.013,
+              "ARCA": 0.021,
+              "NSX": 0.017,
+              "EDGX": 0.008,
+              "EDGA": 0.004,
+              "MEMX": 0.004,
+              "BATY": 0.104,
+              "NQBX": 0.013
+            },
+            "fbtot": 1386.54,
+            "sfstot": 1426.84,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -3.98,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 2.5,
+                "vol": 124.0,
+                "vol_adv_pct": 0.19,
+                "vwap": 21.6581,
+                "range": 0.02,
+                "spread": 0.005,
+                "spread_bps": 2.3,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 1.5,
+                "vol": 191.0,
+                "vol_adv_pct": 0.29,
+                "vwap": 21.8021,
+                "range": 0.0,
+                "spread": 0.09,
+                "spread_bps": 41.4,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "BML PRJ",
+            "interest_score": 2.09,
+            "mm_score": 2.87,
+            "total_ticks": 52,
+            "days_covered": 2,
+            "vol_adv_total_pct": 25.98,
+            "overall_spread_bps": 4.4,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.519,
+              "FNRA": 0.058,
+              "BATY": 0.038,
+              "EDGX": 0.096,
+              "NSDQ": 0.096,
+              "IEXG": 0.038,
+              "ARCA": 0.154
+            },
+            "fbtot": 524.43,
+            "sfstot": 649.53,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": 1.04,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 1.5,
+                "vol": 175.0,
+                "vol_adv_pct": 1.11,
+                "vwap": 20.7343,
+                "range": 0.01,
+                "spread": 0.01,
+                "spread_bps": 4.8,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 0.32,
+                "vwap": 20.9199,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 2.5,
+                "vol": 252.0,
+                "vol_adv_pct": 1.6,
+                "vwap": 20.7926,
+                "range": 0.005,
+                "spread": 0.03,
+                "spread_bps": 14.4,
+                "direction": "buyer"
+              }
+            }
+          }
+        ]
+      },
+      "heldgarabetaltiyedi": {
+        "member_count": 15,
+        "active_count": 15,
+        "total_ticks_group": 921,
+        "group_busiest_window": "14:30-15:00",
+        "group_direction": "buyer_dominant",
+        "buyer_vs_seller": "5B / 3S",
+        "window_summary": {
+          "14:30-15:00": {
+            "ticks": 34,
+            "volume": 10376,
+            "buyers": 1,
+            "sellers": 0
+          },
+          "15:00-15:30": {
+            "ticks": 62,
+            "volume": 7530,
+            "buyers": 3,
+            "sellers": 1
+          },
+          "15:30-16:00": {
+            "ticks": 43,
+            "volume": 5148,
+            "buyers": 1,
+            "sellers": 2
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "AMH PRG",
+            "interest_score": 4.91,
+            "mm_score": 2.8,
+            "total_ticks": 51,
+            "days_covered": 2,
+            "vol_adv_total_pct": 47.58,
+            "overall_spread_bps": 13.9,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "FNRA": 0.216,
+              "NSDQ": 0.314,
+              "NYSE": 0.235,
+              "IEXG": 0.059,
+              "BATY": 0.02,
+              "MEMX": 0.039,
+              "EDGX": 0.098,
+              "BATS": 0.02
+            },
+            "fbtot": 1377.0,
+            "sfstot": 2358.4,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -1.38,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 1.5,
+                "vol": 150.0,
+                "vol_adv_pct": 2.81,
+                "vwap": 22.8033,
+                "range": 0.2,
+                "spread": 0.145,
+                "spread_bps": 63.6,
+                "direction": "buyer"
+              },
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 0.94,
+                "vwap": 22.855,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "WBS PRG",
+            "interest_score": 4.82,
+            "mm_score": 3.83,
+            "total_ticks": 128,
+            "days_covered": 2,
+            "vol_adv_total_pct": 143.59,
+            "overall_spread_bps": 3.5,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "ARCA": 0.078,
+              "NYSE": 0.523,
+              "EDGX": 0.031,
+              "BATS": 0.008,
+              "FNRA": 0.219,
+              "NSDQ": 0.039,
+              "IEXG": 0.023,
+              "MEMX": 0.07,
+              "MIAX": 0.008
+            },
+            "fbtot": 928.61,
+            "sfstot": 1007.01,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": 2.06,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 4.5,
+                "vol": 1876.0,
+                "vol_adv_pct": 18.25,
+                "vwap": 24.5727,
+                "range": 0.09,
+                "spread": 0.0112,
+                "spread_bps": 4.6,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 7.5,
+                "vol": 1400.0,
+                "vol_adv_pct": 13.62,
+                "vwap": 24.5272,
+                "range": 0.03,
+                "spread": 0.0043,
+                "spread_bps": 1.8,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 5.0,
+                "vol": 724.0,
+                "vol_adv_pct": 7.04,
+                "vwap": 24.6864,
+                "range": 0.0155,
+                "spread": 0.0169,
+                "spread_bps": 6.8,
+                "direction": "seller"
+              }
+            }
+          },
+          {
+            "symbol": "FITBP",
+            "interest_score": 3.97,
+            "mm_score": 1.4,
+            "total_ticks": 45,
+            "days_covered": 2,
+            "vol_adv_total_pct": 50.78,
+            "overall_spread_bps": 6.2,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "ARCA": 0.089,
+              "NSDQ": 0.489,
+              "BATS": 0.022,
+              "MEMX": 0.089,
+              "FNRA": 0.044,
+              "EDGX": 0.222,
+              "BATY": 0.022,
+              "NYSE": 0.022
+            },
+            "fbtot": 1357.09,
+            "sfstot": 1603.79,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -1.76,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 7.5,
+                "vol": 634.0,
+                "vol_adv_pct": 7.71,
+                "vwap": 24.6764,
+                "range": 0.05,
+                "spread": 0.0079,
+                "spread_bps": 3.2,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "AMH PRH",
+            "interest_score": 3.96,
+            "mm_score": 3.28,
+            "total_ticks": 89,
+            "days_covered": 2,
+            "vol_adv_total_pct": 111.91,
+            "overall_spread_bps": 6.6,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "BATS": 0.045,
+              "EDGX": 0.18,
+              "NYSE": 0.191,
+              "FNRA": 0.258,
+              "ARCA": 0.101,
+              "NSDQ": 0.157,
+              "MEMX": 0.011,
+              "IEXG": 0.034,
+              "NQBX": 0.022
+            },
+            "fbtot": 1363.29,
+            "sfstot": 1596.59,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -1.43,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 0.92,
+                "vwap": 23.85,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 1.5,
+                "vol": 122.0,
+                "vol_adv_pct": 2.24,
+                "vwap": 23.7487,
+                "range": 0.0,
+                "spread": 0.06,
+                "spread_bps": 25.3,
+                "direction": "seller"
+              }
+            }
+          },
+          {
+            "symbol": "HWCPZ",
+            "interest_score": 3.8,
+            "mm_score": 1.23,
+            "total_ticks": 26,
+            "days_covered": 2,
+            "vol_adv_total_pct": 25.01,
+            "overall_spread_bps": 10.6,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "NSDQ": 0.423,
+              "ARCA": 0.115,
+              "BATS": 0.154,
+              "FNRA": 0.231,
+              "IEXG": 0.038,
+              "EDGX": 0.038
+            },
+            "fbtot": 1238.29,
+            "sfstot": 1488.29,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": 0.58,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 4.5,
+                "vol": 356.0,
+                "vol_adv_pct": 5.53,
+                "vwap": 24.2449,
+                "range": 0.07,
+                "spread": 0.0088,
+                "spread_bps": 3.6,
+                "direction": "buyer"
+              }
+            }
+          }
+        ]
+      },
+      "heldkuponlu": {
+        "member_count": 100,
+        "active_count": 100,
+        "total_ticks_group": 10443,
+        "group_busiest_window": "15:30-16:00",
+        "group_direction": "buyer_dominant",
+        "buyer_vs_seller": "26B / 14S",
+        "window_summary": {
+          "14:30-15:00": {
+            "ticks": 90,
+            "volume": 9849,
+            "buyers": 0,
+            "sellers": 2
+          },
+          "15:00-15:30": {
+            "ticks": 287,
+            "volume": 44036,
+            "buyers": 7,
+            "sellers": 5
+          },
+          "15:30-16:00": {
+            "ticks": 517,
+            "volume": 86683,
+            "buyers": 19,
+            "sellers": 7
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "MS PRL",
+            "interest_score": 4.23,
+            "mm_score": 2.5,
+            "total_ticks": 121,
+            "days_covered": 2,
+            "vol_adv_total_pct": 32.83,
+            "overall_spread_bps": 5.1,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "BATY": 0.008,
+              "NYSE": 0.612,
+              "ARCA": 0.008,
+              "IEXG": 0.017,
+              "MEMX": 0.017,
+              "FNRA": 0.289,
+              "NSDQ": 0.05
+            },
+            "fbtot": 1234.11,
+            "sfstot": 1297.61,
+            "gort": 0.29,
+            "gort_norm": 47.02,
+            "sma63_chg": -2.01,
+            "active_windows": {
+              "15:30-16:00": {
+                "ticks": 13.5,
+                "vol": 5690.0,
+                "vol_adv_pct": 16.64,
+                "vwap": 20.6045,
+                "range": 0.19,
+                "spread": 0.0131,
+                "spread_bps": 6.4,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "ADC PRA",
+            "interest_score": 3.69,
+            "mm_score": 3.79,
+            "total_ticks": 98,
+            "days_covered": 2,
+            "vol_adv_total_pct": 47.89,
+            "overall_spread_bps": 5.6,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "FNRA": 0.265,
+              "NYSE": 0.316,
+              "IEXG": 0.071,
+              "NSDQ": 0.163,
+              "ARCA": 0.02,
+              "EDGX": 0.133,
+              "NQBX": 0.01,
+              "BATS": 0.01,
+              "MEMX": 0.01
+            },
+            "fbtot": 1399.67,
+            "sfstot": 1597.0700000000002,
+            "gort": -1.52,
+            "gort_norm": 61.58,
+            "sma63_chg": -2.13,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 100.0,
+                "vol_adv_pct": 0.84,
+                "vwap": 17.2035,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 13.5,
+                "vol": 1354.0,
+                "vol_adv_pct": 11.31,
+                "vwap": 17.1993,
+                "range": 0.05,
+                "spread": 0.0104,
+                "spread_bps": 6.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 2.0,
+                "vol": 176.0,
+                "vol_adv_pct": 1.47,
+                "vwap": 17.2328,
+                "range": 0.01,
+                "spread": 0.0133,
+                "spread_bps": 7.7,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "DTB",
+            "interest_score": 3.26,
+            "mm_score": 3.5,
+            "total_ticks": 122,
+            "days_covered": 2,
+            "vol_adv_total_pct": 35.71,
+            "overall_spread_bps": 4.6,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.303,
+              "ARCA": 0.066,
+              "FNRA": 0.508,
+              "NSDQ": 0.074,
+              "MEMX": 0.008,
+              "IEXG": 0.008,
+              "EDGX": 0.025,
+              "MIAX": 0.008
+            },
+            "fbtot": 1420.33,
+            "sfstot": 1464.03,
+            "gort": -1.5,
+            "gort_norm": 61.47,
+            "sma63_chg": -1.69,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 2.5,
+                "vol": 161.0,
+                "vol_adv_pct": 0.94,
+                "vwap": 17.3783,
+                "range": 0.05,
+                "spread": 0.0125,
+                "spread_bps": 7.2,
+                "direction": "buyer"
+              },
+              "15:30-16:00": {
+                "ticks": 21.0,
+                "vol": 2281.0,
+                "vol_adv_pct": 13.33,
+                "vwap": 17.5238,
+                "range": 0.01,
+                "spread": 0.008,
+                "spread_bps": 4.5,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "GPJA",
+            "interest_score": 3.18,
+            "mm_score": 2.87,
+            "total_ticks": 58,
+            "days_covered": 2,
+            "vol_adv_total_pct": 19.03,
+            "overall_spread_bps": 10.4,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.655,
+              "FNRA": 0.155,
+              "NSDQ": 0.069,
+              "IEXG": 0.034,
+              "BATS": 0.052,
+              "EDGA": 0.034
+            },
+            "fbtot": 753.78,
+            "sfstot": 804.28,
+            "gort": 2.78,
+            "gort_norm": 26.91,
+            "sma63_chg": 0.34,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 0.35,
+                "vwap": 23.11,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 6.0,
+                "vol": 1082.0,
+                "vol_adv_pct": 7.67,
+                "vwap": 23.2225,
+                "range": 0.095,
+                "spread": 0.0309,
+                "spread_bps": 13.3,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "MGR",
+            "interest_score": 3.09,
+            "mm_score": 2.62,
+            "total_ticks": 40,
+            "days_covered": 2,
+            "vol_adv_total_pct": 9.76,
+            "overall_spread_bps": 16.2,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "MEMX": 0.05,
+              "BATY": 0.025,
+              "FNRA": 0.3,
+              "NYSE": 0.2,
+              "NSDQ": 0.25,
+              "EDGX": 0.025,
+              "MIAX": 0.025,
+              "NSX": 0.1,
+              "BATS": 0.025
+            },
+            "fbtot": 1352.67,
+            "sfstot": 1423.97,
+            "gort": -0.85,
+            "gort_norm": 56.19,
+            "sma63_chg": -0.68,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 8.0,
+                "vol_adv_pct": 0.05,
+                "vwap": 21.34,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 1.0,
+                "vol": 61.0,
+                "vol_adv_pct": 0.35,
+                "vwap": 21.3597,
+                "range": 0.085,
+                "spread": 0.085,
+                "spread_bps": 39.8,
+                "direction": "buyer"
+              }
+            }
+          }
+        ]
+      },
+      "heldkuponlukreciliz": {
+        "member_count": 12,
+        "active_count": 12,
+        "total_ticks_group": 595,
+        "group_busiest_window": "15:30-16:00",
+        "group_direction": "buyer_dominant",
+        "buyer_vs_seller": "6B / 2S",
+        "window_summary": {
+          "14:30-15:00": {
+            "ticks": 12,
+            "volume": 1698,
+            "buyers": 0,
+            "sellers": 0
+          },
+          "15:00-15:30": {
+            "ticks": 19,
+            "volume": 1900,
+            "buyers": 2,
+            "sellers": 1
+          },
+          "15:30-16:00": {
+            "ticks": 47,
+            "volume": 16232,
+            "buyers": 4,
+            "sellers": 1
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "FHN PRF",
+            "interest_score": 3.2,
+            "mm_score": 2.04,
+            "total_ticks": 26,
+            "days_covered": 2,
+            "vol_adv_total_pct": 12.97,
+            "overall_spread_bps": 17.5,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "NYSE": 0.231,
+              "NSDQ": 0.385,
+              "FNRA": 0.115,
+              "CHX": 0.077,
+              "EDGX": 0.154,
+              "MIAX": 0.038
+            },
+            "fbtot": 985.31,
+            "sfstot": 1053.61,
+            "gort": -0.27,
+            "gort_norm": 24.96,
+            "sma63_chg": -1.69,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 47.0,
+                "vol_adv_pct": 0.71,
+                "vwap": 18.17,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 1.5,
+                "vol": 108.0,
+                "vol_adv_pct": 1.63,
+                "vwap": 18.1626,
+                "range": 0.07,
+                "spread": 0.035,
+                "spread_bps": 19.3,
+                "direction": "buyer"
+              },
+              "15:30-16:00": {
+                "ticks": 1.5,
+                "vol": 200.0,
+                "vol_adv_pct": 3.0,
+                "vwap": 18.0993,
+                "range": 0.1006,
+                "spread": 0.0503,
+                "spread_bps": 27.8,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "FULTP",
+            "interest_score": 2.59,
+            "mm_score": 1.56,
+            "total_ticks": 39,
+            "days_covered": 2,
+            "vol_adv_total_pct": 30.77,
+            "overall_spread_bps": 14.1,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NSDQ": 0.385,
+              "IEXG": 0.026,
+              "EDGX": 0.231,
+              "MEMX": 0.051,
+              "FNRA": 0.282,
+              "NYSE": 0.026
+            },
+            "fbtot": 1857.37,
+            "sfstot": 1914.27,
+            "gort": -5.01,
+            "gort_norm": 95.0,
+            "sma63_chg": -4.67,
+            "active_windows": {
+              "15:30-16:00": {
+                "ticks": 1.0,
+                "vol": 300.0,
+                "vol_adv_pct": 3.84,
+                "vwap": 18.5618,
+                "range": 0.0,
+                "spread": 0.1853,
+                "spread_bps": 99.7,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "MBINN",
+            "interest_score": 2.39,
+            "mm_score": 3.94,
+            "total_ticks": 72,
+            "days_covered": 2,
+            "vol_adv_total_pct": 103.15,
+            "overall_spread_bps": 6.9,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NSDQ": 0.278,
+              "FNRA": 0.292,
+              "MEMX": 0.028,
+              "EDGA": 0.028,
+              "ARCA": 0.028,
+              "EDGX": 0.125,
+              "NQBX": 0.042,
+              "IEXG": 0.139,
+              "BATY": 0.028,
+              "BATS": 0.014
+            },
+            "fbtot": 1060.21,
+            "sfstot": 1110.61,
+            "gort": -0.31,
+            "gort_norm": 25.55,
+            "sma63_chg": 2.53,
+            "active_windows": {
+              "15:30-16:00": {
+                "ticks": 4.5,
+                "vol": 6020.0,
+                "vol_adv_pct": 59.43,
+                "vwap": 20.1999,
+                "range": 0.01,
+                "spread": 0.0025,
+                "spread_bps": 1.2,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "DCOMP",
+            "interest_score": 2.26,
+            "mm_score": 3.54,
+            "total_ticks": 38,
+            "days_covered": 2,
+            "vol_adv_total_pct": 32.25,
+            "overall_spread_bps": 14.0,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "EDGX": 0.237,
+              "NSDQ": 0.316,
+              "MEMX": 0.026,
+              "FNRA": 0.158,
+              "ARCA": 0.158,
+              "NQBX": 0.026,
+              "BATY": 0.026,
+              "IEXG": 0.026,
+              "BATS": 0.026
+            },
+            "fbtot": 488.54,
+            "sfstot": 573.94,
+            "gort": 1.08,
+            "gort_norm": 5.0,
+            "sma63_chg": 3.63,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 0.82,
+                "vwap": 19.01,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 3.0,
+                "vol": 338.0,
+                "vol_adv_pct": 5.54,
+                "vwap": 18.9789,
+                "range": 0.03,
+                "spread": 0.006,
+                "spread_bps": 3.2,
+                "direction": "seller"
+              },
+              "15:30-16:00": {
+                "ticks": 6.5,
+                "vol": 580.0,
+                "vol_adv_pct": 9.53,
+                "vwap": 19.1866,
+                "range": 0.05,
+                "spread": 0.0342,
+                "spread_bps": 17.8,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "SYF PRA",
+            "interest_score": 2.17,
+            "mm_score": 3.57,
+            "total_ticks": 87,
+            "days_covered": 2,
+            "vol_adv_total_pct": 11.5,
+            "overall_spread_bps": 7.3,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "NYSE": 0.253,
+              "ARCA": 0.057,
+              "MIAX": 0.011,
+              "EDGX": 0.149,
+              "NSDQ": 0.126,
+              "FNRA": 0.253,
+              "MEMX": 0.057,
+              "BATY": 0.011,
+              "BATS": 0.023,
+              "IEXG": 0.057
+            },
+            "fbtot": 723.82,
+            "sfstot": 759.9200000000001,
+            "gort": 0.57,
+            "gort_norm": 12.63,
+            "sma63_chg": 0.16,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 3.5,
+                "vol": 136.0,
+                "vol_adv_pct": 0.32,
+                "vwap": 19.602,
+                "range": 0.03,
+                "spread": 0.0067,
+                "spread_bps": 3.4,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 2.5,
+                "vol": 154.0,
+                "vol_adv_pct": 0.36,
+                "vwap": 19.5977,
+                "range": 0.01,
+                "spread": 0.0075,
+                "spread_bps": 3.8,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 3.5,
+                "vol": 362.0,
+                "vol_adv_pct": 0.85,
+                "vwap": 19.5903,
+                "range": 0.0199,
+                "spread": 0.0183,
+                "spread_bps": 9.3,
+                "direction": "seller"
+              }
+            }
+          }
+        ]
+      },
+      "heldkuponlukreorta": {
+        "member_count": 9,
+        "active_count": 9,
+        "total_ticks_group": 805,
+        "group_busiest_window": "15:00-15:30",
+        "group_direction": "seller_dominant",
+        "buyer_vs_seller": "3B / 4S",
+        "window_summary": {
+          "14:30-15:00": {
+            "ticks": 21,
+            "volume": 4850,
+            "buyers": 0,
+            "sellers": 2
+          },
+          "15:00-15:30": {
+            "ticks": 59,
+            "volume": 9346,
+            "buyers": 0,
+            "sellers": 0
+          },
+          "15:30-16:00": {
+            "ticks": 48,
+            "volume": 5364,
+            "buyers": 3,
+            "sellers": 2
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "WBS PRF",
+            "interest_score": 4.1,
+            "mm_score": 4.28,
+            "total_ticks": 89,
+            "days_covered": 2,
+            "vol_adv_total_pct": 330.27,
+            "overall_spread_bps": 5.9,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "NYSE": 0.472,
+              "NSDQ": 0.056,
+              "FNRA": 0.315,
+              "MEMX": 0.045,
+              "EDGX": 0.011,
+              "IEXG": 0.09,
+              "NQBX": 0.011
+            },
+            "fbtot": 278.6,
+            "sfstot": 375.1,
+            "gort": 11.13,
+            "gort_norm": 5.0,
+            "sma63_chg": 7.71,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 10.0,
+                "vol": 1408.0,
+                "vol_adv_pct": 15.5,
+                "vwap": 21.4319,
+                "range": 0.09,
+                "spread": 0.0063,
+                "spread_bps": 2.9,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "FCNCO",
+            "interest_score": 3.02,
+            "mm_score": 2.64,
+            "total_ticks": 57,
+            "days_covered": 2,
+            "vol_adv_total_pct": 24.36,
+            "overall_spread_bps": 8.6,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "IEXG": 0.158,
+              "EDGX": 0.053,
+              "ARCA": 0.088,
+              "NSDQ": 0.509,
+              "FNRA": 0.193
+            },
+            "fbtot": 1453.35,
+            "sfstot": 1612.85,
+            "gort": -2.06,
+            "gort_norm": 58.35,
+            "sma63_chg": -1.16,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 6.0,
+                "vol": 543.0,
+                "vol_adv_pct": 4.2,
+                "vwap": 21.9926,
+                "range": 0.06,
+                "spread": 0.0055,
+                "spread_bps": 2.5,
+                "direction": "seller"
+              },
+              "15:30-16:00": {
+                "ticks": 6.5,
+                "vol": 592.0,
+                "vol_adv_pct": 4.57,
+                "vwap": 22.0149,
+                "range": 0.09,
+                "spread": 0.015,
+                "spread_bps": 6.8,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "FITBO",
+            "interest_score": 2.64,
+            "mm_score": 2.92,
+            "total_ticks": 71,
+            "days_covered": 2,
+            "vol_adv_total_pct": 16.57,
+            "overall_spread_bps": 7.2,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "FNRA": 0.197,
+              "NSDQ": 0.718,
+              "ARCA": 0.042,
+              "BATS": 0.042
+            },
+            "fbtot": 1471.45,
+            "sfstot": 1638.65,
+            "gort": -2.68,
+            "gort_norm": 60.84,
+            "sma63_chg": -1.22,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 2.5,
+                "vol": 286.0,
+                "vol_adv_pct": 1.2,
+                "vwap": 19.7073,
+                "range": 0.09,
+                "spread": 0.0225,
+                "spread_bps": 11.4,
+                "direction": "seller"
+              },
+              "15:00-15:30": {
+                "ticks": 2.5,
+                "vol": 556.0,
+                "vol_adv_pct": 2.32,
+                "vwap": 19.7453,
+                "range": 0.0228,
+                "spread": 0.0139,
+                "spread_bps": 7.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "CFG PRE",
+            "interest_score": 2.61,
+            "mm_score": 3.5,
+            "total_ticks": 143,
+            "days_covered": 2,
+            "vol_adv_total_pct": 26.84,
+            "overall_spread_bps": 4.4,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "FNRA": 0.231,
+              "EDGX": 0.056,
+              "NYSE": 0.49,
+              "NSDQ": 0.021,
+              "MEMX": 0.077,
+              "IEXG": 0.021,
+              "NSX": 0.007,
+              "BATY": 0.084,
+              "ARCA": 0.007,
+              "BATS": 0.007
+            },
+            "fbtot": 1159.61,
+            "sfstot": 1323.41,
+            "gort": 2.68,
+            "gort_norm": 39.16,
+            "sma63_chg": -0.94,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 11.5,
+                "vol": 2242.0,
+                "vol_adv_pct": 6.11,
+                "vwap": 19.5821,
+                "range": 0.1105,
+                "spread": 0.0182,
+                "spread_bps": 9.3,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 4.0,
+                "vol": 450.0,
+                "vol_adv_pct": 1.23,
+                "vwap": 19.6678,
+                "range": 0.005,
+                "spread": 0.0357,
+                "spread_bps": 18.2,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "KEY PRJ",
+            "interest_score": 2.56,
+            "mm_score": 3.83,
+            "total_ticks": 191,
+            "days_covered": 2,
+            "vol_adv_total_pct": 44.55,
+            "overall_spread_bps": 3.6,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.34,
+              "EDGX": 0.047,
+              "FNRA": 0.225,
+              "NSDQ": 0.11,
+              "ARCA": 0.089,
+              "MEMX": 0.021,
+              "CHX": 0.105,
+              "IEXG": 0.058,
+              "BATS": 0.005
+            },
+            "fbtot": 996.77,
+            "sfstot": 1065.77,
+            "gort": 1.58,
+            "gort_norm": 43.61,
+            "sma63_chg": 0.74,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 2.0,
+                "vol": 1596.0,
+                "vol_adv_pct": 5.48,
+                "vwap": 22.0806,
+                "range": 0.015,
+                "spread": 0.01,
+                "spread_bps": 4.5,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 2.5,
+                "vol": 216.0,
+                "vol_adv_pct": 0.74,
+                "vwap": 22.05,
+                "range": 0.0001,
+                "spread": 0.0001,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 6.0,
+                "vol": 744.0,
+                "vol_adv_pct": 2.56,
+                "vwap": 21.9625,
+                "range": 0.035,
+                "spread": 0.0227,
+                "spread_bps": 10.3,
+                "direction": "seller"
+              }
+            }
+          }
+        ]
+      },
+      "heldnff": {
+        "member_count": 17,
+        "active_count": 17,
+        "total_ticks_group": 1742,
+        "group_busiest_window": "15:30-16:00",
+        "group_direction": "buyer_dominant",
+        "buyer_vs_seller": "7B / 3S",
+        "window_summary": {
+          "14:30-15:00": {
+            "ticks": 38,
+            "volume": 9916,
+            "buyers": 1,
+            "sellers": 0
+          },
+          "15:00-15:30": {
+            "ticks": 109,
+            "volume": 15544,
+            "buyers": 2,
+            "sellers": 1
+          },
+          "15:30-16:00": {
+            "ticks": 137,
+            "volume": 29292,
+            "buyers": 4,
+            "sellers": 2
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "MTB PRH",
+            "interest_score": 3.22,
+            "mm_score": 3.83,
+            "total_ticks": 141,
+            "days_covered": 2,
+            "vol_adv_total_pct": 61.21,
+            "overall_spread_bps": 2.6,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "IEXG": 0.078,
+              "FNRA": 0.17,
+              "NYSE": 0.525,
+              "NSDQ": 0.043,
+              "ARCA": 0.043,
+              "EDGX": 0.099,
+              "MEMX": 0.021,
+              "BATS": 0.007,
+              "EDGA": 0.014
+            },
+            "fbtot": 537.73,
+            "sfstot": 676.23,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -0.74,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 0.16,
+                "vwap": 25.13,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 0.5,
+                "vol": 100.0,
+                "vol_adv_pct": 0.32,
+                "vwap": 25.105,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 1.0,
+                "vol": 52.0,
+                "vol_adv_pct": 0.17,
+                "vwap": 25.1154,
+                "range": 0.05,
+                "spread": 0.05,
+                "spread_bps": 19.9,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "WAL PRA",
+            "interest_score": 3.15,
+            "mm_score": 3.51,
+            "total_ticks": 84,
+            "days_covered": 2,
+            "vol_adv_total_pct": 34.97,
+            "overall_spread_bps": 2.5,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.464,
+              "NSDQ": 0.155,
+              "FNRA": 0.274,
+              "MEMX": 0.012,
+              "BATS": 0.095
+            },
+            "fbtot": 582.51,
+            "sfstot": 626.51,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": 1.91,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 5.0,
+                "vol": 3148.0,
+                "vol_adv_pct": 7.75,
+                "vwap": 23.3982,
+                "range": 0.02,
+                "spread": 0.0045,
+                "spread_bps": 1.9,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 1.0,
+                "vol": 100.0,
+                "vol_adv_pct": 0.25,
+                "vwap": 23.365,
+                "range": 0.03,
+                "spread": 0.03,
+                "spread_bps": 12.8,
+                "direction": "buyer"
+              },
+              "15:30-16:00": {
+                "ticks": 13.5,
+                "vol": 8616.0,
+                "vol_adv_pct": 21.23,
+                "vwap": 23.4008,
+                "range": 0.01,
+                "spread": 0.0019,
+                "spread_bps": 0.8,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "VOYA PRB",
+            "interest_score": 2.9,
+            "mm_score": 4.5,
+            "total_ticks": 207,
+            "days_covered": 2,
+            "vol_adv_total_pct": 71.76,
+            "overall_spread_bps": 6.4,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "NYSE": 0.415,
+              "BATS": 0.043,
+              "NSDQ": 0.155,
+              "BATY": 0.063,
+              "FNRA": 0.213,
+              "IEXG": 0.077,
+              "EDGA": 0.005,
+              "ARCA": 0.014,
+              "MEMX": 0.005,
+              "EDGX": 0.005,
+              "NSX": 0.005
+            },
+            "fbtot": 325.71,
+            "sfstot": 479.21,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": 0.53,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 0.27,
+                "vwap": 24.26,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 8.5,
+                "vol": 988.0,
+                "vol_adv_pct": 5.41,
+                "vwap": 24.3263,
+                "range": 0.16,
+                "spread": 0.0319,
+                "spread_bps": 13.1,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 2.5,
+                "vol": 250.0,
+                "vol_adv_pct": 1.37,
+                "vwap": 24.332,
+                "range": 0.09,
+                "spread": 0.0275,
+                "spread_bps": 11.3,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "RF PRC",
+            "interest_score": 2.55,
+            "mm_score": 3.83,
+            "total_ticks": 190,
+            "days_covered": 2,
+            "vol_adv_total_pct": 29.89,
+            "overall_spread_bps": 4.8,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "FNRA": 0.105,
+              "EDGX": 0.011,
+              "NSDQ": 0.053,
+              "NYSE": 0.716,
+              "CHX": 0.016,
+              "AMEX": 0.016,
+              "NQPX": 0.005,
+              "IEXG": 0.021,
+              "BATS": 0.011,
+              "ARCA": 0.005,
+              "MEMX": 0.021,
+              "EDGA": 0.005,
+              "NSX": 0.005,
+              "NQBX": 0.011
+            },
+            "fbtot": 262.83,
+            "sfstot": 286.23,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": 2.22,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 100.0,
+                "vol_adv_pct": 0.39,
+                "vwap": 24.46,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 2.0,
+                "vol": 250.0,
+                "vol_adv_pct": 0.97,
+                "vwap": 24.536,
+                "range": 0.01,
+                "spread": 0.0033,
+                "spread_bps": 1.4,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 18.5,
+                "vol": 1705.0,
+                "vol_adv_pct": 6.59,
+                "vwap": 24.5502,
+                "range": 0.08,
+                "spread": 0.0061,
+                "spread_bps": 2.5,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "RITM PRD",
+            "interest_score": 2.32,
+            "mm_score": 3.5,
+            "total_ticks": 121,
+            "days_covered": 2,
+            "vol_adv_total_pct": 30.47,
+            "overall_spread_bps": 3.2,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "NYSE": 0.231,
+              "FNRA": 0.405,
+              "MEMX": 0.025,
+              "NSDQ": 0.157,
+              "ARCA": 0.008,
+              "IEXG": 0.058,
+              "BATS": 0.025,
+              "EDGX": 0.074,
+              "BATY": 0.017
+            },
+            "fbtot": 500.47,
+            "sfstot": 549.6700000000001,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -0.75,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 10.5,
+                "vol": 1014.0,
+                "vol_adv_pct": 3.25,
+                "vwap": 24.6483,
+                "range": 0.0276,
+                "spread": 0.0141,
+                "spread_bps": 5.7,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 5.0,
+                "vol": 412.0,
+                "vol_adv_pct": 1.32,
+                "vwap": 24.7252,
+                "range": 0.015,
+                "spread": 0.0211,
+                "spread_bps": 8.5,
+                "direction": "buyer"
+              }
+            }
+          }
+        ]
+      },
+      "heldotelremorta": {
+        "member_count": 21,
+        "active_count": 21,
+        "total_ticks_group": 823,
+        "group_busiest_window": "15:00-15:30",
+        "group_direction": "buyer_dominant",
+        "buyer_vs_seller": "4B / 3S",
+        "window_summary": {
+          "14:30-15:00": {
+            "ticks": 19,
+            "volume": 2700,
+            "buyers": 1,
+            "sellers": 1
+          },
+          "15:00-15:30": {
+            "ticks": 21,
+            "volume": 3031,
+            "buyers": 2,
+            "sellers": 0
+          },
+          "15:30-16:00": {
+            "ticks": 21,
+            "volume": 2025,
+            "buyers": 1,
+            "sellers": 2
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "INN PRE",
+            "interest_score": 4.23,
+            "mm_score": 3.1,
+            "total_ticks": 64,
+            "days_covered": 2,
+            "vol_adv_total_pct": 63.45,
+            "overall_spread_bps": 15.8,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "NQBX": 0.016,
+              "EDGX": 0.031,
+              "FNRA": 0.391,
+              "NYSE": 0.328,
+              "NSDQ": 0.094,
+              "ARCA": 0.031,
+              "IEXG": 0.062,
+              "BATS": 0.031,
+              "BATY": 0.016
+            },
+            "fbtot": 1187.5,
+            "sfstot": 1357.8,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -0.83,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 1.5,
+                "vol": 80.0,
+                "vol_adv_pct": 1.3,
+                "vwap": 18.9295,
+                "range": 0.0935,
+                "spread": 0.0467,
+                "spread_bps": 24.7,
+                "direction": "buyer"
+              },
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 0.81,
+                "vwap": 19.0441,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "AHH PRA",
+            "interest_score": 2.98,
+            "mm_score": 1.72,
+            "total_ticks": 51,
+            "days_covered": 2,
+            "vol_adv_total_pct": 39.57,
+            "overall_spread_bps": 10.2,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "MEMX": 0.02,
+              "EDGX": 0.098,
+              "NYSE": 0.431,
+              "IEXG": 0.157,
+              "FNRA": 0.157,
+              "BATS": 0.059,
+              "NSDQ": 0.078
+            },
+            "fbtot": 1098.12,
+            "sfstot": 1410.32,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -0.43,
+            "active_windows": {
+              "15:30-16:00": {
+                "ticks": 1.5,
+                "vol": 55.0,
+                "vol_adv_pct": 0.59,
+                "vwap": 21.2177,
+                "range": 0.035,
+                "spread": 0.055,
+                "spread_bps": 25.9,
+                "direction": "seller"
+              }
+            }
+          },
+          {
+            "symbol": "PEB PRF",
+            "interest_score": 2.77,
+            "mm_score": 4.25,
+            "total_ticks": 3,
+            "days_covered": 2,
+            "vol_adv_total_pct": 1.13,
+            "overall_spread_bps": 87.4,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.667,
+              "NSDQ": 0.333
+            },
+            "fbtot": 1162.19,
+            "sfstot": 1308.29,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": 1.46,
+            "active_windows": {
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 0.65,
+                "vwap": 19.82,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "SHO PRH",
+            "interest_score": 2.73,
+            "mm_score": 3.8,
+            "total_ticks": 65,
+            "days_covered": 2,
+            "vol_adv_total_pct": 136.3,
+            "overall_spread_bps": 2.0,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.769,
+              "NSDQ": 0.015,
+              "FNRA": 0.077,
+              "EDGX": 0.031,
+              "BATS": 0.077,
+              "MEMX": 0.031
+            },
+            "fbtot": 1299.91,
+            "sfstot": 1570.5100000000002,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -0.85,
+            "active_windows": {
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 1.11,
+                "vwap": 20.85,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "GNL PRB",
+            "interest_score": 2.62,
+            "mm_score": 3.73,
+            "total_ticks": 21,
+            "days_covered": 2,
+            "vol_adv_total_pct": 21.04,
+            "overall_spread_bps": 40.3,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "NYSE": 0.333,
+              "FNRA": 0.429,
+              "NSDQ": 0.095,
+              "ARCA": 0.048,
+              "IEXG": 0.095
+            },
+            "fbtot": 1136.88,
+            "sfstot": 1234.18,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -0.65,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 1.0,
+                "vol": 150.0,
+                "vol_adv_pct": 3.34,
+                "vwap": 22.6069,
+                "range": 0.0853,
+                "spread": 0.0853,
+                "spread_bps": 37.8,
+                "direction": "buyer"
+              },
+              "15:30-16:00": {
+                "ticks": 1.0,
+                "vol": 150.0,
+                "vol_adv_pct": 3.34,
+                "vwap": 22.6333,
+                "range": 0.0,
+                "spread": 0.25,
+                "spread_bps": 110.3,
+                "direction": "seller"
+              }
+            }
+          }
+        ]
+      },
+      "heldsolidbig": {
+        "member_count": 6,
+        "active_count": 6,
+        "total_ticks_group": 876,
+        "group_busiest_window": "14:30-15:00",
+        "group_direction": "buyer_dominant",
+        "buyer_vs_seller": "2B / 0S",
+        "window_summary": {
+          "14:30-15:00": {
+            "ticks": 12,
+            "volume": 4056,
+            "buyers": 0,
+            "sellers": 0
+          },
+          "15:00-15:30": {
+            "ticks": 9,
+            "volume": 2608,
+            "buyers": 1,
+            "sellers": 0
+          },
+          "15:30-16:00": {
+            "ticks": 13,
+            "volume": 1208,
+            "buyers": 1,
+            "sellers": 0
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "HIG PRG",
+            "interest_score": 2.49,
+            "mm_score": 2.16,
+            "total_ticks": 33,
+            "days_covered": 2,
+            "vol_adv_total_pct": 16.06,
+            "overall_spread_bps": 5.1,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "NYSE": 0.364,
+              "EDGX": 0.061,
+              "NSDQ": 0.182,
+              "FNRA": 0.303,
+              "MEMX": 0.03,
+              "ARCA": 0.061
+            },
+            "fbtot": 1001.99,
+            "sfstot": 1045.29,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -0.71,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 3.0,
+                "vol": 1300.0,
+                "vol_adv_pct": 8.04,
+                "vwap": 24.9028,
+                "range": 0.05,
+                "spread": 0.01,
+                "spread_bps": 4.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 1.5,
+                "vol": 86.0,
+                "vol_adv_pct": 0.53,
+                "vwap": 24.9289,
+                "range": 0.05,
+                "spread": 0.025,
+                "spread_bps": 10.0,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "BAC PRB",
+            "interest_score": 1.78,
+            "mm_score": 3.83,
+            "total_ticks": 126,
+            "days_covered": 2,
+            "vol_adv_total_pct": 13.88,
+            "overall_spread_bps": 0.8,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "FNRA": 0.135,
+              "EDGX": 0.159,
+              "NYSE": 0.413,
+              "NSDQ": 0.048,
+              "AMEX": 0.016,
+              "ARCA": 0.063,
+              "MIAX": 0.04,
+              "EDGA": 0.024,
+              "MEMX": 0.032,
+              "IEXG": 0.008,
+              "BATS": 0.063
+            },
+            "fbtot": 1229.89,
+            "sfstot": 1266.59,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -0.92,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 2.0,
+                "vol": 650.0,
+                "vol_adv_pct": 0.93,
+                "vwap": 25.08,
+                "range": 0.0,
+                "spread": 0.0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 0.5,
+                "vol": 998.0,
+                "vol_adv_pct": 1.42,
+                "vwap": 25.05,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 1.0,
+                "vol": 100.0,
+                "vol_adv_pct": 0.14,
+                "vwap": 25.0888,
+                "range": 0.0,
+                "spread": 0.0338,
+                "spread_bps": 13.5,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "SCHW PRD",
+            "interest_score": 0.53,
+            "mm_score": 4.5,
+            "total_ticks": 155,
+            "days_covered": 2,
+            "vol_adv_total_pct": 26.38,
+            "overall_spread_bps": 1.2,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.548,
+              "FNRA": 0.194,
+              "IEXG": 0.026,
+              "EDGX": 0.135,
+              "NSDQ": 0.019,
+              "BATS": 0.077
+            },
+            "fbtot": 237.84,
+            "sfstot": 258.74,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": 0.15,
+            "active_windows": {
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 0.14,
+                "vwap": 25.23,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "MS PRI",
+            "interest_score": 0.48,
+            "mm_score": 4.5,
+            "total_ticks": 135,
+            "days_covered": 2,
+            "vol_adv_total_pct": 13.99,
+            "overall_spread_bps": 1.4,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "FNRA": 0.215,
+              "NSDQ": 0.067,
+              "NYSE": 0.496,
+              "NSX": 0.007,
+              "IEXG": 0.126,
+              "MEMX": 0.015,
+              "UNK": 0.03,
+              "BATS": 0.007,
+              "ARCA": 0.037
+            },
+            "fbtot": 1200.45,
+            "sfstot": 1232.75,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -0.89,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 1.0,
+                "vol": 78.0,
+                "vol_adv_pct": 0.14,
+                "vwap": 25.2165,
+                "range": 0.01,
+                "spread": 0.01,
+                "spread_bps": 4.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 2.5,
+                "vol": 220.0,
+                "vol_adv_pct": 0.41,
+                "vwap": 25.2179,
+                "range": 0.03,
+                "spread": 0.015,
+                "spread_bps": 5.9,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 1.5,
+                "vol": 146.0,
+                "vol_adv_pct": 0.27,
+                "vwap": 25.1932,
+                "range": 0.0,
+                "spread": 0.005,
+                "spread_bps": 2.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "JPM PRD",
+            "interest_score": 0.46,
+            "mm_score": 4.5,
+            "total_ticks": 251,
+            "days_covered": 2,
+            "vol_adv_total_pct": 18.09,
+            "overall_spread_bps": 1.1,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.371,
+              "BATY": 0.032,
+              "FNRA": 0.41,
+              "ARCA": 0.032,
+              "BATS": 0.024,
+              "NSX": 0.004,
+              "MEMX": 0.02,
+              "NSDQ": 0.056,
+              "EDGX": 0.016,
+              "IEXG": 0.036
+            },
+            "fbtot": 1186.66,
+            "sfstot": 1196.5600000000002,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -0.87,
+            "active_windows": {
+              "15:30-16:00": {
+                "ticks": 3.0,
+                "vol": 258.0,
+                "vol_adv_pct": 0.26,
+                "vwap": 24.9881,
+                "range": 0.01,
+                "spread": 0.004,
+                "spread_bps": 1.6,
+                "direction": "neutral"
+              }
+            }
+          }
+        ]
+      },
+      "heldtitrekhc": {
+        "member_count": 10,
+        "active_count": 10,
+        "total_ticks_group": 379,
+        "group_busiest_window": "15:00-15:30",
+        "group_direction": "seller_dominant",
+        "buyer_vs_seller": "0B / 1S",
+        "window_summary": {
+          "14:30-15:00": {
+            "ticks": 12,
+            "volume": 1899,
+            "buyers": 0,
+            "sellers": 0
+          },
+          "15:00-15:30": {
+            "ticks": 24,
+            "volume": 3912,
+            "buyers": 0,
+            "sellers": 1
+          },
+          "15:30-16:00": {
+            "ticks": 26,
+            "volume": 3202,
+            "buyers": 0,
+            "sellers": 0
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "ACR PRC",
+            "interest_score": 2.52,
+            "mm_score": 2.59,
+            "total_ticks": 38,
+            "days_covered": 2,
+            "vol_adv_total_pct": 25.14,
+            "overall_spread_bps": 6.6,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "FNRA": 0.421,
+              "ARCA": 0.053,
+              "NYSE": 0.263,
+              "MEMX": 0.158,
+              "EDGX": 0.053,
+              "NSDQ": 0.026,
+              "BATS": 0.026
+            },
+            "fbtot": 1296.62,
+            "sfstot": 1337.9199999999998,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -1.69,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 100.0,
+                "vol_adv_pct": 1.23,
+                "vwap": 25.0862,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 2.5,
+                "vol": 378.0,
+                "vol_adv_pct": 4.66,
+                "vwap": 24.9953,
+                "range": 0.05,
+                "spread": 0.025,
+                "spread_bps": 10.0,
+                "direction": "seller"
+              },
+              "15:30-16:00": {
+                "ticks": 3.0,
+                "vol": 286.0,
+                "vol_adv_pct": 3.52,
+                "vwap": 25.0018,
+                "range": 0.01,
+                "spread": 0.002,
+                "spread_bps": 0.8,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "SEAL PRA",
+            "interest_score": 1.38,
+            "mm_score": 3.34,
+            "total_ticks": 42,
+            "days_covered": 2,
+            "vol_adv_total_pct": 50.91,
+            "overall_spread_bps": 8.0,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NSDQ": 0.405,
+              "MEMX": 0.262,
+              "NYSE": 0.143,
+              "FNRA": 0.143,
+              "ARCA": 0.024,
+              "BATY": 0.024
+            },
+            "fbtot": 1122.65,
+            "sfstot": 1156.95,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -1.45,
+            "active_windows": {
+              "15:30-16:00": {
+                "ticks": 1.0,
+                "vol": 79.0,
+                "vol_adv_pct": 1.93,
+                "vwap": 25.6437,
+                "range": 0.01,
+                "spread": 0.01,
+                "spread_bps": 3.9,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "TRTN PRB",
+            "interest_score": 1.22,
+            "mm_score": 3.2,
+            "total_ticks": 35,
+            "days_covered": 2,
+            "vol_adv_total_pct": 34.82,
+            "overall_spread_bps": 8.1,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.343,
+              "NSDQ": 0.2,
+              "MEMX": 0.114,
+              "FNRA": 0.114,
+              "EDGX": 0.086,
+              "ARCA": 0.086,
+              "BATY": 0.057
+            },
+            "fbtot": 1121.24,
+            "sfstot": 1226.84,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -1.44,
+            "active_windows": {
+              "15:30-16:00": {
+                "ticks": 3.0,
+                "vol": 400.0,
+                "vol_adv_pct": 7.77,
+                "vwap": 25.4138,
+                "range": 0.025,
+                "spread": 0.014,
+                "spread_bps": 5.5,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "RLJ PRA",
+            "interest_score": 1.17,
+            "mm_score": 4.44,
+            "total_ticks": 97,
+            "days_covered": 2,
+            "vol_adv_total_pct": 38.74,
+            "overall_spread_bps": 3.9,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "FNRA": 0.237,
+              "NYSE": 0.361,
+              "EDGX": 0.041,
+              "BATS": 0.062,
+              "ARCA": 0.041,
+              "NSDQ": 0.134,
+              "MEMX": 0.041,
+              "IEXG": 0.072,
+              "BATY": 0.01
+            },
+            "fbtot": 124.62,
+            "sfstot": 166.02,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": 0.2,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 5.5,
+                "vol": 978.0,
+                "vol_adv_pct": 6.75,
+                "vwap": 25.4723,
+                "range": 0.045,
+                "spread": 0.0115,
+                "spread_bps": 4.5,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 1.5,
+                "vol": 150.0,
+                "vol_adv_pct": 1.03,
+                "vwap": 25.4833,
+                "range": 0.035,
+                "spread": 0.035,
+                "spread_bps": 13.7,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "GSL PRB",
+            "interest_score": 0.9,
+            "mm_score": 3.0,
+            "total_ticks": 25,
+            "days_covered": 2,
+            "vol_adv_total_pct": 28.26,
+            "overall_spread_bps": 10.0,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.2,
+              "IEXG": 0.12,
+              "EDGX": 0.32,
+              "MEMX": 0.04,
+              "FNRA": 0.24,
+              "NSDQ": 0.08
+            },
+            "fbtot": 904.98,
+            "sfstot": 1269.58,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -1.0,
+            "active_windows": {
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 100.0,
+                "vol_adv_pct": 1.91,
+                "vwap": 26.8066,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          }
+        ]
+      },
+      "highmatur": {
+        "member_count": 43,
+        "active_count": 43,
+        "total_ticks_group": 1779,
+        "group_busiest_window": "15:00-15:30",
+        "group_direction": "seller_dominant",
+        "buyer_vs_seller": "5B / 7S",
+        "window_summary": {
+          "14:30-15:00": {
+            "ticks": 51,
+            "volume": 10346,
+            "buyers": 1,
+            "sellers": 0
+          },
+          "15:00-15:30": {
+            "ticks": 105,
+            "volume": 20334,
+            "buyers": 2,
+            "sellers": 1
+          },
+          "15:30-16:00": {
+            "ticks": 66,
+            "volume": 8840,
+            "buyers": 2,
+            "sellers": 6
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "OXLCI",
+            "interest_score": 5.32,
+            "mm_score": 3.47,
+            "total_ticks": 82,
+            "days_covered": 2,
+            "vol_adv_total_pct": 138.67,
+            "overall_spread_bps": 2.8,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "NSDQ": 0.476,
+              "FNRA": 0.305,
+              "EDGX": 0.098,
+              "ARCA": 0.11,
+              "MEMX": 0.012
+            },
+            "fbtot": 974.92,
+            "sfstot": 1578.92,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -0.93,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 6.0,
+                "vol": 1714.0,
+                "vol_adv_pct": 24.15,
+                "vwap": 25.8407,
+                "range": 0.0201,
+                "spread": 0.0032,
+                "spread_bps": 1.2,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 11.0,
+                "vol": 3369.0,
+                "vol_adv_pct": 47.46,
+                "vwap": 25.8482,
+                "range": 0.04,
+                "spread": 0.0032,
+                "spread_bps": 1.3,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 1.5,
+                "vol": 54.0,
+                "vol_adv_pct": 0.76,
+                "vwap": 25.8372,
+                "range": 0.03,
+                "spread": 0.015,
+                "spread_bps": 5.8,
+                "direction": "seller"
+              }
+            }
+          },
+          {
+            "symbol": "SAY",
+            "interest_score": 5.04,
+            "mm_score": 3.49,
+            "total_ticks": 83,
+            "days_covered": 2,
+            "vol_adv_total_pct": 165.47,
+            "overall_spread_bps": 4.1,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "NYSE": 0.506,
+              "ARCA": 0.06,
+              "FNRA": 0.289,
+              "EDGX": 0.036,
+              "NSDQ": 0.024,
+              "IEXG": 0.036,
+              "MEMX": 0.048
+            },
+            "fbtot": 1054.54,
+            "sfstot": 1098.84,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -1.37,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 5.0,
+                "vol": 898.0,
+                "vol_adv_pct": 19.06,
+                "vwap": 25.581,
+                "range": 0.07,
+                "spread": 0.0145,
+                "spread_bps": 5.6,
+                "direction": "buyer"
+              },
+              "15:00-15:30": {
+                "ticks": 3.5,
+                "vol": 750.0,
+                "vol_adv_pct": 15.93,
+                "vwap": 25.5915,
+                "range": 0.0385,
+                "spread": 0.0112,
+                "spread_bps": 4.4,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 1.0,
+                "vol": 100.0,
+                "vol_adv_pct": 2.12,
+                "vwap": 25.6275,
+                "range": 0.0,
+                "spread": 0.025,
+                "spread_bps": 9.8,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "PRIF PRD",
+            "interest_score": 4.2,
+            "mm_score": 2.2,
+            "total_ticks": 25,
+            "days_covered": 2,
+            "vol_adv_total_pct": 80.6,
+            "overall_spread_bps": 10.1,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.64,
+              "FNRA": 0.28,
+              "EDGX": 0.04,
+              "NSDQ": 0.04
+            },
+            "fbtot": 259.26,
+            "sfstot": 651.26,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": 2.8,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 2.55,
+                "vwap": 24.64,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 2.0,
+                "vol": 200.0,
+                "vol_adv_pct": 10.21,
+                "vwap": 24.8006,
+                "range": 0.075,
+                "spread": 0.0325,
+                "spread_bps": 13.1,
+                "direction": "seller"
+              }
+            }
+          },
+          {
+            "symbol": "OXSQH",
+            "interest_score": 4.09,
+            "mm_score": 3.19,
+            "total_ticks": 68,
+            "days_covered": 2,
+            "vol_adv_total_pct": 61.44,
+            "overall_spread_bps": 7.9,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "NSDQ": 0.235,
+              "BATY": 0.015,
+              "FNRA": 0.265,
+              "IEXG": 0.088,
+              "BATS": 0.044,
+              "EDGX": 0.044,
+              "ARCA": 0.191,
+              "NYSE": 0.074,
+              "MEMX": 0.044
+            },
+            "fbtot": 883.11,
+            "sfstot": 1091.3054545454545,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": null,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 2.5,
+                "vol": 125.0,
+                "vol_adv_pct": 2.19,
+                "vwap": 25.332,
+                "range": 0.07,
+                "spread": 0.0475,
+                "spread_bps": 18.8,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 1.5,
+                "vol": 150.0,
+                "vol_adv_pct": 2.63,
+                "vwap": 25.47,
+                "range": 0.15,
+                "spread": 0.075,
+                "spread_bps": 29.5,
+                "direction": "seller"
+              },
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 16.0,
+                "vol_adv_pct": 0.28,
+                "vwap": 25.57,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "PMTU",
+            "interest_score": 3.95,
+            "mm_score": 1.92,
+            "total_ticks": 11,
+            "days_covered": 2,
+            "vol_adv_total_pct": 17.62,
+            "overall_spread_bps": 20.8,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "FNRA": 0.273,
+              "NYSE": 0.545,
+              "MEMX": 0.091,
+              "EDGX": 0.091
+            },
+            "fbtot": 1089.86,
+            "sfstot": 1141.86,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -1.52,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 1.64,
+                "vwap": 25.7999,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 1.0,
+                "vol": 90.0,
+                "vol_adv_pct": 2.98,
+                "vwap": 25.7273,
+                "range": 0.14,
+                "spread": 0.14,
+                "spread_bps": 54.4,
+                "direction": "buyer"
+              }
+            }
+          }
+        ]
+      },
+      "notbesmaturlu": {
+        "member_count": 12,
+        "active_count": 12,
+        "total_ticks_group": 233,
+        "group_busiest_window": "15:30-16:00",
+        "group_direction": "seller_dominant",
+        "buyer_vs_seller": "0B / 1S",
+        "window_summary": {
+          "15:00-15:30": {
+            "ticks": 8,
+            "volume": 772,
+            "buyers": 0,
+            "sellers": 1
+          },
+          "15:30-16:00": {
+            "ticks": 7,
+            "volume": 800,
+            "buyers": 0,
+            "sellers": 0
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "HTFC",
+            "interest_score": 3.77,
+            "mm_score": 1.94,
+            "total_ticks": 22,
+            "days_covered": 2,
+            "vol_adv_total_pct": 82.94,
+            "overall_spread_bps": 6.3,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "NYSE": 0.227,
+              "EDGX": 0.227,
+              "ARCA": 0.227,
+              "NSDQ": 0.136,
+              "FNRA": 0.091,
+              "MEMX": 0.091
+            },
+            "fbtot": 976.87,
+            "sfstot": 1182.47,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -0.46,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 2.5,
+                "vol": 300.0,
+                "vol_adv_pct": 13.46,
+                "vwap": 24.9029,
+                "range": 0.04,
+                "spread": 0.01,
+                "spread_bps": 4.0,
+                "direction": "seller"
+              },
+              "15:30-16:00": {
+                "ticks": 1.0,
+                "vol": 50.0,
+                "vol_adv_pct": 2.24,
+                "vwap": 24.9,
+                "range": 0.0,
+                "spread": 0.0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "OCCIO",
+            "interest_score": 2.42,
+            "mm_score": 2.5,
+            "total_ticks": 10,
+            "days_covered": 2,
+            "vol_adv_total_pct": 46.13,
+            "overall_spread_bps": 1.8,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NSDQ": 0.3,
+              "FNRA": 0.4,
+              "EDGX": 0.1,
+              "MIAX": 0.1,
+              "ARCA": 0.1
+            },
+            "fbtot": 735.51,
+            "sfstot": 974.21,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": 0.15,
+            "active_windows": {
+              "15:30-16:00": {
+                "ticks": 2.5,
+                "vol": 350.0,
+                "vol_adv_pct": 13.74,
+                "vwap": 25.0901,
+                "range": 0.0001,
+                "spread": 0.0001,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "SSSSL",
+            "interest_score": 0.68,
+            "mm_score": 2.76,
+            "total_ticks": 6,
+            "days_covered": 2,
+            "vol_adv_total_pct": 12.42,
+            "overall_spread_bps": 13.1,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "NSDQ": 0.5,
+              "FNRA": 0.167,
+              "EDGX": 0.167,
+              "ARCA": 0.167
+            },
+            "fbtot": 944.92,
+            "sfstot": 1363.52,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -0.27,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 0.5,
+                "vol": 16.0,
+                "vol_adv_pct": 0.38,
+                "vwap": 25.04,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "OCCIN",
+            "interest_score": 0.5,
+            "mm_score": 2.73,
+            "total_ticks": 7,
+            "days_covered": 2,
+            "vol_adv_total_pct": 6.03,
+            "overall_spread_bps": 11.5,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "EDGX": 0.286,
+              "NSDQ": 0.571,
+              "FNRA": 0.143
+            },
+            "fbtot": 733.01,
+            "sfstot": 6134.610000000001,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": 0.28,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 0.5,
+                "vol": 20.0,
+                "vol_adv_pct": 0.53,
+                "vwap": 24.69,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "OXLCP",
+            "interest_score": 0.31,
+            "mm_score": 2.5,
+            "total_ticks": 6,
+            "days_covered": 2,
+            "vol_adv_total_pct": 3.58,
+            "overall_spread_bps": 7.3,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "NSDQ": 0.667,
+              "MIAX": 0.167,
+              "MEMX": 0.167
+            },
+            "fbtot": 768.66,
+            "sfstot": 1242.76,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": 0.09,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 0.81,
+                "vwap": 24.78,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          }
+        ]
+      },
+      "notcefilliquid": {
+        "member_count": 23,
+        "active_count": 23,
+        "total_ticks_group": 1120,
+        "group_busiest_window": "15:30-16:00",
+        "group_direction": "balanced",
+        "buyer_vs_seller": "3B / 3S",
+        "window_summary": {
+          "14:30-15:00": {
+            "ticks": 11,
+            "volume": 1006,
+            "buyers": 0,
+            "sellers": 0
+          },
+          "15:00-15:30": {
+            "ticks": 10,
+            "volume": 1034,
+            "buyers": 1,
+            "sellers": 1
+          },
+          "15:30-16:00": {
+            "ticks": 51,
+            "volume": 5341,
+            "buyers": 2,
+            "sellers": 2
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "REXR PRB",
+            "interest_score": 6.37,
+            "mm_score": 2.57,
+            "total_ticks": 90,
+            "days_covered": 2,
+            "vol_adv_total_pct": 146.11,
+            "overall_spread_bps": 13.3,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "EDGX": 0.111,
+              "NSDQ": 0.067,
+              "ARCA": 0.022,
+              "IEXG": 0.022,
+              "NYSE": 0.267,
+              "MEMX": 0.011,
+              "BATY": 0.022,
+              "EDGA": 0.011,
+              "FNRA": 0.411,
+              "BATS": 0.033,
+              "NQBX": 0.022
+            },
+            "fbtot": 1235.07,
+            "sfstot": 1417.87,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -2.69,
+            "active_windows": {
+              "15:30-16:00": {
+                "ticks": 3.0,
+                "vol": 212.0,
+                "vol_adv_pct": 6.77,
+                "vwap": 22.3397,
+                "range": 0.15,
+                "spread": 0.062,
+                "spread_bps": 27.8,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "ETI PR",
+            "interest_score": 5.43,
+            "mm_score": 2.36,
+            "total_ticks": 22,
+            "days_covered": 2,
+            "vol_adv_total_pct": 95.22,
+            "overall_spread_bps": 21.0,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "BATY": 0.045,
+              "FNRA": 0.182,
+              "NYSE": 0.727,
+              "EDGX": 0.045
+            },
+            "fbtot": 1072.33,
+            "sfstot": 1418.53,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": 1.7,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 1.0,
+                "vol": 111.0,
+                "vol_adv_pct": 6.4,
+                "vwap": 23.6496,
+                "range": 0.1328,
+                "spread": 0.1328,
+                "spread_bps": 56.3,
+                "direction": "buyer"
+              },
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 242.0,
+                "vol_adv_pct": 13.98,
+                "vwap": 23.6,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "GGT PRG",
+            "interest_score": 4.55,
+            "mm_score": 2.66,
+            "total_ticks": 6,
+            "days_covered": 2,
+            "vol_adv_total_pct": 16.51,
+            "overall_spread_bps": 41.2,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.833,
+              "NSDQ": 0.167
+            },
+            "fbtot": 1138.45,
+            "sfstot": 1327.85,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -1.78,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 4.03,
+                "vwap": 21.42,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 4.03,
+                "vwap": 21.43,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 1.0,
+                "vol": 58.0,
+                "vol_adv_pct": 4.63,
+                "vwap": 21.2878,
+                "range": 0.06,
+                "spread": 0.06,
+                "spread_bps": 28.2,
+                "direction": "seller"
+              }
+            }
+          },
+          {
+            "symbol": "NCV PRA",
+            "interest_score": 3.38,
+            "mm_score": 4.5,
+            "total_ticks": 207,
+            "days_covered": 2,
+            "vol_adv_total_pct": 258.24,
+            "overall_spread_bps": 5.4,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.232,
+              "NQBX": 0.043,
+              "EDGA": 0.005,
+              "BATS": 0.034,
+              "EDGX": 0.106,
+              "BATY": 0.029,
+              "ARCA": 0.145,
+              "NSDQ": 0.053,
+              "FNRA": 0.164,
+              "MEMX": 0.111,
+              "AMEX": 0.039,
+              "MIAX": 0.014,
+              "IEXG": 0.024
+            },
+            "fbtot": 1086.46,
+            "sfstot": 1104.36,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -2.03,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 35.0,
+                "vol_adv_pct": 0.71,
+                "vwap": 21.34,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 1.01,
+                "vwap": 21.38,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 9.5,
+                "vol": 1300.0,
+                "vol_adv_pct": 26.19,
+                "vwap": 21.2715,
+                "range": 0.02,
+                "spread": 0.0056,
+                "spread_bps": 2.6,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "ACP PRA",
+            "interest_score": 3.29,
+            "mm_score": 1.85,
+            "total_ticks": 14,
+            "days_covered": 2,
+            "vol_adv_total_pct": 12.72,
+            "overall_spread_bps": 17.3,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "FNRA": 0.214,
+              "NYSE": 0.357,
+              "ARCA": 0.143,
+              "EDGX": 0.214,
+              "NSDQ": 0.071
+            },
+            "fbtot": 1048.93,
+            "sfstot": 1097.63,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -0.23,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 1.0,
+                "vol": 100.0,
+                "vol_adv_pct": 2.55,
+                "vwap": 20.5669,
+                "range": 0.0962,
+                "spread": 0.0962,
+                "spread_bps": 46.8,
+                "direction": "seller"
+              },
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 18.0,
+                "vol_adv_pct": 0.46,
+                "vwap": 20.5,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          }
+        ]
+      },
+      "nottitrekhc": {
+        "member_count": 15,
+        "active_count": 15,
+        "total_ticks_group": 444,
+        "group_busiest_window": "15:00-15:30",
+        "group_direction": "seller_dominant",
+        "buyer_vs_seller": "3B / 5S",
+        "window_summary": {
+          "14:30-15:00": {
+            "ticks": 20,
+            "volume": 3158,
+            "buyers": 0,
+            "sellers": 4
+          },
+          "15:00-15:30": {
+            "ticks": 43,
+            "volume": 4232,
+            "buyers": 1,
+            "sellers": 1
+          },
+          "15:30-16:00": {
+            "ticks": 24,
+            "volume": 2410,
+            "buyers": 2,
+            "sellers": 0
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "CMRE PRD",
+            "interest_score": 5.6,
+            "mm_score": 0.72,
+            "total_ticks": 16,
+            "days_covered": 1,
+            "vol_adv_total_pct": 50.67,
+            "overall_spread_bps": 10.8,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "EDGX": 0.438,
+              "NYSE": 0.375,
+              "FNRA": 0.188
+            },
+            "fbtot": 375.54,
+            "sfstot": 648.6400000000001,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": 2.19,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 13.0,
+                "vol": 1298.0,
+                "vol_adv_pct": 41.15,
+                "vwap": 27.4331,
+                "range": 0.1226,
+                "spread": 0.0246,
+                "spread_bps": 9.0,
+                "direction": "seller"
+              }
+            }
+          },
+          {
+            "symbol": "SB PRD",
+            "interest_score": 5.28,
+            "mm_score": 3.5,
+            "total_ticks": 152,
+            "days_covered": 2,
+            "vol_adv_total_pct": 232.99,
+            "overall_spread_bps": 5.3,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.434,
+              "ARCA": 0.086,
+              "NSDQ": 0.204,
+              "FNRA": 0.066,
+              "EDGA": 0.039,
+              "EDGX": 0.066,
+              "MEMX": 0.026,
+              "BATS": 0.053,
+              "IEXG": 0.013,
+              "MIAX": 0.013
+            },
+            "fbtot": 780.55,
+            "sfstot": 1017.45,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": 0.63,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 2.2,
+                "vwap": 25.57,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 2.5,
+                "vol": 177.0,
+                "vol_adv_pct": 7.87,
+                "vwap": 25.7331,
+                "range": 0.06,
+                "spread": 0.015,
+                "spread_bps": 5.8,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "CHMI PRB",
+            "interest_score": 4.97,
+            "mm_score": 1.06,
+            "total_ticks": 28,
+            "days_covered": 2,
+            "vol_adv_total_pct": 49.22,
+            "overall_spread_bps": 5.6,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.429,
+              "FNRA": 0.214,
+              "EDGX": 0.214,
+              "MEMX": 0.071,
+              "NSDQ": 0.071
+            },
+            "fbtot": 1124.68,
+            "sfstot": 1189.28,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -0.79,
+            "active_windows": {
+              "15:30-16:00": {
+                "ticks": 6.5,
+                "vol": 608.0,
+                "vol_adv_pct": 23.6,
+                "vwap": 23.4568,
+                "range": 0.08,
+                "spread": 0.0108,
+                "spread_bps": 4.6,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "DSX PRB",
+            "interest_score": 4.94,
+            "mm_score": 0.79,
+            "total_ticks": 17,
+            "days_covered": 2,
+            "vol_adv_total_pct": 22.92,
+            "overall_spread_bps": 14.3,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "NYSE": 0.235,
+              "EDGX": 0.059,
+              "MIAX": 0.353,
+              "NSDQ": 0.118,
+              "FNRA": 0.059,
+              "NQBX": 0.118,
+              "ARCA": 0.059
+            },
+            "fbtot": 1296.46,
+            "sfstot": 1795.46,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": -1.37,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 4.0,
+                "vol": 360.0,
+                "vol_adv_pct": 11.31,
+                "vwap": 26.2153,
+                "range": 0.1,
+                "spread": 0.0143,
+                "spread_bps": 5.4,
+                "direction": "seller"
+              }
+            }
+          },
+          {
+            "symbol": "CMRE PRB",
+            "interest_score": 4.33,
+            "mm_score": 3.16,
+            "total_ticks": 5,
+            "days_covered": 2,
+            "vol_adv_total_pct": 46.09,
+            "overall_spread_bps": 33.1,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "NYSE": 0.8,
+              "EDGX": 0.2
+            },
+            "fbtot": 652.58,
+            "sfstot": 1654.98,
+            "gort": null,
+            "gort_norm": null,
+            "sma63_chg": 1.16,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 1.5,
+                "vol": 745.0,
+                "vol_adv_pct": 41.05,
+                "vwap": 25.7495,
+                "range": 0.08,
+                "spread": 0.04,
+                "spread_bps": 15.6,
+                "direction": "seller"
+              },
+              "15:00-15:30": {
+                "ticks": 1.0,
+                "vol": 92.0,
+                "vol_adv_pct": 5.04,
+                "vwap": 25.6365,
+                "range": 0.0,
+                "spread": 0.14,
+                "spread_bps": 54.6,
+                "direction": "buyer"
+              }
+            }
+          }
+        ]
+      },
+      "salakilliquid": {
+        "member_count": 20,
+        "active_count": 20,
+        "total_ticks_group": 682,
+        "group_busiest_window": "15:30-16:00",
+        "group_direction": "buyer_dominant",
+        "buyer_vs_seller": "4B / 1S",
+        "window_summary": {
+          "14:30-15:00": {
+            "ticks": 20,
+            "volume": 2056,
+            "buyers": 1,
+            "sellers": 1
+          },
+          "15:00-15:30": {
+            "ticks": 24,
+            "volume": 4112,
+            "buyers": 2,
+            "sellers": 0
+          },
+          "15:30-16:00": {
+            "ticks": 52,
+            "volume": 11340,
+            "buyers": 1,
+            "sellers": 0
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "GOODO",
+            "interest_score": 6.18,
+            "mm_score": 3.37,
+            "total_ticks": 82,
+            "days_covered": 2,
+            "vol_adv_total_pct": 95.13,
+            "overall_spread_bps": 11.4,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NSDQ": 0.232,
+              "FNRA": 0.476,
+              "NQBX": 0.012,
+              "BATY": 0.012,
+              "ARCA": 0.232,
+              "BATS": 0.012,
+              "EDGX": 0.024
+            },
+            "fbtot": 993.61,
+            "sfstot": 1250.71,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": 3.44,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 2.5,
+                "vol": 318.0,
+                "vol_adv_pct": 4.3,
+                "vwap": 20.2442,
+                "range": 0.175,
+                "spread": 0.0775,
+                "spread_bps": 38.3,
+                "direction": "buyer"
+              },
+              "15:30-16:00": {
+                "ticks": 11.5,
+                "vol": 2000.0,
+                "vol_adv_pct": 27.06,
+                "vwap": 20.3393,
+                "range": 0.1551,
+                "spread": 0.0259,
+                "spread_bps": 12.7,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "NHPBP",
+            "interest_score": 5.49,
+            "mm_score": 1.87,
+            "total_ticks": 13,
+            "days_covered": 2,
+            "vol_adv_total_pct": 18.84,
+            "overall_spread_bps": 18.4,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "NSDQ": 0.923,
+              "FNRA": 0.077
+            },
+            "fbtot": 874.22,
+            "sfstot": 1198.92,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": 0.53,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 4.0,
+                "vol": 938.0,
+                "vol_adv_pct": 16.28,
+                "vwap": 18.966,
+                "range": 0.1499,
+                "spread": 0.0428,
+                "spread_bps": 22.6,
+                "direction": "buyer"
+              },
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 38.0,
+                "vol_adv_pct": 0.66,
+                "vwap": 19.07,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "GMRE PRA",
+            "interest_score": 4.54,
+            "mm_score": 2.99,
+            "total_ticks": 58,
+            "days_covered": 2,
+            "vol_adv_total_pct": 118.26,
+            "overall_spread_bps": 5.3,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "NYSE": 0.603,
+              "FNRA": 0.207,
+              "EDGX": 0.034,
+              "MEMX": 0.069,
+              "NSDQ": 0.017,
+              "ARCA": 0.052,
+              "CHX": 0.017
+            },
+            "fbtot": 1121.37,
+            "sfstot": 1348.4699999999998,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": 1.13,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 1.5,
+                "vol": 100.0,
+                "vol_adv_pct": 1.65,
+                "vwap": 24.46,
+                "range": 0.06,
+                "spread": 0.03,
+                "spread_bps": 12.3,
+                "direction": "seller"
+              },
+              "15:00-15:30": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 0.83,
+                "vwap": 24.5054,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 3.0,
+                "vol": 2215.0,
+                "vol_adv_pct": 36.65,
+                "vwap": 24.4699,
+                "range": 0.04,
+                "spread": 0.0234,
+                "spread_bps": 9.6,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "LFT PRA",
+            "interest_score": 4.38,
+            "mm_score": 3.39,
+            "total_ticks": 7,
+            "days_covered": 2,
+            "vol_adv_total_pct": 20.05,
+            "overall_spread_bps": 44.5,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "FNRA": 0.286,
+              "NYSE": 0.571,
+              "ARCA": 0.143
+            },
+            "fbtot": 1172.54,
+            "sfstot": 1320.04,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -1.22,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 2.0,
+                "vol": 150.0,
+                "vol_adv_pct": 13.82,
+                "vwap": 20.881,
+                "range": 0.1,
+                "spread": 0.0667,
+                "spread_bps": 31.9,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 8.0,
+                "vol_adv_pct": 0.69,
+                "vwap": 21.19,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "LANDO",
+            "interest_score": 2.76,
+            "mm_score": 2.77,
+            "total_ticks": 47,
+            "days_covered": 2,
+            "vol_adv_total_pct": 17.76,
+            "overall_spread_bps": 8.7,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "FNRA": 0.234,
+              "NSDQ": 0.404,
+              "EDGX": 0.191,
+              "ARCA": 0.085,
+              "MEMX": 0.043,
+              "NYSE": 0.043
+            },
+            "fbtot": 1102.32,
+            "sfstot": 1267.32,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": 1.01,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 1.5,
+                "vol": 150.0,
+                "vol_adv_pct": 0.93,
+                "vwap": 20.0608,
+                "range": 0.0323,
+                "spread": 0.0323,
+                "spread_bps": 16.1,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 0.5,
+                "vol": 100.0,
+                "vol_adv_pct": 0.62,
+                "vwap": 20.0229,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 1.5,
+                "vol": 150.0,
+                "vol_adv_pct": 0.93,
+                "vwap": 20.06,
+                "range": 0.0899,
+                "spread": 0.045,
+                "spread_bps": 22.4,
+                "direction": "buyer"
+              }
+            }
+          }
+        ]
+      },
+      "shitremhc": {
+        "member_count": 7,
+        "active_count": 7,
+        "total_ticks_group": 193,
+        "group_busiest_window": "15:30-16:00",
+        "group_direction": "buyer_dominant",
+        "buyer_vs_seller": "2B / 1S",
+        "window_summary": {
+          "14:30-15:00": {
+            "ticks": 6,
+            "volume": 900,
+            "buyers": 0,
+            "sellers": 0
+          },
+          "15:00-15:30": {
+            "ticks": 17,
+            "volume": 1448,
+            "buyers": 0,
+            "sellers": 0
+          },
+          "15:30-16:00": {
+            "ticks": 34,
+            "volume": 3408,
+            "buyers": 2,
+            "sellers": 1
+          }
+        },
+        "top_stocks": [
+          {
+            "symbol": "MITT PRA",
+            "interest_score": 6.26,
+            "mm_score": 1.87,
+            "total_ticks": 15,
+            "days_covered": 2,
+            "vol_adv_total_pct": 37.06,
+            "overall_spread_bps": 18.5,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "ARCA": 0.067,
+              "EDGX": 0.4,
+              "NYSE": 0.467,
+              "FNRA": 0.067
+            },
+            "fbtot": 1102.83,
+            "sfstot": 1469.53,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": 2.04,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 2.5,
+                "vwap": 23.05,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 5.5,
+                "vol": 540.0,
+                "vol_adv_pct": 27.04,
+                "vwap": 22.8961,
+                "range": 0.19,
+                "spread": 0.02,
+                "spread_bps": 8.7,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "MITT PRB",
+            "interest_score": 3.79,
+            "mm_score": 2.68,
+            "total_ticks": 48,
+            "days_covered": 2,
+            "vol_adv_total_pct": 42.45,
+            "overall_spread_bps": 10.9,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "FNRA": 0.333,
+              "NYSE": 0.083,
+              "NSDQ": 0.062,
+              "ARCA": 0.146,
+              "EDGX": 0.188,
+              "MEMX": 0.188
+            },
+            "fbtot": 1112.89,
+            "sfstot": 1412.39,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": 2.19,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 50.0,
+                "vol_adv_pct": 1.04,
+                "vwap": 22.4682,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 9.5,
+                "vol": 961.0,
+                "vol_adv_pct": 20.08,
+                "vwap": 22.2766,
+                "range": 0.0325,
+                "spread": 0.0178,
+                "spread_bps": 8.0,
+                "direction": "seller"
+              }
+            }
+          },
+          {
+            "symbol": "MFA PRB",
+            "interest_score": 3.25,
+            "mm_score": 2.76,
+            "total_ticks": 31,
+            "days_covered": 2,
+            "vol_adv_total_pct": 12.38,
+            "overall_spread_bps": 15.2,
+            "busiest_window": "15:30-16:00",
+            "venue_mix": {
+              "FNRA": 0.355,
+              "MEMX": 0.032,
+              "NYSE": 0.323,
+              "NSDQ": 0.097,
+              "EDGX": 0.097,
+              "ARCA": 0.065,
+              "BATY": 0.032
+            },
+            "fbtot": 1529.7,
+            "sfstot": 1610.5,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -3.03,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 0.5,
+                "vol": 100.0,
+                "vol_adv_pct": 0.82,
+                "vwap": 20.76,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 1.0,
+                "vol": 100.0,
+                "vol_adv_pct": 0.82,
+                "vwap": 20.76,
+                "range": 0.0,
+                "spread": 0.0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 1.5,
+                "vol": 156.0,
+                "vol_adv_pct": 1.28,
+                "vwap": 20.7279,
+                "range": 0.1,
+                "spread": 0.05,
+                "spread_bps": 24.1,
+                "direction": "buyer"
+              }
+            }
+          },
+          {
+            "symbol": "ACR PRD",
+            "interest_score": 1.97,
+            "mm_score": 3.16,
+            "total_ticks": 5,
+            "days_covered": 2,
+            "vol_adv_total_pct": 6.21,
+            "overall_spread_bps": 32.9,
+            "busiest_window": "15:00-15:30",
+            "venue_mix": {
+              "FNRA": 0.8,
+              "NYSE": 0.2
+            },
+            "fbtot": 1356.75,
+            "sfstot": 1513.15,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -0.94,
+            "active_windows": {
+              "15:00-15:30": {
+                "ticks": 1.0,
+                "vol": 100.0,
+                "vol_adv_pct": 2.52,
+                "vwap": 21.9801,
+                "range": 0.0,
+                "spread": 0.0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:30-16:00": {
+                "ticks": 0.5,
+                "vol": 47.0,
+                "vol_adv_pct": 1.18,
+                "vwap": 22.0,
+                "range": 0.0,
+                "spread": 0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          },
+          {
+            "symbol": "CHMI PRA",
+            "interest_score": 1.27,
+            "mm_score": 3.34,
+            "total_ticks": 26,
+            "days_covered": 2,
+            "vol_adv_total_pct": 36.87,
+            "overall_spread_bps": 15.9,
+            "busiest_window": "14:30-15:00",
+            "venue_mix": {
+              "MEMX": 0.385,
+              "NSDQ": 0.077,
+              "FNRA": 0.192,
+              "ARCA": 0.154,
+              "EDGX": 0.115,
+              "IEXG": 0.038,
+              "BATS": 0.038
+            },
+            "fbtot": 1392.89,
+            "sfstot": 1578.69,
+            "gort": 0.0,
+            "gort_norm": 50.0,
+            "sma63_chg": -2.93,
+            "active_windows": {
+              "14:30-15:00": {
+                "ticks": 1.5,
+                "vol": 250.0,
+                "vol_adv_pct": 5.74,
+                "vwap": 21.1,
+                "range": 0.0,
+                "spread": 0.0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              },
+              "15:00-15:30": {
+                "ticks": 1.0,
+                "vol": 74.0,
+                "vol_adv_pct": 1.71,
+                "vwap": 21.1,
+                "range": 0.0,
+                "spread": 0.0,
+                "spread_bps": 0.0,
+                "direction": "neutral"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "gemini_interpretation": "Merhaba QAGENTT, size verilen 5 günlük truth tick verilerini analiz ettim. İşte sonuçlar:\n\n1. **Grup Bazında Mean Reversion Durumu**:\n   - Genel olarak, çoğu grup alıcı ağırlıklı (buyer dominant) görünüyor. Sadece birkaç grup satıcı ağırlıklı (seller dominant).\n   - GORT'tan (ortalama) en uzaklaşmış hisseler şunlar: FULTP, DCOMP, DTB, ADC PRA. Bu hisseler mean reversion fırsatı sunuyor.\n   - Grup içi korelasyon genellikle güçlü. Yani hisseler birbirleriyle uyumlu hareket ediyorlar.\n\n2. **Spread & Likidite Analizi**:\n   - Spread değerleri AVG_ADV'ye göre makul. Düşük hacimli hisselerde spread daha geniş.\n   - Spread en dar 14:30-15:00 ve 15:00-15:30 saatlerinde. MM fırsatı daha az ama güvenli.\n   - Spread en geniş 15:30-16:00 saatlerinde. MM fırsatı var ama risk de yüksek.\n   - Volume/ADV oranı yüksek olan hisselerde spread daha dar.\n\n3. **LT Portfolio Önerileri**:\n   - Aşağı gelen ve GORT'un altında olan hisseler: FULTP, DCOMP, DTB, ADC PRA. Bu hisseler yavaş yavaş toplanmalı.\n   - GORT'un üzerinde olan ve satıcı ağırlıklı hisseler: WBS PRF, FCNCO, FITBO. Bu hisseler için short pozisyon açılabilir.\n   - Pozisyon büyüklüğü AVG_ADV'ye göre ayarlanmalı. Yüksek hacimli hisselerde daha büyük lot.\n   - Optimal alım saatleri 14:30-15:00 ve 15:00-15:30 olabilir.\n\n4. **Mini Market Making Modeli**:\n   - En yüksek spread capture fırsatı sunan hisseler: DCOMG, MGR, PSEC PRA, FITBI.\n   - Önerilen lot büyüklükleri AVG_ADV'nin %1-2'si civarında olabilir.\n   - 15:30-16:00 saatleri iki yönlü akışın en yoğun olduğu zaman dilimi.\n   - Venue stratejisi: Spread daha dar olduğu için NYSE'de quote etmek daha avantajlı.\n   - Risk yönetimi: Max exposure per stock $X, max per group $Y olabilir.\n\n5. **İstatistiksel İlişkiler**:\n   - Aynı DOS grubundaki hisseler gerçekten güçlü korelasyon gösteriyor.\n   - Spread ile AVG_ADV arasındaki korelasyon orta düzeyde.\n   - \"heldkuponlu\" ve \"heldgarabetaltiyedi\" gruplarında mean reversion daha hızlı gerçekleşiyor.\n   - Saatlik alıcı-satıcı akışı oldukça tutarlı. Her gün benzer pattern gözlemleniyor.\n\nÖzet olarak, bu hisseler mean reversion özelliği gösteren, likidite ve spread açısından uygun enstrümanlar. LT portfolio ve mini market making stratejileri uygulanabilir. Ancak risk yönetimi kritik önem taşıyor.\n\nSorularınız varsa lütfen sorunuz.",
+  "prompt_length": 20432,
+  "timestamp": "2026-02-16T19:20:56.111628",
+  "llm_model": "claude-3-haiku-20240307"
+}

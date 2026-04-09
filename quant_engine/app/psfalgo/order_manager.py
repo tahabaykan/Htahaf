@@ -68,6 +68,7 @@ class TrackedOrder:
     book: str = "LT"                  # LT or MM
     quant_order_type: Optional[QuantOrderType] = None
     orphaned_provider: bool = False   # True if left behind on old provider
+    tag: Optional[str] = None        # Strategy tag e.g. LT_LONG_INC, REV_MM_LONG_DEC (for cancel-by-filter)
     
     def __post_init__(self):
         self.remaining_qty = self.lot_qty - self.filled_qty
@@ -248,7 +249,12 @@ class OrderController:
                         
                     # Update Internal Ledger (LT Logic)
                     try:
-                            ledger.add_lt_trade(account_id, order.symbol, signed_delta)
+                            from app.psfalgo.internal_ledger_store import get_internal_ledger_store
+                            ledger = get_internal_ledger_store()
+                            if ledger:
+                                ledger.add_lt_trade(account_id, order.symbol, signed_delta)
+                            else:
+                                logger.debug(f"[ORDER_CONTROLLER] Internal ledger not initialized, skipping LT trade for {order.symbol}")
                     except Exception as e:
                         logger.error(f"[ORDER_CONTROLLER] Failed to update ledger for {order.symbol}: {e}")
 
@@ -548,7 +554,8 @@ class OrderController:
                     provider=order.provider,         # Inherit provider
                     book=order.book,                 # Inherit book
                     quant_order_type=order.quant_order_type,
-                    correlation_id=order.correlation_id # Propagate TraceID
+                    correlation_id=order.correlation_id, # Propagate TraceID
+                    tag=getattr(order, 'tag', None)  # Inherit tag
                 )
                 self.track_order(new_order)
             
@@ -622,11 +629,17 @@ class OrderController:
     def get_status(self) -> Dict[str, Any]:
         """Get controller status"""
         with self._orders_lock:
-            active_orders = [o for o in self._orders.values() if o.is_active]
+            # _orders is { account_id: { order_id: TrackedOrder } } — must iterate nested
+            all_orders = [
+                order
+                for partition in self._orders.values()
+                for order in partition.values()
+            ]
+            active_orders = [o for o in all_orders if o.is_active]
             
             return {
                 'running': self._running,
-                'total_orders': len(self._orders),
+                'total_orders': len(all_orders),
                 'active_orders': len(active_orders),
                 'daily_order_count': self._daily_order_count,
                 'daily_lot_change': self.get_total_daily_lot_change(),

@@ -5,11 +5,13 @@ import './QeBenchPanel.css'
  * QeBench Panel - Benchmark Performance Tracking
  * 
  * Shows positions with outperformance vs DOS Group benchmark.
+ * Supports sorting by columns.
  */
 const QeBenchPanel = ({ isOpen, onClose }) => {
     const [positions, setPositions] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [sortConfig, setSortConfig] = useState({ key: 'symbol', direction: 'asc' })
 
     const fetchPositions = async () => {
         try {
@@ -59,6 +61,29 @@ const QeBenchPanel = ({ isOpen, onClose }) => {
         }
     }, [isOpen])
 
+    const handleSort = (key) => {
+        let direction = 'asc'
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc'
+        }
+        setSortConfig({ key, direction })
+    }
+
+    const sortedPositions = [...positions].sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+            return sortConfig.direction === 'asc' ? -1 : 1
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+            return sortConfig.direction === 'asc' ? 1 : -1
+        }
+        return 0
+    })
+
+    const SortIcon = ({ column }) => {
+        if (sortConfig.key !== column) return <span className="sort-icon">⇅</span>
+        return <span className="sort-icon">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+    }
+
     if (!isOpen) return null
 
     return (
@@ -90,22 +115,24 @@ const QeBenchPanel = ({ isOpen, onClose }) => {
                         <table className="qebench-table">
                             <thead>
                                 <tr>
-                                    <th>Symbol</th>
-                                    <th>Qty</th>
-                                    <th>Avg Cost</th>
-                                    <th>Prev Close</th>
-                                    <th>Daily Chg</th>
-                                    <th>Last</th>
-                                    <th>Bid</th>
-                                    <th>Ask</th>
-                                    <th>Spread</th>
-                                    <th>Bench @Fill</th>
-                                    <th>Bench Now</th>
-                                    <th className="outperform-col">Outperform</th>
+                                    <th onClick={() => handleSort('symbol')}>Symbol <SortIcon column="symbol" /></th>
+                                    <th onClick={() => handleSort('qty')}>Qty <SortIcon column="qty" /></th>
+                                    <th onClick={() => handleSort('avg_cost')}>Avg Cost <SortIcon column="avg_cost" /></th>
+                                    <th onClick={() => handleSort('prev_close')}>Prev Close <SortIcon column="prev_close" /></th>
+                                    <th onClick={() => handleSort('daily_chg')}>Daily Chg <SortIcon column="daily_chg" /></th>
+                                    <th onClick={() => handleSort('current_price')}>Last <SortIcon column="current_price" /></th>
+                                    <th onClick={() => handleSort('bid')}>Bid <SortIcon column="bid" /></th>
+                                    <th onClick={() => handleSort('ask')}>Ask <SortIcon column="ask" /></th>
+                                    <th onClick={() => handleSort('spread')}>Spread <SortIcon column="spread" /></th>
+                                    <th onClick={() => handleSort('bench_at_fill')}>Bench @Fill <SortIcon column="bench_at_fill" /></th>
+                                    <th onClick={() => handleSort('bench_now')}>Bench Now <SortIcon column="bench_now" /></th>
+                                    <th className="outperform-col" onClick={() => handleSort('outperform_chg')}>
+                                        Outperform <SortIcon column="outperform_chg" />
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {positions.map((pos) => (
+                                {sortedPositions.map((pos) => (
                                     <tr key={pos.symbol}>
                                         <td className="symbol-cell">{pos.symbol}</td>
                                         <td>{pos.qty.toLocaleString()}</td>

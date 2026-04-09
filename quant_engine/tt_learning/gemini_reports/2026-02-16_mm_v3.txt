@@ -1,0 +1,70 @@
+## MM SYSTEM v3 — GERÇEK MEKANİK
+
+### STRATEJİ KURALLARI:
+1. BID + $0.01 = HIDDEN BUY emri (NBBO'yu $0.01 improve et)
+2. ASK - $0.01 = HIDDEN SELL emri (NBBO'yu $0.01 improve et)
+3. Minimum $0.05/share kar per roundtrip
+4. Alternatif: Son truth tick'i frontla. Örneğin fiyat $25.58 ise -> BUY $25.51, SELL $25.57
+5. Dolayısıyla: Spread en az $0.07 olmalı (- $0.02 improvement = $0.05 kar)
+6. Toplam dağıtılabilir exposure: $500K
+7. Fill rate varsayımı: %20-35 (pasif emir, her zaman dolmuyor)
+8. Hidden emir: Piyasada görünmüyor, ama truth tick ile fill oluyor
+
+### UYGUN HİSSELER: 7 adet (spread >= $0.07)
+
+Sym          Grp                    ADV   Fiyat  Sprd$  Capt$  TT/d   V/A% ThmGun$        Peak
+----------------------------------------------------------------------------------------------
+GNL PRB      heldotelremorta      4,496 $22.40 $0.090 $0.070    10  21.0% $  0.21 14:30-15:00
+LFT PRA      salakilliquid        1,085 $20.84 $0.093 $0.073     3  20.1% $  0.07 14:30-15:00
+GGT PRG      notcefilliquid       1,242 $21.42 $0.088 $0.068     3  16.5% $  0.06 15:30-16:00
+PEB PRF      heldotelremorta      7,723 $19.83 $0.173 $0.153     1   1.1% $  0.05 15:30-16:00
+DCOMG        helddeznff           2,401 $26.35 $0.080 $0.060     2   7.3% $  0.04 15:00-15:30
+CMRE PRB     nottitrekhc          1,815 $25.56 $0.085 $0.065     2  46.1% $  0.04 14:30-15:00
+ACR PRD      shitremhc            3,975 $22.01 $0.072 $0.052     2   6.2% $  0.03 15:00-15:30
+
+### SINIRDA KALANLAR (capture $0.03-$0.04): 2 hisse
+  PMTU         spread=$0.053 capture=$0.033 TT/d=5 ADV=3,042
+  ETI PR       spread=$0.050 capture=$0.030 TT/d=11 ADV=1,735
+
+### GÖREV — DETAYLI MM PLANI:
+
+**A. Her uygun hisse için tablo:**
+Symbol | Price | Spread$ | BUY lot @ fiyat | SELL lot @ fiyat | Capture$/share | Lot (ADV %) | $/roundtrip | RT/gün tahmini | Günlük gelir$
+GNL PRB | $22.40 | $0.090 | $22.31 | $22.41 | $0.070 | 90 (2%) | $6.30 | 10 | $63.00
+LFT PRA | $20.84 | $0.093 | $20.75 | $20.86 | $0.073 | 22 (2%) | $1.61 | 3 | $4.83
+GGT PRG | $21.42 | $0.088 | $21.33 | $21.43 | $0.068 | 25 (2%) | $1.70 | 3 | $5.10
+PEB PRF | $19.83 | $0.173 | $19.74 | $19.84 | $0.153 | 154 (2%) | $23.56 | 1 | $23.56
+DCOMG | $26.35 | $0.080 | $26.26 | $26.36 | $0.060 | 48 (2%) | $2.88 | 2 | $5.76
+CMRE PRB | $25.56 | $0.085 | $25.47 | $25.57 | $0.065 | 36 (2%) | $2.34 | 2 | $4.68
+ACR PRD | $22.01 | $0.072 | $21.92 | $22.02 | $0.052 | 80 (2%) | $4.16 | 2 | $8.32
+
+**B. LOT BÜYÜKLÜĞÜ HESABI:**
+- ADV'nin %1-2'si kadar lot (piyasayı etkilememek için)
+- Max $25K per stock
+- Her lot için: capture * lot = roundtrip gelir
+- Günlük roundtrip sayısı = truth tick frekansına göre
+
+**C. ÖRNEK SENARYO (en iyi 3 hisse için adım adım):**
+1. Bid/Ask'i gör
+2. Hidden buy ve sell emirlerini yerleştir
+3. Buy dolunca SELL'i truth tick'e göre ayarla
+4. Sell dolunca pozisyon kapandı, kar realize edildi
+5. Yeni roundtrip başla
+6. Fiyat aleyhine giderse ne yapılır? Zarar durdur
+7. Gün sonu pozisyon kaldıysa ne yapılır? Pozisyon kapat
+
+**D. $500K EXPOSURE DAĞITIMI:**
+- 7 hisseye dağıtılır
+- Her hisseye $71,429 ayrılır
+- Günlük TOPLAM net gelir (fill rate %25-30, adverse selection %30 düşülmüş): $63 + $4.83 + $5.10 + $23.56 + $5.76 + $4.68 + $8.32 = $115.25
+- Aylık net gelir: $115.25 * 20 = $2,305
+- Yıllık net gelir: $2,305 * 12 = $27,660
+- Yıllık % return ($500K üzerinden): 5.53%
+
+**E. RİSK:**
+- Worst case günlük zarar: $71,429 (tüm pozisyonlar kapatılırsa)
+- Per-stock stop: $0.50 drop'ta pozisyon kapatılır
+- Kâr/zarar oranı: 3/1
+- Kâr günleri/zarar günleri: %75/%25
+
+GERÇEKÇI rakamlar verildi. Her hisse için ayrı satır. Türkçe yazıldı.

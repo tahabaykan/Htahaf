@@ -1,0 +1,100 @@
+﻿======================================================================
+  QUANT ENGINE - SYSTEM HEALTH CHECK  (2026-02-18 03:02:21)
+======================================================================
+
+=== 1. ACCOUNT STATUS ===
+  psfalgo:account_mode                          = {"mode": "IBKR_PED"}
+  psfalgo:account_selected                      = true
+  psfalgo:recovery:account_open                 = IBKR_PED
+  psfalgo:xnl:running                           = 1
+  psfalgo:xnl:running_account                   = IBKR_PED
+  psfalgo:ibkr:active_account                   = IBKR_PED
+  psfalgo:trading:account_mode                  = IBKR_PED
+
+=== 2. BEFDAY HAMPRO (59 positions) ===
+  GL PRD         befday_qty =       66
+  FCNCO          befday_qty =      200
+  WBS PRG        befday_qty =      197
+  OXLCO          befday_qty =       98
+  USB PRH        befday_qty =      488
+  INN PRE        befday_qty =     -100
+  PSA PRI        befday_qty =       35
+  VNO PRL        befday_qty =      187
+  PRIF PRJ       befday_qty =     -200
+  MET PRF        befday_qty =     -240
+  EFSCP          befday_qty =      200
+  AGM PRF        befday_qty =       61
+  HBANZ          befday_qty =     -118
+  EQH PRA        befday_qty =      200
+  CHSCM          befday_qty =       18
+  ... +44 more
+
+=== 2. BEFDAY IBKR_PED (97 positions) ===
+  HOVNP          befday_qty =      -80
+  TPGXL          befday_qty =       43
+  NSA PRA        befday_qty =      378
+  MET PRF        befday_qty =     -400
+  UNMA           befday_qty =     3035
+  AFGE           befday_qty =      -71
+  EQH PRC        befday_qty =      842
+  OFSSO          befday_qty =      109
+  SLV            befday_qty =      400
+  AGM PRE        befday_qty =      -60
+  DSX PRB        befday_qty =      118
+  USB PRH        befday_qty =      552
+  PEB PRG        befday_qty =      -14
+  MHNC           befday_qty =      399
+  BHFAP          befday_qty =      400
+  ... +82 more
+
+=== 2. BEFDAY IBKR_GUN === (NO DATA)
+
+=== 4. EXECUTION LEDGER (last 15 fills) ===
+  23:57:51   FITBP        SELL      18.0 @ $   24.87 | IBKR_PED   | tag=-
+  23:57:50   AOMD         BUY        3.0 @ $    25.3 | IBKR_PED   | tag=-
+  23:57:37   UNMA         SELL     100.0 @ $   23.67 | IBKR_PED   | tag=-
+  23:57:37   UNMA         SELL     300.0 @ $   23.67 | IBKR_PED   | tag=-
+  23:57:37   UNMA         SELL     100.0 @ $   23.67 | IBKR_PED   | tag=-
+  23:57:01   FITBP        SELL      16.0 @ $   24.87 | IBKR_PED   | tag=-
+  23:56:51   AFGB         SELL     168.0 @ $    22.1 | IBKR_PED   | tag=-
+  23:56:51   TRTN PRB     SELL     170.0 @ $   25.53 | IBKR_PED   | tag=-
+  23:56:51   TRTN PRB     SELL       2.0 @ $   25.53 | IBKR_PED   | tag=-
+  23:56:51   KEY PRK      SELL     200.0 @ $   22.54 | IBKR_PED   | tag=-
+  23:56:50   CIM PRB      SELL      83.0 @ $   23.93 | IBKR_PED   | tag=-
+  23:56:44   DDT          SELL     101.0 @ $   26.26 | IBKR_PED   | tag=-
+  23:56:44   FITBP        SELL     133.0 @ $   24.87 | IBKR_PED   | tag=-
+  23:56:43   CIM PRC      SELL     174.0 @ $   22.46 | IBKR_PED   | tag=-
+  23:56:24   FITBP        SELL      33.0 @ $   24.87 | IBKR_PED   | tag=-
+
+=== 5. ACTIVE REV ORDERS ===
+  AHL PRE        ?          ? @ $       ? | ?                              | ?
+  CIM PRB        ?          ? @ $       ? | ?                              | ?
+  CIM PRD        ?          ? @ $       ? | ?                              | ?
+  CUBB           ?          ? @ $       ? | ?                              | ?
+  DDT            ?          ? @ $       ? | ?                              | ?
+  MBINL          ?          ? @ $       ? | ?                              | ?
+  MET PRF        ?          ? @ $       ? | ?                              | ?
+  MHLA           ?          ? @ $       ? | ?                              | ?
+  NCV PRA        ?          ? @ $       ? | ?                              | ?
+  PRH            ?          ? @ $       ? | ?                              | ?
+  PSA PRF        ?          ? @ $       ? | ?                              | ?
+  REXR PRC       ?          ? @ $       ? | ?                              | ?
+  RNR PRF        ?          ? @ $       ? | ?                              | ?
+  SYF PRB        ?          ? @ $       ? | ?                              | ?
+  TRTN PRA       ?          ? @ $       ? | ?                              | ?
+  TRTX PRC       ?          ? @ $       ? | ?                              | ?
+  WBS PRF        ?          ? @ $       ? | ?                              | ?
+
+=== 6. REV QUEUE HAMPRO (10 pending) ===
+  FCNCO        BUY    900.0 @ $   22.02
+  INN PRE      BUY    400.0 @ $   18.68
+  GNL PRB      BUY    290.0 @ $   22.62
+  CIM PRD      SELL   200.0 @ $   23.83
+  FITBO        BUY    400.0 @ $   19.85
+  MGRD         BUY    400.0 @ $   15.64
+
+=== 7. PENDING ORDER QUEUE === (0 orders)
+
+======================================================================
+  CHECK COMPLETE
+======================================================================

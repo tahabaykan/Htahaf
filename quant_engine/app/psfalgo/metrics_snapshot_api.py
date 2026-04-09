@@ -136,6 +136,7 @@ class MetricsSnapshotAPI:
                     prev_close=market_snapshot.prev_close,
                     spread=market_snapshot.spread,
                     spread_percent=market_snapshot.spread_percent,
+                    dos_grup=static_data.get('GROUP') if static_data else None,
                     
                     # GRPAN (still from grpan_engine - can be enhanced later)
                     grpan_price=grpan_metrics.get('grpan_price'),
@@ -152,6 +153,7 @@ class MetricsSnapshotAPI:
                     gort=market_snapshot.gort,
                     sma63_chg=market_snapshot.sma63_chg,
                     sma246_chg=market_snapshot.sma246_chg,
+                    bench_chg=getattr(market_snapshot, 'bench_chg', None) or getattr(market_snapshot, 'benchmark_chg', None),
                     
                     # Pricing Overlay (still from pricing_overlay_engine - can be enhanced later)
                     bid_buy_ucuzluk=overlay_metrics.get('Bid_buy_ucuzluk_skoru'),
@@ -207,6 +209,7 @@ class MetricsSnapshotAPI:
             prev_close=self._safe_float(market_data.get('prev_close')),
             spread=self._safe_float(market_data.get('spread')),
             spread_percent=self._safe_float(market_data.get('spread_percent')),
+            dos_grup=static_data.get('GROUP') if static_data else None,
             
             # GRPAN (from grpan_engine)
             grpan_price=grpan_metrics.get('grpan_price'),
@@ -217,12 +220,13 @@ class MetricsSnapshotAPI:
             rwvap_1d=rwvap_metrics.get('rwvap_1d'),
             rwvap_ort_dev=rwvap_metrics.get('rwvap_ort_dev'),  # ROD
             
-            # Janall Metrics (from janall_metrics_engine)
+            # Janall Metrics (from janall_metrics_engine with static fallback)
             fbtot=janall_metrics.get('fbtot'),
             sfstot=janall_metrics.get('sfstot'),
             gort=janall_metrics.get('gort'),
-            sma63_chg=janall_metrics.get('sma63_chg'),
-            sma246_chg=janall_metrics.get('sma246_chg'),
+            sma63_chg=janall_metrics.get('sma63_chg') or (self._safe_float(static_data.get('SMA63 chg')) if static_data else None),
+            sma246_chg=janall_metrics.get('sma246_chg') or (self._safe_float(static_data.get('SMA246 chg')) if static_data else None),
+            bench_chg=janall_metrics.get('bench_chg'),
             
             # Pricing Overlay (from pricing_overlay_engine)
             bid_buy_ucuzluk=overlay_metrics.get('Bid_buy_ucuzluk_skoru'),
@@ -398,6 +402,7 @@ class MetricsSnapshotAPI:
                 'gort': janall_metrics.get('gort'),
                 'sma63_chg': janall_metrics.get('sma63_chg'),
                 'sma246_chg': janall_metrics.get('sma246_chg'),
+                'bench_chg': janall_metrics.get('bench_chg'), # NEW: Get bench_chg
             }
         except Exception as e:
             logger.debug(f"Error getting Janall metrics for {symbol}: {e}")

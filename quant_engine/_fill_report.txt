@@ -1,0 +1,85 @@
+
+============================================================
+DATE: 260224
+============================================================
+
+  HAMPRO:
+    File: data/logs/daily_fills\hamfilledorders260224.csv (41925 bytes)
+    Header: Time,Symbol,Action,Quantity,Price,Strategy,Source,Bench_Chg,Bench_Source
+    Total rows: 777
+    Unique symbols: 66
+    Fills with Time=00:00:00: 0
+    Strategies: [('', 603), ('UNKNOWN', 170), ('22.91', 2), ('24.37', 1), ('26.2', 1)]
+    Hour distribution: {'18': 40, '19': 83, '20': 35, '21': 12, '23': 607}
+
+  IBKR_PED:
+    File: data/logs/daily_fills\ibpedfilledorders260224.csv (21960 bytes)
+    Header: Time,Symbol,Action,Quantity,Price,Strategy,Source,Bench_Chg,Bench_Source
+    Total rows: 228
+    Unique symbols: 80
+    Fills with Time=00:00:00: 0
+    Strategies: [('KARBOTU_SHORT_DEC_STEP_9', 44), ('LT_SHORT_DEC', 23), ('MM_SHORT_INC', 15), ('HEAVYLONGDEC', 13), ('MM_LONG_INC', 12), ('KARBOTU_SHORT_DEC_STEP_10', 11), ('LT_LONG_DEC', 9), ('19.36', 7), ('18.83', 5), ('KARBOTU_SHORT_DEC_STEP_12', 4)]
+    Hour distribution: {'18': 8, '19': 51, '20': 63, '21': 22, '23': 84}
+
+  COMPARISON:
+    Symbols in BOTH accounts: 8 -> ['FCNCP', 'FITBO', 'HBANM', 'MBINN', 'METCZ', 'MGRB', 'MGRD', 'NRUC']
+    ONLY in HAM (58): ['AHH-A', 'ALL-B', 'AMH-H', 'ANG-D', 'ATH-D', 'ATH-E', 'AXS-E', 'BC-C', 'BK-K', 'BML-H', 'BOH-B', 'CHSCO', 'CIM-D', 'CMS-C', 'CMSC', 'CTO-A', 'DLR-J', 'DLR-L', 'DTW', 'ENO']
+    ONLY in PED (72): ['AFGB', 'AHL PRE', 'AIZN', 'ALL PRB', 'AMH PRH', 'ANG PRD', 'AOMN', 'AQNB', 'ATLCZ', 'AXS PRE', 'BML PRH', 'BML PRJ', 'BOH PRB', 'C PRN', 'CIM PRC', 'CRBD', 'CTO PRA', 'DLR PRJ', 'EQH PRA', 'F PRD']
+
+============================================================
+DATE: 260225
+============================================================
+
+  HAMPRO:
+    File: data/logs/daily_fills\hamfilledorders260225.csv (24322 bytes)
+    Header: Time,Symbol,Action,Quantity,Price,Bid,Ask,Spread,Strategy,Source,Bench_Chg,Bench_Source
+    Total rows: 333
+    Unique symbols: 67
+    Fills with Time=00:00:00: 1
+    Strategies: [('LT_LONG_INC', 193), ('LT_SHORT_INC', 129), ('LT_LONG_DEC', 5), ('LT_SHORT_DEC', 4), ('UNKNOWN', 2)]
+    Hour distribution: {'00': 2, '04': 119, '06': 212}
+
+  IBKR_PED:
+    File: data/logs/daily_fills\ibpedfilledorders260225.csv (208 bytes)
+    Header: Time,Symbol,Action,Quantity,Price,Bid,Ask,Spread,Strategy,Source,Bench_Chg,Bench_Source
+    Total rows: 1
+    Unique symbols: 1
+    Fills with Time=00:00:00: 1
+    Strategies: [('KARBOTU_SHORT_DEC_STEP_10', 1)]
+    Hour distribution: {'00': 1}
+    ALL FILLS:
+      {'Time': '00:00:00', 'Symbol': 'MS PRL', 'Action': 'BUY', 'Quantity': '23.0', 'Price': '20.89', 'Bid': '20.88', 'Ask': '20.94', 'Spread': '0.06', 'Strategy': 'KARBOTU_SHORT_DEC_STEP_10', 'Source': 'AUTO', 'Bench_Chg': '-0.0566', 'Bench_Source': 'Group: heldkuponlu:c475 (n=18)'}
+
+  COMPARISON:
+    Symbols in BOTH accounts: 0 -> []
+    ONLY in HAM (67): ['AHH-A', 'ALL-B', 'AMH-H', 'ANG-D', 'ATH-D', 'ATH-E', 'AXS-E', 'BC-C', 'BK-K', 'BML-H', 'BOH-B', 'CHSCO', 'CIM-D', 'CMS-C', 'CMSC', 'CTO-A', 'DLR-J', 'DLR-L', 'DTW', 'ENO']
+    ONLY in PED (1): ['MS PRL']
+
+============================================================
+HOW _get_filename WORKS
+============================================================
+def _get_filename(self, account_type: str) -> str:
+        """
+        Generate filename: ib{account}filledorders{YYMMDD}.csv
+        Example: ibibkr_gunfilledorders260114.csv (per user example format)
+        User said: ibpedfilledorders140126.csv
+        So format is: ib{ped/gun}filledorders{YYMMDD}.csv
+        """
+        # User defined format: 
+        # - ibpedfilledordersYYMMDD.csv
+        # - ibgunfilledordersYYMMDD.csv
+        # - hamfilledordersYYMMDD.csv
+        
+        date_str = datetime.now().strftime("%y%m%d")
+        acc_lower = account_type.lower()
+        
+        if "hammer" in acc_lower:
+            return f"hamfilledorders{date_str}.csv"
+        elif "ped" in acc_lower:
+            return f"ibpedfilledorders{date_str}.csv"
+        elif "gun" in acc_lower:
+            return f"ibgunfilledorders{date_str}.csv"
+        else:
+             # Fallback
+             return f"unknown_filledorders{date_str}.csv"
+        

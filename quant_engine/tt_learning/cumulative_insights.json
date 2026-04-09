@@ -1,0 +1,1634 @@
+{
+  "created": "2026-02-16T19:32:59.036295",
+  "last_updated": "2026-02-16T20:06:03.266256",
+  "days_analyzed": [
+    "2026-02-16"
+  ],
+  "symbol_history": {
+    "BIPJ": [
+      {
+        "date": "2026-02-16",
+        "group": "heldcilizyeniyedi",
+        "interest_score": 4.65,
+        "mm_score": 3.2,
+        "total_ticks": 74,
+        "vol_adv_pct": 28.65,
+        "spread_bps": 11.2,
+        "fbtot": 1315.18,
+        "sfstot": 1714.58,
+        "gort": 0.0,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "CRBD": [
+      {
+        "date": "2026-02-16",
+        "group": "heldcilizyeniyedi",
+        "interest_score": 3.15,
+        "mm_score": 3.83,
+        "total_ticks": 171,
+        "vol_adv_pct": 20.12,
+        "spread_bps": 5.8,
+        "fbtot": 1229.7,
+        "sfstot": 1274.4,
+        "gort": 0.0,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "FGSN": [
+      {
+        "date": "2026-02-16",
+        "group": "heldcilizyeniyedi",
+        "interest_score": 2.78,
+        "mm_score": 2.7,
+        "total_ticks": 112,
+        "vol_adv_pct": 16.97,
+        "spread_bps": 10.1,
+        "fbtot": 1419.4,
+        "sfstot": 1452.5,
+        "gort": 0.0,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "AHL PRF": [
+      {
+        "date": "2026-02-16",
+        "group": "heldcilizyeniyedi",
+        "interest_score": 2.42,
+        "mm_score": 0.92,
+        "total_ticks": 21,
+        "vol_adv_pct": 6.47,
+        "spread_bps": 5.6,
+        "fbtot": 1125.32,
+        "sfstot": 1204.4199999999998,
+        "gort": 0.0,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "MGRE": [
+      {
+        "date": "2026-02-16",
+        "group": "heldcilizyeniyedi",
+        "interest_score": 2.02,
+        "mm_score": 3.03,
+        "total_ticks": 60,
+        "vol_adv_pct": 11.38,
+        "spread_bps": 8.6,
+        "fbtot": 1332.6,
+        "sfstot": 1376.9,
+        "gort": 0.0,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "PSEC PRA": [
+      {
+        "date": "2026-02-16",
+        "group": "heldcommonsuz",
+        "interest_score": 5.98,
+        "mm_score": 3.1,
+        "total_ticks": 55,
+        "vol_adv_pct": 57.9,
+        "spread_bps": 24.8,
+        "fbtot": 973.34,
+        "sfstot": 1079.74,
+        "gort": 0.0,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "VNO PRL": [
+      {
+        "date": "2026-02-16",
+        "group": "heldcommonsuz",
+        "interest_score": 2.95,
+        "mm_score": 2.78,
+        "total_ticks": 64,
+        "vol_adv_pct": 22.84,
+        "spread_bps": 6.1,
+        "fbtot": 1251.05,
+        "sfstot": 1266.45,
+        "gort": 0.0,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "AHL PRD": [
+      {
+        "date": "2026-02-16",
+        "group": "heldcommonsuz",
+        "interest_score": 2.46,
+        "mm_score": 2.7,
+        "total_ticks": 60,
+        "vol_adv_pct": 33.51,
+        "spread_bps": 7.3,
+        "fbtot": 1390.51,
+        "sfstot": 1445.61,
+        "gort": 0.0,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "TDS PRV": [
+      {
+        "date": "2026-02-16",
+        "group": "heldcommonsuz",
+        "interest_score": 2.04,
+        "mm_score": 3.5,
+        "total_ticks": 141,
+        "vol_adv_pct": 22.1,
+        "spread_bps": 3.8,
+        "fbtot": 1034.63,
+        "sfstot": 1049.5300000000002,
+        "gort": 0.0,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "VNO PRO": [
+      {
+        "date": "2026-02-16",
+        "group": "heldcommonsuz",
+        "interest_score": 1.8,
+        "mm_score": 4.44,
+        "total_ticks": 97,
+        "vol_adv_pct": 28.37,
+        "spread_bps": 7.0,
+        "fbtot": 1233.28,
+        "sfstot": 1339.08,
+        "gort": 0.0,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "DCOMG": [
+      {
+        "date": "2026-02-16",
+        "group": "helddeznff",
+        "interest_score": 5.46,
+        "mm_score": 2.11,
+        "total_ticks": 5,
+        "vol_adv_pct": 7.31,
+        "spread_bps": 30.4,
+        "fbtot": 629.3,
+        "sfstot": 696.6999999999999,
+        "gort": null,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "UMBFO": [
+      {
+        "date": "2026-02-16",
+        "group": "helddeznff",
+        "interest_score": 4.18,
+        "mm_score": 2.84,
+        "total_ticks": 67,
+        "vol_adv_pct": 14.14,
+        "spread_bps": 7.3,
+        "fbtot": 672.08,
+        "sfstot": 741.6800000000001,
+        "gort": null,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "LOB PRA": [
+      {
+        "date": "2026-02-16",
+        "group": "helddeznff",
+        "interest_score": 3.89,
+        "mm_score": 3.83,
+        "total_ticks": 143,
+        "vol_adv_pct": 81.77,
+        "spread_bps": 4.6,
+        "fbtot": 724.01,
+        "sfstot": 792.81,
+        "gort": null,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "LNC PRD": [
+      {
+        "date": "2026-02-16",
+        "group": "helddeznff",
+        "interest_score": 3.63,
+        "mm_score": 2.5,
+        "total_ticks": 291,
+        "vol_adv_pct": 76.53,
+        "spread_bps": 2.7,
+        "fbtot": 935.11,
+        "sfstot": 952.91,
+        "gort": null,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "BOH PRB": [
+      {
+        "date": "2026-02-16",
+        "group": "helddeznff",
+        "interest_score": 3.16,
+        "mm_score": 2.53,
+        "total_ticks": 68,
+        "vol_adv_pct": 24.96,
+        "spread_bps": 8.1,
+        "fbtot": 738.47,
+        "sfstot": 840.07,
+        "gort": null,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "DDT": [
+      {
+        "date": "2026-02-16",
+        "group": "heldff",
+        "interest_score": 3.82,
+        "mm_score": 2.52,
+        "total_ticks": 33,
+        "vol_adv_pct": 21.37,
+        "spread_bps": 17.9,
+        "fbtot": 649.19,
+        "sfstot": 744.8900000000001,
+        "gort": null,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "CHSCO": [
+      {
+        "date": "2026-02-16",
+        "group": "heldff",
+        "interest_score": 2.88,
+        "mm_score": 1.42,
+        "total_ticks": 46,
+        "vol_adv_pct": 13.88,
+        "spread_bps": 6.1,
+        "fbtot": 703.61,
+        "sfstot": 743.21,
+        "gort": null,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "RITM PRA": [
+      {
+        "date": "2026-02-16",
+        "group": "heldff",
+        "interest_score": 2.36,
+        "mm_score": 3.88,
+        "total_ticks": 69,
+        "vol_adv_pct": 65.71,
+        "spread_bps": 3.5,
+        "fbtot": 812.45,
+        "sfstot": 840.5500000000001,
+        "gort": null,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "VLYPO": [
+      {
+        "date": "2026-02-16",
+        "group": "heldff",
+        "interest_score": 2.23,
+        "mm_score": 3.8,
+        "total_ticks": 65,
+        "vol_adv_pct": 86.08,
+        "spread_bps": 5.0,
+        "fbtot": 953.94,
+        "sfstot": 997.84,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "FITBI": [
+      {
+        "date": "2026-02-16",
+        "group": "heldff",
+        "interest_score": 2.15,
+        "mm_score": 4.5,
+        "total_ticks": 346,
+        "vol_adv_pct": 107.33,
+        "spread_bps": 1.8,
+        "fbtot": 895.5,
+        "sfstot": 957.7,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "BML PRG": [
+      {
+        "date": "2026-02-16",
+        "group": "heldflr",
+        "interest_score": 3.16,
+        "mm_score": 2.39,
+        "total_ticks": 32,
+        "vol_adv_pct": 21.62,
+        "spread_bps": 12.7,
+        "fbtot": 731.73,
+        "sfstot": 1063.23,
+        "gort": null,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "BAC PRE": [
+      {
+        "date": "2026-02-16",
+        "group": "heldflr",
+        "interest_score": 2.81,
+        "mm_score": 3.19,
+        "total_ticks": 56,
+        "vol_adv_pct": 13.23,
+        "spread_bps": 11.9,
+        "fbtot": 863.48,
+        "sfstot": 908.58,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "GS PRC": [
+      {
+        "date": "2026-02-16",
+        "group": "heldflr",
+        "interest_score": 2.79,
+        "mm_score": 1.8,
+        "total_ticks": 65,
+        "vol_adv_pct": 21.85,
+        "spread_bps": 4.0,
+        "fbtot": 612.9,
+        "sfstot": 728.8,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "MET PRA": [
+      {
+        "date": "2026-02-16",
+        "group": "heldflr",
+        "interest_score": 2.15,
+        "mm_score": 3.5,
+        "total_ticks": 240,
+        "vol_adv_pct": 22.37,
+        "spread_bps": 3.4,
+        "fbtot": 1386.54,
+        "sfstot": 1426.84,
+        "gort": null,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "BML PRJ": [
+      {
+        "date": "2026-02-16",
+        "group": "heldflr",
+        "interest_score": 2.09,
+        "mm_score": 2.87,
+        "total_ticks": 52,
+        "vol_adv_pct": 25.98,
+        "spread_bps": 4.4,
+        "fbtot": 524.43,
+        "sfstot": 649.53,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "AMH PRG": [
+      {
+        "date": "2026-02-16",
+        "group": "heldgarabetaltiyedi",
+        "interest_score": 4.91,
+        "mm_score": 2.8,
+        "total_ticks": 51,
+        "vol_adv_pct": 47.58,
+        "spread_bps": 13.9,
+        "fbtot": 1377.0,
+        "sfstot": 2358.4,
+        "gort": 0.0,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "WBS PRG": [
+      {
+        "date": "2026-02-16",
+        "group": "heldgarabetaltiyedi",
+        "interest_score": 4.82,
+        "mm_score": 3.83,
+        "total_ticks": 128,
+        "vol_adv_pct": 143.59,
+        "spread_bps": 3.5,
+        "fbtot": 928.61,
+        "sfstot": 1007.01,
+        "gort": 0.0,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "FITBP": [
+      {
+        "date": "2026-02-16",
+        "group": "heldgarabetaltiyedi",
+        "interest_score": 3.97,
+        "mm_score": 1.4,
+        "total_ticks": 45,
+        "vol_adv_pct": 50.78,
+        "spread_bps": 6.2,
+        "fbtot": 1357.09,
+        "sfstot": 1603.79,
+        "gort": 0.0,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "AMH PRH": [
+      {
+        "date": "2026-02-16",
+        "group": "heldgarabetaltiyedi",
+        "interest_score": 3.96,
+        "mm_score": 3.28,
+        "total_ticks": 89,
+        "vol_adv_pct": 111.91,
+        "spread_bps": 6.6,
+        "fbtot": 1363.29,
+        "sfstot": 1596.59,
+        "gort": 0.0,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "HWCPZ": [
+      {
+        "date": "2026-02-16",
+        "group": "heldgarabetaltiyedi",
+        "interest_score": 3.8,
+        "mm_score": 1.23,
+        "total_ticks": 26,
+        "vol_adv_pct": 25.01,
+        "spread_bps": 10.6,
+        "fbtot": 1238.29,
+        "sfstot": 1488.29,
+        "gort": 0.0,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "MS PRL": [
+      {
+        "date": "2026-02-16",
+        "group": "heldkuponlu",
+        "interest_score": 4.23,
+        "mm_score": 2.5,
+        "total_ticks": 121,
+        "vol_adv_pct": 32.83,
+        "spread_bps": 5.1,
+        "fbtot": 1234.11,
+        "sfstot": 1297.61,
+        "gort": 0.29,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "ADC PRA": [
+      {
+        "date": "2026-02-16",
+        "group": "heldkuponlu",
+        "interest_score": 3.69,
+        "mm_score": 3.79,
+        "total_ticks": 98,
+        "vol_adv_pct": 47.89,
+        "spread_bps": 5.6,
+        "fbtot": 1399.67,
+        "sfstot": 1597.0700000000002,
+        "gort": -1.52,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "DTB": [
+      {
+        "date": "2026-02-16",
+        "group": "heldkuponlu",
+        "interest_score": 3.26,
+        "mm_score": 3.5,
+        "total_ticks": 122,
+        "vol_adv_pct": 35.71,
+        "spread_bps": 4.6,
+        "fbtot": 1420.33,
+        "sfstot": 1464.03,
+        "gort": -1.5,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "GPJA": [
+      {
+        "date": "2026-02-16",
+        "group": "heldkuponlu",
+        "interest_score": 3.18,
+        "mm_score": 2.87,
+        "total_ticks": 58,
+        "vol_adv_pct": 19.03,
+        "spread_bps": 10.4,
+        "fbtot": 753.78,
+        "sfstot": 804.28,
+        "gort": 2.78,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "MGR": [
+      {
+        "date": "2026-02-16",
+        "group": "heldkuponlu",
+        "interest_score": 3.09,
+        "mm_score": 2.62,
+        "total_ticks": 40,
+        "vol_adv_pct": 9.76,
+        "spread_bps": 16.2,
+        "fbtot": 1352.67,
+        "sfstot": 1423.97,
+        "gort": -0.85,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "FHN PRF": [
+      {
+        "date": "2026-02-16",
+        "group": "heldkuponlukreciliz",
+        "interest_score": 3.2,
+        "mm_score": 2.04,
+        "total_ticks": 26,
+        "vol_adv_pct": 12.97,
+        "spread_bps": 17.5,
+        "fbtot": 985.31,
+        "sfstot": 1053.61,
+        "gort": -0.27,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "FULTP": [
+      {
+        "date": "2026-02-16",
+        "group": "heldkuponlukreciliz",
+        "interest_score": 2.59,
+        "mm_score": 1.56,
+        "total_ticks": 39,
+        "vol_adv_pct": 30.77,
+        "spread_bps": 14.1,
+        "fbtot": 1857.37,
+        "sfstot": 1914.27,
+        "gort": -5.01,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "MBINN": [
+      {
+        "date": "2026-02-16",
+        "group": "heldkuponlukreciliz",
+        "interest_score": 2.39,
+        "mm_score": 3.94,
+        "total_ticks": 72,
+        "vol_adv_pct": 103.15,
+        "spread_bps": 6.9,
+        "fbtot": 1060.21,
+        "sfstot": 1110.61,
+        "gort": -0.31,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "DCOMP": [
+      {
+        "date": "2026-02-16",
+        "group": "heldkuponlukreciliz",
+        "interest_score": 2.26,
+        "mm_score": 3.54,
+        "total_ticks": 38,
+        "vol_adv_pct": 32.25,
+        "spread_bps": 14.0,
+        "fbtot": 488.54,
+        "sfstot": 573.94,
+        "gort": 1.08,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "SYF PRA": [
+      {
+        "date": "2026-02-16",
+        "group": "heldkuponlukreciliz",
+        "interest_score": 2.17,
+        "mm_score": 3.57,
+        "total_ticks": 87,
+        "vol_adv_pct": 11.5,
+        "spread_bps": 7.3,
+        "fbtot": 723.82,
+        "sfstot": 759.9200000000001,
+        "gort": 0.57,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "WBS PRF": [
+      {
+        "date": "2026-02-16",
+        "group": "heldkuponlukreorta",
+        "interest_score": 4.1,
+        "mm_score": 4.28,
+        "total_ticks": 89,
+        "vol_adv_pct": 330.27,
+        "spread_bps": 5.9,
+        "fbtot": 278.6,
+        "sfstot": 375.1,
+        "gort": 11.13,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "FCNCO": [
+      {
+        "date": "2026-02-16",
+        "group": "heldkuponlukreorta",
+        "interest_score": 3.02,
+        "mm_score": 2.64,
+        "total_ticks": 57,
+        "vol_adv_pct": 24.36,
+        "spread_bps": 8.6,
+        "fbtot": 1453.35,
+        "sfstot": 1612.85,
+        "gort": -2.06,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "FITBO": [
+      {
+        "date": "2026-02-16",
+        "group": "heldkuponlukreorta",
+        "interest_score": 2.64,
+        "mm_score": 2.92,
+        "total_ticks": 71,
+        "vol_adv_pct": 16.57,
+        "spread_bps": 7.2,
+        "fbtot": 1471.45,
+        "sfstot": 1638.65,
+        "gort": -2.68,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "CFG PRE": [
+      {
+        "date": "2026-02-16",
+        "group": "heldkuponlukreorta",
+        "interest_score": 2.61,
+        "mm_score": 3.5,
+        "total_ticks": 143,
+        "vol_adv_pct": 26.84,
+        "spread_bps": 4.4,
+        "fbtot": 1159.61,
+        "sfstot": 1323.41,
+        "gort": 2.68,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "KEY PRJ": [
+      {
+        "date": "2026-02-16",
+        "group": "heldkuponlukreorta",
+        "interest_score": 2.56,
+        "mm_score": 3.83,
+        "total_ticks": 191,
+        "vol_adv_pct": 44.55,
+        "spread_bps": 3.6,
+        "fbtot": 996.77,
+        "sfstot": 1065.77,
+        "gort": 1.58,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "MTB PRH": [
+      {
+        "date": "2026-02-16",
+        "group": "heldnff",
+        "interest_score": 3.22,
+        "mm_score": 3.83,
+        "total_ticks": 141,
+        "vol_adv_pct": 61.21,
+        "spread_bps": 2.6,
+        "fbtot": 537.73,
+        "sfstot": 676.23,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "WAL PRA": [
+      {
+        "date": "2026-02-16",
+        "group": "heldnff",
+        "interest_score": 3.15,
+        "mm_score": 3.51,
+        "total_ticks": 84,
+        "vol_adv_pct": 34.97,
+        "spread_bps": 2.5,
+        "fbtot": 582.51,
+        "sfstot": 626.51,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "VOYA PRB": [
+      {
+        "date": "2026-02-16",
+        "group": "heldnff",
+        "interest_score": 2.9,
+        "mm_score": 4.5,
+        "total_ticks": 207,
+        "vol_adv_pct": 71.76,
+        "spread_bps": 6.4,
+        "fbtot": 325.71,
+        "sfstot": 479.21,
+        "gort": null,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "RF PRC": [
+      {
+        "date": "2026-02-16",
+        "group": "heldnff",
+        "interest_score": 2.55,
+        "mm_score": 3.83,
+        "total_ticks": 190,
+        "vol_adv_pct": 29.89,
+        "spread_bps": 4.8,
+        "fbtot": 262.83,
+        "sfstot": 286.23,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "RITM PRD": [
+      {
+        "date": "2026-02-16",
+        "group": "heldnff",
+        "interest_score": 2.32,
+        "mm_score": 3.5,
+        "total_ticks": 121,
+        "vol_adv_pct": 30.47,
+        "spread_bps": 3.2,
+        "fbtot": 500.47,
+        "sfstot": 549.6700000000001,
+        "gort": null,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "INN PRE": [
+      {
+        "date": "2026-02-16",
+        "group": "heldotelremorta",
+        "interest_score": 4.23,
+        "mm_score": 3.1,
+        "total_ticks": 64,
+        "vol_adv_pct": 63.45,
+        "spread_bps": 15.8,
+        "fbtot": 1187.5,
+        "sfstot": 1357.8,
+        "gort": 0.0,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "AHH PRA": [
+      {
+        "date": "2026-02-16",
+        "group": "heldotelremorta",
+        "interest_score": 2.98,
+        "mm_score": 1.72,
+        "total_ticks": 51,
+        "vol_adv_pct": 39.57,
+        "spread_bps": 10.2,
+        "fbtot": 1098.12,
+        "sfstot": 1410.32,
+        "gort": 0.0,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "PEB PRF": [
+      {
+        "date": "2026-02-16",
+        "group": "heldotelremorta",
+        "interest_score": 2.77,
+        "mm_score": 4.25,
+        "total_ticks": 3,
+        "vol_adv_pct": 1.13,
+        "spread_bps": 87.4,
+        "fbtot": 1162.19,
+        "sfstot": 1308.29,
+        "gort": 0.0,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "SHO PRH": [
+      {
+        "date": "2026-02-16",
+        "group": "heldotelremorta",
+        "interest_score": 2.73,
+        "mm_score": 3.8,
+        "total_ticks": 65,
+        "vol_adv_pct": 136.3,
+        "spread_bps": 2.0,
+        "fbtot": 1299.91,
+        "sfstot": 1570.5100000000002,
+        "gort": 0.0,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "GNL PRB": [
+      {
+        "date": "2026-02-16",
+        "group": "heldotelremorta",
+        "interest_score": 2.62,
+        "mm_score": 3.73,
+        "total_ticks": 21,
+        "vol_adv_pct": 21.04,
+        "spread_bps": 40.3,
+        "fbtot": 1136.88,
+        "sfstot": 1234.18,
+        "gort": 0.0,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "HIG PRG": [
+      {
+        "date": "2026-02-16",
+        "group": "heldsolidbig",
+        "interest_score": 2.49,
+        "mm_score": 2.16,
+        "total_ticks": 33,
+        "vol_adv_pct": 16.06,
+        "spread_bps": 5.1,
+        "fbtot": 1001.99,
+        "sfstot": 1045.29,
+        "gort": null,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "BAC PRB": [
+      {
+        "date": "2026-02-16",
+        "group": "heldsolidbig",
+        "interest_score": 1.78,
+        "mm_score": 3.83,
+        "total_ticks": 126,
+        "vol_adv_pct": 13.88,
+        "spread_bps": 0.8,
+        "fbtot": 1229.89,
+        "sfstot": 1266.59,
+        "gort": null,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "SCHW PRD": [
+      {
+        "date": "2026-02-16",
+        "group": "heldsolidbig",
+        "interest_score": 0.53,
+        "mm_score": 4.5,
+        "total_ticks": 155,
+        "vol_adv_pct": 26.38,
+        "spread_bps": 1.2,
+        "fbtot": 237.84,
+        "sfstot": 258.74,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "MS PRI": [
+      {
+        "date": "2026-02-16",
+        "group": "heldsolidbig",
+        "interest_score": 0.48,
+        "mm_score": 4.5,
+        "total_ticks": 135,
+        "vol_adv_pct": 13.99,
+        "spread_bps": 1.4,
+        "fbtot": 1200.45,
+        "sfstot": 1232.75,
+        "gort": null,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "JPM PRD": [
+      {
+        "date": "2026-02-16",
+        "group": "heldsolidbig",
+        "interest_score": 0.46,
+        "mm_score": 4.5,
+        "total_ticks": 251,
+        "vol_adv_pct": 18.09,
+        "spread_bps": 1.1,
+        "fbtot": 1186.66,
+        "sfstot": 1196.5600000000002,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "ACR PRC": [
+      {
+        "date": "2026-02-16",
+        "group": "heldtitrekhc",
+        "interest_score": 2.52,
+        "mm_score": 2.59,
+        "total_ticks": 38,
+        "vol_adv_pct": 25.14,
+        "spread_bps": 6.6,
+        "fbtot": 1296.62,
+        "sfstot": 1337.9199999999998,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "SEAL PRA": [
+      {
+        "date": "2026-02-16",
+        "group": "heldtitrekhc",
+        "interest_score": 1.38,
+        "mm_score": 3.34,
+        "total_ticks": 42,
+        "vol_adv_pct": 50.91,
+        "spread_bps": 8.0,
+        "fbtot": 1122.65,
+        "sfstot": 1156.95,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "TRTN PRB": [
+      {
+        "date": "2026-02-16",
+        "group": "heldtitrekhc",
+        "interest_score": 1.22,
+        "mm_score": 3.2,
+        "total_ticks": 35,
+        "vol_adv_pct": 34.82,
+        "spread_bps": 8.1,
+        "fbtot": 1121.24,
+        "sfstot": 1226.84,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "RLJ PRA": [
+      {
+        "date": "2026-02-16",
+        "group": "heldtitrekhc",
+        "interest_score": 1.17,
+        "mm_score": 4.44,
+        "total_ticks": 97,
+        "vol_adv_pct": 38.74,
+        "spread_bps": 3.9,
+        "fbtot": 124.62,
+        "sfstot": 166.02,
+        "gort": null,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "GSL PRB": [
+      {
+        "date": "2026-02-16",
+        "group": "heldtitrekhc",
+        "interest_score": 0.9,
+        "mm_score": 3.0,
+        "total_ticks": 25,
+        "vol_adv_pct": 28.26,
+        "spread_bps": 10.0,
+        "fbtot": 904.98,
+        "sfstot": 1269.58,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "OXLCI": [
+      {
+        "date": "2026-02-16",
+        "group": "highmatur",
+        "interest_score": 5.32,
+        "mm_score": 3.47,
+        "total_ticks": 82,
+        "vol_adv_pct": 138.67,
+        "spread_bps": 2.8,
+        "fbtot": 974.92,
+        "sfstot": 1578.92,
+        "gort": null,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "SAY": [
+      {
+        "date": "2026-02-16",
+        "group": "highmatur",
+        "interest_score": 5.04,
+        "mm_score": 3.49,
+        "total_ticks": 83,
+        "vol_adv_pct": 165.47,
+        "spread_bps": 4.1,
+        "fbtot": 1054.54,
+        "sfstot": 1098.84,
+        "gort": null,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "PRIF PRD": [
+      {
+        "date": "2026-02-16",
+        "group": "highmatur",
+        "interest_score": 4.2,
+        "mm_score": 2.2,
+        "total_ticks": 25,
+        "vol_adv_pct": 80.6,
+        "spread_bps": 10.1,
+        "fbtot": 259.26,
+        "sfstot": 651.26,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "OXSQH": [
+      {
+        "date": "2026-02-16",
+        "group": "highmatur",
+        "interest_score": 4.09,
+        "mm_score": 3.19,
+        "total_ticks": 68,
+        "vol_adv_pct": 61.44,
+        "spread_bps": 7.9,
+        "fbtot": 883.11,
+        "sfstot": 1091.3054545454545,
+        "gort": null,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "PMTU": [
+      {
+        "date": "2026-02-16",
+        "group": "highmatur",
+        "interest_score": 3.95,
+        "mm_score": 1.92,
+        "total_ticks": 11,
+        "vol_adv_pct": 17.62,
+        "spread_bps": 20.8,
+        "fbtot": 1089.86,
+        "sfstot": 1141.86,
+        "gort": null,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "HTFC": [
+      {
+        "date": "2026-02-16",
+        "group": "notbesmaturlu",
+        "interest_score": 3.77,
+        "mm_score": 1.94,
+        "total_ticks": 22,
+        "vol_adv_pct": 82.94,
+        "spread_bps": 6.3,
+        "fbtot": 976.87,
+        "sfstot": 1182.47,
+        "gort": null,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "OCCIO": [
+      {
+        "date": "2026-02-16",
+        "group": "notbesmaturlu",
+        "interest_score": 2.42,
+        "mm_score": 2.5,
+        "total_ticks": 10,
+        "vol_adv_pct": 46.13,
+        "spread_bps": 1.8,
+        "fbtot": 735.51,
+        "sfstot": 974.21,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "SSSSL": [
+      {
+        "date": "2026-02-16",
+        "group": "notbesmaturlu",
+        "interest_score": 0.68,
+        "mm_score": 2.76,
+        "total_ticks": 6,
+        "vol_adv_pct": 12.42,
+        "spread_bps": 13.1,
+        "fbtot": 944.92,
+        "sfstot": 1363.52,
+        "gort": null,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "OCCIN": [
+      {
+        "date": "2026-02-16",
+        "group": "notbesmaturlu",
+        "interest_score": 0.5,
+        "mm_score": 2.73,
+        "total_ticks": 7,
+        "vol_adv_pct": 6.03,
+        "spread_bps": 11.5,
+        "fbtot": 733.01,
+        "sfstot": 6134.610000000001,
+        "gort": null,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "OXLCP": [
+      {
+        "date": "2026-02-16",
+        "group": "notbesmaturlu",
+        "interest_score": 0.31,
+        "mm_score": 2.5,
+        "total_ticks": 6,
+        "vol_adv_pct": 3.58,
+        "spread_bps": 7.3,
+        "fbtot": 768.66,
+        "sfstot": 1242.76,
+        "gort": null,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "REXR PRB": [
+      {
+        "date": "2026-02-16",
+        "group": "notcefilliquid",
+        "interest_score": 6.37,
+        "mm_score": 2.57,
+        "total_ticks": 90,
+        "vol_adv_pct": 146.11,
+        "spread_bps": 13.3,
+        "fbtot": 1235.07,
+        "sfstot": 1417.87,
+        "gort": 0.0,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "ETI PR": [
+      {
+        "date": "2026-02-16",
+        "group": "notcefilliquid",
+        "interest_score": 5.43,
+        "mm_score": 2.36,
+        "total_ticks": 22,
+        "vol_adv_pct": 95.22,
+        "spread_bps": 21.0,
+        "fbtot": 1072.33,
+        "sfstot": 1418.53,
+        "gort": 0.0,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "GGT PRG": [
+      {
+        "date": "2026-02-16",
+        "group": "notcefilliquid",
+        "interest_score": 4.55,
+        "mm_score": 2.66,
+        "total_ticks": 6,
+        "vol_adv_pct": 16.51,
+        "spread_bps": 41.2,
+        "fbtot": 1138.45,
+        "sfstot": 1327.85,
+        "gort": 0.0,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "NCV PRA": [
+      {
+        "date": "2026-02-16",
+        "group": "notcefilliquid",
+        "interest_score": 3.38,
+        "mm_score": 4.5,
+        "total_ticks": 207,
+        "vol_adv_pct": 258.24,
+        "spread_bps": 5.4,
+        "fbtot": 1086.46,
+        "sfstot": 1104.36,
+        "gort": 0.0,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "ACP PRA": [
+      {
+        "date": "2026-02-16",
+        "group": "notcefilliquid",
+        "interest_score": 3.29,
+        "mm_score": 1.85,
+        "total_ticks": 14,
+        "vol_adv_pct": 12.72,
+        "spread_bps": 17.3,
+        "fbtot": 1048.93,
+        "sfstot": 1097.63,
+        "gort": 0.0,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "CMRE PRD": [
+      {
+        "date": "2026-02-16",
+        "group": "nottitrekhc",
+        "interest_score": 5.6,
+        "mm_score": 0.72,
+        "total_ticks": 16,
+        "vol_adv_pct": 50.67,
+        "spread_bps": 10.8,
+        "fbtot": 375.54,
+        "sfstot": 648.6400000000001,
+        "gort": null,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "SB PRD": [
+      {
+        "date": "2026-02-16",
+        "group": "nottitrekhc",
+        "interest_score": 5.28,
+        "mm_score": 3.5,
+        "total_ticks": 152,
+        "vol_adv_pct": 232.99,
+        "spread_bps": 5.3,
+        "fbtot": 780.55,
+        "sfstot": 1017.45,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "CHMI PRB": [
+      {
+        "date": "2026-02-16",
+        "group": "nottitrekhc",
+        "interest_score": 4.97,
+        "mm_score": 1.06,
+        "total_ticks": 28,
+        "vol_adv_pct": 49.22,
+        "spread_bps": 5.6,
+        "fbtot": 1124.68,
+        "sfstot": 1189.28,
+        "gort": null,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "DSX PRB": [
+      {
+        "date": "2026-02-16",
+        "group": "nottitrekhc",
+        "interest_score": 4.94,
+        "mm_score": 0.79,
+        "total_ticks": 17,
+        "vol_adv_pct": 22.92,
+        "spread_bps": 14.3,
+        "fbtot": 1296.46,
+        "sfstot": 1795.46,
+        "gort": null,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "CMRE PRB": [
+      {
+        "date": "2026-02-16",
+        "group": "nottitrekhc",
+        "interest_score": 4.33,
+        "mm_score": 3.16,
+        "total_ticks": 5,
+        "vol_adv_pct": 46.09,
+        "spread_bps": 33.1,
+        "fbtot": 652.58,
+        "sfstot": 1654.98,
+        "gort": null,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "GOODO": [
+      {
+        "date": "2026-02-16",
+        "group": "salakilliquid",
+        "interest_score": 6.18,
+        "mm_score": 3.37,
+        "total_ticks": 82,
+        "vol_adv_pct": 95.13,
+        "spread_bps": 11.4,
+        "fbtot": 993.61,
+        "sfstot": 1250.71,
+        "gort": 0.0,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "NHPBP": [
+      {
+        "date": "2026-02-16",
+        "group": "salakilliquid",
+        "interest_score": 5.49,
+        "mm_score": 1.87,
+        "total_ticks": 13,
+        "vol_adv_pct": 18.84,
+        "spread_bps": 18.4,
+        "fbtot": 874.22,
+        "sfstot": 1198.92,
+        "gort": 0.0,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "GMRE PRA": [
+      {
+        "date": "2026-02-16",
+        "group": "salakilliquid",
+        "interest_score": 4.54,
+        "mm_score": 2.99,
+        "total_ticks": 58,
+        "vol_adv_pct": 118.26,
+        "spread_bps": 5.3,
+        "fbtot": 1121.37,
+        "sfstot": 1348.4699999999998,
+        "gort": 0.0,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "LFT PRA": [
+      {
+        "date": "2026-02-16",
+        "group": "salakilliquid",
+        "interest_score": 4.38,
+        "mm_score": 3.39,
+        "total_ticks": 7,
+        "vol_adv_pct": 20.05,
+        "spread_bps": 44.5,
+        "fbtot": 1172.54,
+        "sfstot": 1320.04,
+        "gort": 0.0,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "LANDO": [
+      {
+        "date": "2026-02-16",
+        "group": "salakilliquid",
+        "interest_score": 2.76,
+        "mm_score": 2.77,
+        "total_ticks": 47,
+        "vol_adv_pct": 17.76,
+        "spread_bps": 8.7,
+        "fbtot": 1102.32,
+        "sfstot": 1267.32,
+        "gort": 0.0,
+        "busiest_window": "14:30-15:00"
+      }
+    ],
+    "MITT PRA": [
+      {
+        "date": "2026-02-16",
+        "group": "shitremhc",
+        "interest_score": 6.26,
+        "mm_score": 1.87,
+        "total_ticks": 15,
+        "vol_adv_pct": 37.06,
+        "spread_bps": 18.5,
+        "fbtot": 1102.83,
+        "sfstot": 1469.53,
+        "gort": 0.0,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "MITT PRB": [
+      {
+        "date": "2026-02-16",
+        "group": "shitremhc",
+        "interest_score": 3.79,
+        "mm_score": 2.68,
+        "total_ticks": 48,
+        "vol_adv_pct": 42.45,
+        "spread_bps": 10.9,
+        "fbtot": 1112.89,
+        "sfstot": 1412.39,
+        "gort": 0.0,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "MFA PRB": [
+      {
+        "date": "2026-02-16",
+        "group": "shitremhc",
+        "interest_score": 3.25,
+        "mm_score": 2.76,
+        "total_ticks": 31,
+        "vol_adv_pct": 12.38,
+        "spread_bps": 15.2,
+        "fbtot": 1529.7,
+        "sfstot": 1610.5,
+        "gort": 0.0,
+        "busiest_window": "15:30-16:00"
+      }
+    ],
+    "ACR PRD": [
+      {
+        "date": "2026-02-16",
+        "group": "shitremhc",
+        "interest_score": 1.97,
+        "mm_score": 3.16,
+        "total_ticks": 5,
+        "vol_adv_pct": 6.21,
+        "spread_bps": 32.9,
+        "fbtot": 1356.75,
+        "sfstot": 1513.15,
+        "gort": 0.0,
+        "busiest_window": "15:00-15:30"
+      }
+    ],
+    "CHMI PRA": [
+      {
+        "date": "2026-02-16",
+        "group": "shitremhc",
+        "interest_score": 1.27,
+        "mm_score": 3.34,
+        "total_ticks": 26,
+        "vol_adv_pct": 36.87,
+        "spread_bps": 15.9,
+        "fbtot": 1392.89,
+        "sfstot": 1578.69,
+        "gort": 0.0,
+        "busiest_window": "14:30-15:00"
+      }
+    ]
+  },
+  "group_trends": {
+    "heldcilizyeniyedi": [
+      {
+        "date": "2026-02-16",
+        "direction": "buyer_dominant",
+        "total_ticks": 766,
+        "active_count": 8,
+        "busiest_window": "14:30-15:00",
+        "buyer_vs_seller": "6B / 0S"
+      }
+    ],
+    "heldcommonsuz": [
+      {
+        "date": "2026-02-16",
+        "direction": "seller_dominant",
+        "total_ticks": 1144,
+        "active_count": 16,
+        "busiest_window": "15:30-16:00",
+        "buyer_vs_seller": "1B / 3S"
+      }
+    ],
+    "helddeznff": [
+      {
+        "date": "2026-02-16",
+        "direction": "buyer_dominant",
+        "total_ticks": 2985,
+        "active_count": 28,
+        "busiest_window": "15:30-16:00",
+        "buyer_vs_seller": "9B / 3S"
+      }
+    ],
+    "heldff": [
+      {
+        "date": "2026-02-16",
+        "direction": "buyer_dominant",
+        "total_ticks": 2406,
+        "active_count": 31,
+        "busiest_window": "15:00-15:30",
+        "buyer_vs_seller": "3B / 1S"
+      }
+    ],
+    "heldflr": [
+      {
+        "date": "2026-02-16",
+        "direction": "buyer_dominant",
+        "total_ticks": 1342,
+        "active_count": 12,
+        "busiest_window": "15:30-16:00",
+        "buyer_vs_seller": "4B / 1S"
+      }
+    ],
+    "heldgarabetaltiyedi": [
+      {
+        "date": "2026-02-16",
+        "direction": "buyer_dominant",
+        "total_ticks": 921,
+        "active_count": 15,
+        "busiest_window": "14:30-15:00",
+        "buyer_vs_seller": "5B / 3S"
+      }
+    ],
+    "heldkuponlu": [
+      {
+        "date": "2026-02-16",
+        "direction": "buyer_dominant",
+        "total_ticks": 10443,
+        "active_count": 100,
+        "busiest_window": "15:30-16:00",
+        "buyer_vs_seller": "26B / 14S"
+      }
+    ],
+    "heldkuponlukreciliz": [
+      {
+        "date": "2026-02-16",
+        "direction": "buyer_dominant",
+        "total_ticks": 595,
+        "active_count": 12,
+        "busiest_window": "15:30-16:00",
+        "buyer_vs_seller": "6B / 2S"
+      }
+    ],
+    "heldkuponlukreorta": [
+      {
+        "date": "2026-02-16",
+        "direction": "seller_dominant",
+        "total_ticks": 805,
+        "active_count": 9,
+        "busiest_window": "15:00-15:30",
+        "buyer_vs_seller": "3B / 4S"
+      }
+    ],
+    "heldnff": [
+      {
+        "date": "2026-02-16",
+        "direction": "buyer_dominant",
+        "total_ticks": 1742,
+        "active_count": 17,
+        "busiest_window": "15:30-16:00",
+        "buyer_vs_seller": "7B / 3S"
+      }
+    ],
+    "heldotelremorta": [
+      {
+        "date": "2026-02-16",
+        "direction": "buyer_dominant",
+        "total_ticks": 823,
+        "active_count": 21,
+        "busiest_window": "15:00-15:30",
+        "buyer_vs_seller": "4B / 3S"
+      }
+    ],
+    "heldsolidbig": [
+      {
+        "date": "2026-02-16",
+        "direction": "buyer_dominant",
+        "total_ticks": 876,
+        "active_count": 6,
+        "busiest_window": "14:30-15:00",
+        "buyer_vs_seller": "2B / 0S"
+      }
+    ],
+    "heldtitrekhc": [
+      {
+        "date": "2026-02-16",
+        "direction": "seller_dominant",
+        "total_ticks": 379,
+        "active_count": 10,
+        "busiest_window": "15:00-15:30",
+        "buyer_vs_seller": "0B / 1S"
+      }
+    ],
+    "highmatur": [
+      {
+        "date": "2026-02-16",
+        "direction": "seller_dominant",
+        "total_ticks": 1779,
+        "active_count": 43,
+        "busiest_window": "15:00-15:30",
+        "buyer_vs_seller": "5B / 7S"
+      }
+    ],
+    "notbesmaturlu": [
+      {
+        "date": "2026-02-16",
+        "direction": "seller_dominant",
+        "total_ticks": 233,
+        "active_count": 12,
+        "busiest_window": "15:30-16:00",
+        "buyer_vs_seller": "0B / 1S"
+      }
+    ],
+    "notcefilliquid": [
+      {
+        "date": "2026-02-16",
+        "direction": "balanced",
+        "total_ticks": 1120,
+        "active_count": 23,
+        "busiest_window": "15:30-16:00",
+        "buyer_vs_seller": "3B / 3S"
+      }
+    ],
+    "nottitrekhc": [
+      {
+        "date": "2026-02-16",
+        "direction": "seller_dominant",
+        "total_ticks": 444,
+        "active_count": 15,
+        "busiest_window": "15:00-15:30",
+        "buyer_vs_seller": "3B / 5S"
+      }
+    ],
+    "salakilliquid": [
+      {
+        "date": "2026-02-16",
+        "direction": "buyer_dominant",
+        "total_ticks": 682,
+        "active_count": 20,
+        "busiest_window": "15:30-16:00",
+        "buyer_vs_seller": "4B / 1S"
+      }
+    ],
+    "shitremhc": [
+      {
+        "date": "2026-02-16",
+        "direction": "buyer_dominant",
+        "total_ticks": 193,
+        "active_count": 7,
+        "busiest_window": "15:30-16:00",
+        "buyer_vs_seller": "2B / 1S"
+      }
+    ]
+  },
+  "top_performers": [],
+  "learning_notes": [
+    {
+      "date": "2026-02-16",
+      "source": "claude_mm_train",
+      "note": "## PREFERRED STOCK MM EGITIM — KAPSAMLI ANALIZ\n\n### A. STRATEJI SECIMI\n\nSym | Strateji | Neden | BUY mekanigi | SELL mekanigi | Lot | $/roundtrip | RT/gun | Tahmini gun/$\n--- | --- | --- | --- | --- | --- | --- | --- | ---\nFGSN | S2, S3, S5 | Yuksek likidite, iki-yonlu akis, grup korelasyonu iyi. Range trading ve truth tick frontlama uygun. | $22.00 - $22.05 hidden buy | $22.55 - $22.60 hidden sell | 1100 | $0.10 | 56 | $0.18\nMS PRL | S2, S3, S4 | Yuksek likidite, spread iyi, arka kademe kullanilabilir. Range trading ve truth tick frontlama uygun. | $19.95 - $20.00 hidden buy | $20.00 - $20.05 hidden sell | 1200 | $0.10 | 60 | $0.17\nVOYA PRB | S2, S3, S4 | Yuksek likidite, spread iyi, arka kademe kullanilabilir. Range trading ve truth tick frontlama uygun. | $23.95 - $24.00 hidden buy | $2"
+    }
+  ]
+}

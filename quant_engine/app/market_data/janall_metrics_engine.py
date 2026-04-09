@@ -87,10 +87,9 @@ class JanallMetricsEngine:
             
             final_thg = self._safe_float(static_row.get('FINAL_THG'))
             short_final = self._safe_float(static_row.get('SHORT_FINAL'))
-            sma63chg = self._safe_float(static_row.get('SMA63 chg') or static_row.get('SMA63chg'))
-            sma246chg = self._safe_float(static_row.get('SMA246 chg') or static_row.get('SMA246chg'))
+            sma63chg = self._safe_float(static_row.get('SMA63 chg') or static_row.get('SMA63chg') or static_row.get('SMA63 chg_raw'))
+            sma246chg = self._safe_float(static_row.get('SMA246 chg') or static_row.get('SMA246chg') or static_row.get('SMA246 chg_raw'))
             
-            sma246chg = self._safe_float(static_row.get('SMA246 chg') or static_row.get('SMA246chg'))
             
             # Use passed benchmark_chg (derived from Group Average)
             # benchmark_chg arg is used directly
@@ -289,6 +288,11 @@ class JanallMetricsEngine:
                 'final_sas': round(final_sas, 2) if final_sas is not None else None,
                 'final_sfs': round(final_sfs, 2) if final_sfs is not None else None,
                 
+                # SMA Metrics (from static data)
+                'sma63_chg': sma63chg,
+                'sma246_chg': sma246chg,
+                'bench_chg': benchmark_chg,
+                
                 # Explainable breakdowns (for Inspector)
                 '_breakdown': {
                     'inputs': {
@@ -369,6 +373,8 @@ class JanallMetricsEngine:
                 
                 # NEW: Collect daily_chg values for group benchmark calculation
                 daily_chg_values = []
+                # NEW: Collect last prices for Benchmark Price (QeBench)
+                last_price_values = []
                 
                 # Calculate group averages for FinalFB and FinalSFS (JANALL uses Final_FB for Fbtot, Final_SFS for SFStot)
                 final_fb_values = []
@@ -395,6 +401,11 @@ class JanallMetricsEngine:
                         # Exclude extreme outliers (>$5 daily change is unusual for preferred stocks)
                         if abs(daily_chg) < 5.0:
                             daily_chg_values.append(daily_chg)
+                    
+                    # NEW: Collect last price
+                    last = inputs.get('last')
+                    if last is not None and isinstance(last, (int, float)) and last > 0:
+                         last_price_values.append(last)
                     
                     # Get FinalFB and FinalSFS (JANALL uses Final_FB for Fbtot, Final_SFS for SFStot)
                     # JANALL LOGIC: Exclude N/A values (None, 0, negative, or invalid)
@@ -429,6 +440,8 @@ class JanallMetricsEngine:
                 
                 # NEW: Calculate group average daily change (for benchmark)
                 group_avg_daily_chg = sum(daily_chg_values) / len(daily_chg_values) if daily_chg_values else None
+                # NEW: Calculate group average price
+                group_avg_price = sum(last_price_values) / len(last_price_values) if last_price_values else None
                 
                 group_stats[group_key] = {
                     'symbol_count': len(group_metrics),
@@ -436,8 +449,8 @@ class JanallMetricsEngine:
                     'group_avg_sma246': round(group_avg_sma246, 4) if group_avg_sma246 is not None else None,
                     'group_avg_final_fb': round(group_avg_final_fb, 2) if group_avg_final_fb is not None else None,
                     'group_avg_final_sfs': round(group_avg_final_sfs, 2) if group_avg_final_sfs is not None else None,
-                    # NEW: Group benchmark (average daily change of all stocks in group)
                     'group_avg_daily_chg': round(group_avg_daily_chg, 4) if group_avg_daily_chg is not None else None,
+                    'group_avg_price': round(group_avg_price, 4) if group_avg_price is not None else None, # For QeBench
                     'daily_chg_count': len(daily_chg_values),  # How many stocks contributed
                     'final_fb_values': final_fb_values,  # For ranking (JANALL uses Final_FB for Fbtot)
                     'final_sfs_values': final_sfs_values  # For ranking (JANALL uses Final_SFS for SFStot)
@@ -452,12 +465,16 @@ class JanallMetricsEngine:
             groups_without_sfs = len(group_stats) - groups_with_sfs
             total_sfs_values = sum(len(s.get('final_sfs_values', [])) for s in group_stats.values())
             
+            # Bench chg = group avg daily_chg (DOS GRUP / heldkuponlu CGRUP)
+            groups_with_bench = sum(1 for s in group_stats.values() if s.get('group_avg_daily_chg') is not None)
+            total_daily_chg = sum(s.get('daily_chg_count', 0) for s in group_stats.values())
             logger.info(
                 f"Computed group stats for {len(group_stats)} groups | "
                 f"Groups with valid FB: {groups_with_fb} (without: {groups_without_fb}) | "
                 f"Total valid final_fb values: {total_fb_values} | "
                 f"Groups with valid SFS: {groups_with_sfs} (without: {groups_without_sfs}) | "
-                f"Total valid final_sfs values: {total_sfs_values}"
+                f"Total valid final_sfs values: {total_sfs_values} | "
+                f"Groups with bench_chg (group_avg_daily_chg): {groups_with_bench}/{len(group_stats)} | daily_chg_count total: {total_daily_chg}"
             )
             
             # Log groups without valid FB/SFS for debugging
@@ -522,22 +539,29 @@ class JanallMetricsEngine:
                     f"group_avg={group_avg_daily_chg}, n={stats.get('daily_chg_count', 0)}"
                 )
             
-            # NEW: Recalculate Pahalilik/Ucuzluk based on group benchmark
-            # ask_sell_pahalilik = stock_daily_chg - group_avg_daily_chg
-            # bid_buy_ucuzluk = group_avg_daily_chg - stock_daily_chg
-            daily_chg = symbol_metrics.get('daily_chg')
-            if daily_chg is not None and group_avg_daily_chg is not None:
-                # Pahalilik: Hisse grubundan ne kadar pahalı? (SELL sinyali)
-                new_pahalilik = daily_chg - group_avg_daily_chg
-                symbol_metrics['ask_sell_pahalilik'] = round(new_pahalilik, 4)
-                symbol_metrics['front_sell_pahalilik'] = round(new_pahalilik, 4)
-                symbol_metrics['bid_sell_pahalilik'] = round(new_pahalilik, 4)
+            # NEW: Recalculate Pahalilik/Ucuzluk based on potential FILL price (Fill-Based)
+            # Formula: Score = (Potential Fill Chg - Group Average Daily Chg)
+            # This ensures we measure how "cheap" or "expensive" our FILL will be relative to group.
+            
+            prev_close = inputs.get('prev_close', 0)
+            pf_ask_sell = symbol_metrics.get('pf_ask_sell')
+            pf_bid_buy = symbol_metrics.get('pf_bid_buy')
+            
+            if group_avg_daily_chg is not None and prev_close > 0:
+                # Pahalilik: (Target Sell Fill - PrevClose) - GroupBench
+                if pf_ask_sell is not None:
+                    new_pahalilik = (pf_ask_sell - prev_close) - group_avg_daily_chg
+                    symbol_metrics['ask_sell_pahalilik'] = round(new_pahalilik, 4)
+                    symbol_metrics['front_sell_pahalilik'] = round(new_pahalilik, 4)
+                    symbol_metrics['bid_sell_pahalilik'] = round(new_pahalilik, 4)
                 
-                # Ucuzluk: Hisse grubundan ne kadar ucuz? (BUY sinyali)
-                new_ucuzluk = group_avg_daily_chg - daily_chg
-                symbol_metrics['bid_buy_ucuzluk'] = round(new_ucuzluk, 4)
-                symbol_metrics['front_buy_ucuzluk'] = round(new_ucuzluk, 4)
-                symbol_metrics['ask_buy_ucuzluk'] = round(new_ucuzluk, 4)
+                # Ucuzluk: (Target Buy Fill - PrevClose) - GroupBench
+                # Using user convention: Negative = Cheap (Relative to group)
+                if pf_bid_buy is not None:
+                    new_ucuzluk = (pf_bid_buy - prev_close) - group_avg_daily_chg
+                    symbol_metrics['bid_buy_ucuzluk'] = round(new_ucuzluk, 4)
+                    symbol_metrics['front_buy_ucuzluk'] = round(new_ucuzluk, 4)
+                    symbol_metrics['ask_buy_ucuzluk'] = round(new_ucuzluk, 4)
             # ==== END NEW ====
             
             sma63chg = inputs.get('sma63chg')
@@ -547,10 +571,17 @@ class JanallMetricsEngine:
             
             # E) GORT calculation
             gort = None
-            if (sma63chg is not None and sma246chg is not None and 
-                group_avg_sma63 is not None and group_avg_sma246 is not None):
-                gort = (0.25 * (sma63chg - group_avg_sma63)) + (0.75 * (sma246chg - group_avg_sma246))
-                symbol_metrics['gort'] = round(gort, 4)
+            if sma63chg is not None and sma246chg is not None:
+                if group_avg_sma63 is not None and group_avg_sma246 is not None:
+                    # Normal: Compare to group average
+                    gort = (0.25 * (sma63chg - group_avg_sma63)) + (0.75 * (sma246chg - group_avg_sma246))
+                    symbol_metrics['gort'] = round(gort, 4)
+                else:
+                    # FALLBACK: No group stats - use own SMA values directly
+                    # This ensures no stock has N/A GORT
+                    gort = (0.25 * sma63chg) + (0.75 * sma246chg)
+                    symbol_metrics['gort'] = round(gort, 4)
+                    logger.debug(f"[GORT_FALLBACK] {symbol}: Using own SMAs (no group stats)")
             else:
                 symbol_metrics['gort'] = None
             
@@ -612,14 +643,68 @@ class JanallMetricsEngine:
                 }
             else:
                 symbol_metrics['fbtot'] = None
-                # Debug: Log why FBTOT is None
-                debug_count_key = f'_fbtot_debug_count_{symbol}'
-                debug_count = getattr(self, debug_count_key, 0)
+                # Debug: Log why FBTOT is None with root cause analysis
+                # Track per-group to avoid spam (log first 3 symbols per group only)
+                group_debug_key = f'_fbtot_group_debug_{group_key}'
+                group_debug_count = getattr(self, group_debug_key, {}).get('count', 0)
+                group_debug_symbols = getattr(self, group_debug_key, {}).get('symbols', [])
                 
-                if debug_count < 5:
-                    setattr(self, debug_count_key, debug_count + 1)
-                    reasons = ["(Conditions not met)"] 
-                    logger.warning(f"🔍 [FBTOT_DEBUG] {symbol}: FBTOT=None")
+                if group_debug_count < 3 and symbol not in group_debug_symbols:
+                    if not hasattr(self, group_debug_key):
+                        setattr(self, group_debug_key, {'count': 0, 'symbols': []})
+                    group_debug = getattr(self, group_debug_key)
+                    group_debug['count'] += 1
+                    group_debug['symbols'].append(symbol)
+                    
+                    # Log detailed reason why FBTOT is None
+                    reasons = []
+                    root_causes = []
+                    
+                    # Check final_fb
+                    if final_fb is None:
+                        reasons.append("final_fb=None")
+                        # Root cause: Why is final_fb None?
+                        inputs = symbol_metrics.get('_breakdown', {}).get('inputs', {})
+                        final_thg = inputs.get('FINAL_THG')
+                        front_buy_ucuzluk = symbol_metrics.get('front_buy_ucuzluk')
+                        
+                        if final_thg is None or final_thg <= 0:
+                            root_causes.append(f"FINAL_THG={final_thg} (missing or <=0)")
+                        if front_buy_ucuzluk is None:
+                            root_causes.append("front_buy_ucuzluk=None")
+                            # Check why front_buy_ucuzluk is None
+                            pf_front_buy_chg = inputs.get('pf_front_buy_chg')
+                            benchmark_chg = inputs.get('benchmark_chg')
+                            last = inputs.get('last')
+                            prev_close = inputs.get('prev_close')
+                            
+                            if pf_front_buy_chg is None:
+                                if last is None or last <= 0:
+                                    root_causes.append("last=None or <=0")
+                                if prev_close is None or prev_close <= 0:
+                                    root_causes.append("prev_close=None or <=0")
+                            if benchmark_chg is None:
+                                root_causes.append("benchmark_chg=None (group avg missing)")
+                    elif not isinstance(final_fb, (int, float)) or final_fb <= 0:
+                        reasons.append(f"final_fb invalid: {final_fb}")
+                    
+                    # Check group stats
+                    if group_avg_final_fb is None:
+                        reasons.append("group_avg_final_fb=None")
+                        root_causes.append(f"Group '{group_key}' has no valid final_fb values (group has {len(final_fb_values)} valid values)")
+                    elif not isinstance(group_avg_final_fb, (int, float)) or group_avg_final_fb <= 0:
+                        reasons.append(f"group_avg_final_fb invalid: {group_avg_final_fb}")
+                    
+                    if len(final_fb_values) == 0:
+                        reasons.append("final_fb_values empty")
+                        root_causes.append(f"Group '{group_key}' has 0 symbols with valid final_fb")
+                    
+                    # Combine reasons and root causes
+                    msg = ', '.join(reasons) if reasons else 'Conditions not met'
+                    if root_causes:
+                        msg += f" [ROOT: {', '.join(root_causes)}]"
+                    
+                    logger.warning(f"🔍 [FBTOT_DEBUG] {symbol} (group={group_key}): FBTOT=None ({msg})")
             
             # SFStot calculation - Same Logic (Weights inside components)
             final_sfs = symbol_metrics.get('final_sfs')
@@ -777,6 +862,24 @@ class JanallMetricsEngine:
                 for symbol, metrics in symbol_metrics_map.items():
                     key = f"janall:metrics:{symbol}"
                     pipeline.setex(key, 3600, json.dumps(metrics))
+                
+                # NEW: Persist Group Benchmark Prices for BenchmarkPriceFetcher (QeBench)
+                for group_key, stats in group_stats.items():
+                    avg_price = stats.get('group_avg_price')
+                    if avg_price:
+                        # Convert group_key "heldkuponlu:c550" -> key "bench:dos_group:heldkuponlu:c550:current_avg"
+                        # Handle plain groups too: "heldff" -> "bench:dos_group:heldff:current_avg"
+                        
+                        parts = group_key.split(':')
+                        if len(parts) == 2:
+                            # Primary:Secondary format (e.g. heldkuponlu:c550)
+                            redis_key = f"bench:dos_group:{parts[0]}:{parts[1]}:current_avg"
+                        else:
+                            # Primary only (e.g. heldff)
+                            redis_key = f"bench:dos_group:{group_key}:current_avg"
+                            
+                        pipeline.set(redis_key, str(avg_price))
+                        
                 pipeline.execute()
             except Exception as e:
                 logger.error(f"Failed to persist metrics to Redis: {e}")

@@ -1,0 +1,8 @@
+{
+  "enabled": true,
+  "est_cur_ratio": 44.0,
+  "min_stock_count": 5,
+  "max_stock_count": 100,
+  "lot_per_stock": 200,
+  "lot_mode": "adv_adjust"
+}

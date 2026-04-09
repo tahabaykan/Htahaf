@@ -1,0 +1,42 @@
+## PAPER TRADING GUNLUK RAPOR — 2026-02-17
+
+Bugun 2 scan yapildi, 45 firsat goruldu, 10 emir verildi.
+
+SONUC:
+- Gunluk PnL: $124.00
+- Gross: $130.00, Fees: $6.00
+- Roundtrip: 1
+
+KAPANAN ISLEMLER:
+[
+  {
+    "symbol": "MBINN",
+    "entry_price": 20.2,
+    "exit_price": 20.07,
+    "qty": 1000,
+    "pnl": 124.0,
+    "gross_pnl": 130.0,
+    "fees": 6.0,
+    "hold_time": 0,
+    "time": "2026-02-17T01:21:36.450206"
+  }
+]
+
+GOZLEMLER:
+- Hangi stratejiler ise yaradi?
+Bugün uygulanan strateji, kisa vadeli fiyat hareketlerini yakalamaya yönelikti. MBINN hissesinde kısa bir pozisyon alınarak %0.64'lük bir kar elde edildi. Bu strateji kısa vadeli işlemlerde başarılı oldu.
+
+- Nereler kolaydi, nereler zordu?
+Piyasadaki volatilite ve likidite koşulları bugün işlemlerin gerçekleştirilmesini kolaylaştırdı. Bununla birlikte, hızlı fiyat hareketleri ve zaman baskısı bazı zorluklar oluşturdu.
+
+- Yarin icin ne onerirsin?
+Yarın için, daha uzun vadeli ve temkinli bir yaklaşım öneririm. Piyasadaki dalgalanmaları daha iyi değerlendirmek ve daha istikrarlı kar elde etmek için, trend takibi ve temel analiz stratejilerini kullanmak faydalı olabilir.
+
+- Bu PnL surdurulebilir mi?
+Bugünkü PnL, kısa vadeli işlemlerin başarısına bağlı olduğundan, sürdürülebilir değildir. Daha istikrarlı ve uzun vadeli bir yaklaşım benimsenmeli, risk yönetimi daha etkin hale getirilmelidir.
+
+- Hangi hisselerde daha agresif olunmali?
+Piyasa koşullarına ve şirket temellerine göre, daha yüksek volatiliteye sahip hisseler daha agresif bir şekilde takip edilebilir. Ancak, bu tür hisselerle işlem yaparken risk yönetimi çok önemlidir.
+
+- Risk/return analizi yap.
+Bugünkü işlemde, 1000 hisse için $124 kar elde edildi. Bu, %0.64'lük bir getiri sağladı. Ancak, kısa vadeli işlemlerde risk daha yüksektir. Daha uzun vadeli ve temkinli bir yaklaşım, daha istikrarlı getiriler sağlayabilir.

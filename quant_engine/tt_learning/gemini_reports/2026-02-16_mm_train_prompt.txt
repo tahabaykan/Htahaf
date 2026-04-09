@@ -1,0 +1,166 @@
+## PREFERRED STOCK MM EGITIM — KAPSAMLI ANALIZ
+
+5 is gunu truth tick verisiyle 95 hisseye yuzdesel MM skorlamasi yapildi.
+Asagidaki veriler GERCEK — truth tick bazli.
+
+### MM STRATEJILERI (hepsi kullanilabilir):
+**S1. Spread Capture**: Bid+0.01 hidden buy, Ask-0.01 hidden sell. Min $0.05/share.
+**S2. Truth Tick Frontlama**: Son print $25.58 ise, buy $25.51 sell $25.57.
+**S3. Range Trading**: Hisse $25.40-25.70 arasinda oynuyorsa, alt range'de al ust range'de sat.
+**S4. Arka Kademe**: Ilk kademeye degil, 2.-3. kademeye hidden yaz. Fill gelince oteki taraftan cikis bekle.
+**S5. Grup Korelasyonu**: DOS grubundaki diger hisseler yukari giderken bu hisse geri kaldiysa = al sinyali.
+**S6. Mean Reversion**: GORT dusukse al, yuksekse sat. FBtot/SFStot'a gore yon.
+
+### SKORLAMA (0-100, agirlikli):
+25% Volume/Frequency + 20% ADV Likidite + 20% Spread + 15% Iki-Yonlu Akis + 10% Range + 10% Grup
+
+### EXPOSURE: $500K toplam. Lot = ADV'nin %10-15'i (yuvarlanmis).
+
+### TIER A — EN IYI MM ADAYLARI (47 hisse, skor 70-100%):
+
+Sym           Grp                   Pr$     ADV TT/d  V/A%   Sp MM%   Lot   $Exp   FBt   SFt   63d       GDir        Peak
+-------------------------------------------------------------------------------------------------------------------------
+FGSN          heldcilizyeniyedi  $  22  37,720   56   17%   10  94  1100 $24222  1419  1452  -4.3 buyer_domi 14:30-15:00
+MS PRL        heldkuponlu        $  20  34,197   60   33%    5  90  1200 $24576  1234  1298  -2.0 buyer_domi 15:30-16:00
+VOYA PRB      heldnff            $  24  18,259  104   72%    6  90  1000 $24170   326   479  +0.5 buyer_domi 15:00-15:30
+VNO PRO       heldcommonsuz      $  15  18,574   48   28%    7  88  1600 $24112  1233  1339  +1.1 seller_dom 14:30-15:00
+RF PRC        heldnff            $  24  25,878   95   30%    5  88  1000 $24230   263   286  +2.2 buyer_domi 15:30-16:00
+UMBFO         helddeznff         $  27  22,708   34   14%    7  86   900 $24224   672   742  +0.0 buyer_domi 14:30-15:00
+BAC PRE       heldflr            $  20  23,204   28   13%   12  86  1200 $23616   863   909  -0.9 buyer_domi 15:30-16:00
+DTB           heldkuponlu        $  17  17,117   61   36%    5  86  1400 $24346  1420  1464  -1.7 buyer_domi 15:30-16:00
+CRBD          heldcilizyeniyedi  $  24  45,847   86   20%    6  85  1000 $23900  1230  1274  -0.9 buyer_domi 15:00-15:30
+GPJA          heldkuponlu        $  23  14,110   29   19%   10  84  1000 $23140   754   804  +0.3 buyer_domi 15:30-16:00
+SYF PRA       heldkuponlukreciliz $  19  42,474   44   12%    7  84  1200 $23254   724   760  +0.2 buyer_domi 14:30-15:00
+LOB PRA       helddeznff         $  26  14,939   72   82%    5  83   900 $23265   724   793  +0.0 buyer_domi 15:00-15:30
+ADC PRA       heldkuponlu        $  17  11,974   49   48%    6  83  1100 $18821  1400  1597  -2.1 buyer_domi 15:00-15:30
+MGR           heldkuponlu        $  21  17,277   20   10%   16  82  1100 $23595  1353  1424  -0.7 buyer_domi 15:00-15:30
+CFG PRE       heldkuponlukreorta $  19  36,695   72   27%    4  82  1200 $23364  1160  1323  -0.9 seller_dom 15:00-15:30
+RITM PRD      heldnff            $  25  31,236   60   30%    3  82  1000 $24580   500   550  -0.8 buyer_domi 15:00-15:30
+MGRE          heldcilizyeniyedi  $  24  24,454   30   11%    9  81  1000 $24330  1333  1377  -1.1 buyer_domi 15:30-16:00
+TDS PRV       heldcommonsuz      $  20  38,268   70   22%    4  81  1200 $24168  1035  1050  +1.9 seller_dom 15:00-15:30
+LNC PRD       helddeznff         $  27  25,399  146   76%    3  81   900 $24201   935   953  -2.2 buyer_domi 15:00-15:30
+FITBO         heldkuponlukreorta $  20  23,956   36   17%    7  81  1200 $23604  1471  1639  -1.2 seller_dom 14:30-15:00
+MET PRA       heldflr            $  22  66,217  120   22%    3  80  1100 $23727  1387  1427  -4.0 buyer_domi 14:30-15:00
+BIPJ          heldcilizyeniyedi  $  24  11,402   37   29%   11  79  1000 $24390  1315  1715  -3.3 buyer_domi 15:00-15:30
+BOH PRB       helddeznff         $  26  10,883   34   25%    8  79   900 $23598   738   840  -1.3 buyer_domi 14:30-15:00
+MTB PRH       heldnff            $  25  30,912   70   61%    3  79   900 $22545   538   676  -0.7 buyer_domi 15:30-16:00
+KEY PRJ       heldkuponlukreorta $  22  29,103   96   44%    4  78  1100 $24266   997  1066  +0.7 seller_dom 15:30-16:00
+VNO PRL       heldcommonsuz      $  18  18,324   32   23%    6  77  1300 $23384  1251  1266  -0.8 seller_dom 15:30-16:00
+FITBI         heldff             $  26  24,660  346  107%    2  77   900 $23040   896   958  -1.4 buyer_domi 15:30-16:00
+REXR PRB      notcefilliquid     $  22   3,123   45  146%   13  76   400 $ 8960  1235  1418  -2.7   balanced 15:30-16:00
+GOODO         salakilliquid      $  20   7,391   41   95%   11  76   700 $14175   994  1251  +3.4 buyer_domi 15:30-16:00
+WAL PRA       heldnff            $  23  40,587   42   35%    2  75  1000 $23375   583   627  +1.9 buyer_domi 15:30-16:00
+AHL PRD       heldcommonsuz      $  20  14,087   30   34%    7  74  1200 $23796  1391  1446  -1.9 seller_dom 15:30-16:00
+CHSCO         heldff             $  26  14,883   23   14%    6  74   900 $23760   704   743  -0.7 buyer_domi 14:30-15:00
+GS PRC        heldflr            $  20  21,783   32   22%    4  74  1200 $24420   613   729  +0.5 buyer_domi 15:30-16:00
+LANDO         salakilliquid      $  20  16,100   24   18%    9  74  1200 $24072  1102  1267  +1.0 buyer_domi 14:30-15:00
+FCNCO         heldkuponlukreorta $  22  12,935   28   24%    9  73  1100 $24145  1453  1613  -1.2 seller_dom 15:30-16:00
+WBS PRF       heldkuponlukreorta $  21   9,081   44  330%    6  72   900 $19206   279   375  +7.7 seller_dom 15:00-15:30
+OXSQH         highmatur          $  25   5,699   34   61%    8  72   500 $12675   883  1091  +0.0 seller_dom 14:30-15:00
+PSEC PRA      heldcommonsuz      $  18   6,560   28   58%   25  71   600 $10632   973  1080  +3.6 seller_dom 15:00-15:30
+AMH PRH       heldgarabetaltiyedi $  24   5,447   44  112%    7  71   500 $11990  1363  1597  -1.4 buyer_domi 15:30-16:00
+INN PRE       heldotelremorta    $  19   6,179   32   64%   16  71   600 $11328  1188  1358  -0.8 buyer_domi 15:00-15:30
+AHH PRA       heldotelremorta    $  21   9,244   26   40%   10  71   900 $19089  1098  1410  -0.4 buyer_domi 15:30-16:00
+RLJ PRA       heldtitrekhc       $  26  14,500   48   39%    4  71   900 $22959   125   166  +0.2 seller_dom 15:00-15:30
+NCV PRA       notcefilliquid     $  21   4,963  104  258%    5  71   700 $14896  1086  1104  -2.0   balanced 15:30-16:00
+DDT           heldff             $  26   6,472   16   21%   18  70   600 $15696   649   745  -0.5 buyer_domi 15:00-15:30
+BML PRG       heldflr            $  20   9,807   16   22%   13  70   900 $17694   732  1063  -0.1 buyer_domi 14:30-15:00
+MBINN         heldkuponlukreciliz $  20  10,129   36  103%    7  70  1000 $20140  1060  1111  +2.5 buyer_domi 15:30-16:00
+MS PRI        heldsolidbig       $  25  53,824   68   14%    1  70   900 $22680  1200  1233  -0.9 buyer_domi 15:00-15:30
+
+### TIER B — IYI MM ADAYLARI (43 hisse, skor 50-69%):
+
+Sym           Grp                   Pr$     ADV TT/d  V/A%   Sp MM%   Lot   $Exp   FBt   SFt   63d       GDir        Peak
+-------------------------------------------------------------------------------------------------------------------------
+WBS PRG       heldgarabetaltiyedi $  25  10,277   64  144%    4  69  1000 $24670   929  1007  +2.1 buyer_domi 15:00-15:30
+SCHW PRD      heldsolidbig       $  25  35,284   78   26%    1  69   900 $22617   238   259  +0.1 buyer_domi 15:30-16:00
+JPM PRD       heldsolidbig       $  25  97,913  126   18%    1  69  1000 $24880  1187  1197  -0.9 buyer_domi 15:30-16:00
+BML PRJ       heldflr            $  21  15,800   26   26%    4  68  1200 $24972   524   650  +1.0 buyer_domi 15:30-16:00
+AMH PRG       heldgarabetaltiyedi $  23   5,341   26   48%   14  68   500 $11505  1377  2358  -1.4 buyer_domi 15:00-15:30
+BAC PRB       heldsolidbig       $  25  70,085   63   14%    1  68   900 $22527  1230  1267  -0.9 buyer_domi 14:30-15:00
+RITM PRA      heldff             $  25  10,762   34   66%    4  67   900 $22770   812   841  -1.1 buyer_domi 15:00-15:30
+VLYPO         heldff             $  25   4,534   32   86%    5  66   600 $15060   954   998  -1.6 buyer_domi 15:30-16:00
+FULTP         heldkuponlukreciliz $  18   7,805   20   31%   14  66   700 $12929  1857  1914  -4.7 buyer_domi 15:30-16:00
+SAY           highmatur          $  26   4,708   42  166%    4  66   700 $17878  1055  1099  -1.4 seller_dom 14:30-15:00
+MFA PRB       shitremhc          $  21  12,192   16   12%   15  66  1200 $24646  1530  1610  -3.0 buyer_domi 15:30-16:00
+SB PRD        nottitrekhc        $  26   2,249   76  233%    5  65   300 $ 7680   781  1017  +0.6 seller_dom 15:30-16:00
+DCOMP         heldkuponlukreciliz $  19   6,089   19   32%   14  64   600 $11410   489   574  +3.6 buyer_domi 15:30-16:00
+HIG PRG       heldsolidbig       $  25  16,172   16   16%    5  64  1000 $24880  1002  1045  -0.7 buyer_domi 14:30-15:00
+AHL PRF       heldcilizyeniyedi  $  24  17,457   10    6%    6  63  1000 $24370  1125  1204  -3.7 buyer_domi 14:30-15:00
+HWCPZ         heldgarabetaltiyedi $  24   6,450   13   25%   11  63   600 $14478  1238  1488  +0.6 buyer_domi 15:00-15:30
+OXLCI         highmatur          $  26   7,098   41  139%    3  63   700 $17934   975  1579  -0.9 seller_dom 15:00-15:30
+MITT PRB      shitremhc          $  22   4,787   24   42%   11  63   700 $15698  1113  1412  +2.2 buyer_domi 15:30-16:00
+PRIF PRD      highmatur          $  25   1,959   12   81%   10  62   200 $ 4972   259   651  +2.8 seller_dom 15:30-16:00
+FITBP         heldgarabetaltiyedi $  25   8,223   22   51%    6  61   800 $19616  1357  1604  -1.8 buyer_domi 15:00-15:30
+FHN PRF       heldkuponlukreciliz $  18   6,659   13   13%   18  61   600 $10836   985  1054  -1.7 buyer_domi 15:00-15:30
+PMTU          highmatur          $  26   3,042    6   18%   21  60   400 $10210  1090  1142  -1.5 seller_dom 15:00-15:30
+GMRE PRA      salakilliquid      $  25   6,044   29  118%    5  60   600 $14711  1121  1348  +1.1 buyer_domi 15:30-16:00
+DCOMG         helddeznff         $  26   2,401    2    7%   30  59   300 $ 7905   629   697  -0.7 buyer_domi 15:00-15:30
+GNL PRB       heldotelremorta    $  22   4,496   10   21%   40  59   600 $13440  1137  1234  -0.7 buyer_domi 14:30-15:00
+PEB PRF       heldotelremorta    $  20   7,723    2    1%   87  58   700 $13881  1162  1308  +1.5 buyer_domi 15:30-16:00
+ACR PRC       heldtitrekhc       $  25   8,119   19   25%    7  58   800 $19960  1297  1338  -1.7 seller_dom 15:30-16:00
+GSL PRB       heldtitrekhc       $  27   5,249   12   28%   10  58   500 $13465   905  1270  -1.0 seller_dom 15:30-16:00
+ETI PR        notcefilliquid     $  24   1,735   11   95%   21  58   200 $ 4742  1072  1419  +1.7   balanced 15:00-15:30
+ACP PRA       notcefilliquid     $  21   3,928    7   13%   17  58   500 $10385  1049  1098  -0.2   balanced 15:00-15:30
+CMRE PRD      nottitrekhc        $  28   3,154   16   51%   11  58   400 $11048   376   649  +2.2 seller_dom 15:00-15:30
+SEAL PRA      heldtitrekhc       $  25   4,085   21   51%    8  57   600 $15276  1123  1157  -1.4 seller_dom 15:30-16:00
+TRTN PRB      heldtitrekhc       $  25   5,148   18   35%    8  57   500 $12682  1121  1227  -1.4 seller_dom 15:30-16:00
+NHPBP         salakilliquid      $  19   5,759    6   19%   18  57   500 $ 9365   874  1199  +0.5 buyer_domi 15:00-15:30
+CHMI PRA      shitremhc          $  21   4,355   13   37%   16  57   600 $12642  1393  1579  -2.9 buyer_domi 14:30-15:00
+DSX PRB       nottitrekhc        $  26   3,183    8   23%   14  55   400 $10488  1296  1795  -1.4 seller_dom 14:30-15:00
+GGT PRG       notcefilliquid     $  21   1,242    3   16%   41  53   100 $ 2142  1138  1328  -1.8   balanced 15:30-16:00
+SSSSL         notbesmaturlu      $  25   4,317    3   12%   13  52   600 $15048   945  1364  -0.3 seller_dom 15:00-15:30
+OCCIN         notbesmaturlu      $  25   3,792    4    6%   12  52   500 $12345   733  6135  +0.3 seller_dom 15:00-15:30
+MITT PRA      shitremhc          $  23   1,997    8   37%   18  52   200 $ 4628  1103  1470  +2.0 buyer_domi 15:30-16:00
+LFT PRA       salakilliquid      $  21   1,085    4   20%   44  51   100 $ 2084  1173  1320  -1.2 buyer_domi 14:30-15:00
+ACR PRD       shitremhc          $  22   3,975    2    6%   33  51   500 $11005  1357  1513  -0.9 buyer_domi 15:00-15:30
+CMRE PRB      nottitrekhc        $  26   1,815    2   46%   33  50   200 $ 5112   653  1655  +1.2 seller_dom 14:30-15:00
+
+### GRUP BENCHMARK:
+
+  heldcilizyeniyedi        ticks=  766 dir=buyer_dominant     buyer%= 50% peak=14:30-15:00
+  heldcommonsuz            ticks= 1144 dir=seller_dominant    buyer%= 50% peak=15:30-16:00
+  helddeznff               ticks= 2985 dir=buyer_dominant     buyer%= 50% peak=15:30-16:00
+  heldff                   ticks= 2406 dir=buyer_dominant     buyer%= 50% peak=15:00-15:30
+  heldflr                  ticks= 1342 dir=buyer_dominant     buyer%= 50% peak=15:30-16:00
+  heldgarabetaltiyedi      ticks=  921 dir=buyer_dominant     buyer%= 50% peak=14:30-15:00
+  heldkuponlu              ticks=10443 dir=buyer_dominant     buyer%= 50% peak=15:30-16:00
+  heldkuponlukreciliz      ticks=  595 dir=buyer_dominant     buyer%= 50% peak=15:30-16:00
+  heldkuponlukreorta       ticks=  805 dir=seller_dominant    buyer%= 50% peak=15:00-15:30
+  heldnff                  ticks= 1742 dir=buyer_dominant     buyer%= 50% peak=15:30-16:00
+  heldotelremorta          ticks=  823 dir=buyer_dominant     buyer%= 50% peak=15:00-15:30
+  heldsolidbig             ticks=  876 dir=buyer_dominant     buyer%= 50% peak=14:30-15:00
+  heldtitrekhc             ticks=  379 dir=seller_dominant    buyer%= 50% peak=15:00-15:30
+  highmatur                ticks= 1779 dir=seller_dominant    buyer%= 50% peak=15:00-15:30
+  notbesmaturlu            ticks=  233 dir=seller_dominant    buyer%= 50% peak=15:30-16:00
+  notcefilliquid           ticks= 1120 dir=balanced           buyer%= 50% peak=15:30-16:00
+  nottitrekhc              ticks=  444 dir=seller_dominant    buyer%= 50% peak=15:00-15:30
+  salakilliquid            ticks=  682 dir=buyer_dominant     buyer%= 50% peak=15:30-16:00
+  shitremhc                ticks=  193 dir=buyer_dominant     buyer%= 50% peak=15:30-16:00
+
+### ANALIZ GOREVI:
+
+Butun Tier A ve Tier B hisseler icin MM stratejisi belirle:
+
+**A. STRATEJI SECIMI**: Her hisse icin hangi strateji (S1-S6) en uygun? Neden?
+Her hisse icin satir: Symbol | Strateji | Neden | BUY mekanigi | SELL mekanigi | Lot | $/roundtrip | RT/gun | Tahmini gun/$
+
+**B. SENARYO **: En iyi 5 hisse icin adim adim:
+- Truth tick / bid-ask durumunu gor
+- Hidden emir yerlesimi (kac lot, nereye, hangi kademe)
+- Fill gelince ne yapilir
+- Fiyat aleyhine giderse ne yapilir
+- Grup benchmark'i nasil kullanilir
+
+**C. $500K DAGITIM VE RETURN**:
+- Kac hisse secilir? Her birine kac $ exposure?
+- Gunluk toplam gelir tahmini (GERCEKCI, fill rate %25-35)
+- Aylik ve yillik
+- % return ($500K uzerinden)
+
+**D. ILK 20 HiSSE DETAY TABLOSU**:
+Symbol | Strateji | Lot | $/RT | FillRate% | RT/gun | Gross$/gun | Net$/gun | Aylik$ | Yillik$
+
+Gercekci ol. Preferred stock'lar $18-28 arasi, $0.01 tick, dusuk volatilite.
+Ama BIRSURU hissede MM yapilabilir — sadece spread capture degil, range/korelasyon da var.
+LOTLAR BUYUK OLMALI — ADV'nin %10-15'i. Turkce yaz.

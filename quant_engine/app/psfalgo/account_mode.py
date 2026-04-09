@@ -57,14 +57,14 @@ class AccountModeManager:
     
     async def set_mode(self, mode: str, auto_connect: bool = True) -> Dict[str, Any]:
         """
-        Set account mode and optionally auto-connect/disconnect.
+        Set account mode (PHASE 11: Persistent Dual Connections).
         
-        PHASE 10.1: Auto-connect IBKR when mode is IBKR_GUN or IBKR_PED.
-        Auto-disconnect IBKR when mode is HAMMER_PRO.
+        IMPORTANT: Connections are PERSISTENT - this method ONLY changes the active account flag.
+        NO disconnections occur. All accounts remain connected.
         
         Args:
             mode: Account mode (HAMMER_PRO, IBKR_GUN, IBKR_PED)
-            auto_connect: Auto-connect IBKR if mode is IBKR (default: True)
+            auto_connect: Ignored (kept for API compatibility) - connections are persistent
             
         Returns:
             Result dict with connection status
@@ -72,9 +72,11 @@ class AccountModeManager:
         try:
             new_mode = AccountMode(mode)
             old_mode = self.current_mode
+            
+            # Update mode
             self.current_mode = new_mode
             
-            logger.info(f"[ACCOUNT_MODE] Changed from {old_mode.value} to {new_mode.value}")
+            logger.info(f"[ACCOUNT_MODE] Switching from {old_mode.value} to {new_mode.value} (persistent connections)")
             
             result = {
                 'success': True,
@@ -82,143 +84,96 @@ class AccountModeManager:
                 'new_mode': new_mode.value
             }
             
-            # PHASE 10.1: Auto-connect/disconnect
-            if auto_connect:
-                if new_mode == AccountMode.HAMMER_PRO:
-                    # Disconnect IBKR if switching to HAMMER
-                    if old_mode in [AccountMode.IBKR_GUN, AccountMode.IBKR_PED]:
-                        from app.psfalgo.ibkr_connector import get_ibkr_connector
-                        old_connector = get_ibkr_connector(account_type=old_mode.value)
-                        if old_connector and old_connector.is_connected():
-                            await old_connector.disconnect()
-                            logger.info(f"[ACCOUNT_MODE] Disconnected from {old_mode.value}")
-                            result['disconnected'] = old_mode.value
+            # PHASE 11: ONLY update Redis active account flag - NO connection changes
+            from app.psfalgo.ibkr_connector import set_active_ibkr_account
+            from app.core.redis_client import get_redis_client
+            import json
+            
+            try:
+                r = get_redis_client()
+                if not r or not getattr(r, 'sync', None):
+                    logger.warning("[ACCOUNT_MODE] Redis not available - cannot save mode")
+                    return {'success': False, 'error': 'Redis not available'}
                 
-                elif new_mode in [AccountMode.IBKR_GUN, AccountMode.IBKR_PED]:
-                    # Auto-connect to IBKR
-                    from app.psfalgo.ibkr_connector import get_ibkr_connector
+                if new_mode == AccountMode.HAMMER_PRO:
+                    # Switch to HAMMER_PRO (IBKR connections remain active)
+                    set_active_ibkr_account(None)  # Clear IBKR active flag
+                    r.sync.set("psfalgo:recovery:account_open", "HAMPRO")
+                    r.sync.set("psfalgo:account_mode", json.dumps({"mode": "HAMMER_PRO"}))
+                    r.sync.set("psfalgo:trading:account_mode", "HAMPRO")
+                    logger.info("[ACCOUNT_MODE] ✅ Switched to HAMMER_PRO (IBKR connections remain active)")
                     
-                    connector = get_ibkr_connector(account_type=new_mode.value)
-                    if connector and not connector.is_connected():
-                        # PHASE 10.1: Same port for both GUN and PED (like Janall)
-                        # Default: 4001 (Gateway) or 7497 (TWS)
-                        # Account distinction is done via account field, not port
-                        port = 4001  # Default Gateway port (same for both)
-                        # Different client_id per account type to avoid conflicts
-                        client_id = 19 if new_mode == AccountMode.IBKR_GUN else 21
-                        
-                        connect_result = await connector.connect(
-                            host='127.0.0.1',
-                            port=port,
-                            client_id=client_id
-                        )
-                        
-                        if connect_result.get('success'):
-                            logger.info(f"[ACCOUNT_MODE] Auto-connected to {new_mode.value}")
-                            result['connected'] = True
-                            result['connection_info'] = connect_result
-                            
-                            # Auto-track BEFDAY positions when account mode changes to IBKR (günde 1 kere)
-                            async def auto_track_befday_on_mode_change():
-                                """Auto-track BEFDAY positions when switching to IBKR mode (once per day)"""
-                                try:
-                                    await asyncio.sleep(2)  # Wait for connection to stabilize
-                                    
-                                    from app.psfalgo.befday_tracker import get_befday_tracker, track_befday_positions
-                                    
-                                    tracker = get_befday_tracker()
-                                    if not tracker:
-                                        logger.warning("[BEFDAY] Tracker not initialized, skipping auto-track")
-                                        return
-                                    
-                                    # Determine mode based on account_type
-                                    mode = 'ibkr_gun' if new_mode == AccountMode.IBKR_GUN else 'ibkr_ped'
-                                    
-                                    # Check if should track
-                                    should_track, reason = tracker.should_track(mode=mode)
-                                    if not should_track:
-                                        logger.info(f"[BEFDAY] Skipping auto-track for {new_mode.value}: {reason}")
-                                        return
-                                    
-                                    # Get positions from IBKR
-                                    positions = await connector.get_positions()
-                                    if positions:
-                                        success = await track_befday_positions(
-                                            positions=positions,
-                                            mode=mode,
-                                            account=new_mode.value
-                                        )
-                                        if success:
-                                            logger.info(f"[BEFDAY] ✅ Auto-tracked {len(positions)} {new_mode.value} positions (befibgun.csv or befibped.csv)")
-                                        else:
-                                            logger.warning(f"[BEFDAY] Auto-track failed for {new_mode.value}")
-                                    else:
-                                        logger.info(f"[BEFDAY] No positions to track for {new_mode.value}")
-                                except Exception as e:
-                                    logger.error(f"[BEFDAY] Error in auto-track for {new_mode.value}: {e}", exc_info=True)
-                            
-                            # Schedule auto-track after a delay
-                            try:
-                                try:
-                                    loop = asyncio.get_running_loop()
-                                except RuntimeError:
-                                    loop = asyncio.new_event_loop()
-                                    asyncio.set_event_loop(loop)
-
-                                loop.create_task(auto_track_befday_on_mode_change())
-                            except Exception as e:
-                                logger.error(f"[ACCOUNT_MODE] Failed to schedule auto-track (change): {e}")
-                        else:
-                            logger.warning(f"[ACCOUNT_MODE] Auto-connect failed: {connect_result.get('error')}")
-                            result['connected'] = False
-                            result['connection_error'] = connect_result.get('error')
-                    elif connector and connector.is_connected():
-                        result['connected'] = True
-                        result['already_connected'] = True
-                        
-                        # Even if already connected, check if we should track BEFDAY (günde 1 kere)
-                        async def auto_track_befday_if_needed():
-                            """Auto-track BEFDAY positions if already connected (once per day)"""
-                            try:
-                                from app.psfalgo.befday_tracker import get_befday_tracker, track_befday_positions
-                                
-                                tracker = get_befday_tracker()
-                                if not tracker:
-                                    return
-                                
-                                # Determine mode based on account_type
-                                mode = 'ibkr_gun' if new_mode == AccountMode.IBKR_GUN else 'ibkr_ped'
-                                
-                                # Check if should track
-                                should_track, reason = tracker.should_track(mode=mode)
-                                if not should_track:
-                                    logger.debug(f"[BEFDAY] Skipping auto-track for {new_mode.value}: {reason}")
-                                    return
-                                
-                                # Get positions from IBKR
-                                positions = await connector.get_positions()
-                                if positions:
-                                    success = await track_befday_positions(
-                                        positions=positions,
-                                        mode=mode,
-                                        account=new_mode.value
-                                    )
-                                    if success:
-                                        logger.info(f"[BEFDAY] ✅ Auto-tracked {len(positions)} {new_mode.value} positions (already connected)")
-                            except Exception as e:
-                                logger.debug(f"[BEFDAY] Error in auto-track for {new_mode.value}: {e}")
-                        
-                            # Schedule auto-track
-                            try:
-                                try:
-                                    loop = asyncio.get_running_loop()
-                                except RuntimeError:
-                                    loop = asyncio.new_event_loop()
-                                    asyncio.set_event_loop(loop)
-                                    
-                                loop.create_task(auto_track_befday_if_needed())
-                            except Exception as e:
-                                logger.error(f"[ACCOUNT_MODE] Failed to schedule auto-track: {e}")
+                elif new_mode in [AccountMode.IBKR_GUN, AccountMode.IBKR_PED]:
+                    # Switch to IBKR account (HAMMER connection remains active)
+                    from app.psfalgo.ibkr_connector import get_ibkr_connector
+                    connector = get_ibkr_connector(account_type=new_mode.value, create_if_missing=False)
+                    
+                    # If connector not found or not connected, try auto-connect via DualConnectionManager
+                    if not connector or not connector.is_connected():
+                        logger.info(f"[ACCOUNT_MODE] {new_mode.value} not connected, attempting auto-connect via DualConnectionManager...")
+                        try:
+                            from app.psfalgo.dual_connection_manager import get_dual_connection_manager
+                            dual_mgr = get_dual_connection_manager()
+                            if dual_mgr:
+                                switch_result = await dual_mgr.switch_ibkr_account(new_mode.value)
+                                if switch_result and switch_result.get('connected'):
+                                    logger.info(f"[ACCOUNT_MODE] ✅ Auto-connected {new_mode.value} via DualConnectionManager")
+                                    # Re-fetch connector after connection
+                                    connector = get_ibkr_connector(account_type=new_mode.value, create_if_missing=False)
+                                else:
+                                    error_msg = switch_result.get('error', 'Unknown error') if switch_result else 'No result'
+                                    logger.error(f"[ACCOUNT_MODE] ❌ Auto-connect failed for {new_mode.value}: {error_msg}")
+                                    self.current_mode = old_mode  # Revert mode
+                                    return {'success': False, 'error': f'{new_mode.value} bağlantısı kurulamadı: {error_msg}', 'connection_error': error_msg}
+                            else:
+                                # Fallback: try connect_isolated_sync directly
+                                from app.psfalgo.ibkr_connector import connect_isolated_sync
+                                loop = asyncio.get_running_loop()
+                                sync_result = await loop.run_in_executor(None, lambda: connect_isolated_sync(account_type=new_mode.value))
+                                if sync_result and sync_result.get('success'):
+                                    connector = get_ibkr_connector(account_type=new_mode.value, create_if_missing=False)
+                                else:
+                                    error_msg = sync_result.get('error', 'Unknown error') if sync_result else 'No result'
+                                    self.current_mode = old_mode  # Revert mode
+                                    return {'success': False, 'error': f'{new_mode.value} bağlantısı kurulamadı: {error_msg}', 'connection_error': error_msg}
+                        except Exception as auto_conn_err:
+                            logger.error(f"[ACCOUNT_MODE] ❌ Auto-connect exception: {auto_conn_err}", exc_info=True)
+                            self.current_mode = old_mode  # Revert mode
+                            return {'success': False, 'error': f'{new_mode.value} auto-connect failed: {str(auto_conn_err)}', 'connection_error': str(auto_conn_err)}
+                    
+                    # Final check - connector must be connected now
+                    if not connector or not connector.is_connected():
+                        logger.error(f"[ACCOUNT_MODE] ❌ {new_mode.value} still not connected after auto-connect attempt")
+                        self.current_mode = old_mode  # Revert mode
+                        return {'success': False, 'error': f'{new_mode.value} IBKR bağlı değil! IBKR Gateway/TWS çalışıyor mu kontrol edin.'}
+                    
+                    # IBKR is connected - proceed with mode switch
+                    set_active_ibkr_account(new_mode.value)
+                    r.sync.set("psfalgo:recovery:account_open", new_mode.value)
+                    r.sync.set("psfalgo:account_mode", json.dumps({"mode": new_mode.value}))
+                    r.sync.set("psfalgo:trading:account_mode", new_mode.value)
+                    logger.info(f"[ACCOUNT_MODE] ✅ Switched to {new_mode.value} (IBKR connected, HAMMER remains active)")
+                    result['connected'] = True
+                
+                # CRITICAL: Immediately fetch and save positions to Redis for terminals
+                async def save_positions_to_redis():
+                    try:
+                        await asyncio.sleep(0.5)  # Short delay
+                        from app.psfalgo.position_snapshot_api import get_position_snapshot_api
+                        pos_api = get_position_snapshot_api()
+                        if pos_api:
+                            account_id = "HAMPRO" if new_mode == AccountMode.HAMMER_PRO else new_mode.value
+                            snapshots = await pos_api.get_position_snapshot(account_id=account_id)
+                            logger.info(f"[ACCOUNT_MODE] ✅ Saved {len(snapshots)} positions to Redis for {account_id}")
+                    except Exception as e:
+                        logger.warning(f"[ACCOUNT_MODE] Failed to save positions to Redis: {e}")
+                
+                # Fire and forget - don't wait
+                asyncio.create_task(save_positions_to_redis())
+                
+            except Exception as redis_err:
+                logger.error(f"[ACCOUNT_MODE] Failed to update Redis: {redis_err}")
+                return {'success': False, 'error': f'Failed to update Redis: {str(redis_err)}'}
             
             return result
             
@@ -258,11 +213,19 @@ class AccountModeManager:
     def get_account_type(self) -> str:
         """
         Get account type for PositionSnapshot.
+        Syncs with global TradingAccountContext for cross-process consistency.
         
         Returns:
             Account type string (HAMMER_PRO, IBKR_GUN, IBKR_PED)
         """
-        return self.current_mode.value
+        from app.trading.trading_account_context import get_trading_context
+        context = get_trading_context()
+        mode = context.trading_mode.value
+        
+        # Map HAMPRO to HAMMER_PRO (AccountMode enum uses HAMMER_PRO)
+        if mode == "HAMPRO":
+            return "HAMMER_PRO"
+        return mode
 
 
 # Global instance

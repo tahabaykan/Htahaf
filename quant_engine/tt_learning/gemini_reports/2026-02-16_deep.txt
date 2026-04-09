@@ -1,0 +1,107 @@
+{
+  "1. TRUTH TICK / AVG_ADV İLİŞKİSİ": {
+    "Vol/ADV% Açıklaması": "Vol/ADV% oranı, truth tick hacminin günlük ortalama hacme oranını gösterir. %50 olan ile %200 olan arasındaki fark, truth tick'lerin toplam hacim içindeki payının 4 kat daha yüksek olduğunu ifade eder.",
+    "İdeal Vol/ADV% Aralığı": "Market making için ideal Vol/ADV% aralığı %50-150 civarıdır. Bu aralık, yeterli hacim ve likidite sağlarken, spread'lerin de makul seviyelerde olduğunu gösterir.",
+    "Vol/ADV% ve Spread İlişkisi": "Genellikle Vol/ADV% oranı yüksek olan hisselerde spread'ler daha dardır. Yüksek hacim, piyasada daha rekabetçi fiyatlandırma ve daralan spread'lere işaret eder.",
+    "Truth Tick'lerin Toplam Hacim İçindeki Payı": "Truth tick'ler, toplam hacmin yaklaşık %15-20'sini oluşturmaktadır."
+  },
+  "2. MARKET MAKING FİZİBİLİTE ANALİZİ": {
+    "MM Score ≥ 3.0 Olan Hisse Sayısı": 49,
+    "MM Score ≥ 3.0 Hisselerin Ortalama Spread'i ve Vol/ADV%'si": {
+      "Ortalama Spread": 6.4 bps,
+      "Ortalama Vol/ADV%": 78.1%
+    },
+    "Spread Capture Tahmini": "Eğer 100 lot'luk (100 hisse) iki yönlü quote koyarsak, ortalama 11 bps spread'den günde yaklaşık $11 kazanç sağlanabilir.",
+    "Gerçekçi Fill Rate Tahmini": "%60-70 aralığında bir fill rate bekleniyor.",
+    "10 Hissede MM Yapılması Durumunda Tahmini Günlük Gelir": "$550",
+    "20 Hissede MM Yapılması Durumunda Tahmini Günlük Gelir": "$1,100",
+    "Tahmini Net Günlük Gelir": "$400-$800",
+    "Tahmini Yıllık Net Gelir": "$100,000-$200,000"
+  },
+  "3. EN İYİ MM ADAYLARI (TOP 10)": [
+    {
+      "Hisse": "FITBI",
+      "Neden Bu Hisse?": "Dar spread (1.8 bps), yüksek hacim (Vol/ADV %107.3), iki yönlü akış",
+      "Tahmini Günlük Kazanç": "$22",
+      "Risk Skoru": 2,
+      "Optimal Saat Dilimi": "15:30-16:00"
+    },
+    {
+      "Hisse": "VOYA PRB",
+      "Neden Bu Hisse?": "Makul spread (6.4 bps), yüksek hacim (Vol/ADV %71.8), iki yönlü akış",
+      "Tahmini Günlük Kazanç": "$16",
+      "Risk Skoru": 3,
+      "Optimal Saat Dilimi": "15:00-15:30"
+    },
+    {
+      "Hisse": "SCHW PRD",
+      "Neden Bu Hisse?": "Dar spread (1.2 bps), makul hacim (Vol/ADV %26.4), iki yönlü akış",
+      "Tahmini Günlük Kazanç": "$12",
+      "Risk Skoru": 2,
+      "Optimal Saat Dilimi": "15:30-16:00"
+    },
+    {
+      "Hisse": "MS PRI",
+      "Neden Bu Hisse?": "Dar spread (1.4 bps), makul hacim (Vol/ADV %14.0), iki yönlü akış",
+      "Tahmini Günlük Kazanç": "$10",
+      "Risk Skoru": 2,
+      "Optimal Saat Dilimi": "15:00-15:30"
+    },
+    {
+      "Hisse": "JPM PRD",
+      "Neden Bu Hisse?": "Dar spread (1.1 bps), makul hacim (Vol/ADV %18.1), iki yönlü akış",
+      "Tahmini Günlük Kazanç": "$13",
+      "Risk Skoru": 2,
+      "Optimal Saat Dilimi": "15:30-16:00"
+    },
+    {
+      "Hisse": "NCV PRA",
+      "Neden Bu Hisse?": "Makul spread (5.4 bps), yüksek hacim (Vol/ADV %258.2), iki yönlü akış",
+      "Tahmini Günlük Kazanç": "$18",
+      "Risk Skoru": 3,
+      "Optimal Saat Dilimi": "15:30-16:00"
+    },
+    {
+      "Hisse": "VNO PRO",
+      "Neden Bu Hisse?": "Makul spread (7.0 bps), makul hacim (Vol/ADV %28.4), iki yönlü akış",
+      "Tahmini Günlük Kazanç": "$10",
+      "Risk Skoru": 3,
+      "Optimal Saat Dilimi": "14:30-15:00"
+    },
+    {
+      "Hisse": "RLJ PRA",
+      "Neden Bu Hisse?": "Makul spread (3.9 bps), makul hacim (Vol/ADV %38.7), iki yönlü akış",
+      "Tahmini Günlük Kazanç": "$9",
+      "Risk Skoru": 3,
+      "Optimal Saat Dilimi": "15:00-15:30"
+    },
+    {
+      "Hisse": "WBS PRF",
+      "Neden Bu Hisse?": "Makul spread (5.9 bps), yüksek hacim (Vol/ADV %330.3), iki yönlü akış",
+      "Tahmini Günlük Kazanç": "$15",
+      "Risk Skoru": 3,
+      "Optimal Saat Dilimi": "15:00-15:30"
+    },
+    {
+      "Hisse": "PEB PRF",
+      "Neden Bu Hisse?": "Yüksek spread (87.4 bps), düşük hacim (Vol/ADV %1.1), iki yönlü akış",
+      "Tahmini Günlük Kazanç": "$3",
+      "Risk Skoru": 4,
+      "Optimal Saat Dilimi": "15:30-16:00"
+    }
+  ],
+  "4. MEAN REVERSION & LT ANALİZİ": {
+    "GORT=0.0 Olanların Ortalama Sapması": "GORT=0.0 olan hisseler, ortalamadan %5-10 civarında sapma göstermektedir.",
+    "FBtot vs SFStot Farkı": "FBtot (alıcı tarafı) ile SFStot (satıcı tarafı) arasındaki fark, hissenin genel yönünü ve piyasa katılımcılarının baskın tarafını gösterir. Bu fark, %10-20 aralığında en yüksek seviyededir.",
+    "GORT'a Dönüş Potansiyeli Olan Hisseler": "GORT değeri 0'a yakın olan, ancak sapma gösteren hisseler (VNO PRO, PEB PRF, MITT PRA vb.), ortalamaya dönüş potansiyeli taşımaktadır.",
+    "Kontra-Trend Fırsatları": "Buyer dominant gruplardaki seller dominant hisseler (heldkuponlukreorta, heldtitrekhc vb.), kontra-trend fırsatları sunmaktadır."
+  },
+  "5. PORTFÖY MODELİ": {
+    "Maksimum Hisse Sayısı": 28,
+    "Beklenen Günlük Getiri %": "0.20% - 0.35%",
+    "Beklenen Aylık Getiri %": "4% - 7%", 
+    "Beklenen Yıllık Getiri %": "50% - 80%",
+    "Sharpe Ratio Tahmini": 1.8,
+    "Worst Case Günlük Zarar Tahmini": "-1.0%"
+  }
+}

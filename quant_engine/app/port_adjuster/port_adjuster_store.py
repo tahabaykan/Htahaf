@@ -2,6 +2,8 @@
 Port Adjuster Store
 
 State management for Port Adjuster snapshots.
+Supports save/load CSV with user-provided name; "last used CSV" is persisted
+and loaded on app startup as default.
 """
 
 from typing import Optional
@@ -15,6 +17,43 @@ from app.port_adjuster.port_adjuster_models import (
     PortAdjusterSnapshot
 )
 from app.port_adjuster.port_adjuster_csv import load_config_from_csv, save_config_to_csv
+
+LAST_CSV_JSON = "last_port_adjuster_csv.json"
+CSV_DIR_NAME = "port_adjuster_csvs"
+
+
+def _port_adjuster_config_dir() -> Path:
+    """Directory for last-csv and csv saves (project_root/config or port_adjuster parent)."""
+    # quant_engine/app/port_adjuster -> parents[2] = quant_engine
+    base = Path(__file__).resolve().parents[2]
+    return base / "config"
+
+
+def _last_csv_path_file() -> Path:
+    return _port_adjuster_config_dir() / LAST_CSV_JSON
+
+
+def get_last_port_adjuster_csv_path() -> Optional[str]:
+    """Return persisted 'last used CSV' path, or None."""
+    try:
+        p = _last_csv_path_file()
+        if p.exists():
+            with open(p, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return data.get("path") or None
+    except Exception as e:
+        logger.debug(f"[PORT_ADJUSTER_STORE] Read last CSV path: {e}")
+    return None
+
+
+def set_last_port_adjuster_csv_path(path: str) -> None:
+    """Persist 'last used CSV' path."""
+    try:
+        _port_adjuster_config_dir().mkdir(parents=True, exist_ok=True)
+        with open(_last_csv_path_file(), "w", encoding="utf-8") as f:
+            json.dump({"path": path}, f, indent=0)
+    except Exception as e:
+        logger.warning(f"[PORT_ADJUSTER_STORE] Write last CSV path: {e}")
 
 
 class PortAdjusterStore:
@@ -47,18 +86,30 @@ class PortAdjusterStore:
         return Path(__file__).resolve().parents[3]
     
     def _initialize_persisted(self):
-        """Initialize config using persisted sources in priority order."""
+        """Initialize config: last-used CSV if exists, else exposureadjuster.csv, else JSON, else default."""
         try:
             project_root = self._get_project_root()
-            csv_path = project_root / "exposureadjuster.csv"
             
-            # 1) exposureadjuster.csv
+            # 0) Last-used CSV (saved path)
+            last_path = get_last_port_adjuster_csv_path()
+            if last_path and Path(last_path).exists():
+                cfg = load_config_from_csv(last_path)
+                if cfg:
+                    self.last_saved_at = datetime.now()
+                    self.config_source = f"csv:{Path(last_path).name}"
+                    self._apply_config(cfg, persist=False)
+                    logger.info(f"[PORT_ADJUSTER_STORE] Loaded from last CSV: {last_path}")
+                    return
+            
+            # 1) exposureadjuster.csv in project root
+            csv_path = project_root / "exposureadjuster.csv"
             if csv_path.exists():
                 cfg = load_config_from_csv(str(csv_path))
                 if cfg:
                     self.last_saved_at = datetime.now()
                     self.config_source = f"csv:{csv_path.name}"
                     self._apply_config(cfg, persist=False)
+                    set_last_port_adjuster_csv_path(str(csv_path.resolve()))
                     logger.info(f"[PORT_ADJUSTER_STORE] Loaded config from CSV: {csv_path}")
                     return
             
@@ -212,6 +263,40 @@ class PortAdjusterStore:
             return None
         
         return self.engine.get_group_max_value_usd(self.current_snapshot, group, side)
+    
+    # CSV save/load with name; last-used as default ---------------------------------
+    def save_to_named_csv(self, filename: str) -> Optional[str]:
+        """Save current config to a named CSV under project_root/port_adjuster_csvs/; set as last-used. Returns path or None."""
+        cfg = self.get_config()
+        if not cfg:
+            return None
+        base = self._get_project_root()
+        csv_dir = base / CSV_DIR_NAME
+        csv_dir.mkdir(parents=True, exist_ok=True)
+        name = (filename or "exposureadjuster").strip().replace("..", "").replace("/", "").replace("\\", "")
+        if not name:
+            name = "exposureadjuster"
+        if not name.endswith(".csv"):
+            name += ".csv"
+        path = str(csv_dir / name)
+        if not save_config_to_csv(cfg, path):
+            return None
+        set_last_port_adjuster_csv_path(path)
+        logger.info(f"[PORT_ADJUSTER_STORE] Saved to named CSV: {path}")
+        return path
+    
+    def load_from_last_csv(self) -> Optional[PortAdjusterSnapshot]:
+        """Load config from last-used CSV path; return new snapshot or None."""
+        path = get_last_port_adjuster_csv_path()
+        if not path or not Path(path).exists():
+            return None
+        cfg = load_config_from_csv(path)
+        if not cfg:
+            return None
+        self.last_saved_at = datetime.now()
+        self.config_source = f"csv:{Path(path).name}"
+        self._apply_config(cfg, persist=False)
+        return self.current_snapshot
     
     # Preset management -------------------------------------------------
     def save_preset(self, name: str, config: PortAdjusterConfig) -> bool:

@@ -501,6 +501,32 @@ class DataFabric:
                     # Store all columns as dict
                     self._static_data[symbol] = row.to_dict()
                 
+                # 🚫 Apply excluded list filtering (qe_excluded.csv)
+                try:
+                    import os
+                    import csv as csv_module
+                    excluded_symbols = set()
+                    excluded_path = Path(os.getcwd()) / 'qe_excluded.csv'
+                    if excluded_path.exists():
+                        with open(excluded_path, 'r', encoding='utf-8') as f:
+                            reader = csv_module.reader(f)
+                            for row in reader:
+                                if row:
+                                    excluded_symbols.update([s.strip().upper() for s in row if s.strip()])
+                    
+                    if excluded_symbols:
+                        # Remove excluded symbols from static data
+                        removed_count = 0
+                        keys_to_remove = [sym for sym in self._static_data.keys() if sym.upper() in excluded_symbols]
+                        for sym in keys_to_remove:
+                            del self._static_data[sym]
+                            removed_count += 1
+                        
+                        if removed_count > 0:
+                            logger.info(f"🚫 Excluded {removed_count} symbols from DataFabric (qe_excluded.csv)")
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not apply excluded list: {e}")
+                
                 # 🔧 Load GROUP info from group files (ssfinek*.csv)
                 # This is critical for GroupSelector UI component
                 try:
@@ -542,18 +568,18 @@ class DataFabric:
         import os
         
         possible_paths = [
-            # PRIORITY 1: Local Project Directory (Best Practice)
+            # PRIORITY 1: Ana dizin (merge_csvs.py buraya yazar)
+            Path(r"C:\StockTracker\janalldata.csv"),
+            Path(r"C:\StockTracker\janall\janalldata.csv"),
+            
+            # PRIORITY 2: CWD
             Path(os.getcwd()) / 'janalldata.csv',
             Path(os.getcwd()) / 'janall' / 'janalldata.csv',
             
             # Fallbacks
+            Path(r"C:\StockTracker\janall\janallapp\janalldata.csv"),
             Path(os.getcwd()).parent / 'janalldata.csv',
             Path(__file__).parent.parent.parent.parent / 'janalldata.csv',
-
-            # Legacy / OneDrive (DEPRIORITIZED to avoid confusion)
-            # Only use these if local files are missing
-            Path(r"C:\Users\User\OneDrive\Masaüstü\Proje\StockTracker\janall\janalldata.csv"),
-            Path(r"C:\Users\User\OneDrive\Masaüstü\Proje\StockTracker\janalldata.csv"),
         ]
         
         for path in possible_paths:
@@ -656,7 +682,12 @@ class DataFabric:
     
     def get_live(self, symbol: str) -> Optional[Dict[str, Any]]:
         """
-        Get live market data for symbol (from RAM).
+        Get live market data for symbol (from RAM, with Redis fallback).
+        
+        🔄 FALLBACK LOGIC:
+        1. First check in-memory _live_data (fastest)
+        2. If missing, try Redis live:{symbol} (recent data)
+        3. If still missing, try Redis market_data:snapshot:{symbol} (last snapshot)
         
         Args:
             symbol: PREF_IBKR symbol
@@ -664,7 +695,99 @@ class DataFabric:
         Returns:
             Live data dict or None
         """
-        return self._live_data.get(symbol)
+        # 1. Check in-memory first (fastest)
+        live = self._live_data.get(symbol)
+        if live and live.get('bid') is not None and live.get('ask') is not None:
+            return live
+        
+        # 2. FALLBACK: Try Redis if in-memory is missing or incomplete
+        # This helps when Hammer feed hasn't updated yet or symbol wasn't subscribed
+        try:
+            from app.core.redis_client import get_redis_client
+            import json
+            
+            redis_client = get_redis_client()
+            if redis_client and redis_client.sync:
+                # Try live:{symbol} first (most recent)
+                live_key = f"live:{symbol}"
+                live_json = redis_client.sync.get(live_key)
+                
+                if live_json:
+                    try:
+                        redis_live = json.loads(live_json)
+                        # Validate it has bid/ask
+                        if redis_live.get('bid') is not None and redis_live.get('ask') is not None:
+                            # Update in-memory cache for next time
+                            with self._data_lock:
+                                if symbol not in self._live_data:
+                                    self._live_data[symbol] = {}
+                                self._live_data[symbol].update(redis_live)
+                                self._live_data[symbol]['_last_update'] = datetime.now()
+                            logger.debug(f"🔄 [REDIS_FALLBACK] Loaded {symbol} from Redis live:{symbol}")
+                            return self._live_data[symbol]
+                    except (json.JSONDecodeError, Exception) as e:
+                        logger.debug(f"Failed to parse Redis live:{symbol}: {e}")
+                
+                # Try market:l1:{symbol} (L1Feed Terminal streaming data — 2s refresh, 120s TTL)
+                l1_key = f"market:l1:{symbol}"
+                l1_json = redis_client.sync.get(l1_key)
+                
+                if l1_json:
+                    try:
+                        l1_data = json.loads(l1_json)
+                        bid = l1_data.get('bid')
+                        ask = l1_data.get('ask')
+                        if bid is not None and ask is not None and float(bid) > 0 and float(ask) > 0:
+                            redis_live = {
+                                'bid': float(bid),
+                                'ask': float(ask),
+                                'last': float(l1_data.get('last', 0)),
+                                'timestamp': l1_data.get('ts'),
+                            }
+                            with self._data_lock:
+                                if symbol not in self._live_data:
+                                    self._live_data[symbol] = {}
+                                self._live_data[symbol].update(redis_live)
+                                self._live_data[symbol]['_last_update'] = datetime.now()
+                            logger.debug(f"🔄 [REDIS_FALLBACK] Loaded {symbol} from Redis market:l1:{symbol}")
+                            return self._live_data[symbol]
+                    except (json.JSONDecodeError, Exception) as e:
+                        logger.debug(f"Failed to parse Redis market:l1:{symbol}: {e}")
+                
+                # Try market_data:snapshot:{symbol} as third fallback
+                snapshot_key = f"market_data:snapshot:{symbol}"
+                snapshot_json = redis_client.sync.get(snapshot_key)
+                
+                if snapshot_json:
+                    try:
+                        snapshot = json.loads(snapshot_json)
+                        # Extract L1 data
+                        redis_live = {
+                            'bid': snapshot.get('bid'),
+                            'ask': snapshot.get('ask'),
+                            'last': snapshot.get('last'),
+                            'volume': snapshot.get('volume'),
+                            'prev_close': snapshot.get('prev_close'),
+                            'timestamp': snapshot.get('timestamp')
+                        }
+                        # Validate it has bid/ask
+                        if redis_live.get('bid') is not None and redis_live.get('ask') is not None:
+                            # Update in-memory cache
+                            with self._data_lock:
+                                if symbol not in self._live_data:
+                                    self._live_data[symbol] = {}
+                                self._live_data[symbol].update(redis_live)
+                                self._live_data[symbol]['_last_update'] = datetime.now()
+                            logger.debug(f"🔄 [REDIS_FALLBACK] Loaded {symbol} from Redis snapshot")
+                            return self._live_data[symbol]
+                    except (json.JSONDecodeError, Exception) as e:
+                        logger.debug(f"Failed to parse Redis snapshot:{symbol}: {e}")
+        except Exception as e:
+            # Non-critical - Redis fallback failed, continue with None
+            logger.debug(f"Redis fallback failed for {symbol}: {e}")
+        
+        # Return None if nothing found
+        return self._live_data.get(symbol) if symbol in self._live_data else None
     
     def get_live_symbols_count(self) -> int:
         """Get count of symbols with live data"""
@@ -673,6 +796,88 @@ class DataFabric:
     def get_all_live_symbols(self) -> List[str]:
         """Get all symbols with live data"""
         return list(self._live_data.keys())
+    
+    def load_live_from_redis(self) -> int:
+        """
+        Load live market data from Redis (fallback when Hammer feed hasn't started).
+        
+        Tries two Redis keys:
+        1. live:{symbol} - Most recent live data
+        2. market_data:snapshot:{symbol} - Last snapshot
+        
+        Returns:
+            Number of symbols loaded
+        """
+        try:
+            from app.core.redis_client import get_redis_client
+            import json
+            
+            redis_client = get_redis_client()
+            if not redis_client or not redis_client.sync:
+                logger.debug("Redis not available for live data fallback")
+                return 0
+            
+            symbols = self.get_all_static_symbols()
+            loaded_count = 0
+            
+            for symbol in symbols:
+                # Skip if already in memory with valid data
+                existing = self._live_data.get(symbol, {})
+                if existing.get('bid') is not None and existing.get('ask') is not None:
+                    continue
+                
+                # Try live:{symbol} first
+                live_key = f"live:{symbol}"
+                live_json = redis_client.sync.get(live_key)
+                
+                if live_json:
+                    try:
+                        redis_live = json.loads(live_json)
+                        if redis_live.get('bid') is not None and redis_live.get('ask') is not None:
+                            with self._data_lock:
+                                if symbol not in self._live_data:
+                                    self._live_data[symbol] = {}
+                                self._live_data[symbol].update(redis_live)
+                                self._live_data[symbol]['_last_update'] = datetime.now()
+                            loaded_count += 1
+                            continue
+                    except (json.JSONDecodeError, Exception):
+                        pass
+                
+                # Try market_data:snapshot:{symbol} as fallback
+                snapshot_key = f"market_data:snapshot:{symbol}"
+                snapshot_json = redis_client.sync.get(snapshot_key)
+                
+                if snapshot_json:
+                    try:
+                        snapshot = json.loads(snapshot_json)
+                        redis_live = {
+                            'bid': snapshot.get('bid'),
+                            'ask': snapshot.get('ask'),
+                            'last': snapshot.get('last'),
+                            'volume': snapshot.get('volume'),
+                            'prev_close': snapshot.get('prev_close'),
+                            'timestamp': snapshot.get('timestamp')
+                        }
+                        if redis_live.get('bid') is not None and redis_live.get('ask') is not None:
+                            with self._data_lock:
+                                if symbol not in self._live_data:
+                                    self._live_data[symbol] = {}
+                                self._live_data[symbol].update(redis_live)
+                                self._live_data[symbol]['_last_update'] = datetime.now()
+                            loaded_count += 1
+                    except (json.JSONDecodeError, Exception):
+                        pass
+            
+            if loaded_count > 0:
+                logger.info(f"🔄 [REDIS_FALLBACK] Loaded {loaded_count} symbols from Redis (live data fallback)")
+                self._stats.live_symbols = len(self._live_data)
+            
+            return loaded_count
+            
+        except Exception as e:
+            logger.warning(f"Failed to load live data from Redis: {e}")
+            return 0
     
     # =========================================================================
     # ETF DATA (for benchmark calculations)
@@ -819,7 +1024,8 @@ class DataFabric:
             else:
                 # Search for groupweights.csv
                 possible_paths = [
-                    Path(r"C:\Users\User\OneDrive\Masaüstü\Proje\StockTracker\groupweights.csv"),
+                    Path(r"C:\StockTracker\janall\groupweights.csv"),
+                    Path.cwd() / 'janall' / 'groupweights.csv',
                     Path.cwd() / 'groupweights.csv',
                 ]
                 filepath = None
@@ -952,7 +1158,7 @@ class DataFabric:
                 self._fast_snapshot_debug_count[symbol] = 0
             if self._fast_snapshot_debug_count[symbol] < 3:
                 self._fast_snapshot_debug_count[symbol] += 1
-                logger.info(
+                logger.debug(
                     f"🔑 [FAST_SNAPSHOT_DEBUG] {symbol}: "
                     f"static_exists={bool(static)} | "
                     f"live_exists={bool(live)} | "
@@ -1248,6 +1454,12 @@ def initialize_data_fabric(csv_path: Optional[str] = None) -> DataFabric:
     
     # Load group weights
     fabric.load_group_weights()
+    
+    # 🆕 Load live data from Redis (fallback if Hammer feed hasn't started yet)
+    try:
+        fabric.load_live_from_redis()
+    except Exception as e:
+        logger.warning(f"Failed to load live data from Redis at startup: {e}")
     
     logger.info("🏗️ DataFabric fully initialized")
     return fabric

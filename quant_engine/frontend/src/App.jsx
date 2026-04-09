@@ -13,6 +13,13 @@ import RejectedCandidates from './components/RejectedCandidates'
 import GemProposalsPanel from './components/GemProposalsPanel'
 import GenobsPanel from './components/GenobsPanel'
 import BenchmarkFillsPanel from './components/BenchmarkFillsPanel'
+import SimulationPanel from './components/SimulationPanel'
+import FakeOrdersList from './components/FakeOrdersList'
+import KarbotuDiagnostic from './components/KarbotuDiagnostic'
+import ExcludedListModal from './components/ExcludedListModal'
+import PatternSuggestionsModal from './components/PatternSuggestionsModal'
+import ExDivPlanPanel from './components/ExDivPlanPanel'
+import AdminPanel from './pages/AdminPanel'
 import './App.css'
 
 function App() {
@@ -40,7 +47,7 @@ function App() {
   const [executionModeInitialized, setExecutionModeInitialized] = useState(false)
 
   // Trading Account Mode
-  const [tradingMode, setTradingMode] = useState('HAMMER_TRADING')
+  const [tradingMode, setTradingMode] = useState('HAMMER_PRO')
 
   // Trading Panels Overlay
   const [overlayOpen, setOverlayOpen] = useState(false)
@@ -50,11 +57,19 @@ function App() {
   const [selectedGroup, setSelectedGroup] = useState(null)
   const [selectedCgrup, setSelectedCgrup] = useState(null)
 
-  // Rejected Candidates Panel
+  // Rejected Candidates Panel & Excluded List
   const [showRejected, setShowRejected] = useState(false)
   const [showGemProposals, setShowGemProposals] = useState(false)
   const [showGenobs, setShowGenobs] = useState(false) // New Genobs Panel
   const [showBenchmarkFills, setShowBenchmarkFills] = useState(false)
+  const [showSimulation, setShowSimulation] = useState(false) // Simulation Panel
+  const [showKarbotuDebug, setShowKarbotuDebug] = useState(false) // KARBOTU Debug
+  const [showExcludedList, setShowExcludedList] = useState(false) // Excluded List Modal
+  const [showPatternSuggestions, setShowPatternSuggestions] = useState(false) // Pattern Suggestions Modal
+  const [showExDivPlan, setShowExDivPlan] = useState(false) // Ex-Div 30 Day Plan
+  const [showTSSScreen, setShowTSSScreen] = useState(false) // TSS - RTS Screen
+  const [tssData, setTssData] = useState(null) // TSS v2 data
+  const [showAdminPanel, setShowAdminPanel] = useState(false) // Admin Panel
 
   // Read group filter from URL parameters
   useEffect(() => {
@@ -553,6 +568,64 @@ function App() {
           >
             📊 QeBench
           </button>
+          <button
+            className={`status-badge ${showSimulation ? 'active' : ''}`}
+            onClick={() => setShowSimulation(!showSimulation)}
+            style={{ cursor: 'pointer', background: showSimulation ? '#f39c12' : '#333', color: '#f39c12' }}
+          >
+            🎭 Simulation
+          </button>
+          <button
+            className={`status-badge ${showKarbotuDebug ? 'active' : ''}`}
+            onClick={() => setShowKarbotuDebug(!showKarbotuDebug)}
+            style={{ cursor: 'pointer', background: showKarbotuDebug ? '#e74c3c' : '#333', color: '#e74c3c' }}
+          >
+            🔍 KARBOTU Debug
+          </button>
+          <button
+            className={`status-badge ${showExcludedList ? 'active' : ''}`}
+            onClick={() => setShowExcludedList(!showExcludedList)}
+            style={{ cursor: 'pointer', background: showExcludedList ? '#ef4444' : '#333', color: '#ef4444', borderColor: '#ef4444' }}
+          >
+            🚫 Excluded List
+          </button>
+          <button
+            className={`status-badge ${showPatternSuggestions ? 'active' : ''}`}
+            onClick={() => setShowPatternSuggestions(!showPatternSuggestions)}
+            style={{ cursor: 'pointer', background: showPatternSuggestions ? '#7c3aed' : '#333', color: '#a78bfa', border: showPatternSuggestions ? '1px solid #a78bfa' : '1px solid #444' }}
+          >
+            🔮 Pattern Suggestions
+          </button>
+          <button
+            className={`status-badge ${showExDivPlan ? 'active' : ''}`}
+            onClick={() => setShowExDivPlan(!showExDivPlan)}
+            style={{ cursor: 'pointer', background: showExDivPlan ? '#2b6cb0' : '#333', color: '#63b3ed', border: showExDivPlan ? '1px solid #63b3ed' : '1px solid #444' }}
+          >
+            📅 Ex-Div Plan
+          </button>
+          <button
+            className={`status-badge ${showTSSScreen ? 'active' : ''}`}
+            onClick={() => {
+              setShowTSSScreen(!showTSSScreen)
+              if (!showTSSScreen) {
+                // Fetch TSS data when opening
+                fetch('/tss-v2')
+                  .then(r => r.json())
+                  .then(d => { if (d.success) setTssData(d) })
+                  .catch(console.error)
+              }
+            }}
+            style={{ cursor: 'pointer', background: showTSSScreen ? '#1a7a3a' : '#333', color: '#4ade80', border: showTSSScreen ? '1px solid #4ade80' : '1px solid #444', fontWeight: 'bold' }}
+          >
+            📈 TSS - RTS Screen
+          </button>
+          <button
+            className={`status-badge ${showAdminPanel ? 'active' : ''}`}
+            onClick={() => setShowAdminPanel(!showAdminPanel)}
+            style={{ cursor: 'pointer', background: showAdminPanel ? '#7f1d1d' : '#333', color: '#f87171', border: showAdminPanel ? '1px solid #ef4444' : '1px solid #444', fontWeight: 'bold' }}
+          >
+            🛡️ Admin Panel
+          </button>
 
           {/* Lifeless Mode Controls - Moved here for visibility */}
           <div style={{ display: 'inline-flex', alignItems: 'center', marginLeft: '20px', borderLeft: '1px solid #444', paddingLeft: '20px' }}>
@@ -669,7 +742,11 @@ function App() {
         </div>
 
         {/* PSFALGO Bulk Action Panel */}
-        <PSFALGOBulkActionPanel data={filteredAndSortedData} />
+        <PSFALGOBulkActionPanel
+          data={filteredAndSortedData}
+          onOpenSimulation={() => setShowSimulation(true)}
+          onOpenReport={() => setShowKarbotuDebug(true)}
+        />
 
         {/* Mini Account Sidebar (fixed right, icons only) */}
         <AccountSidebar
@@ -737,6 +814,201 @@ function App() {
           <BenchmarkFillsPanel />
         </div>
       )}
+
+      {showSimulation && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#1a202c',
+          zIndex: 2000,
+          overflow: 'auto',
+          padding: '20px'
+        }}>
+          <button
+            onClick={() => setShowSimulation(false)}
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              padding: '8px 16px',
+              background: '#e53e3e',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            Close
+          </button>
+          <SimulationPanel />
+          <FakeOrdersList />
+        </div>
+      )}
+
+      {showKarbotuDebug && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#1a202c',
+          zIndex: 2000,
+          overflow: 'auto',
+          padding: '20px'
+        }}>
+          <button
+            onClick={() => setShowKarbotuDebug(false)}
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              padding: '8px 16px',
+              background: '#e53e3e',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            Close
+          </button>
+          <KarbotuDiagnostic />
+        </div>
+      )}
+
+      {/* Excluded List Modal */}
+      <ExcludedListModal
+        isOpen={showExcludedList}
+        onClose={() => setShowExcludedList(false)}
+      />
+
+      {/* Pattern Suggestions Modal */}
+      <PatternSuggestionsModal
+        isOpen={showPatternSuggestions}
+        onClose={() => setShowPatternSuggestions(false)}
+      />
+
+      {/* Ex-Div 30 Day Plan Panel */}
+      <ExDivPlanPanel
+        isOpen={showExDivPlan}
+        onClose={() => setShowExDivPlan(false)}
+      />
+
+      {/* TSS - RTS Screen */}
+      {showTSSScreen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: '#0d1117', zIndex: 2000, overflow: 'auto', padding: '20px',
+          fontFamily: "'JetBrains Mono', 'Fira Code', monospace"
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h2 style={{ color: '#4ade80', margin: 0 }}>📈 Truth Shift Score v2 — Real-Time Dashboard</h2>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={() => {
+                fetch('/tss-v2').then(r => r.json()).then(d => { if (d.success) setTssData(d) }).catch(console.error)
+              }} style={{ padding: '6px 12px', background: '#1a7a3a', color: '#fff', border: '1px solid #4ade80', borderRadius: '4px', cursor: 'pointer' }}>
+                🔄 Refresh
+              </button>
+              <button onClick={() => setShowTSSScreen(false)} style={{
+                padding: '6px 16px', background: '#e53e3e', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold'
+              }}>Close</button>
+            </div>
+          </div>
+
+          {!tssData ? (
+            <div style={{ color: '#888', textAlign: 'center', padding: '60px' }}>
+              <p>⏳ TSS v2 verisi bekleniyor...</p>
+              <p style={{ fontSize: '12px' }}>Engine henüz hesaplama yapmamış olabilir veya truth tick verisi eksik.</p>
+            </div>
+          ) : (
+            <div>
+              {/* Market Overview */}
+              {Object.entries(tssData.market_scores || {}).map(([wname, mkt]) => (
+                <div key={wname} style={{ background: '#161b22', borderRadius: '8px', padding: '16px', marginBottom: '20px', border: '1px solid #30363d' }}>
+                  <h3 style={{ color: '#c9d1d9', marginTop: 0 }}>
+                    🌐 {wname} — Market TSS: <span style={{ color: mkt.tss >= 55 ? '#4ade80' : mkt.tss >= 45 ? '#fbbf24' : '#ef4444', fontSize: '24px' }}>{mkt.tss}</span>
+                    <span style={{ color: '#8b949e', fontSize: '14px', marginLeft: '16px' }}>{mkt.symbol_count} symbols, {mkt.group_count} groups</span>
+                  </h3>
+                  {mkt.top_group && <div style={{ color: '#4ade80' }}>▲ Most Bullish: {mkt.top_group.name} = {mkt.top_group.tss}</div>}
+                  {mkt.bottom_group && <div style={{ color: '#ef4444' }}>▼ Most Bearish: {mkt.bottom_group.name} = {mkt.bottom_group.tss}</div>}
+
+                  {/* Group Rankings */}
+                  {mkt.groups_ranked && (
+                    <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '12px', fontSize: '13px' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid #30363d' }}>
+                          <th style={{ textAlign: 'left', padding: '6px', color: '#8b949e' }}>#</th>
+                          <th style={{ textAlign: 'left', padding: '6px', color: '#8b949e' }}>Group</th>
+                          <th style={{ textAlign: 'center', padding: '6px', color: '#8b949e' }}>TSS</th>
+                          <th style={{ textAlign: 'left', padding: '6px', color: '#8b949e' }}>Signal</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {mkt.groups_ranked.map((g, i) => (
+                          <tr key={g.name} style={{ borderBottom: '1px solid #21262d' }}>
+                            <td style={{ padding: '4px 6px', color: '#8b949e' }}>{i + 1}</td>
+                            <td style={{ padding: '4px 6px', color: '#c9d1d9' }}>{g.name}</td>
+                            <td style={{ padding: '4px 6px', textAlign: 'center', fontWeight: 'bold', color: g.tss >= 55 ? '#4ade80' : g.tss >= 45 ? '#fbbf24' : '#ef4444' }}>{g.tss}</td>
+                            <td style={{ padding: '4px 6px', color: g.tss >= 55 ? '#4ade80' : g.tss >= 45 ? '#fbbf24' : '#ef4444' }}>
+                              {g.tss >= 70 ? '🟢🟢 STRONG BUY' : g.tss >= 55 ? '🟢 Bullish' : g.tss >= 45 ? '↔️ Neutral' : g.tss >= 30 ? '🔴 Bearish' : '🔴🔴 STRONG SELL'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              ))}
+
+              {/* Top/Bottom Symbols */}
+              {tssData.symbol_scores && Object.keys(tssData.symbol_scores).length > 0 && (() => {
+                const allSyms = Object.entries(tssData.symbol_scores)
+                  .filter(([, d]) => d.W_15M || d.W_1H || d.W_FULL_DAY)
+                  .map(([sym, d]) => {
+                    const w = d.W_15M || d.W_1H || d.W_FULL_DAY || {}
+                    return { sym, tss: w.tss || 50, vol_dir: w.vol_dir, freq: w.freq_press, vwap: w.vwap_mom, rec: w.recency_factor }
+                  })
+                  .sort((a, b) => b.tss - a.tss)
+                const n5 = Math.max(5, Math.ceil(allSyms.length * 0.05))
+                return (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '16px' }}>
+                    <div style={{ background: '#0a1f0a', borderRadius: '8px', padding: '16px', border: '1px solid #1a4a1a' }}>
+                      <h4 style={{ color: '#4ade80', marginTop: 0 }}>▲ TOP {n5} (Most Bullish)</h4>
+                      {allSyms.slice(0, n5).map((s, i) => (
+                        <div key={s.sym} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', color: '#4ade80', fontSize: '13px' }}>
+                          <span>{i + 1}. {s.sym}</span>
+                          <span style={{ fontWeight: 'bold' }}>{s.tss?.toFixed(1)} {s.rec < 1 ? `(rec=${s.rec})` : ''}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ background: '#1f0a0a', borderRadius: '8px', padding: '16px', border: '1px solid #4a1a1a' }}>
+                      <h4 style={{ color: '#ef4444', marginTop: 0 }}>▼ BOTTOM {n5} (Most Bearish)</h4>
+                      {allSyms.slice(-n5).reverse().map((s, i) => (
+                        <div key={s.sym} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', color: '#ef4444', fontSize: '13px' }}>
+                          <span>{i + 1}. {s.sym}</span>
+                          <span style={{ fontWeight: 'bold' }}>{s.tss?.toFixed(1)} {s.rec < 1 ? `(rec=${s.rec})` : ''}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })()}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Admin Panel */}
+      <AdminPanel
+        isOpen={showAdminPanel}
+        onClose={() => setShowAdminPanel(false)}
+      />
     </div>
   )
 }

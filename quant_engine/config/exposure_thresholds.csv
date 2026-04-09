@@ -1,0 +1,6 @@
+setting,value,description
+exposure_limit,1400000,Maximum exposure in dollars (aligned with exposure_thresholds_v2.json pot_max)
+avg_price,100,Average stock price for lot calculation
+pot_expo_limit,1400000,Portfolio exposure limit (aligned with exposure_thresholds_v2.json pot_max)
+defensive_pct,0.955,Defensive threshold percentage (95.5%)
+offensive_pct,0.927,Offensive threshold percentage (92.7%)

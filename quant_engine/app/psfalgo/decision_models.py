@@ -46,6 +46,7 @@ class RejectReason(str, Enum):
     Standardized rejection reasons for visibility.
     """
     CRITICAL_METRIC_MISSING = "CRITICAL_METRIC_MISSING"
+    DATA_INCOMPLETE = "DATA_INCOMPLETE"  # Fbtot/SFStot/GORT/SMA = 0 or None
     INVALID_FAST_SCORE = "INVALID_FAST_SCORE"
     SPREAD_TOO_HIGH = "SPREAD_TOO_HIGH"
     AVG_ADV_TOO_LOW = "AVG_ADV_TOO_LOW"
@@ -73,8 +74,9 @@ class Intent:
     action: str              # SELL, COVER, BUY
     qty: int
     intent_category: str     # LT_TRIM_MICRO, KARBOTU_MACRO, REDUCEMORE_EMERGENCY
-    priority: int            # 10=Micro, 20=Macro, 30=Risk, 40=Emergency
-    reason: str
+    engine_name: Optional[str] = None  # Engine that created this intent (for UI routing)
+    priority: int = 10       # 10=Micro, 20=Macro, 30=Risk, 40=Emergency
+    reason: str = ""
     metadata: Dict[str, Any] = field(default_factory=dict)
     
     # Metadata for execution
@@ -126,6 +128,9 @@ class ExposureSnapshot:
     # NEW: Dollar-based metrics for UI display
     long_value: float = 0.0  # Total LONG position value in dollars
     short_value: float = 0.0  # Total SHORT position value in dollars
+    # Per-account avg_price used for lot-based mode calculation
+    # This prevents cross-account leakage through ExposureCalculator singleton
+    avg_price: float = 100.0  # Average preferred price for lot conversion
     mode: str = 'OFANSIF'  # Exposure mode: OFANSIF (offensive) or DEFANSIF (defensive)
     timestamp: datetime = field(default_factory=datetime.now)
     
@@ -214,7 +219,7 @@ class Decision:
     symbol: str
     action: str  # "SELL", "BUY", "REDUCE", "ADD", "HOLD", "FILTERED"
     order_type: Optional[str] = None  # "ASK_SELL", "BID_BUY", etc.
-    strategy_tag: Optional[str] = None # Phase 10: "LT_LONG_INCREASE", etc.
+    strategy_tag: Optional[str] = None # Phase 10: "LT_LONG_INC", etc.
     lot_percentage: Optional[float] = None  # %50, %25, etc.
     calculated_lot: Optional[int] = None  # Calculated lot amount
     price_hint: Optional[float] = None  # Price hint (GRPAN, RWVAP, etc.)
@@ -226,6 +231,12 @@ class Decision:
     filter_reasons: List[str] = field(default_factory=list)  # Why filtered?
     confidence: float = 0.0  # Confidence score (0-1)
     metrics_used: Dict[str, float] = field(default_factory=dict)  # Metrics used
+    priority: int = 20  # Execution priority (High=40, Low=10)
+    engine_name: Optional[str] = None  # Name of the engine that produced this decision
+    
+    # Proposal UI: Benchmark chg & Ask sell pahalilik (from symbol_metrics at adapt time)
+    bench_chg: Optional[float] = None  # Benchmark daily change (for B: in UI)
+    ask_sell_pahalilik: Optional[float] = None  # Ask sell pahalilik score (for Ask ph in UI)
     
     # Shadow Visibility
     reject_reason_code: Optional[str] = None  # Enum value from RejectReason
@@ -337,6 +348,13 @@ class PositionSnapshot:
     # Phase 10: Position Tags (OV/INT Breakdown)
     position_tags: Dict[str, float] = field(default_factory=dict)
     
+    # Truth Shift (TSS/RTS — directional flow scores)
+    tss_5m: Optional[float] = None    # TSS over 5 min window
+    tss_15m: Optional[float] = None   # TSS over 15 min window
+    tss_1h: Optional[float] = None    # TSS over 1 hour window
+    rts_15m: Optional[float] = None   # RTS (relative to group) 15 min
+    truth_shift_group: Optional[str] = None  # Group key used for RTS
+    
     timestamp: datetime = field(default_factory=datetime.now)
     
     @property
@@ -387,6 +405,9 @@ class SymbolMetrics:
     spread: Optional[float] = None
     spread_percent: Optional[float] = None
     
+    # Generic grouping
+    dos_grup: Optional[str] = None
+    
     # GRPAN
     grpan_price: Optional[float] = None
     grpan_concentration_percent: Optional[float] = None
@@ -402,6 +423,7 @@ class SymbolMetrics:
     gort: Optional[float] = None
     sma63_chg: Optional[float] = None
     sma246_chg: Optional[float] = None
+    bench_chg: Optional[float] = None  # NEW: Benchmark daily change
     
     # Pricing Overlay
     bid_buy_ucuzluk: Optional[float] = None
@@ -421,5 +443,101 @@ class SymbolMetrics:
     final_sas_skor: Optional[float] = None  # Final Ask Sell score (for SAS_SHORT)
     final_sfs_skor: Optional[float] = None  # Final Soft Front Sell score (for SFS_SHORT)
     
+    # Truth Ticks & VOLAV (intraday volume-weighted levels)
+    last_truth_tick: Optional[float] = None   # Last real trade tick price
+    volav_1h: Optional[float] = None          # Volume-averaged price (1 hour)
+    volav_4h: Optional[float] = None          # Volume-averaged price (4 hours)
+    son5_tick: Optional[float] = None         # Average of last 5 truth ticks
+    
     timestamp: datetime = field(default_factory=datetime.now)
+
+
+# ============================================================================
+# DATA COMPLETENESS CHECK
+# ============================================================================
+
+def is_data_complete(metric: SymbolMetrics, side: str = 'LONG') -> bool:
+    """
+    Check if critical metrics are available and not exactly 0.00.
+    
+    Returns False if ANY critical metric is None or exactly 0.00.
+    Exactly 0.00 indicates missing data, not a valid calculated value.
+    Valid values like 0.01 or -0.01 are considered complete.
+    
+    Args:
+        metric: SymbolMetrics object
+        side: 'LONG' or 'SHORT' - determines which metrics are critical
+        
+    Returns:
+        True if all critical metrics are present and valid
+    """
+    if metric is None:
+        return False
+    
+    # Helper to check if value is valid (not None)
+    # Note: Exactly 0.0 is considered invalid for GORT/FBtot/SFStot as it usually indicates missing price data
+    # But for SMA_CHG, 0.0 is a perfectly valid market condition.
+    def is_valid(value, name=None):
+        if value is None:
+            return False
+            
+        if isinstance(value, (int, float)) and value == 0.0:
+            # Gort/FBtot/SFStot cannot be exactly zero if data is healthy
+            if name in ['gort', 'fbtot', 'sfstot']:
+                return False
+            # SMA Change can be exactly 0.0
+            return True
+            
+        return True
+    
+    # Common metrics required for both LONG and SHORT
+    if not is_valid(metric.gort, 'gort'):
+        return False
+    if not is_valid(metric.sma63_chg, 'sma63_chg'):
+        return False
+    if not is_valid(metric.sma246_chg, 'sma246_chg'):
+        return False
+    
+    # Side-specific metrics
+    if side == 'LONG':
+        if not is_valid(metric.fbtot, 'fbtot'):
+            return False
+    elif side == 'SHORT':
+        if not is_valid(metric.sfstot, 'sfstot'):
+            return False
+    
+    return True
+
+
+def get_missing_metrics(metric: SymbolMetrics, side: str = 'LONG') -> list:
+    """
+    Get list of missing/invalid critical metrics.
+    
+    Args:
+        metric: SymbolMetrics object
+        side: 'LONG' or 'SHORT'
+        
+    Returns:
+        List of metric names that are missing or invalid
+    """
+    if metric is None:
+        return ['ALL_METRICS']
+    
+    missing = []
+    
+    def check(value, name):
+        if value is None or (isinstance(value, (int, float)) and value == 0.0):
+            missing.append(name)
+    
+    check(metric.gort, 'gort')
+    check(metric.sma63_chg, 'sma63_chg')
+    check(metric.sma246_chg, 'sma246_chg')
+    
+    if side == 'LONG':
+        check(metric.fbtot, 'fbtot')
+    elif side == 'SHORT':
+        check(metric.sfstot, 'sfstot')
+    
+    return missing
+
 

@@ -78,14 +78,7 @@ class MMAnalysisEngine:
         Returns list of analysis results (one dict per symbol).
         """
         if not self.hammer.is_connected():
-            logger.info("Connecting to Hammer for Historical Data...")
-            from app.config.settings import settings
-            self.hammer = HammerClient(
-                host=settings.HAMMER_HOST,
-                port=settings.HAMMER_PORT,
-                password=settings.HAMMER_PASSWORD,
-                account_key=settings.HAMMER_ACCOUNT_KEY
-            )
+            logger.info("Reconnecting existing Hammer client for Historical Data...")
             if not self.hammer.connect():
                 logger.error("Failed to connect to Hammer")
                 return []

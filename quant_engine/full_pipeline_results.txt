@@ -1,0 +1,417 @@
+EX-DIV PIPELINE v5 - FULL RESULTS
+Total: 411 stocks analyzed
+Time: 119.2s
+
+Rank Ticker         Strategy          Entry  Exit   Ret%  Win%  Sharpe   pVal   n ExDivQ Yield
+-----------------------------------------------------------------------------------------------
+   1 NMFCZ          OPTIMAL_LONG     d -4  d +1 +2.27% 100% +14.02 0.000   5   poor  8.1% ***
+   2 MITN           CAPTURE_HOLD     d -5  d +0 +2.19% 100% +13.08 0.000   6   poor  9.4% ***
+   3 MITP           QUICK_FLIP       d -3  d +3 +2.28% 100% +12.23 0.000   4   poor  9.4% ***
+   4 MITT PRB       DIV_HOLD         d -2  d +2 +2.96% 100% +12.08 0.000  12   poor 10.0% ***
+   5 RPT PRC        QUICK_FLIP       d -3  d +3 +2.22% 100% +11.98 0.000   3   poor  7.8% ***
+   6 MS PRQ         CAPTURE_HOLD     d -5  d +0 +1.78% 100% +11.21 0.000   5   poor  6.3% ***
+   7 ALL PRB        CAPTURE_HOLD     d -5  d +0 +2.33% 100% +11.19 0.000   9   poor  7.5% ***
+   8 MITT PRC       CAPTURE_HOLD     d -5  d +0 +3.45% 100%  +9.34 0.000  12   poor 12.5% ***
+   9 MFICL          CAPTURE_HOLD     d -5  d +0 +1.66% 100%  +9.09 0.000   8   good  7.9% ***
+  10 MS PRI         QUICK_FLIP       d -3  d +3 +1.96% 100%  +8.86 0.000   9   poor  6.3% ***
+  11 DCOMG          DIV_HOLD         d -2  d +2 +2.69% 100%  +7.61 0.000   6   good  8.5% ***
+  12 RWT PRA        CAPTURE_HOLD     d -5  d +0 +2.77% 100%  +7.61 0.000   8   good 10.1% ***
+  13 EFC PRC        QUICK_FLIP       d -3  d +3 +2.47% 100%  +7.50 0.000   8   good  8.7% ***
+  14 CMSA           QUICK_FLIP       d -3  d +3 +2.04% 100%  +7.09 0.000  12   poor  6.0% ***
+  15 XOMAO          CAPTURE_HOLD     d -5  d +0 +2.38% 100%  +6.62 0.000  10   poor  8.3% ***
+  16 FBRT PRE       DIV_HOLD         d -2  d +2 +3.06% 100%  +6.53 0.000  10   poor  9.0% ***
+  17 MGRB           CAPTURE_HOLD     d -5  d +0 +2.24% 100%  +6.43 0.000   9   poor  6.4% ***
+  18 HIG PRG        CAPTURE_HOLD     d -5  d +0 +1.22% 100%  +6.29 0.000  12   poor  6.0% ***
+  19 FITBP          DIV_HOLD         d -2  d +2 +1.29% 100%  +6.22 0.000  11   poor  6.2% ***
+  20 KEY PRL        OPTIMAL_LONG     d-19  d +7 +3.71% 100%  +6.02 0.000   8   good  6.5% ***
+  21 FITBI          CAPTURE_HOLD     d -5  d +0 +2.14% 100%  +5.66 0.000   9   poor  8.1% ***
+  22 CIMO           CAPTURE_HOLD     d -5  d +0 +2.66% 100%  +5.65 0.000   5   fair  9.2% ***
+  23 NEWTG          CAPTURE_HOLD     d -5  d +0 +1.62% 100%  +5.46 0.000   4   poor  8.5% ***
+  24 ONBPO          QUICK_FLIP       d -3  d +3 +2.03% 100%  +5.34 0.000  11   poor  7.0% ***
+  25 EFC PRA        CAPTURE_HOLD     d -5  d +0 +2.92% 100%  +5.31 0.000  11   poor 10.3% ***
+  26 GS PRC         QUICK_FLIP       d -3  d +3 +2.49% 100%  +5.28 0.000  11   poor  6.2% ***
+  27 WBS PRG        DIV_HOLD         d -2  d +2 +2.27% 100%  +5.27 0.000  11   poor  6.8% ***
+  28 WFC PRY        DIV_HOLD         d -2  d +2 +1.83% 100%  +5.27 0.000  11   poor  5.9% ***
+  29 MFAO           OPTIMAL_LONG     d-20  d +4 +4.26% 100%  +5.10 0.000   4   fair  8.9% ***
+  30 MGRE           QUICK_FLIP       d -3  d +3 +2.33% 100%  +5.10 0.000   6   poor  6.8% ***
+  31 RITM PRC       DIV_HOLD         d -2  d +2 +2.23% 100%  +5.05 0.000  11   poor 10.5% ***
+  32 RNR PRF        DIV_HOLD         d -2  d +2 +1.91% 100%  +4.98 0.000  11   poor  6.2% ***
+  33 PRIF PRJ       QUICK_FLIP       d -3  d +3 +1.30% 100%  +4.93 0.000  10   poor  6.6% ***
+  34 NEE PRN        QUICK_FLIP       d -3  d +3 +1.83% 100%  +4.86 0.000  11   poor  5.8% ***
+  35 RZB            CAPTURE_HOLD     d -5  d +0 +2.17% 100%  +4.84 0.000  10   poor  5.8% ***
+  36 NLY PRF        CAPTURE_HOLD     d -5  d +0 +2.48% 100%  +4.82 0.000   9   poor  9.6% ***
+  37 XOMAP          OPTIMAL_LONG     d-14  d +8 +3.64% 100%  +4.78 0.000  10   poor  8.5% ***
+  38 AGNCM          DIV_HOLD         d -2  d +2 +2.09% 100%  +4.75 0.000  11   poor  9.4% ***
+  39 PMT PRB        QUICK_FLIP       d -3  d +3 +2.88% 100%  +4.74 0.000  11   poor  8.4% ***
+  40 PRS            CAPTURE_HOLD     d -5  d +0 +1.43% 100%  +4.72 0.000  12   poor  5.7% ***
+  41 BANC PRF       OPTIMAL_LONG     d -7  d+19 +2.78% 100%  +4.63 0.000   7   poor  8.1% ***
+  42 METCZ          OPTIMAL_LONG     d-17  d +0 +4.09% 100%  +4.60 0.000   4   fair  8.3% ***
+  43 GS PRA         DIV_HOLD         d -2  d +2 +1.88% 100%  +4.52 0.000  11   poor  6.3% ***
+  44 GECCH          DIV_HOLD         d -2  d +2 +1.46% 100%  +4.51 0.000   5   fair  8.0% ***
+  45 SHO PRI        CAPTURE_HOLD     d -5  d +0 +2.31% 100%  +4.49 0.000  11   poor  7.1% ***
+  46 ATLCZ          DIV_HOLD         d -2  d +2 +2.18% 100%  +4.46 0.000   7   good  9.2% ***
+  47 TRTN PRB       DIV_HOLD         d -2  d +2 +2.20% 100%  +4.45 0.000  10   poor  7.9% ***
+  48 SEAL PRA       DIV_HOLD         d -2  d +2 +1.95% 100%  +4.43 0.000  10   poor  8.9% ***
+  49 EFSCP          DIV_HOLD         d -2  d +2 +1.85% 100%  +4.40 0.000  12   poor  6.4% ***
+  50 MBINL          CAPTURE_HOLD     d -5  d +0 +1.24% 100%  +4.39 0.000   5   fair  8.0% ***
+  51 SEAL PRB       QUICK_FLIP       d -3  d +3 +2.37% 100%  +4.38 0.000  11   poor  8.4% ***
+  52 ADAMM          DIV_HOLD         d -2  d +2 +3.13%  91%  +4.36 0.000  11   poor 11.8% ***
+  53 AGNCO          OPTIMAL_LONG     d -6  d+16 +4.67% 100%  +4.34 0.000  10   poor 10.0% ***
+  54 FHN PRE        DIV_HOLD         d -2  d +2 +2.12% 100%  +4.32 0.000  10   poor  6.7% ***
+  55 AGNCN          DIV_HOLD         d -2  d +2 +2.33% 100%  +4.27 0.000   9   poor  9.7% ***
+  56 PMT PRA        CAPTURE_HOLD     d -5  d +0 +2.89%  90%  +4.26 0.000  10   poor  8.6% ***
+  57 TCBIO          CAPTURE_HOLD     d -5  d +0 +3.19% 100%  +4.19 0.000   7   poor  7.0% ***
+  58 WHFCL          DIV_HOLD         d -2  d +2 +2.49% 100%  +4.19 0.000   8   good  7.8% ***
+  59 ATHS           CAPTURE_HOLD     d -5  d +0 +0.69% 100%  +4.18 0.000   7   good  7.1% ***
+  60 DBRG PRJ       CAPTURE_HOLD     d -5  d +0 +2.20% 100%  +4.13 0.000  12   poor  7.9% ***
+  61 EFC PRD        OPTIMAL_LONG     d-19  d+10 +6.24% 100%  +4.13 0.000   6   poor  7.7% ***
+  62 CHMI PRB       DIV_HOLD         d -2  d +2 +2.42% 100%  +4.06 0.000   7   poor 10.9% ***
+  63 ONBPP          QUICK_FLIP       d -3  d +3 +1.66% 100%  +4.06 0.000  12   poor  7.0% ***
+  64 STT PRG        DIV_HOLD         d -2  d +2 +1.41% 100%  +4.05 0.000  12   poor  5.5% ***
+  65 GAM PRB        DIV_HOLD         d -2  d +2 +1.30% 100%  +4.04 0.000  10   poor  5.9% ***
+  66 GSL PRB        FULL_CYCLE       d-10  d+20 +1.74% 100%  +4.02 0.000   7   poor  8.4% ***
+  67 AIZN           CAPTURE_HOLD     d -5  d +0 +2.13% 100%  +4.01 0.000  10   poor  6.3% ***
+  68 MGR            OPTIMAL_LONG     d -4  d +6 +2.44% 100%  +4.01 0.000  10   poor  6.5% ***
+  69 BAC PRE        DIV_HOLD         d -2  d +2 +1.90% 100%  +4.00 0.000  10   poor  5.7% ***
+  70 JPM PRK        OPTIMAL_LONG     d-13  d +1 +2.84% 100%  +4.00 0.000  10   poor  5.5% ***
+  71 C PRN          DIV_HOLD         d -2  d +2 +2.08% 100%  +3.99 0.000   9   poor  9.3% ***
+  72 OXLCI          RECOVERY         d +0  d+10 +0.72% 100%  +3.99 0.000   6   good  8.6% ***
+  73 TRTN PRA       QUICK_FLIP       d -3  d +3 +1.63% 100%  +3.98 0.000   9   poor  8.3% ***
+  74 BAC PRB        DIV_HOLD         d -2  d +2 +1.59% 100%  +3.94 0.000   7   poor  6.1% ***
+  75 SCE PRG        OPTIMAL_LONG     d -5  d+14 +4.38% 100%  +3.94 0.000  11   poor  6.7% ***
+  76 GS PRD         DIV_HOLD         d -2  d +2 +2.15% 100%  +3.90 0.000  11   poor  6.2% ***
+  77 HNNAZ          DIV_HOLD         d -2  d +2 +1.38% 100%  +3.89 0.000  11   poor  5.1% ***
+  78 ECCU           OPTIMAL_LONG     d-12  d+14 +2.19% 100%  +3.87 0.000   4   fair  2.4% ***
+  79 EMP            DIV_HOLD         d -2  d +2 +1.73% 100%  +3.87 0.000  10   poor  5.6% ***
+  80 SF PRB         CAPTURE_HOLD     d -5  d +0 +1.78% 100%  +3.87 0.000  10   poor  6.4% ***
+  81 VLYPN          QUICK_FLIP       d -3  d +3 +1.70% 100%  +3.86 0.000   6   good  8.1% ***
+  82 AGM PRD        CAPTURE_HOLD     d -5  d +0 +1.91% 100%  +3.84 0.000  11   poor  6.3% ***
+  83 ADAMI          DIV_HOLD         d -2  d +2 +1.00% 100%  +3.82 0.000   6   good  9.1% ***
+  84 UNMA           DIV_HOLD         d -2  d +2 +1.90% 100%  +3.79 0.000  11   poor  6.4% ***
+  85 CIM PRB        OPTIMAL_LONG     d -2  d +1 +3.38% 100%  +3.78 0.000   8   poor 11.0% ***
+  86 RWAYZ          CAPTURE_HOLD     d -5  d +0 +1.16% 100%  +3.77 0.000   9   poor  7.9% ***
+  87 BAC PRN        OPTIMAL_LONG     d -6  d+18 +2.68% 100%  +3.76 0.000   9   poor  5.7% ***
+  88 FCNCP          CAPTURE_HOLD     d -5  d +0 +2.25%  92%  +3.76 0.000  12   poor  6.2% ***
+  89 CLDT PRA       CAPTURE_HOLD     d -5  d +0 +2.23% 100%  +3.74 0.000  10   poor  7.7% ***
+  90 OXLCL          OPTIMAL_LONG     d-11  d +0 +2.29% 100%  +3.73 0.000  11   poor  7.1% ***
+  91 DTB            CAPTURE_HOLD     d -5  d +0 +1.65% 100%  +3.69 0.000  10   poor  5.6% ***
+  92 RLJ PRA        CAPTURE_HOLD     d -5  d +0 +2.51% 100%  +3.69 0.000   8   poor  7.8% ***
+  93 PRIF PRK       OPTIMAL_LONG     d-19  d+10 +5.25% 100%  +3.67 0.000   9   poor  8.0% ***
+  94 BAC PRM        QUICK_FLIP       d -3  d +3 +1.73% 100%  +3.66 0.000  11   poor  5.9% ***
+  95 EQH PRC        QUICK_FLIP       d -3  d +3 +2.24% 100%  +3.66 0.000   8   poor  6.0% ***
+  96 ACR PRC        CAPTURE_HOLD     d -5  d +0 +2.82% 100%  +3.64 0.000  10   poor 10.7% ***
+  97 SLG PRI        DIV_HOLD         d -2  d +2 +1.97% 100%  +3.52 0.000  10   poor  7.3% ***
+  98 ALL PRH        OPTIMAL_LONG     d -9  d +5 +2.44% 100%  +3.45 0.000  10   poor  5.8% ***
+  99 LBRDP          QUICK_FLIP       d -3  d +3 +2.59% 100%  +3.43 0.000  11   poor  7.3% ***
+ 100 HBANL          OPTIMAL_LONG     d -1  d+14 +3.47% 100%  +3.42 0.001   4   poor  6.8% ***
+ 101 FCNCO          CAPTURE_PRE      d -7  d -1 +0.98% 100%  +3.41 0.000  10   poor  6.2% ***
+ 102 ENO            QUICK_FLIP       d -3  d +3 +1.57% 100%  +3.39 0.000  11   poor  5.8% ***
+ 103 ELC            CAPTURE_HOLD     d -5  d +0 +1.36%  91%  +3.34 0.000  11   poor  5.5% ***
+ 104 CMRE PRB       CAPTURE_HOLD     d -5  d +0 +1.49% 100%  +3.31 0.000  11   poor  7.6% ***
+ 105 MHLA           OPTIMAL_LONG     d-17  d +4 +4.62%  90%  +3.31 0.000  10   poor 10.4% ***
+ 106 AXS PRE        DIV_HOLD         d -2  d +2 +1.47%  89%  +3.30 0.000   9   poor  6.3% ***
+ 107 MS PRF         DIV_HOLD         d -2  d +2 +2.23% 100%  +3.30 0.000  10   poor  6.8% ***
+ 108 CHMI PRA       OPTIMAL_LONG     d-12  d +8 +5.83% 100%  +3.29 0.000  11   poor  9.2% ***
+ 109 NSA PRA        OPTIMAL_LONG     d-11  d +0 +3.38% 100%  +3.29 0.000  11   poor  6.6% ***
+ 110 DX PRC         CAPTURE_HOLD     d -5  d +0 +2.69% 100%  +3.28 0.000  10   poor  7.1% ***
+ 111 MBINM          CAPTURE_HOLD     d -5  d +0 +1.61% 100%  +3.28 0.000   9   poor  8.1% ***
+ 112 MFA PRB        OPTIMAL_LONG     d-15  d +9 +6.04% 100%  +3.28 0.000  10   poor  9.0% ***
+ 113 OPP PRA        CAPTURE_HOLD     d -5  d +0 +1.62%  90%  +3.28 0.000  10   poor  5.9% ***
+ 114 GNL PRE        OPTIMAL_LONG     d -1  d+10 +4.38% 100%  +3.27 0.000   7   poor  8.3% ***
+ 115 AOMN           OPTIMAL_LONG     d-18  d+13 +2.60% 100%  +3.26 0.000   5   fair  9.4% ***
+ 116 HFRO PRA       OPTIMAL_LONG     d -6  d +2 +3.32% 100%  +3.26 0.000  10   poor  7.2% ***
+ 117 HOVNP          DIV_HOLD         d -2  d +2 +3.38% 100%  +3.26 0.000  11   poor 10.4% ***
+ 118 MSBIP          DIV_HOLD         d -2  d +2 +2.57% 100%  +3.25 0.000  10   poor  7.8% ***
+ 119 BCV PRA        CAPTURE_HOLD     d -5  d +0 +1.49%  91%  +3.24 0.000  11   poor  5.9% ***
+ 120 MET PRE        DIV_HOLD         d -2  d +2 +0.97%  90%  +3.24 0.000  10   poor  5.7% ***
+ 121 SOJC           DIV_HOLD         d -2  d +2 +1.67%  92%  +3.24 0.000  12   poor  5.7% ***
+ 122 GNL PRD        OPTIMAL_LONG     d -2  d+18 +5.63% 100%  +3.21 0.000   7   good  8.3% ***
+ 123 AGNCL          OPTIMAL_LONG     d -1  d+20 +3.54% 100%  +3.20 0.000   9   poor  8.0% ***
+ 124 AMH PRG        OPTIMAL_LONG     d-11  d +2 +2.76% 100%  +3.20 0.000  11   poor  6.3% ***
+ 125 NRUC           DIV_HOLD         d -2  d +2 +1.63%  92%  +3.19 0.000  12   poor  5.6% ***
+ 126 CMRE PRC       OPTIMAL_LONG     d-14  d +2 +2.50%  91%  +3.18 0.000  11   poor  8.2% ***
+ 127 WFC PRZ        DIV_HOLD         d -2  d +2 +1.75% 100%  +3.18 0.000  12   poor  6.0% ***
+ 128 CIM PRC        OPTIMAL_LONG     d -1  d+19 +2.53% 100%  +3.17 0.000  10   poor  8.9% ***
+ 129 PRIF PRD       OPTIMAL_LONG     d-11  d+18 +3.62%  89%  +3.16 0.000   9   poor  7.4% ***
+ 130 SCE PRM        DIV_HOLD         d -2  d +2 +1.40% 100%  +3.16 0.000   5   poor  7.5% ***
+ 131 NCZ PRA        OPTIMAL_LONG     d-20  d +1 +2.22% 100%  +3.15 0.000  11   poor  6.3% ***
+ 132 NEWTH          OPTIMAL_LONG     d-20  d+20 +1.89% 100%  +3.09 0.002   4   fair  8.6% ***
+ 133 NLY PRI        CAPTURE_HOLD     d -5  d +0 +2.06%  90%  +3.08 0.000  10   poor  9.7% ***
+ 134 SAY            CAPTURE_PRE      d -7  d -1 +0.50%  89%  +3.08 0.000   9   poor  8.1% ***
+ 135 USB PRR        DIV_HOLD         d -2  d +2 +1.66%  91%  +3.07 0.000  11   poor  5.7% ***
+ 136 MS PRO         OPTIMAL_LONG     d-15  d +0 +2.77% 100%  +3.05 0.000  10   poor  5.8% ***
+ 137 ADAMG          OPTIMAL_LONG     d-20  d+11 +2.13% 100%  +3.04 0.002   4   fair  9.2% ***
+ 138 AQNB           DIV_HOLD         d -2  d +2 +2.13% 100%  +3.04 0.000  11   poor  8.8% ***
+ 139 WFC PRC        DIV_HOLD         d -2  d +2 +1.01%  92%  +3.03 0.000  12   poor  5.8% ***
+ 140 AHL PRF        OPTIMAL_LONG     d-19  d +4 +1.72% 100%  +3.02 0.009   3   fair  9.8% ***
+ 141 ATH PRA        OPTIMAL_LONG     d -1  d+19 +2.13%  90%  +3.02 0.000  10   poor  6.5% ***
+ 142 BIPJ           DIV_HOLD         d -2  d +2 +1.32% 100%  +3.01 0.000   6   good  7.3% ***
+ 143 GECCI          CAPTURE_HOLD     d -5  d +0 +1.04% 100%  +3.01 0.000   7   good  8.4% ***
+ 144 BOH PRB        FULL_CYCLE       d-10  d+20 +2.18%  83%  +2.98 0.000   6   good  7.6% ***
+ 145 SYF PRA        CAPTURE_HOLD     d -5  d +0 +2.66% 100%  +2.98 0.000  11   poor  7.3% ***
+ 146 DSX PRB        OPTIMAL_LONG     d-20  d +6 +3.16%  91%  +2.97 0.000  11   poor  8.6% ***
+ 147 RWTP           OPTIMAL_LONG     d-17  d +0 +2.36% 100%  +2.96 0.011   3   poor 13.8% ***
+ 148 CFR PRB        CAPTURE_HOLD     d -5  d +0 +2.16% 100%  +2.95 0.000  11   poor  5.9% ***
+ 149 GPJA           CAPTURE_HOLD     d -5  d +0 +2.11%  89%  +2.95 0.000   9   poor  5.3% ***
+ 150 NEWTI          DIV_HOLD         d -2  d +2 +1.20% 100%  +2.93 0.000   8   good  8.0% ***
+ 151 KMPB           OPTIMAL_LONG     d-19  d +1 +2.98%  89%  +2.92 0.000   9   poor  6.5% ***
+ 152 F PRD          OPTIMAL_LONG     d -9  d +6 +2.99% 100%  +2.91 0.000   7   poor  6.6% ***
+ 153 DBRG PRH       QUICK_FLIP       d -3  d +3 +1.98%  90%  +2.90 0.000  10   poor  7.9% ***
+ 154 BAC PRS        CAPTURE_HOLD     d -5  d +0 +1.46% 100%  +2.87 0.000   9   poor  5.8% ***
+ 155 OCCIM          DIV_HOLD         d -2  d +2 +0.53% 100%  +2.85 0.002   5   fair  2.6% ***
+ 156 CFG PRH        QUICK_FLIP       d -3  d +3 +1.54% 100%  +2.78 0.000   7   good  7.0% ***
+ 157 RF PRC         OPTIMAL_LONG     d -2  d +8 +2.84% 100%  +2.77 0.000   9   poor  6.1% ***
+ 158 CMSC           DIV_HOLD         d -2  d +2 +1.20%  91%  +2.75 0.000  11   poor  6.2% ***
+ 159 USB PRH        DIV_HOLD         d -2  d +2 +1.22% 100%  +2.75 0.000  10   poor  6.2% ***
+ 160 RITM PRB       CAPTURE_HOLD     d -5  d +0 +2.20%  91%  +2.74 0.000  11   poor 10.6% ***
+ 161 HBANP          QUICK_FLIP       d -3  d +3 +2.62% 100%  +2.73 0.000  10   poor  6.1% ***
+ 162 AGNCP          OPTIMAL_LONG     d -4  d+17 +4.50% 100%  +2.71 0.000  10   poor  6.5% ***
+ 163 SIGIP          QUICK_FLIP       d -3  d +3 +1.30% 100%  +2.69 0.000  12   poor  6.4% ***
+ 164 WFC PRD        CAPTURE_HOLD     d -5  d +0 +1.89% 100%  +2.68 0.000  10   poor  5.9% ***
+ 165 PBI PRB        OPTIMAL_LONG     d-20  d +0 +7.46%  91%  +2.66 0.000  11   poor  8.6% ***
+ 166 ASB PRE        CAPTURE_HOLD     d -5  d +0 +1.76%  91%  +2.65 0.000  11   poor  6.7% ***
+ 167 CIM PRD        DIV_HOLD         d -2  d +2 +2.33%  90%  +2.65 0.000  10   poor 11.0% ***
+ 168 CNOBP          QUICK_FLIP       d -3  d +3 +1.83%  92%  +2.64 0.000  12   poor  6.1% ***
+ 169 KIM PRM        CAPTURE_HOLD     d -5  d +0 +1.19%  89%  +2.64 0.000   9   poor  5.9% ***
+ 170 GNL PRA        RECOVERY         d +0  d+10 +4.32%  80%  +2.63 0.000  10   poor  8.1% ***
+ 171 USB PRP        OPTIMAL_LONG     d-20  d +2 +2.60% 100%  +2.61 0.000   9   poor  5.7% ***
+ 172 RITM PRA       OPTIMAL_LONG     d-17  d+20 +5.51% 100%  +2.60 0.000   9   poor 10.6% ***
+ 173 MTB PRH        DIV_HOLD         d -2  d +2 +1.67%  82%  +2.59 0.000  11   poor  5.7% ***
+ 174 SAZ            OPTIMAL_LONG     d-13  d+11 +1.20% 100%  +2.59 0.000   8   good  8.3% ***
+ 175 RWTO           CAPTURE_HOLD     d -5  d +0 +1.32%  83%  +2.58 0.002   6   good  9.0% ***
+ 176 SF PRC         CAPTURE_HOLD     d -5  d +0 +2.02% 100%  +2.58 0.000   9   poor  6.2% ***
+ 177 AFGE           OPTIMAL_LONG     d -7  d+10 +2.94%  83%  +2.56 0.000  12   poor  5.9% ***
+ 178 FHN PRF        CAPTURE_HOLD     d -5  d +0 +2.14% 100%  +2.56 0.000  10   poor  6.1% ***
+ 179 KEY PRI        OPTIMAL_LONG     d-20  d +6 +2.77% 100%  +2.55 0.000  11   poor  6.2% ***
+ 180 INBKZ          CAPTURE_HOLD     d -5  d +0 +1.35%  83%  +2.54 0.000  12   poor  8.8% ***
+ 181 ACR PRD        CAPTURE_HOLD     d -5  d +0 +2.82%  82%  +2.53 0.000  11   poor  9.1% ***
+ 182 MITT PRA       FULL_CYCLE       d-10  d+20 +3.37%  91%  +2.53 0.000  11   poor 10.1% ***
+ 183 MS PRE         DIV_HOLD         d -2  d +2 +2.41% 100%  +2.53 0.000   9   poor  7.0% ***
+ 184 ECCW           OPTIMAL_LONG     d-14  d+13 +1.87%  90%  +2.52 0.000  10   poor  7.0% ***
+ 185 ECF PRA        CAPTURE_HOLD     d -5  d +0 +1.46%  80%  +2.52 0.000  10   poor  5.8% ***
+ 186 MET PRA        OPTIMAL_LONG     d-16  d +0 +2.21%  91%  +2.52 0.000  11   poor  6.1% ***
+ 187 DBRG PRI       OPTIMAL_LONG     d-14  d+20 +4.81%  83%  +2.50 0.000  12   poor  7.9% ***
+ 188 HWCPZ          CAPTURE_HOLD     d -5  d +0 +1.85%  91%  +2.50 0.000  11   poor  6.4% ***
+ 189 ASB PRF        DIV_HOLD         d -2  d +2 +1.88%  91%  +2.49 0.000  11   poor  6.6% ***
+ 190 VLYPO          CAPTURE_HOLD     d -5  d +0 +1.43% 100%  +2.48 0.000  11   poor  8.5% ***
+ 191 AHH PRA        QUICK_FLIP       d -3  d +3 +1.91%  90%  +2.47 0.000  10   poor  7.5% ***
+ 192 BFS PRD        CAPTURE_HOLD     d -5  d +0 +2.10%  91%  +2.45 0.000  11   poor  7.0% ***
+ 193 FLG PRA        DIV_HOLD         d -2  d +2 +3.11% 100%  +2.45 0.000   9   poor  7.4% ***
+ 194 PMT PRC        OPTIMAL_LONG     d-19  d +4 +4.22%  89%  +2.44 0.000   9   poor  8.7% ***
+ 195 AEFC           OPTIMAL_LONG     d-19  d +4 +2.17%  91%  +2.43 0.000  11   poor  6.1% ***
+ 196 USB PRS        DIV_HOLD         d -2  d +2 +1.46%  86%  +2.43 0.001   7   poor  5.6% ***
+ 197 RF PRE         OPTIMAL_LONG     d-20  d +7 +3.04%  91%  +2.42 0.000  11   poor  6.1% ***
+ 198 RIV PRA        DIV_HOLD         d -2  d +2 +1.45%  92%  +2.42 0.000  12   poor  6.5% ***
+ 199 GMRE PRA       OPTIMAL_LONG     d-17  d +0 +2.23%  90%  +2.41 0.000  10   poor  7.5% ***
+ 200 KEY PRJ        OPTIMAL_LONG     d-20  d +6 +3.53%  83%  +2.41 0.000  12   poor  6.3% ***
+ 201 BML PRL        DIV_HOLD         d -2  d +2 +1.66%  91%  +2.40 0.000  11   poor  6.0% ***
+ 202 EAI            CAPTURE_HOLD     d -5  d +0 +1.29%  80%  +2.38 0.000  10   poor  5.4% ***
+ 203 ENJ            OPTIMAL_LONG     d-12  d +1 +2.50%  83%  +2.38 0.000  12   poor  5.6% ***
+ 204 AGM PRE        OPTIMAL_LONG     d -3  d +6 +2.64%  90%  +2.37 0.000  10   poor  6.3% ***
+ 205 RITM PRD       FULL_CYCLE       d-10  d+20 +2.63% 100%  +2.37 0.000  11   poor  7.7% ***
+ 206 GDV PRK        OPTIMAL_LONG     d-14  d+17 +2.36%  90%  +2.36 0.000  10   poor  5.6% ***
+ 207 TRTN PRD       DIV_HOLD         d -2  d +2 +1.49%  91%  +2.35 0.000  11   poor  7.3% ***
+ 208 JPM PRD        QUICK_FLIP       d -3  d +3 +1.23%  89%  +2.34 0.000   9   poor  5.8% ***
+ 209 FITBO          DIV_HOLD         d -2  d +2 +1.83%  91%  +2.33 0.000  11   poor  5.7% ***
+ 210 GDV PRH        OPTIMAL_LONG     d -7  d +0 +1.49% 100%  +2.33 0.000  11   poor  5.7% ***
+ 211 RWAYL          DIV_HOLD         d -2  d +2 +1.17%  91%  +2.33 0.000  11   poor  7.5% ***
+ 212 SPMA           DIV_HOLD         d -2  d +2 +0.41% 100%  +2.32 0.009   5   fair  2.7% ***
+ 213 AGM PRF        DIV_HOLD         d -2  d +2 +1.14%  91%  +2.31 0.000  11   poor  6.3% ***
+ 214 TRTX PRC       FULL_CYCLE       d-10  d+20 +1.88%  80%  +2.31 0.000  10   poor  8.7% ***
+ 215 BC PRC         OPTIMAL_LONG     d-20  d +7 +5.04%  89%  +2.30 0.001   9   poor  6.4% ***
+ 216 SHO PRH        CAPTURE_HOLD     d -5  d +0 +2.35%  82%  +2.30 0.000  11   poor  7.1% ***
+ 217 EFC PRB        CAPTURE_HOLD     d -5  d +0 +2.48%  91%  +2.29 0.000  11   poor  7.2% ***
+ 218 MS PRA         CAPTURE_HOLD     d -5  d +0 +1.57%  91%  +2.29 0.000  11   poor  6.1% ***
+ 219 VLYPP          QUICK_FLIP       d -3  d +3 +1.88%  91%  +2.29 0.000  11   poor  6.5% ***
+ 220 JPM PRJ        OPTIMAL_LONG     d-16  d+10 +3.53%  80%  +2.28 0.000  10   poor  5.6% ***
+ 221 AHL PRD        DIV_HOLD         d -2  d +2 +1.83%  86%  +2.27 0.003   7   poor  6.7% ***
+ 222 FRMEP          CAPTURE_HOLD     d -5  d +0 +1.55%  86%  +2.27 0.003   7   poor  7.4% ***
+ 223 AHL PRE        DIV_HOLD         d -2  d +2 +1.18%  91%  +2.26 0.000  11   poor  6.8% ***
+ 224 SSSSL          DIV_HOLD         d -2  d +2 +0.99% 100%  +2.26 0.000  11   poor  6.2% ***
+ 225 PMTU           RECOVERY         d +0  d+10 +0.69%  88%  +2.24 0.002   8   good  8.3% ***
+ 226 TWO PRC        DIV_HOLD         d -2  d +2 +1.80%  82%  +2.24 0.000  11   poor 10.5% ***
+ 227 PRIF PRL       OPTIMAL_LONG     d-12  d +2 +2.71%  91%  +2.23 0.000  11   poor  6.9% ***
+ 228 OPP PRB        QUICK_FLIP       d -3  d +3 +1.48%  83%  +2.22 0.000  12   poor  6.1% ***
+ 229 PSA PRQ        DIV_HOLD         d -2  d +2 +1.01%  82%  +2.22 0.000  11   poor  5.8% ***
+ 230 RNR PRG        QUICK_FLIP       d -3  d +3 +1.51%  75%  +2.21 0.002   8   poor  6.0% ***
+ 231 ACP PRA        OPTIMAL_LONG     d-16  d +2 +2.31%  91%  +2.20 0.000  11   poor  5.9% ***
+ 232 GNL PRB        OPTIMAL_LONG     d -2  d+10 +5.50% 100%  +2.20 0.000  11   poor  8.0% ***
+ 233 AGM PRG        CAPTURE_HOLD     d -5  d +0 +1.57%  91%  +2.18 0.000  11   poor  6.1% ***
+ 234 CMRE PRD       QUICK_FLIP       d -3  d +3 +1.55%  82%  +2.18 0.000  11   poor  8.4% ***
+ 235 DTW            OPTIMAL_LONG     d-10  d+18 +1.76%  83%  +2.18 0.000  12   poor  5.7% ***
+ 236 GGT PRE        CAPTURE_HOLD     d -5  d +0 +1.39%  90%  +2.16 0.001  10   poor  5.6% ***
+ 237 ARR PRC        OPTIMAL_LONG     d-19  d +0 +2.24%  91%  +2.15 0.000  11   poor  2.8% ***
+ 238 JPM PRL        OPTIMAL_LONG     d-20  d +6 +2.83%  89%  +2.15 0.001   9   poor  5.7% ***
+ 239 SWKHL          DIV_HOLD         d -2  d +2 +0.78%  88%  +2.14 0.003   8   good  8.8% ***
+ 240 KKRS           OPTIMAL_LONG     d-15  d-10 +1.64%  73%  +2.10 0.001  11   poor  6.2% ***
+ 241 WAL PRA        OPTIMAL_LONG     d-20  d+17 +2.92%  80%  +2.10 0.001  10   poor  5.2% ***
+ 242 CHSCO          OPTIMAL_LONG     d-20  d+11 +2.19%  90%  +2.09 0.001  10   poor  7.4% ***
+ 243 AFGC           CAPTURE_HOLD     d -5  d +0 +1.44%  75%  +2.08 0.000  12   poor  6.1% ***
+ 244 CMSD           OPTIMAL_LONG     d-10  d +5 +1.42%  83%  +2.08 0.000  12   poor  6.2% ***
+ 245 LNC PRD        OPTIMAL_LONG     d-12  d +6 +1.64%  78%  +2.08 0.002   9   poor  8.2% ***
+ 246 PEB PRH        DIV_HOLD         d -2  d +2 +2.32%  91%  +2.08 0.001  11   poor  7.9% ***
+ 247 ADC PRA        QUICK_FLIP       d -3  d +3 +1.68%  82%  +2.07 0.001  11   poor  6.0% ***
+ 248 MFA PRC        CAPTURE_HOLD     d -5  d +0 +1.61%  89%  +2.07 0.002   9   poor  7.4% ***
+ 249 PEB PRG        CAPTURE_HOLD     d -5  d +0 +2.00%  82%  +2.07 0.001  11   poor  8.0% ***
+ 250 SOJD           DIV_HOLD         d -2  d +2 +1.44%  75%  +2.07 0.003   8   poor  5.7% ***
+ 251 GGT PRG        CAPTURE_HOLD     d -5  d +0 +0.91%  91%  +2.06 0.001  11   poor  5.6% ***
+ 252 CIM PRA        DIV_HOLD         d -2  d +2 +1.65%  90%  +2.04 0.001  10   poor  9.1% ***
+ 253 MER PRK        OPTIMAL_LONG     d-11  d+10 +2.83%  82%  +2.04 0.001  11   poor  6.3% ***
+ 254 UZD            DIV_HOLD         d -2  d +2 +1.24%  89%  +2.03 0.002   9   poor  7.2% ***
+ 255 BANFP          OPTIMAL_LONG     d-11  d +6 +4.16%  91%  +2.01 0.001  11   poor  6.8% ***
+ 256 ETI PR         QUICK_FLIP       d -3  d +3 +1.85%  91%  +2.01 0.001  11   poor  5.7% ***
+ 257 KEY PRK        OPTIMAL_LONG     d-19  d +8 +3.57%  82%  +2.01 0.001  11   poor  6.3% ***
+ 258 ALTG PRA       OPTIMAL_LONG     d -4  d +6 +2.08%  91%  +2.00 0.001  11   poor  9.8% ***
+ 259 ALL PRI        DIV_HOLD         d -2  d +2 +1.21%  82%  +1.99 0.001  11   poor  5.7% ***
+ 260 CUBB           OPTIMAL_LONG     d-11  d+11 +2.97%  91%  +1.99 0.001  11   poor  6.5% ***
+ 261 HTFC           OPTIMAL_LONG     d-12  d+20 +1.41%  89%  +1.99 0.003   9   poor  6.4% ***
+ 262 REGCO          OPTIMAL_LONG     d-15  d +3 +2.20%  86%  +1.99 0.009   7   good  6.5% ***
+ 263 SREA           DIV_HOLD         d -2  d +2 +1.35%  89%  +1.99 0.003   9   poor  6.2% ***
+ 264 TRINI          CAPTURE_HOLD     d -5  d +0 +0.51%  83%  +1.98 0.015   6   good  7.7% ***
+ 265 FULTP          CAPTURE_HOLD     d -5  d +0 +1.57%  89%  +1.96 0.003   9   poor  6.5% ***
+ 266 SF PRD         DIV_HOLD         d -2  d +2 +1.83%  86%  +1.96 0.010   7   poor  6.1% ***
+ 267 GAB PRG        CAPTURE_HOLD     d -5  d +0 +1.23%  91%  +1.95 0.001  11   poor  5.6% ***
+ 268 HTFB           OPTIMAL_LONG     d-13  d+18 +2.47%  90%  +1.94 0.002  10   poor  5.1% ***
+ 269 GAB PRK        OPTIMAL_LONG     d-12  d +0 +2.54%  91%  +1.92 0.002  11   poor  5.6% ***
+ 270 TFC PRO        DIV_HOLD         d -2  d +2 +1.55%  82%  +1.92 0.001  11   poor  5.8% ***
+ 271 AMH PRH        DIV_HOLD         d -2  d +2 +1.32%  91%  +1.89 0.002  11   poor  6.4% ***
+ 272 CFG PRE        OPTIMAL_LONG     d-17  d +0 +3.01%  73%  +1.88 0.002  11   poor  6.1% ***
+ 273 DUK PRA        CAPTURE_HOLD     d -5  d +0 +0.78%  83%  +1.88 0.001  12   poor  5.8% ***
+ 274 EQH PRA        DIV_HOLD         d -2  d +2 +1.44%  86%  +1.88 0.013   7   poor  6.2% ***
+ 275 HBANM          DIV_HOLD         d -2  d +2 +1.21%  75%  +1.88 0.001  12   poor  6.3% ***
+ 276 SOJF           OPTIMAL_LONG     d-11  d +3 +1.52% 100%  +1.87 0.062   4   fair  6.3% **
+ 277 T PRC          OPTIMAL_LONG     d -8  d -4 +1.89%  89%  +1.87 0.005   9   poor  6.1% ***
+ 278 JXN PRA        OPTIMAL_LONG     d -1  d+19 +1.41%  80%  +1.86 0.038   5   poor  7.6% ***
+ 279 KREF PRA       CAPTURE_HOLD     d -5  d +0 +3.45%  73%  +1.86 0.002  11   poor  8.3% ***
+ 280 MGRD           OPTIMAL_LONG     d-13  d +5 +1.99%  89%  +1.85 0.005   9   poor  6.2% ***
+ 281 SB PRD         OPTIMAL_LONG     d-18  d +5 +2.17%  91%  +1.85 0.002  11   poor  7.9% ***
+ 282 TRTN PRC       DIV_HOLD         d -2  d +2 +1.62%  90%  +1.85 0.004  10   poor  7.5% ***
+ 283 CHSCL          OPTIMAL_LONG     d-10  d+10 +2.40%  91%  +1.84 0.002  11   poor  7.2% ***
+ 284 GECCO          OPTIMAL_LONG     d-19  d+15 +2.50%  90%  +1.84 0.004  10   poor  5.8% ***
+ 285 FRT PRC        DIV_HOLD         d -2  d +2 +1.33%  80%  +1.83 0.004  10   poor  5.7% ***
+ 286 NCV PRA        DIV_HOLD         d -2  d +2 +1.13%  82%  +1.83 0.003  11   poor  6.3% ***
+ 287 BHFAN          OPTIMAL_LONG     d -2  d +9 +3.90%  90%  +1.82 0.004  10   poor  7.5% ***
+ 288 CGABL          DIV_HOLD         d -2  d +2 +1.24%  80%  +1.82 0.004  10   poor  6.3% ***
+ 289 SCE PRN        DIV_HOLD         d -2  d +2 +1.03%  83%  +1.82 0.026   6   good  7.2% ***
+ 290 BAC PRQ        QUICK_FLIP       d -3  d +3 +1.32%  82%  +1.80 0.003  11   poor  5.9% ***
+ 291 RWTN           OPTIMAL_LONG     d-14  d+10 +1.84%  71%  +1.80 0.017   7   good  9.1% ***
+ 292 BHFAL          DIV_HOLD         d -2  d +2 +2.37%  91%  +1.79 0.003  11   poor  7.0% ***
+ 293 DCOMP          DIV_HOLD         d -2  d +2 +2.22%  90%  +1.79 0.005  10   poor  7.0% ***
+ 294 JPM PRM        CAPTURE_HOLD     d -5  d +0 +1.39%  89%  +1.78 0.008   9   poor  5.5% ***
+ 295 OXLCP          OPTIMAL_LONG     d-14  d +9 +1.09%  90%  +1.78 0.005  10   poor  2.2% ***
+ 296 PEB PRF        OPTIMAL_LONG     d+14  d +8 +4.27%  80%  +1.78 0.005  10   poor  7.7% ***
+ 297 WAFDP          CAPTURE_HOLD     d -5  d +0 +1.82%  90%  +1.77 0.005  10   poor  6.9% ***
+ 298 WFC PRA        QUICK_FLIP       d -3  d +3 +1.28%  90%  +1.77 0.005  10   poor  5.8% ***
+ 299 UZF            QUICK_FLIP       d -3  d +3 +1.77%  82%  +1.76 0.004  11   poor  6.9% ***
+ 300 VNO PRO        DIV_HOLD         d -2  d +2 +1.13%  82%  +1.76 0.004  11   poor  7.4% ***
+ 301 TWO PRA        OPTIMAL_LONG     d -9  d+19 +3.40%  91%  +1.75 0.004  11   poor  8.8% ***
+ 302 MS PRL         OPTIMAL_LONG     d-15  d +1 +2.57%  73%  +1.73 0.004  11   poor  5.6% ***
+ 303 AUB PRA        OPTIMAL_LONG     d-18  d+10 +3.50%  92%  +1.72 0.003  12   poor  7.0% ***
+ 304 OZKAP          OPTIMAL_LONG     d+18  d-13 +6.39%  73%  +1.71 0.004  11   poor  6.7% ***
+ 305 SCE PRK        OPTIMAL_LONG     d -2  d+16 +3.08%  70%  +1.71 0.007  10   poor  5.8% ***
+ 306 SCHW PRD       OPTIMAL_LONG     d -9  d+16 +1.82%  92%  +1.70 0.003  12   poor  5.9% ***
+ 307 VNO PRM        OPTIMAL_LONG     d+10  d +1 +3.56%  91%  +1.68 0.005  11   poor  7.6% ***
+ 308 VOYA PRB       CAPTURE_HOLD     d -5  d +0 +1.37%  75%  +1.67 0.004  12   poor  5.5% ***
+ 309 WBS PRF        OPTIMAL_LONG     d-12  d +0 +2.19%  80%  +1.67 0.008  10   poor  6.5% ***
+ 310 GRBK PRA       OPTIMAL_LONG     d-20  d +3 +5.22%  91%  +1.66 0.006  11   poor  6.4% ***
+ 311 PSEC PRA       CAPTURE_HOLD     d -5  d +0 +2.56%  70%  +1.65 0.009  10   poor  7.5% ***
+ 312 REXR PRB       RECOVERY_LATE    d +3  d+15 +1.88%  70%  +1.65 0.009  10   poor  6.4% ***
+ 313 EICA           OPTIMAL_LONG     d-12  d+20 +2.23%  70%  +1.62 0.011  10   poor  1.7% ***
+ 314 SAJ            OPTIMAL_LONG     d-14  d+12 +1.84%  78%  +1.62 0.015   9   poor  7.9% ***
+ 315 BML PRH        OPTIMAL_LONG     d-17  d -1 +1.81%  83%  +1.61 0.005  12   poor  6.2% ***
+ 316 GAB PRH        OPTIMAL_LONG     d-13  d +0 +2.57%  91%  +1.59 0.008  11   poor  5.6% ***
+ 317 GGN PRB        OPTIMAL_LONG     d-20  d +9 +2.18%  80%  +1.56 0.014  10   poor  5.7% ***
+ 318 T PRA          OPTIMAL_LONG     d -8  d+13 +2.92%  82%  +1.55 0.010  11   poor  5.9% ***
+ 319 CHSCN          OPTIMAL_LONG     d-15  d +3 +2.13%  82%  +1.53 0.011  11   poor  6.9% ***
+ 320 DLR PRJ        OPTIMAL_LONG     d-16  d +0 +1.06%  73%  +1.53 0.011  11   poor  5.9% ***
+ 321 ATH PRB        OPTIMAL_LONG     d-16  d+15 +1.79%  70%  +1.52 0.016  10   poor  6.5% ***
+ 322 DDT            OPTIMAL_LONG     d-20  d+11 +2.14%  64%  +1.51 0.012  11   poor  7.3% ***
+ 323 TWO PRB        QUICK_FLIP       d -3  d +3 +0.97%  73%  +1.51 0.012  11   poor  8.6% ***
+ 324 BHFAP          CAPTURE_HOLD     d -5  d +0 +2.23%  90%  +1.50 0.018  10   poor  7.4% ***
+ 325 OXLCZ          DIV_HOLD         d -2  d +2 +1.13%  82%  +1.50 0.013  11   poor  5.3% ***
+ 326 SB PRC         DIV_HOLD         d -2  d +2 +1.45%  73%  +1.50 0.013  11   poor  7.9% ***
+ 327 BHFAM          OPTIMAL_LONG     d -3  d-19 +6.51%  70%  +1.49 0.018  10   poor  7.4% ***
+ 328 GL PRD         CAPTURE_HOLD     d -5  d +0 +1.65%  83%  +1.49 0.010  12   poor  5.9% ***
+ 329 TDS PRV        OPTIMAL_LONG     d-15  d -1 +4.15%  82%  +1.49 0.013  11   poor  8.4% ***
+ 330 ATH PRE        FULL_CYCLE       d-10  d+20 +0.86%  71%  +1.48 0.051   7   poor  7.3% **
+ 331 CHSCM          QUICK_FLIP       d -3  d +3 +0.69%  73%  +1.48 0.014  11   poor  6.7% ***
+ 332 INN PRE        OPTIMAL_LONG     d-19  d -9 +2.50%  83%  +1.47 0.011  12   poor  7.7% ***
+ 333 ACGLO          OPTIMAL_LONG     d+11  d-10 +4.11%  64%  +1.45 0.016  11   poor  6.1% ***
+ 334 COF PRK        WASHOUT_SHORT    d +0  d +5 +2.20%  73%  +1.45 0.016  11   poor  6.2% ***
+ 335 NLY PRG        CAPTURE_HOLD     d -5  d +0 +1.25%  86%  +1.45 0.055   7   poor  9.1% **
+ 336 ECCC           OPTIMAL_LONG     d-19  d +2 +1.72%  82%  +1.44 0.017  11   poor  2.5% ***
+ 337 GNT PRA        CAPTURE_HOLD     d -5  d +0 +0.44%  64%  +1.43 0.018  11   poor  5.9% ***
+ 338 PRH            OPTIMAL_LONG     d-16  d+20 +1.18%  60%  +1.43 0.024  10   poor  5.8% ***
+ 339 MBINN          QUICK_FLIP       d -3  d +3 +1.64%  91%  +1.42 0.018  11   poor  7.1% ***
+ 340 COF PRJ        OPTIMAL_LONG     d-20  d+10 +2.37%  82%  +1.40 0.021  11   poor  6.3% ***
+ 341 ECCX           OPTIMAL_LONG     d-19  d+17 +1.93%  70%  +1.40 0.026  10   poor  6.8% ***
+ 342 PEB PRE        OPTIMAL_LONG     d+15  d +0 +5.31%  56%  +1.40 0.036   9   poor  7.9% ***
+ 343 VNO PRN        OPTIMAL_LONG     d-13  d -5 +2.11%  82%  +1.39 0.021  11   poor  7.6% ***
+ 344 SOJE           OPTIMAL_LONG     d-10  d +9 +2.33%  73%  +1.38 0.022  11   poor  5.4% ***
+ 345 KIM PRL        OPTIMAL_LONG     d-14  d +1 +1.86%  82%  +1.37 0.023  11   poor  5.9% ***
+ 346 BWBBP          OPTIMAL_LONG     d-16  d +9 +2.27%  75%  +1.35 0.019  12   poor  7.4% ***
+ 347 COF PRI        OPTIMAL_LONG     d-20  d +0 +2.05%  82%  +1.35 0.026  11   poor  6.2% ***
+ 348 GUT PRC        OPTIMAL_LONG     d-11  d+18 +3.05%  80%  +1.35 0.033  10   poor  5.7% ***
+ 349 COF PRL        OPTIMAL_LONG     d-18  d +0 +1.68%  80%  +1.34 0.034  10   poor  6.1% ***
+ 350 OXLCO          OPTIMAL_LONG     d -2  d+14 +1.28%  73%  +1.33 0.027  11   poor  2.3% ***
+ 351 WRB PRE        OPTIMAL_LONG     d-20  d-10 +1.27%  73%  +1.33 0.027  11   poor  6.1% ***
+ 352 OXLCN          WASHOUT_SHORT    d +0  d +5 +0.83%  82%  +1.32 0.029  11   poor  2.5% ***
+ 353 CMS PRC        OPTIMAL_LONG     d -8  d+11 +2.74%  70%  +1.31 0.039  10   poor  5.6% ***
+ 354 DLR PRL        OPTIMAL_LONG     d-14  d +0 +1.18%  91%  +1.31 0.030  11   poor  6.0% ***
+ 355 MET PRF        QUICK_FLIP       d -3  d +3 +1.32%  80%  +1.31 0.038  10   poor  5.7% ***
+ 356 MHNC           OPTIMAL_LONG     d-19  d +0 +3.56%  83%  +1.31 0.023  12   poor 10.8% ***
+ 357 BML PRJ        OPTIMAL_LONG     d +5  d +0 +2.39%  67%  +1.30 0.025  12   poor  6.1% ***
+ 358 PSA PRS        OPTIMAL_LONG     d-10  d+12 +1.67%  70%  +1.30 0.039  10   poor  5.8% ***
+ 359 REGCP          OPTIMAL_LONG     d-20  d +1 +0.92%  71%  +1.29 0.089   7   good  6.5% **
+ 360 PSA PRN        DIV_HOLD         d -2  d +2 +0.78%  64%  +1.27 0.035  11   poor  5.6% ***
+ 361 DUKB           DIV_HOLD         d -2  d +2 +0.38%  82%  +1.25 0.038  11   poor  5.7% ***
+ 362 BAC PRP        OPTIMAL_LONG     d +1  d -4 +2.80%  73%  +1.23 0.041  11   poor  5.8% ***
+ 363 ATH PRD        OPTIMAL_LONG     d -2  d+12 +1.39%  70%  +1.22 0.054  10   poor  6.5% **
+ 364 ECC PRD        CAPTURE_PRE      d -7  d -1 +0.76%  73%  +1.21 0.044  11   poor  2.8% ***
+ 365 JSM            OPTIMAL_LONG     d+20  d +2 +6.81%  67%  +1.21 0.070   9   poor  7.7% **
+ 366 COF PRN        OPTIMAL_LONG     d-10  d+10 +2.15%  67%  +1.20 0.037  12   poor  6.0% ***
+ 367 PSA PRM        OPTIMAL_LONG     d-14  d+18 +1.51%  90%  +1.20 0.058  10   poor  5.7% **
+ 368 PSA PRP        OPTIMAL_LONG     d-10  d +2 +1.28%  73%  +1.17 0.053  11   poor  5.7% **
+ 369 TFC PRI        WASHOUT_SHORT    d +0  d +5 +1.66%  58%  +1.17 0.043  12   poor  6.0% ***
+ 370 DTG            OPTIMAL_LONG     d +5  d+15 +1.56%  50%  +1.16 0.044  12   poor  5.7% ***
+ 371 INN PRF        OPTIMAL_LONG     d-20  d -6 +4.33%  73%  +1.16 0.053  11   poor  7.5% **
+ 372 NTRSO          OPTIMAL_LONG     d-16  d+17 +1.62%  80%  +1.16 0.067  10   poor  5.5% **
+ 373 OFSSH          CAPTURE_HOLD     d -5  d +0 +0.52%  73%  +1.15 0.057  11   poor  5.5% **
+ 374 WRB PRG        OPTIMAL_LONG     d+20  d-10 +5.65%  50%  +1.15 0.070  10   poor  5.8% **
+ 375 BHFAO          OPTIMAL_LONG     d -1  d-18 +4.86%  64%  +1.13 0.061  11   poor  7.4% **
+ 376 OCCIO          OPTIMAL_LONG     d-12  d+20 +1.55%  82%  +1.13 0.061  11   poor  2.1% **
+ 377 PSA PRH        OPTIMAL_LONG     d -9  d+16 +1.38%  70%  +1.12 0.078  10   poor  5.7% **
+ 378 TFC PRR        QUICK_FLIP       d -3  d +3 +1.03%  73%  +1.12 0.062  11   poor  5.9% **
+ 379 BFS PRE        OPTIMAL_LONG     d-13  d+15 +2.68%  88%  +1.09 0.123   8   poor  7.0% 
+ 380 DLR PRK        DIV_HOLD         d -2  d +2 +0.56%  73%  +1.09 0.070  11   poor  6.1% **
+ 381 REXR PRC       OPTIMAL_LONG     d-10  d+12 +2.41%  80%  +1.09 0.085  10   poor  6.3% **
+ 382 BML PRG        OPTIMAL_LONG     d-17  d +3 +1.77%  73%  +1.07 0.075  11   poor  6.3% **
+ 383 TDS PRU        OPTIMAL_LONG     d-15  d -1 +3.31%  82%  +1.07 0.077  11   poor  8.0% **
+ 384 PSA PRL        OPTIMAL_LONG     d-14  d-17 +1.66%  73%  +1.06 0.079  11   poor  5.7% **
+ 385 PSA PRF        CAPTURE_HOLD     d -5  d +0 +0.54%  73%  +1.04 0.085  11   poor  5.6% **
+ 386 OCCIN          CAPTURE_PRE      d -7  d -1 +0.73%  67%  +1.03 0.073  12   poor  1.9% **
+ 387 PSA PRO        OPTIMAL_LONG     d-15  d+12 +1.46%  78%  +1.03 0.122   9   poor  5.6% 
+ 388 WRB PRF        OPTIMAL_LONG     d-16  d +0 +1.68%  73%  +1.03 0.087  11   poor  6.0% **
+ 389 USB PRQ        DIV_HOLD         d -2  d +2 +0.54%  50%  +1.02 0.108  10   poor  5.5% 
+ 390 PSA PRI        CAPTURE_HOLD     d -5  d +0 +0.57%  60%  +1.00 0.113  10   poor  5.6% 
+ 391 BOH PRA        OPTIMAL_LONG     d +4  d -9 +4.32%  82%  +0.98 0.103  11   poor  6.3% 
+ 392 PSA PRG        OPTIMAL_LONG     d-10  d +0 +1.11%  64%  +0.97 0.107  11   poor  5.7% 
+ 393 F PRB          WASHOUT_SHORT    d +0  d +5 +1.43%  67%  +0.96 0.096  12   poor  6.6% **
+ 394 PSA PRJ        CAPTURE_HOLD     d -5  d +0 +0.47%  55%  +0.95 0.114  11   poor  5.6% 
+ 395 CIO PRA        OPTIMAL_LONG     d -2  d+13 +4.57%  64%  +0.94 0.120  11   poor  8.1% 
+ 396 WRB PRH        OPTIMAL_LONG     d-20  d+13 +1.85%  60%  +0.93 0.143  10   poor  5.7% 
+ 397 PFH            OPTIMAL_LONG     d +1  d +6 +0.74%  50%  +0.88 0.126  12   poor  5.4% 
+ 398 AFGB           RECOVERY         d +0  d+10 +0.70%  64%  +0.87 0.151  11   poor  6.3% 
+ 399 F PRC          CAPTURE_HOLD     d -5  d +0 +0.64%  75%  +0.85 0.139  12   poor  6.6% 
+ 400 SCE PRL        OPTIMAL_LONG     d -1  d+11 +1.68%  55%  +0.83 0.166  11   poor  6.6% 
+ 401 TBB            CAPTURE_HOLD     d -5  d +0 +0.38%  70%  +0.83 0.192  10   poor  5.6% 
+ 402 PSA PRR        OPTIMAL_LONG     d-14  d+14 +1.21%  70%  +0.80 0.208  10   poor  5.7% 
+ 403 SCHW PRJ       OPTIMAL_LONG     d-20  d+10 +1.76%  64%  +0.79 0.192  11   poor  5.6% 
+ 404 CNO PRA        CAPTURE_HOLD     d -5  d +0 +1.11%  55%  +0.73 0.224  11   poor  6.6% 
+ 405 ACGLN          OPTIMAL_LONG     d-20  d+16 +1.38%  80%  +0.70 0.268  10   poor  5.9% 
+ 406 UZE            RECOVERY_LATE    d +3  d+15 +2.57%  40%  +0.69 0.275  10   poor  6.9% 
+ 407 NREF PRA       CAPTURE_HOLD     d -5  d +0 +0.73%  64%  +0.67 0.265  11   poor  9.4% 
+ 408 AFGD           CAPTURE_HOLD     d -5  d +0 +0.54%  58%  +0.64 0.264  12   poor  6.2% 
+ 409 VNO PRL        OPTIMAL_LONG     d-19  d+20 +2.44%  70%  +0.64 0.314  10   poor  7.6% 
+ 410 PSA PRK        OPTIMAL_LONG     d +9  d-20 +3.09%  64%  +0.56 0.355  11   poor  5.7% 
+ 411 BAC PRO        OPTIMAL_LONG     d-18  d+15 +1.11%  46%  +0.49 0.419  11   poor  5.7% 

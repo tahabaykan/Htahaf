@@ -85,8 +85,16 @@ class GemProposalEngine:
         Get the "Current Truth Price".
         STRICT: Must be the LAST 100/200 lot print from 'path_dataset'.
         Returns (price, size, source, timestamp, temporal_analysis)
+        
+        Data sources (in priority order):
+        1. truth_ticks:inspect:{symbol} — Rich analysis data (1h TTL, from worker)
+        2. tt:ticks:{symbol} — Raw tick array (12-day TTL, from TruthTicksEngine)
+        3. security_context:{symbol} — Legacy fallback
         """
         try:
+            # ═══════════════════════════════════════════════════════════════
+            # SOURCE 1: truth_ticks:inspect (rich data from worker, 1h TTL)
+            # ═══════════════════════════════════════════════════════════════
             inspect_key = f"truth_ticks:inspect:{symbol}"
             inspect_json = self.redis.get(inspect_key)
             
@@ -165,6 +173,35 @@ class GemProposalEngine:
                     if latest_valid_price:
                         return (latest_valid_price, found_size, "truth_ticks:top_events", max_ts, temporal_analysis)
 
+            # ═══════════════════════════════════════════════════════════════
+            # SOURCE 2: tt:ticks:{symbol} — Raw tick array (12-day TTL)
+            # Used when truth_ticks:inspect is expired/empty (worker not running)
+            # ═══════════════════════════════════════════════════════════════
+            tt_key = f"tt:ticks:{symbol}"
+            tt_json = self.redis.get(tt_key)
+            
+            if tt_json:
+                ticks = json.loads(tt_json)
+                if ticks and isinstance(ticks, list):
+                    from app.market_data.truth_ticks_engine import get_truth_ticks_engine
+                    truth_engine = get_truth_ticks_engine()
+                    
+                    latest_valid_price = None
+                    max_ts = 0
+                    found_size = 0
+                    
+                    for tick in ticks:
+                        # tt:ticks format: {ts, price, size, exch}
+                        if truth_engine.is_truth_tick(tick):
+                            ts = tick.get('ts', 0)
+                            if ts > max_ts:
+                                max_ts = ts
+                                latest_valid_price = float(tick.get('price', 0))
+                                found_size = int(tick.get('size', 0))
+                    
+                    if latest_valid_price and latest_valid_price > 0:
+                        return (latest_valid_price, found_size, "tt:ticks:last_truth", max_ts, {})
+
             # Fallback: Security Context (Legacy)
             sc_key = f"security_context:{symbol}"
             sc_json = self.redis.get(sc_key)
@@ -228,11 +265,11 @@ class GemProposalEngine:
                 continue
                 
             last_ctx = json.loads(last_ctx_json)
-            quote_price = last_ctx.get('last', 0)
-            prev_close = last_ctx.get('prev_close', 0)
-            vol = last_ctx.get('vol', 0)
-            bid = last_ctx.get('bid', 0)
-            ask = last_ctx.get('ask', 0)
+            quote_price = last_ctx.get('last') or 0
+            prev_close = last_ctx.get('prev_close') or 0
+            vol = last_ctx.get('vol') or 0
+            bid = last_ctx.get('bid') or 0
+            ask = last_ctx.get('ask') or 0
             
             # 💀 SIMULATION: Override L1 with Shuffled Data (DataFabric)
             # This ensures Gem Analysis sees the simulated prices and offsets.
@@ -466,7 +503,10 @@ class GemProposalEngine:
             self.redis.setex(f"gem:inspect:{symbol}", 3600, json.dumps(inspector_data))
                 
             # Spread
-            spread = ask - bid if ask > 0 and bid > 0 else 0
+            def _safe_f(v): return float(v) if v is not None else 0.0
+            s_bid = _safe_f(bid)
+            s_ask = _safe_f(ask)
+            spread = s_ask - s_bid if s_ask > 0 and s_bid > 0 else 0
             
             # Action logic
             if abs_div > 0.08:

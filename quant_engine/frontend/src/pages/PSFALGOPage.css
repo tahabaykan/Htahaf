@@ -92,28 +92,28 @@
 /* RUNALL Control Panel */
 .runall-control-panel {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  border-bottom: 2px solid #0f3460;
-  padding: 8px 16px;
+  border-bottom: 1px solid #0f3460;
+  padding: 4px 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 4px;
 }
 
 .runall-status {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
 }
 
 .runall-state-badge {
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
 }
 
 .runall-state-badge.idle {
@@ -149,16 +149,16 @@
 
 .runall-cycle-info {
   color: #a0aec0;
-  font-size: 10px;
+  font-size: 8px;
   font-family: 'Monaco', 'Consolas', monospace;
 }
 
 .runall-dry-run-badge {
   background: #553c9a;
   color: #d6bcfa;
-  padding: 3px 6px;
-  border-radius: 3px;
-  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-size: 8px;
   font-weight: 600;
   text-transform: uppercase;
 }
@@ -166,28 +166,26 @@
 .runall-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .runall-start-btn {
   background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
   color: white;
   border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 9px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .runall-start-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
 }
 
 .runall-start-btn:disabled {
@@ -199,21 +197,19 @@
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: white;
   border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 9px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .runall-stop-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
 .runall-stop-btn:disabled {
@@ -221,24 +217,34 @@
   cursor: not-allowed;
 }
 
+/* XNL Cancel by filter buttons */
+.cancel-filter-btn {
+  transition: opacity 0.15s;
+}
+.cancel-filter-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+.cancel-filter-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .intentions-link-btn {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
   text-decoration: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 9px;
   font-weight: 600;
-  transition: all 0.2s;
+  transition: all 0.15s;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .intentions-link-btn:hover {
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
   text-decoration: none;
   color: white;
 }
@@ -246,21 +252,21 @@
 .runall-error {
   background: #7f1d1d;
   color: #fca5a5;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 9px;
   width: 100%;
-  margin-top: 6px;
+  margin-top: 2px;
 }
 
 .runall-last-error {
   background: #451a03;
   color: #fbbf24;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 9px;
   width: 100%;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .psfalgo-tabs {

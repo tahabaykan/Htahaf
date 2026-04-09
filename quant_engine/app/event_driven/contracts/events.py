@@ -19,14 +19,14 @@ from datetime import datetime
 
 class OrderClassification(str, Enum):
     """Order/Intent classification - 8 semantic classes"""
-    MM_LONG_INCREASE = "MM_LONG_INCREASE"
-    MM_LONG_DECREASE = "MM_LONG_DECREASE"
-    MM_SHORT_INCREASE = "MM_SHORT_INCREASE"
-    MM_SHORT_DECREASE = "MM_SHORT_DECREASE"
-    LT_LONG_INCREASE = "LT_LONG_INCREASE"
-    LT_LONG_DECREASE = "LT_LONG_DECREASE"
-    LT_SHORT_INCREASE = "LT_SHORT_INCREASE"
-    LT_SHORT_DECREASE = "LT_SHORT_DECREASE"
+    MM_LONG_INC = "MM_LONG_INC"
+    MM_LONG_DEC = "MM_LONG_DEC"
+    MM_SHORT_INC = "MM_SHORT_INC"
+    MM_SHORT_DEC = "MM_SHORT_DEC"
+    LT_LONG_INC = "LT_LONG_INC"
+    LT_LONG_DEC = "LT_LONG_DEC"
+    LT_SHORT_INC = "LT_SHORT_INC"
+    LT_SHORT_DEC = "LT_SHORT_DEC"
     
     @classmethod
     def from_components(cls, bucket: str, direction: str, effect: str) -> "OrderClassification":
@@ -34,6 +34,11 @@ class OrderClassification(str, Enum):
         bucket_upper = bucket.upper()
         dir_upper = direction.upper()
         effect_upper = effect.upper()
+        # Normalize: INCREASE -> INC, DECREASE -> DEC
+        if effect_upper == "INCREASE":
+            effect_upper = "INC"
+        elif effect_upper == "DECREASE":
+            effect_upper = "DEC"
         name = f"{bucket_upper}_{dir_upper}_{effect_upper}"
         return cls[name]
     
@@ -49,13 +54,13 @@ class OrderClassification(str, Enum):
     
     @property
     def effect(self) -> str:
-        """Extract effect (INCREASE or DECREASE)"""
+        """Extract effect (INC or DEC)"""
         return self.value.split("_")[2]
     
     @property
     def is_risk_increasing(self) -> bool:
         """Check if this classification is risk-increasing"""
-        return self.effect == "INCREASE"
+        return self.effect == "INC"
 
 
 class EventType(str, Enum):

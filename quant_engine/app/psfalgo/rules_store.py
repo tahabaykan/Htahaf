@@ -197,24 +197,7 @@ class RulesStore:
                     'min_avg_adv_divisor': 10,  # RULE_AVG_ADV_DIVISOR
                 },
             },
-            'guardrails': {
-                'maxalw': {
-                    'company_limit_enabled': True,
-                    'max_company_exposure_percent': 100.0,  # MAXALW per company
-                },
-                'daily_limits': {
-                    'max_daily_lot_change': 10000,  # Max daily lot change
-                    'max_daily_lot_change_per_symbol': 2000,  # Max daily lot change per symbol
-                },
-                'order_limits': {
-                    'max_open_orders': 100,
-                    'max_open_orders_per_symbol': 5,
-                },
-                'duplicate_prevention': {
-                    'duplicate_intent_window_seconds': 60,  # Prevent duplicate intents within 60 seconds
-                    'same_symbol_cooldown_seconds': 300,  # 5 minutes cooldown per symbol
-                },
-            },
+            # guardrails: REMOVED per user request
         }
     
     def get_rules(self) -> Dict[str, Any]:
@@ -300,8 +283,8 @@ class RulesStore:
         if rules is None:
             rules = self.rules
         
-        # Validate required categories
-        required_categories = ['general', 'exposure', 'karbotu', 'reducemore', 'addnewpos', 'guardrails']
+        # Validate required categories (guardrails removed per user request)
+        required_categories = ['general', 'exposure', 'karbotu', 'reducemore', 'addnewpos']
         for category in required_categories:
             if category not in rules:
                 errors.append(f"Missing required category: {category}")

@@ -194,6 +194,8 @@ class MetricComputeEngine:
         final_as = None
         final_fs = None
         final_bs = None
+        final_sfs = None
+        final_sbs = None
         final_sas = None
         benchmark_chg = None
         pricing_mode = None  # Initialize pricing_mode
@@ -219,19 +221,25 @@ class MetricComputeEngine:
                     final_as = overlay_scores.get('Final_AS_skor')
                     final_fs = overlay_scores.get('Final_FS_skor')
                     final_bs = overlay_scores.get('Final_BS_skor')
+                    final_sfs = overlay_scores.get('Final_SFS_skor')
+                    final_sbs = overlay_scores.get('Final_SBS_skor')
                     final_sas = overlay_scores.get('Final_SAS_skor')
                     
                     # Extract benchmark change and pricing mode
                     benchmark_chg = overlay_scores.get('benchmark_chg')
                     pricing_mode = overlay_scores.get('pricing_mode')  # "RELATIVE" or "ABSOLUTE"
                     
-                    # FBTOT fallback from pricing overlay
-                    if fb_ucuz is not None and fbtot is None:
-                        fbtot = 1.0 + (fb_ucuz / 100.0)
+                    # REMOVED: FBTOT fallback formula was incorrect!
+                    # FBTOT MUST come from JanallMetricsEngine.apply_group_overlays()
+                    # Formula: Fbtot = FBPlagr + FBRatgr (group rank + ratio)
+                    # The old fallback "fbtot = 1.0 + (fb_ucuz / 100.0)" was WRONG!
+                    if fbtot is None and fb_ucuz is not None:
+                        logger.debug(f"[METRIC] {symbol}: FBTOT is None (JanallEngine cache empty) - NOT using fallback")
                     
-                    # SFSTOT fallback from pricing overlay
-                    if fs_pahali is not None and sfstot is None:
-                        sfstot = 1.0 + (fs_pahali / 100.0)
+                    # REMOVED: SFSTOT fallback formula was incorrect!
+                    # Same logic as FBTOT - must come from JanallMetricsEngine
+                    if sfstot is None and fs_pahali is not None:
+                        logger.debug(f"[METRIC] {symbol}: SFSTOT is None (JanallEngine cache empty) - NOT using fallback")
             except Exception as e:
                 logger.debug(f"[METRIC] Pricing overlay computation failed for {symbol}: {e}")
         
@@ -240,9 +248,14 @@ class MetricComputeEngine:
         # Reverting forcing of Janall Group metrics to ensure alignment with Scanner.
 
         
-        # GORT fallback: from static data (if available)
+        # REMOVED: GORT fallback from static_data was incorrect!
+        # GORT MUST come from JanallMetricsEngine.apply_group_overlays()
+        # Formula: GORT = 0.25*(sma63-grp_avg) + 0.75*(sma246-grp_avg)
+        # Static data GORT may be stale or calculated differently!
         if gort is None and static_data:
-            gort = static_data.get('GORT')
+            csv_gort = static_data.get('GORT')
+            if csv_gort is not None:
+                logger.debug(f"[METRIC] {symbol}: GORT is None (JanallEngine cache empty) - NOT using CSV fallback (was {csv_gort})")
             
         # NEW: Critical Fix - Use Group-Based Benchmark from Janall Engine
         # This ensures we use the Average Daily Change of the DOS Group/CGRUP, not an ETF.
@@ -294,6 +307,8 @@ class MetricComputeEngine:
             final_as=final_as,
             final_fs=final_fs,
             final_bs=final_bs,
+            final_sfs=final_sfs,
+            final_sbs=final_sbs,
             final_sas=final_sas,
             # Benchmark and static data
             benchmark_chg=benchmark_chg,

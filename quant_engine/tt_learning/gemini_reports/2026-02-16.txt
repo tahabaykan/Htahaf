@@ -1,0 +1,35 @@
+Merhaba QAGENTT, size verilen 5 günlük truth tick verilerini analiz ettim. İşte sonuçlar:
+
+1. **Grup Bazında Mean Reversion Durumu**:
+   - Genel olarak, çoğu grup alıcı ağırlıklı (buyer dominant) görünüyor. Sadece birkaç grup satıcı ağırlıklı (seller dominant).
+   - GORT'tan (ortalama) en uzaklaşmış hisseler şunlar: FULTP, DCOMP, DTB, ADC PRA. Bu hisseler mean reversion fırsatı sunuyor.
+   - Grup içi korelasyon genellikle güçlü. Yani hisseler birbirleriyle uyumlu hareket ediyorlar.
+
+2. **Spread & Likidite Analizi**:
+   - Spread değerleri AVG_ADV'ye göre makul. Düşük hacimli hisselerde spread daha geniş.
+   - Spread en dar 14:30-15:00 ve 15:00-15:30 saatlerinde. MM fırsatı daha az ama güvenli.
+   - Spread en geniş 15:30-16:00 saatlerinde. MM fırsatı var ama risk de yüksek.
+   - Volume/ADV oranı yüksek olan hisselerde spread daha dar.
+
+3. **LT Portfolio Önerileri**:
+   - Aşağı gelen ve GORT'un altında olan hisseler: FULTP, DCOMP, DTB, ADC PRA. Bu hisseler yavaş yavaş toplanmalı.
+   - GORT'un üzerinde olan ve satıcı ağırlıklı hisseler: WBS PRF, FCNCO, FITBO. Bu hisseler için short pozisyon açılabilir.
+   - Pozisyon büyüklüğü AVG_ADV'ye göre ayarlanmalı. Yüksek hacimli hisselerde daha büyük lot.
+   - Optimal alım saatleri 14:30-15:00 ve 15:00-15:30 olabilir.
+
+4. **Mini Market Making Modeli**:
+   - En yüksek spread capture fırsatı sunan hisseler: DCOMG, MGR, PSEC PRA, FITBI.
+   - Önerilen lot büyüklükleri AVG_ADV'nin %1-2'si civarında olabilir.
+   - 15:30-16:00 saatleri iki yönlü akışın en yoğun olduğu zaman dilimi.
+   - Venue stratejisi: Spread daha dar olduğu için NYSE'de quote etmek daha avantajlı.
+   - Risk yönetimi: Max exposure per stock $X, max per group $Y olabilir.
+
+5. **İstatistiksel İlişkiler**:
+   - Aynı DOS grubundaki hisseler gerçekten güçlü korelasyon gösteriyor.
+   - Spread ile AVG_ADV arasındaki korelasyon orta düzeyde.
+   - "heldkuponlu" ve "heldgarabetaltiyedi" gruplarında mean reversion daha hızlı gerçekleşiyor.
+   - Saatlik alıcı-satıcı akışı oldukça tutarlı. Her gün benzer pattern gözlemleniyor.
+
+Özet olarak, bu hisseler mean reversion özelliği gösteren, likidite ve spread açısından uygun enstrümanlar. LT portfolio ve mini market making stratejileri uygulanabilir. Ancak risk yönetimi kritik önem taşıyor.
+
+Sorularınız varsa lütfen sorunuz.

@@ -1,0 +1,2112 @@
+{
+  "stock_history": {
+    "FITBI": {
+      "group": "heldff",
+      "observations": 2,
+      "buyer_total": 0,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.1,
+        0.07
+      ]
+    },
+    "VOYA PRB": {
+      "group": "heldnff",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.08,
+        0.07
+      ]
+    },
+    "SCHW PRD": {
+      "group": "heldsolidbig",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.1,
+        0.04
+      ]
+    },
+    "MS PRI": {
+      "group": "heldsolidbig",
+      "observations": 2,
+      "buyer_total": 3,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.07,
+        0.06
+      ]
+    },
+    "JPM PRD": {
+      "group": "heldsolidbig",
+      "observations": 2,
+      "buyer_total": 6,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.11,
+        0.06
+      ]
+    },
+    "NCV PRA": {
+      "group": "notcefilliquid",
+      "observations": 2,
+      "buyer_total": 4,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.1,
+        0.1
+      ]
+    },
+    "VNO PRO": {
+      "group": "heldcommonsuz",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.06,
+        0.1
+      ]
+    },
+    "RLJ PRA": {
+      "group": "heldtitrekhc",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.04,
+        0.11
+      ]
+    },
+    "WBS PRF": {
+      "group": "heldkuponlukreorta",
+      "observations": 2,
+      "buyer_total": 0,
+      "seller_total": 0,
+      "last_10_spreads": [
+        0.08,
+        0.1
+      ]
+    },
+    "PEB PRF": {
+      "group": "heldotelremorta",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.1,
+        0.08
+      ]
+    },
+    "MBINN": {
+      "group": "heldkuponlukreciliz",
+      "observations": 2,
+      "buyer_total": 4,
+      "seller_total": 4,
+      "last_10_spreads": [
+        0.1,
+        0.12
+      ]
+    },
+    "RITM PRA": {
+      "group": "heldff",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.1,
+        0.04
+      ]
+    },
+    "CRBD": {
+      "group": "heldcilizyeniyedi",
+      "observations": 2,
+      "buyer_total": 3,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.1,
+        0.04
+      ]
+    },
+    "LOB PRA": {
+      "group": "helddeznff",
+      "observations": 2,
+      "buyer_total": 1,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.11,
+        0.07
+      ]
+    },
+    "WBS PRG": {
+      "group": "heldgarabetaltiyedi",
+      "observations": 2,
+      "buyer_total": 6,
+      "seller_total": 4,
+      "last_10_spreads": [
+        0.06,
+        0.03
+      ]
+    },
+    "KEY PRJ": {
+      "group": "heldkuponlukreorta",
+      "observations": 2,
+      "buyer_total": 5,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.02,
+        0.1
+      ]
+    },
+    "MTB PRH": {
+      "group": "heldnff",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 5,
+      "last_10_spreads": [
+        0.1,
+        0.12
+      ]
+    },
+    "RF PRC": {
+      "group": "heldnff",
+      "observations": 2,
+      "buyer_total": 1,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.06,
+        0.04
+      ]
+    },
+    "BAC PRB": {
+      "group": "heldsolidbig",
+      "observations": 2,
+      "buyer_total": 1,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.1,
+        0.04
+      ]
+    },
+    "VLYPO": {
+      "group": "heldff",
+      "observations": 2,
+      "buyer_total": 5,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.1,
+        0.06
+      ]
+    },
+    "SHO PRH": {
+      "group": "heldotelremorta",
+      "observations": 2,
+      "buyer_total": 4,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.03,
+        0.1
+      ]
+    },
+    "ADC PRA": {
+      "group": "heldkuponlu",
+      "observations": 2,
+      "buyer_total": 0,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.07,
+        0.08
+      ]
+    },
+    "GNL PRB": {
+      "group": "heldotelremorta",
+      "observations": 2,
+      "buyer_total": 4,
+      "seller_total": 5,
+      "last_10_spreads": [
+        0.08,
+        0.04
+      ]
+    },
+    "SYF PRA": {
+      "group": "heldkuponlukreciliz",
+      "observations": 2,
+      "buyer_total": 1,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.12,
+        0.09
+      ]
+    },
+    "DCOMP": {
+      "group": "heldkuponlukreciliz",
+      "observations": 2,
+      "buyer_total": 3,
+      "seller_total": 4,
+      "last_10_spreads": [
+        0.1,
+        0.12
+      ]
+    },
+    "WAL PRA": {
+      "group": "heldnff",
+      "observations": 2,
+      "buyer_total": 3,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.07,
+        0.09
+      ]
+    },
+    "TDS PRV": {
+      "group": "heldcommonsuz",
+      "observations": 2,
+      "buyer_total": 1,
+      "seller_total": 4,
+      "last_10_spreads": [
+        0.07,
+        0.12
+      ]
+    },
+    "MET PRA": {
+      "group": "heldflr",
+      "observations": 2,
+      "buyer_total": 6,
+      "seller_total": 4,
+      "last_10_spreads": [
+        0.04,
+        0.04
+      ]
+    },
+    "DTB": {
+      "group": "heldkuponlu",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.06,
+        0.04
+      ]
+    },
+    "CFG PRE": {
+      "group": "heldkuponlukreorta",
+      "observations": 2,
+      "buyer_total": 1,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.07,
+        0.02
+      ]
+    },
+    "RITM PRD": {
+      "group": "heldnff",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.09,
+        0.08
+      ]
+    },
+    "SB PRD": {
+      "group": "nottitrekhc",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.1,
+        0.07
+      ]
+    },
+    "SAY": {
+      "group": "highmatur",
+      "observations": 2,
+      "buyer_total": 4,
+      "seller_total": 6,
+      "last_10_spreads": [
+        0.07,
+        0.08
+      ]
+    },
+    "OXLCI": {
+      "group": "highmatur",
+      "observations": 2,
+      "buyer_total": 0,
+      "seller_total": 0,
+      "last_10_spreads": [
+        0.04,
+        0.04
+      ]
+    },
+    "LFT PRA": {
+      "group": "salakilliquid",
+      "observations": 2,
+      "buyer_total": 1,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.04,
+        0.04
+      ]
+    },
+    "GOODO": {
+      "group": "salakilliquid",
+      "observations": 2,
+      "buyer_total": 4,
+      "seller_total": 5,
+      "last_10_spreads": [
+        0.04,
+        0.1
+      ]
+    },
+    "SEAL PRA": {
+      "group": "heldtitrekhc",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.04,
+        0.12
+      ]
+    },
+    "CHMI PRA": {
+      "group": "shitremhc",
+      "observations": 2,
+      "buyer_total": 3,
+      "seller_total": 4,
+      "last_10_spreads": [
+        0.08,
+        0.06
+      ]
+    },
+    "AMH PRH": {
+      "group": "heldgarabetaltiyedi",
+      "observations": 2,
+      "buyer_total": 4,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.04,
+        0.04
+      ]
+    },
+    "BIPJ": {
+      "group": "heldcilizyeniyedi",
+      "observations": 2,
+      "buyer_total": 3,
+      "seller_total": 4,
+      "last_10_spreads": [
+        0.03,
+        0.07
+      ]
+    },
+    "TRTN PRB": {
+      "group": "heldtitrekhc",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 4,
+      "last_10_spreads": [
+        0.11,
+        0.06
+      ]
+    },
+    "BAC PRE": {
+      "group": "heldflr",
+      "observations": 2,
+      "buyer_total": 3,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.06,
+        0.04
+      ]
+    },
+    "OXSQH": {
+      "group": "highmatur",
+      "observations": 2,
+      "buyer_total": 3,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.1,
+        0.05
+      ]
+    },
+    "CMRE PRB": {
+      "group": "nottitrekhc",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 6,
+      "last_10_spreads": [
+        0.06,
+        0.04
+      ]
+    },
+    "ACR PRD": {
+      "group": "shitremhc",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 4,
+      "last_10_spreads": [
+        0.02,
+        0.07
+      ]
+    },
+    "PSEC PRA": {
+      "group": "heldcommonsuz",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.04,
+        0.11
+      ]
+    },
+    "INN PRE": {
+      "group": "heldotelremorta",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.02,
+        0.08
+      ]
+    },
+    "MGRE": {
+      "group": "heldcilizyeniyedi",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.1,
+        0.1
+      ]
+    },
+    "GSL PRB": {
+      "group": "heldtitrekhc",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.1,
+        0.06
+      ]
+    },
+    "GMRE PRA": {
+      "group": "salakilliquid",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.06,
+        0.07
+      ]
+    },
+    "FITBO": {
+      "group": "heldkuponlukreorta",
+      "observations": 2,
+      "buyer_total": 0,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.11,
+        0.11
+      ]
+    },
+    "BML PRJ": {
+      "group": "heldflr",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 5,
+      "last_10_spreads": [
+        0.06,
+        0.11
+      ]
+    },
+    "GPJA": {
+      "group": "heldkuponlu",
+      "observations": 2,
+      "buyer_total": 4,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.1,
+        0.06
+      ]
+    },
+    "UMBFO": {
+      "group": "helddeznff",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 4,
+      "last_10_spreads": [
+        0.07,
+        0.11
+      ]
+    },
+    "AMH PRG": {
+      "group": "heldgarabetaltiyedi",
+      "observations": 2,
+      "buyer_total": 3,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.1,
+        0.1
+      ]
+    },
+    "VNO PRL": {
+      "group": "heldcommonsuz",
+      "observations": 2,
+      "buyer_total": 0,
+      "seller_total": 0,
+      "last_10_spreads": [
+        0.05,
+        0.02
+      ]
+    },
+    "LANDO": {
+      "group": "salakilliquid",
+      "observations": 2,
+      "buyer_total": 4,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.06,
+        0.1
+      ]
+    },
+    "SSSSL": {
+      "group": "notbesmaturlu",
+      "observations": 2,
+      "buyer_total": 5,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.04,
+        0.08
+      ]
+    },
+    "MFA PRB": {
+      "group": "shitremhc",
+      "observations": 2,
+      "buyer_total": 4,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.07,
+        0.1
+      ]
+    },
+    "OCCIN": {
+      "group": "notbesmaturlu",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 0,
+      "last_10_spreads": [
+        0.08,
+        0.03
+      ]
+    },
+    "FGSN": {
+      "group": "heldcilizyeniyedi",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 0,
+      "last_10_spreads": [
+        0.04,
+        0.07
+      ]
+    },
+    "AHL PRD": {
+      "group": "heldcommonsuz",
+      "observations": 2,
+      "buyer_total": 1,
+      "seller_total": 6,
+      "last_10_spreads": [
+        0.1,
+        0.1
+      ]
+    },
+    "MITT PRB": {
+      "group": "shitremhc",
+      "observations": 2,
+      "buyer_total": 1,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.07,
+        0.1
+      ]
+    },
+    "GGT PRG": {
+      "group": "notcefilliquid",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.11,
+        0.05
+      ]
+    },
+    "FCNCO": {
+      "group": "heldkuponlukreorta",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.06,
+        0.04
+      ]
+    },
+    "MGR": {
+      "group": "heldkuponlu",
+      "observations": 2,
+      "buyer_total": 1,
+      "seller_total": 0,
+      "last_10_spreads": [
+        0.08,
+        0.11
+      ]
+    },
+    "ACR PRC": {
+      "group": "heldtitrekhc",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 6,
+      "last_10_spreads": [
+        0.11,
+        0.1
+      ]
+    },
+    "REXR PRB": {
+      "group": "notcefilliquid",
+      "observations": 2,
+      "buyer_total": 6,
+      "seller_total": 4,
+      "last_10_spreads": [
+        0.1,
+        0.11
+      ]
+    },
+    "BOH PRB": {
+      "group": "helddeznff",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 0,
+      "last_10_spreads": [
+        0.1,
+        0.1
+      ]
+    },
+    "DDT": {
+      "group": "heldff",
+      "observations": 2,
+      "buyer_total": 0,
+      "seller_total": 0,
+      "last_10_spreads": [
+        0.04,
+        0.1
+      ]
+    },
+    "LNC PRD": {
+      "group": "helddeznff",
+      "observations": 2,
+      "buyer_total": 3,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.07,
+        0.08
+      ]
+    },
+    "MS PRL": {
+      "group": "heldkuponlu",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.06,
+        0.08
+      ]
+    },
+    "OCCIO": {
+      "group": "notbesmaturlu",
+      "observations": 2,
+      "buyer_total": 5,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.1,
+        0.04
+      ]
+    },
+    "OXLCP": {
+      "group": "notbesmaturlu",
+      "observations": 2,
+      "buyer_total": 5,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.07,
+        0.08
+      ]
+    },
+    "BML PRG": {
+      "group": "heldflr",
+      "observations": 2,
+      "buyer_total": 5,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.12,
+        0.04
+      ]
+    },
+    "ETI PR": {
+      "group": "notcefilliquid",
+      "observations": 2,
+      "buyer_total": 7,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.07,
+        0.03
+      ]
+    },
+    "PRIF PRD": {
+      "group": "highmatur",
+      "observations": 2,
+      "buyer_total": 3,
+      "seller_total": 4,
+      "last_10_spreads": [
+        0.04,
+        0.11
+      ]
+    },
+    "HIG PRG": {
+      "group": "heldsolidbig",
+      "observations": 2,
+      "buyer_total": 1,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.03,
+        0.04
+      ]
+    },
+    "DCOMG": {
+      "group": "helddeznff",
+      "observations": 2,
+      "buyer_total": 4,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.05,
+        0.06
+      ]
+    },
+    "FHN PRF": {
+      "group": "heldkuponlukreciliz",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 0,
+      "last_10_spreads": [
+        0.11,
+        0.12
+      ]
+    },
+    "HTFC": {
+      "group": "notbesmaturlu",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.1,
+        0.07
+      ]
+    },
+    "PMTU": {
+      "group": "highmatur",
+      "observations": 2,
+      "buyer_total": 6,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.1,
+        0.08
+      ]
+    },
+    "NHPBP": {
+      "group": "salakilliquid",
+      "observations": 2,
+      "buyer_total": 3,
+      "seller_total": 2,
+      "last_10_spreads": [
+        0.07,
+        0.04
+      ]
+    },
+    "MITT PRA": {
+      "group": "shitremhc",
+      "observations": 2,
+      "buyer_total": 4,
+      "seller_total": 5,
+      "last_10_spreads": [
+        0.04,
+        0.08
+      ]
+    },
+    "ACP PRA": {
+      "group": "notcefilliquid",
+      "observations": 2,
+      "buyer_total": 3,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.04,
+        0.04
+      ]
+    },
+    "GS PRC": {
+      "group": "heldflr",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.05,
+        0.11
+      ]
+    },
+    "AHH PRA": {
+      "group": "heldotelremorta",
+      "observations": 2,
+      "buyer_total": 3,
+      "seller_total": 6,
+      "last_10_spreads": [
+        0.04,
+        0.03
+      ]
+    },
+    "FULTP": {
+      "group": "heldkuponlukreciliz",
+      "observations": 2,
+      "buyer_total": 5,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.06,
+        0.03
+      ]
+    },
+    "CHSCO": {
+      "group": "heldff",
+      "observations": 2,
+      "buyer_total": 3,
+      "seller_total": 0,
+      "last_10_spreads": [
+        0.04,
+        0.04
+      ]
+    },
+    "FITBP": {
+      "group": "heldgarabetaltiyedi",
+      "observations": 2,
+      "buyer_total": 2,
+      "seller_total": 4,
+      "last_10_spreads": [
+        0.1,
+        0.07
+      ]
+    },
+    "HWCPZ": {
+      "group": "heldgarabetaltiyedi",
+      "observations": 2,
+      "buyer_total": 1,
+      "seller_total": 3,
+      "last_10_spreads": [
+        0.08,
+        0.11
+      ]
+    },
+    "CHMI PRB": {
+      "group": "nottitrekhc",
+      "observations": 2,
+      "buyer_total": 3,
+      "seller_total": 0,
+      "last_10_spreads": [
+        0.04,
+        0.03
+      ]
+    },
+    "AHL PRF": {
+      "group": "heldcilizyeniyedi",
+      "observations": 2,
+      "buyer_total": 1,
+      "seller_total": 4,
+      "last_10_spreads": [
+        0.11,
+        0.03
+      ]
+    },
+    "DSX PRB": {
+      "group": "nottitrekhc",
+      "observations": 2,
+      "buyer_total": 0,
+      "seller_total": 0,
+      "last_10_spreads": [
+        0.1,
+        0.06
+      ]
+    },
+    "CMRE PRD": {
+      "group": "nottitrekhc",
+      "observations": 2,
+      "buyer_total": 3,
+      "seller_total": 1,
+      "last_10_spreads": [
+        0.11,
+        0.1
+      ]
+    }
+  },
+  "group_history": {
+    "heldff": {
+      "buyer_scans": 2,
+      "seller_scans": 0,
+      "balanced_scans": 8
+    },
+    "heldnff": {
+      "buyer_scans": 1,
+      "seller_scans": 0,
+      "balanced_scans": 9
+    },
+    "heldsolidbig": {
+      "buyer_scans": 1,
+      "seller_scans": 0,
+      "balanced_scans": 9
+    },
+    "notcefilliquid": {
+      "buyer_scans": 3,
+      "seller_scans": 0,
+      "balanced_scans": 7
+    },
+    "heldcommonsuz": {
+      "buyer_scans": 0,
+      "seller_scans": 2,
+      "balanced_scans": 8
+    },
+    "heldtitrekhc": {
+      "buyer_scans": 0,
+      "seller_scans": 0,
+      "balanced_scans": 10
+    },
+    "heldkuponlukreorta": {
+      "buyer_scans": 0,
+      "seller_scans": 1,
+      "balanced_scans": 9
+    },
+    "heldotelremorta": {
+      "buyer_scans": 1,
+      "seller_scans": 0,
+      "balanced_scans": 9
+    },
+    "heldkuponlukreciliz": {
+      "buyer_scans": 0,
+      "seller_scans": 0,
+      "balanced_scans": 10
+    },
+    "heldcilizyeniyedi": {
+      "buyer_scans": 0,
+      "seller_scans": 1,
+      "balanced_scans": 9
+    },
+    "helddeznff": {
+      "buyer_scans": 0,
+      "seller_scans": 0,
+      "balanced_scans": 10
+    },
+    "heldgarabetaltiyedi": {
+      "buyer_scans": 1,
+      "seller_scans": 0,
+      "balanced_scans": 9
+    },
+    "heldkuponlu": {
+      "buyer_scans": 0,
+      "seller_scans": 0,
+      "balanced_scans": 10
+    },
+    "heldflr": {
+      "buyer_scans": 1,
+      "seller_scans": 0,
+      "balanced_scans": 9
+    },
+    "nottitrekhc": {
+      "buyer_scans": 0,
+      "seller_scans": 1,
+      "balanced_scans": 9
+    },
+    "highmatur": {
+      "buyer_scans": 2,
+      "seller_scans": 1,
+      "balanced_scans": 7
+    },
+    "salakilliquid": {
+      "buyer_scans": 0,
+      "seller_scans": 0,
+      "balanced_scans": 10
+    },
+    "shitremhc": {
+      "buyer_scans": 0,
+      "seller_scans": 1,
+      "balanced_scans": 9
+    },
+    "notbesmaturlu": {
+      "buyer_scans": 2,
+      "seller_scans": 0,
+      "balanced_scans": 8
+    }
+  },
+  "daily_lessons": [
+    {
+      "date": "2026-02-17",
+      "lesson": "Tracked 95 stocks. Wide spread MM candidates: ['FHN PRF', 'MBINN', 'MTB PRH', 'DCOMP', 'FITBO']. Most active: []. Key obs: 87 notes.",
+      "details": {
+        "date": "2026-02-17",
+        "observations_today": 87,
+        "stocks_tracked": 95,
+        "wide_spread_mm_candidates": [
+          [
+            "FHN PRF",
+            0.115
+          ],
+          [
+            "MBINN",
+            0.11
+          ],
+          [
+            "MTB PRH",
+            0.11
+          ],
+          [
+            "DCOMP",
+            0.11
+          ],
+          [
+            "FITBO",
+            0.11
+          ],
+          [
+            "SYF PRA",
+            0.105
+          ],
+          [
+            "ACR PRC",
+            0.105
+          ],
+          [
+            "REXR PRB",
+            0.105
+          ],
+          [
+            "CMRE PRD",
+            0.105
+          ],
+          [
+            "NCV PRA",
+            0.1
+          ],
+          [
+            "MGRE",
+            0.1
+          ],
+          [
+            "AMH PRG",
+            0.1
+          ],
+          [
+            "AHL PRD",
+            0.1
+          ],
+          [
+            "BOH PRB",
+            0.1
+          ],
+          [
+            "TDS PRV",
+            0.095
+          ]
+        ],
+        "tight_spread_no_mm": [],
+        "most_active": [],
+        "group_directions": [
+          [
+            "heldff",
+            "SELLER",
+            20.0
+          ],
+          [
+            "heldnff",
+            "SELLER",
+            10.0
+          ],
+          [
+            "heldsolidbig",
+            "SELLER",
+            10.0
+          ],
+          [
+            "notcefilliquid",
+            "SELLER",
+            30.0
+          ],
+          [
+            "heldcommonsuz",
+            "SELLER",
+            0.0
+          ],
+          [
+            "heldtitrekhc",
+            "SELLER",
+            0.0
+          ],
+          [
+            "heldkuponlukreorta",
+            "SELLER",
+            0.0
+          ],
+          [
+            "heldotelremorta",
+            "SELLER",
+            10.0
+          ],
+          [
+            "heldkuponlukreciliz",
+            "SELLER",
+            0.0
+          ],
+          [
+            "heldcilizyeniyedi",
+            "SELLER",
+            0.0
+          ],
+          [
+            "helddeznff",
+            "SELLER",
+            0.0
+          ],
+          [
+            "heldgarabetaltiyedi",
+            "SELLER",
+            10.0
+          ],
+          [
+            "heldkuponlu",
+            "SELLER",
+            0.0
+          ],
+          [
+            "heldflr",
+            "SELLER",
+            10.0
+          ],
+          [
+            "nottitrekhc",
+            "SELLER",
+            0.0
+          ],
+          [
+            "highmatur",
+            "SELLER",
+            20.0
+          ],
+          [
+            "salakilliquid",
+            "SELLER",
+            0.0
+          ],
+          [
+            "shitremhc",
+            "SELLER",
+            0.0
+          ],
+          [
+            "notbesmaturlu",
+            "SELLER",
+            20.0
+          ]
+        ],
+        "key_observations": [
+          "Wide spread on MITT PRB (monitor): $0.100 bid=22.38 ask=22.48 — potential MM",
+          "Wide spread on MGR (monitor): $0.110 bid=21.39 ask=21.50 — potential MM",
+          "Wide spread on ACR PRC (monitor): $0.100 bid=24.90 ask=25.00 — potential MM",
+          "Wide spread on REXR PRB (monitor): $0.110 bid=22.34 ask=22.45 — potential MM",
+          "Wide spread on BOH PRB (monitor): $0.100 bid=26.17 ask=26.27 — potential MM",
+          "Wide spread on DDT (monitor): $0.100 bid=26.11 ask=26.21 — potential MM",
+          "Wide spread on LNC PRD (monitor): $0.080 bid=26.85 ask=26.93 — potential MM",
+          "Wide spread on MS PRL (monitor): $0.080 bid=20.44 ask=20.52 — potential MM",
+          "Wide spread on OXLCP (monitor): $0.080 bid=24.67 ask=24.75 — potential MM",
+          "Wide spread on PRIF PRD (monitor): $0.110 bid=24.80 ask=24.91 — potential MM",
+          "Wide spread on DCOMG (monitor): $0.060 bid=26.32 ask=26.38 — potential MM",
+          "Wide spread on FHN PRF (monitor): $0.120 bid=18.00 ask=18.12 — potential MM",
+          "Wide spread on HTFC (monitor): $0.070 bid=24.88 ask=24.95 — potential MM",
+          "Wide spread on PMTU (monitor): $0.080 bid=25.48 ask=25.56 — potential MM",
+          "Wide spread on MITT PRA (monitor): $0.080 bid=23.10 ask=23.18 — potential MM",
+          "Wide spread on GS PRC (monitor): $0.110 bid=20.30 ask=20.41 — potential MM",
+          "Wide spread on FITBP (monitor): $0.070 bid=24.48 ask=24.55 — potential MM",
+          "Wide spread on HWCPZ (monitor): $0.110 bid=24.07 ask=24.18 — potential MM",
+          "Wide spread on DSX PRB (monitor): $0.060 bid=26.19 ask=26.25 — potential MM",
+          "Wide spread on CMRE PRD (monitor): $0.100 bid=27.57 ask=27.67 — potential MM"
+        ]
+      }
+    }
+  ],
+  "best_performers": {
+    "MBINN": {
+      "total_pnl": 124.0,
+      "trades": 1,
+      "wins": 1,
+      "total_hold": 0
+    }
+  },
+  "worst_performers": {},
+  "spread_map": {
+    "FITBI": {
+      "spreads": [
+        0.1,
+        0.07
+      ],
+      "avg": 0.085,
+      "min": 0.07,
+      "max": 0.1
+    },
+    "VOYA PRB": {
+      "spreads": [
+        0.08,
+        0.07
+      ],
+      "avg": 0.075,
+      "min": 0.07,
+      "max": 0.08
+    },
+    "SCHW PRD": {
+      "spreads": [
+        0.1,
+        0.04
+      ],
+      "avg": 0.07,
+      "min": 0.04,
+      "max": 0.1
+    },
+    "MS PRI": {
+      "spreads": [
+        0.07,
+        0.06
+      ],
+      "avg": 0.065,
+      "min": 0.06,
+      "max": 0.07
+    },
+    "JPM PRD": {
+      "spreads": [
+        0.11,
+        0.06
+      ],
+      "avg": 0.085,
+      "min": 0.06,
+      "max": 0.11
+    },
+    "NCV PRA": {
+      "spreads": [
+        0.1,
+        0.1
+      ],
+      "avg": 0.1,
+      "min": 0.1,
+      "max": 0.1
+    },
+    "VNO PRO": {
+      "spreads": [
+        0.06,
+        0.1
+      ],
+      "avg": 0.08,
+      "min": 0.06,
+      "max": 0.1
+    },
+    "RLJ PRA": {
+      "spreads": [
+        0.04,
+        0.11
+      ],
+      "avg": 0.075,
+      "min": 0.04,
+      "max": 0.11
+    },
+    "WBS PRF": {
+      "spreads": [
+        0.08,
+        0.1
+      ],
+      "avg": 0.09,
+      "min": 0.08,
+      "max": 0.1
+    },
+    "PEB PRF": {
+      "spreads": [
+        0.1,
+        0.08
+      ],
+      "avg": 0.09,
+      "min": 0.08,
+      "max": 0.1
+    },
+    "MBINN": {
+      "spreads": [
+        0.1,
+        0.12
+      ],
+      "avg": 0.11,
+      "min": 0.1,
+      "max": 0.12
+    },
+    "RITM PRA": {
+      "spreads": [
+        0.1,
+        0.04
+      ],
+      "avg": 0.07,
+      "min": 0.04,
+      "max": 0.1
+    },
+    "CRBD": {
+      "spreads": [
+        0.1,
+        0.04
+      ],
+      "avg": 0.07,
+      "min": 0.04,
+      "max": 0.1
+    },
+    "LOB PRA": {
+      "spreads": [
+        0.11,
+        0.07
+      ],
+      "avg": 0.09,
+      "min": 0.07,
+      "max": 0.11
+    },
+    "WBS PRG": {
+      "spreads": [
+        0.06,
+        0.03
+      ],
+      "avg": 0.045,
+      "min": 0.03,
+      "max": 0.06
+    },
+    "KEY PRJ": {
+      "spreads": [
+        0.02,
+        0.1
+      ],
+      "avg": 0.06,
+      "min": 0.02,
+      "max": 0.1
+    },
+    "MTB PRH": {
+      "spreads": [
+        0.1,
+        0.12
+      ],
+      "avg": 0.11,
+      "min": 0.1,
+      "max": 0.12
+    },
+    "RF PRC": {
+      "spreads": [
+        0.06,
+        0.04
+      ],
+      "avg": 0.05,
+      "min": 0.04,
+      "max": 0.06
+    },
+    "BAC PRB": {
+      "spreads": [
+        0.1,
+        0.04
+      ],
+      "avg": 0.07,
+      "min": 0.04,
+      "max": 0.1
+    },
+    "VLYPO": {
+      "spreads": [
+        0.1,
+        0.06
+      ],
+      "avg": 0.08,
+      "min": 0.06,
+      "max": 0.1
+    },
+    "SHO PRH": {
+      "spreads": [
+        0.03,
+        0.1
+      ],
+      "avg": 0.065,
+      "min": 0.03,
+      "max": 0.1
+    },
+    "ADC PRA": {
+      "spreads": [
+        0.07,
+        0.08
+      ],
+      "avg": 0.075,
+      "min": 0.07,
+      "max": 0.08
+    },
+    "GNL PRB": {
+      "spreads": [
+        0.08,
+        0.04
+      ],
+      "avg": 0.06,
+      "min": 0.04,
+      "max": 0.08
+    },
+    "SYF PRA": {
+      "spreads": [
+        0.12,
+        0.09
+      ],
+      "avg": 0.105,
+      "min": 0.09,
+      "max": 0.12
+    },
+    "DCOMP": {
+      "spreads": [
+        0.1,
+        0.12
+      ],
+      "avg": 0.11,
+      "min": 0.1,
+      "max": 0.12
+    },
+    "WAL PRA": {
+      "spreads": [
+        0.07,
+        0.09
+      ],
+      "avg": 0.08,
+      "min": 0.07,
+      "max": 0.09
+    },
+    "TDS PRV": {
+      "spreads": [
+        0.07,
+        0.12
+      ],
+      "avg": 0.095,
+      "min": 0.07,
+      "max": 0.12
+    },
+    "MET PRA": {
+      "spreads": [
+        0.04,
+        0.04
+      ],
+      "avg": 0.04,
+      "min": 0.04,
+      "max": 0.04
+    },
+    "DTB": {
+      "spreads": [
+        0.06,
+        0.04
+      ],
+      "avg": 0.05,
+      "min": 0.04,
+      "max": 0.06
+    },
+    "CFG PRE": {
+      "spreads": [
+        0.07,
+        0.02
+      ],
+      "avg": 0.045,
+      "min": 0.02,
+      "max": 0.07
+    },
+    "RITM PRD": {
+      "spreads": [
+        0.09,
+        0.08
+      ],
+      "avg": 0.085,
+      "min": 0.08,
+      "max": 0.09
+    },
+    "SB PRD": {
+      "spreads": [
+        0.1,
+        0.07
+      ],
+      "avg": 0.085,
+      "min": 0.07,
+      "max": 0.1
+    },
+    "SAY": {
+      "spreads": [
+        0.07,
+        0.08
+      ],
+      "avg": 0.075,
+      "min": 0.07,
+      "max": 0.08
+    },
+    "OXLCI": {
+      "spreads": [
+        0.04,
+        0.04
+      ],
+      "avg": 0.04,
+      "min": 0.04,
+      "max": 0.04
+    },
+    "LFT PRA": {
+      "spreads": [
+        0.04,
+        0.04
+      ],
+      "avg": 0.04,
+      "min": 0.04,
+      "max": 0.04
+    },
+    "GOODO": {
+      "spreads": [
+        0.04,
+        0.1
+      ],
+      "avg": 0.07,
+      "min": 0.04,
+      "max": 0.1
+    },
+    "SEAL PRA": {
+      "spreads": [
+        0.04,
+        0.12
+      ],
+      "avg": 0.08,
+      "min": 0.04,
+      "max": 0.12
+    },
+    "CHMI PRA": {
+      "spreads": [
+        0.08,
+        0.06
+      ],
+      "avg": 0.07,
+      "min": 0.06,
+      "max": 0.08
+    },
+    "AMH PRH": {
+      "spreads": [
+        0.04,
+        0.04
+      ],
+      "avg": 0.04,
+      "min": 0.04,
+      "max": 0.04
+    },
+    "BIPJ": {
+      "spreads": [
+        0.03,
+        0.07
+      ],
+      "avg": 0.05,
+      "min": 0.03,
+      "max": 0.07
+    },
+    "TRTN PRB": {
+      "spreads": [
+        0.11,
+        0.06
+      ],
+      "avg": 0.085,
+      "min": 0.06,
+      "max": 0.11
+    },
+    "BAC PRE": {
+      "spreads": [
+        0.06,
+        0.04
+      ],
+      "avg": 0.05,
+      "min": 0.04,
+      "max": 0.06
+    },
+    "OXSQH": {
+      "spreads": [
+        0.1,
+        0.05
+      ],
+      "avg": 0.075,
+      "min": 0.05,
+      "max": 0.1
+    },
+    "CMRE PRB": {
+      "spreads": [
+        0.06,
+        0.04
+      ],
+      "avg": 0.05,
+      "min": 0.04,
+      "max": 0.06
+    },
+    "ACR PRD": {
+      "spreads": [
+        0.02,
+        0.07
+      ],
+      "avg": 0.045,
+      "min": 0.02,
+      "max": 0.07
+    },
+    "PSEC PRA": {
+      "spreads": [
+        0.04,
+        0.11
+      ],
+      "avg": 0.075,
+      "min": 0.04,
+      "max": 0.11
+    },
+    "INN PRE": {
+      "spreads": [
+        0.02,
+        0.08
+      ],
+      "avg": 0.05,
+      "min": 0.02,
+      "max": 0.08
+    },
+    "MGRE": {
+      "spreads": [
+        0.1,
+        0.1
+      ],
+      "avg": 0.1,
+      "min": 0.1,
+      "max": 0.1
+    },
+    "GSL PRB": {
+      "spreads": [
+        0.1,
+        0.06
+      ],
+      "avg": 0.08,
+      "min": 0.06,
+      "max": 0.1
+    },
+    "GMRE PRA": {
+      "spreads": [
+        0.06,
+        0.07
+      ],
+      "avg": 0.065,
+      "min": 0.06,
+      "max": 0.07
+    },
+    "FITBO": {
+      "spreads": [
+        0.11,
+        0.11
+      ],
+      "avg": 0.11,
+      "min": 0.11,
+      "max": 0.11
+    },
+    "BML PRJ": {
+      "spreads": [
+        0.06,
+        0.11
+      ],
+      "avg": 0.085,
+      "min": 0.06,
+      "max": 0.11
+    },
+    "GPJA": {
+      "spreads": [
+        0.1,
+        0.06
+      ],
+      "avg": 0.08,
+      "min": 0.06,
+      "max": 0.1
+    },
+    "UMBFO": {
+      "spreads": [
+        0.07,
+        0.11
+      ],
+      "avg": 0.09,
+      "min": 0.07,
+      "max": 0.11
+    },
+    "AMH PRG": {
+      "spreads": [
+        0.1,
+        0.1
+      ],
+      "avg": 0.1,
+      "min": 0.1,
+      "max": 0.1
+    },
+    "VNO PRL": {
+      "spreads": [
+        0.05,
+        0.02
+      ],
+      "avg": 0.035,
+      "min": 0.02,
+      "max": 0.05
+    },
+    "LANDO": {
+      "spreads": [
+        0.06,
+        0.1
+      ],
+      "avg": 0.08,
+      "min": 0.06,
+      "max": 0.1
+    },
+    "SSSSL": {
+      "spreads": [
+        0.04,
+        0.08
+      ],
+      "avg": 0.06,
+      "min": 0.04,
+      "max": 0.08
+    },
+    "MFA PRB": {
+      "spreads": [
+        0.07,
+        0.1
+      ],
+      "avg": 0.085,
+      "min": 0.07,
+      "max": 0.1
+    },
+    "OCCIN": {
+      "spreads": [
+        0.08,
+        0.03
+      ],
+      "avg": 0.055,
+      "min": 0.03,
+      "max": 0.08
+    },
+    "FGSN": {
+      "spreads": [
+        0.04,
+        0.07
+      ],
+      "avg": 0.055,
+      "min": 0.04,
+      "max": 0.07
+    },
+    "AHL PRD": {
+      "spreads": [
+        0.1,
+        0.1
+      ],
+      "avg": 0.1,
+      "min": 0.1,
+      "max": 0.1
+    },
+    "MITT PRB": {
+      "spreads": [
+        0.07,
+        0.1
+      ],
+      "avg": 0.085,
+      "min": 0.07,
+      "max": 0.1
+    },
+    "GGT PRG": {
+      "spreads": [
+        0.11,
+        0.05
+      ],
+      "avg": 0.08,
+      "min": 0.05,
+      "max": 0.11
+    },
+    "FCNCO": {
+      "spreads": [
+        0.06,
+        0.04
+      ],
+      "avg": 0.05,
+      "min": 0.04,
+      "max": 0.06
+    },
+    "MGR": {
+      "spreads": [
+        0.08,
+        0.11
+      ],
+      "avg": 0.095,
+      "min": 0.08,
+      "max": 0.11
+    },
+    "ACR PRC": {
+      "spreads": [
+        0.11,
+        0.1
+      ],
+      "avg": 0.105,
+      "min": 0.1,
+      "max": 0.11
+    },
+    "REXR PRB": {
+      "spreads": [
+        0.1,
+        0.11
+      ],
+      "avg": 0.105,
+      "min": 0.1,
+      "max": 0.11
+    },
+    "BOH PRB": {
+      "spreads": [
+        0.1,
+        0.1
+      ],
+      "avg": 0.1,
+      "min": 0.1,
+      "max": 0.1
+    },
+    "DDT": {
+      "spreads": [
+        0.04,
+        0.1
+      ],
+      "avg": 0.07,
+      "min": 0.04,
+      "max": 0.1
+    },
+    "LNC PRD": {
+      "spreads": [
+        0.07,
+        0.08
+      ],
+      "avg": 0.075,
+      "min": 0.07,
+      "max": 0.08
+    },
+    "MS PRL": {
+      "spreads": [
+        0.06,
+        0.08
+      ],
+      "avg": 0.07,
+      "min": 0.06,
+      "max": 0.08
+    },
+    "OCCIO": {
+      "spreads": [
+        0.1,
+        0.04
+      ],
+      "avg": 0.07,
+      "min": 0.04,
+      "max": 0.1
+    },
+    "OXLCP": {
+      "spreads": [
+        0.07,
+        0.08
+      ],
+      "avg": 0.075,
+      "min": 0.07,
+      "max": 0.08
+    },
+    "BML PRG": {
+      "spreads": [
+        0.12,
+        0.04
+      ],
+      "avg": 0.08,
+      "min": 0.04,
+      "max": 0.12
+    },
+    "ETI PR": {
+      "spreads": [
+        0.07,
+        0.03
+      ],
+      "avg": 0.05,
+      "min": 0.03,
+      "max": 0.07
+    },
+    "PRIF PRD": {
+      "spreads": [
+        0.04,
+        0.11
+      ],
+      "avg": 0.075,
+      "min": 0.04,
+      "max": 0.11
+    },
+    "HIG PRG": {
+      "spreads": [
+        0.03,
+        0.04
+      ],
+      "avg": 0.035,
+      "min": 0.03,
+      "max": 0.04
+    },
+    "DCOMG": {
+      "spreads": [
+        0.05,
+        0.06
+      ],
+      "avg": 0.055,
+      "min": 0.05,
+      "max": 0.06
+    },
+    "FHN PRF": {
+      "spreads": [
+        0.11,
+        0.12
+      ],
+      "avg": 0.115,
+      "min": 0.11,
+      "max": 0.12
+    },
+    "HTFC": {
+      "spreads": [
+        0.1,
+        0.07
+      ],
+      "avg": 0.085,
+      "min": 0.07,
+      "max": 0.1
+    },
+    "PMTU": {
+      "spreads": [
+        0.1,
+        0.08
+      ],
+      "avg": 0.09,
+      "min": 0.08,
+      "max": 0.1
+    },
+    "NHPBP": {
+      "spreads": [
+        0.07,
+        0.04
+      ],
+      "avg": 0.055,
+      "min": 0.04,
+      "max": 0.07
+    },
+    "MITT PRA": {
+      "spreads": [
+        0.04,
+        0.08
+      ],
+      "avg": 0.06,
+      "min": 0.04,
+      "max": 0.08
+    },
+    "ACP PRA": {
+      "spreads": [
+        0.04,
+        0.04
+      ],
+      "avg": 0.04,
+      "min": 0.04,
+      "max": 0.04
+    },
+    "GS PRC": {
+      "spreads": [
+        0.05,
+        0.11
+      ],
+      "avg": 0.08,
+      "min": 0.05,
+      "max": 0.11
+    },
+    "AHH PRA": {
+      "spreads": [
+        0.04,
+        0.03
+      ],
+      "avg": 0.035,
+      "min": 0.03,
+      "max": 0.04
+    },
+    "FULTP": {
+      "spreads": [
+        0.06,
+        0.03
+      ],
+      "avg": 0.045,
+      "min": 0.03,
+      "max": 0.06
+    },
+    "CHSCO": {
+      "spreads": [
+        0.04,
+        0.04
+      ],
+      "avg": 0.04,
+      "min": 0.04,
+      "max": 0.04
+    },
+    "FITBP": {
+      "spreads": [
+        0.1,
+        0.07
+      ],
+      "avg": 0.085,
+      "min": 0.07,
+      "max": 0.1
+    },
+    "HWCPZ": {
+      "spreads": [
+        0.08,
+        0.11
+      ],
+      "avg": 0.095,
+      "min": 0.08,
+      "max": 0.11
+    },
+    "CHMI PRB": {
+      "spreads": [
+        0.04,
+        0.03
+      ],
+      "avg": 0.035,
+      "min": 0.03,
+      "max": 0.04
+    },
+    "AHL PRF": {
+      "spreads": [
+        0.11,
+        0.03
+      ],
+      "avg": 0.07,
+      "min": 0.03,
+      "max": 0.11
+    },
+    "DSX PRB": {
+      "spreads": [
+        0.1,
+        0.06
+      ],
+      "avg": 0.08,
+      "min": 0.06,
+      "max": 0.1
+    },
+    "CMRE PRD": {
+      "spreads": [
+        0.11,
+        0.1
+      ],
+      "avg": 0.105,
+      "min": 0.1,
+      "max": 0.11
+    }
+  },
+  "last_saved": "2026-02-17T01:21:36.455446"
+}

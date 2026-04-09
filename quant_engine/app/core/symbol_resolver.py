@@ -12,7 +12,7 @@ Key Features:
 - NEVER crash on unknown symbols
 """
 
-from typing import Optional, Dict, Set, List
+from typing import Optional, Dict, Set, List, Any
 from datetime import datetime, timedelta
 from collections import Counter
 from app.core.logger import logger

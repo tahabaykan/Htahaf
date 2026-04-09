@@ -210,10 +210,16 @@ def check_exposure_limit(
         pot_max = current_exposure.get('pot_max', 0)
         
         # Calculate new exposure
+        # BUY = open long → INCREASES exposure
+        # SELL_SHORT = open short → INCREASES exposure  
+        # SELL = close long → DECREASES exposure
+        # BUY_TO_COVER = close short → DECREASES exposure
         new_exposure = qty * price
-        if action in [IntentAction.BUY, IntentAction.BUY_TO_COVER]:
+        if action in [IntentAction.BUY, IntentAction.SELL_SHORT]:
+            # Opening a position (long or short) increases total exposure
             new_pot_total = pot_total + new_exposure
         else:
+            # Closing a position (selling long or covering short) decreases exposure
             new_pot_total = pot_total - new_exposure
         
         if new_pot_total > pot_max:

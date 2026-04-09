@@ -1,0 +1,40 @@
+﻿================================================================================
+  BUGUNUN TARIHI: 2026-02-16 (Monday)
+================================================================================
+
+  [BUY] TOP 5 BEST BUY - Bugun Pencere Acik (25 toplam)
+    # Ticker         Strateji                Entry      ExDiv     Ret%   Win%  Sharpe    P-val  Yld%  Score
+  ----------------------------------------------------------------------------------------------------
+    1 CMSA           QUICK_FLIP         2026-02-16 2026-02-18   +2.04%  100%   +7.1  0.0000  6.0%  6.45
+    2 ONBPO          QUICK_FLIP         2026-02-16 2026-02-19   +2.03%  100%   +5.3  0.0000  7.0%  5.74
+    3 UNMA           DIV_HOLD           2026-02-16 2026-02-18   +1.90%  100%   +3.8  0.0000  6.4%  5.09
+    4 STT PRG        DIV_HOLD           2026-02-16 2026-02-17   +1.41%  100%   +4.0  0.0000  5.5%  5.04
+    5 ADAMG          OPTIMAL_LONG       2026-02-16 2026-03-15   +2.13%  100%   +3.0  0.0023  9.2%  4.86
+
+  [SHORT] TOP 5 BEST SHORT - Bugun Pencere Acik (8 toplam)
+    # Ticker         Strateji                Entry      ExDiv     Ret%  Sharpe  Yld%  Score
+  ------------------------------------------------------------------------------------------
+    1 COF PRN        WASHOUT_SHORT      2026-02-17 2026-02-17   +2.63%   +1.1  6.0%  1.87
+    2 COF PRI        WASHOUT_SHORT      2026-02-17 2026-02-17   +2.69%   +1.0  6.2%  1.86
+    3 COF PRK        WASHOUT_SHORT      2026-02-17 2026-02-17   +2.20%   +1.4  6.2%  1.83
+    4 COF PRJ        WASHOUT_SHORT      2026-02-17 2026-02-17   +2.38%   +1.0  6.3%  1.69
+    5 COF PRL        WASHOUT_SHORT      2026-02-17 2026-02-17   +2.04%   +0.9  6.1%  1.47
+
+  ============================================================
+  YARIN (2026-02-17) PENCERE ACILACAK:
+  ============================================================
+  [LONG] (32 hisse):
+     CMSA           ret=+2.04%  shrp=7.1  exdiv=2026-02-18
+     ONBPO          ret=+2.03%  shrp=5.3  exdiv=2026-02-19
+     EFSCP          ret=+1.85%  shrp=4.4  exdiv=2026-02-20
+     BC PRC         ret=+5.04%  shrp=2.3  exdiv=2026-03-18
+     UNMA           ret=+1.90%  shrp=3.8  exdiv=2026-02-18
+  [SHORT] (11 hisse):
+     COF PRN        ret=+2.63%  shrp=1.1  exdiv=2026-02-17
+     COF PRI        ret=+2.69%  shrp=1.0  exdiv=2026-02-17
+     COF PRK        ret=+2.20%  shrp=1.4  exdiv=2026-02-17
+     COF PRJ        ret=+2.38%  shrp=1.0  exdiv=2026-02-17
+     COF PRL        ret=+2.04%  shrp=0.9  exdiv=2026-02-17
+
+  Bu veriler Quant Engine'de [Ex-Div Plan] butonuna tiklaninca gorunecek.
+================================================================================

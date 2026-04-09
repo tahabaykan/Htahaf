@@ -1,0 +1,20 @@
+{
+    "version": 2,
+    "accounts": {
+        "HAMPRO": {
+            "current_threshold": 92.0,
+            "potential_threshold": 100.0,
+            "pot_max": 650000.0
+        },
+        "IBKR_PED": {
+            "current_threshold": 92.0,
+            "potential_threshold": 100.0,
+            "pot_max": 1200000.0
+        },
+        "IBKR_GUN": {
+            "current_threshold": 92.0,
+            "potential_threshold": 100.0,
+            "pot_max": 1500000.0
+        }
+    }
+}

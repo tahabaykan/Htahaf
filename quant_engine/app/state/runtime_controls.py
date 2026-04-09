@@ -28,6 +28,11 @@ class AccountRuntimeControls:
     # --- Master Switch ---
     system_enabled: bool = True
     
+    # --- Execution Mode ---
+    # PREVIEW: Orders are logged but not sent to broker
+    # LIVE: Orders are actually sent to broker
+    execution_mode: str = "PREVIEW"
+    
     # --- LT TRIM (Execution Engine) ---
     lt_trim_enabled: bool = True
     lt_trim_long_enabled: bool = True   # Enable selling longs
@@ -55,6 +60,17 @@ class AccountRuntimeControls:
     # --- MM (Placeholder) ---
     mm_enabled: bool = False
     
+    # --- HEAVY MODE (Aggressive Reduction) ---
+    # When enabled, bypasses FBTOT/SFSTOT/GORT/Spread filters
+    # Only uses pahalilik/ucuzluk score for decisions
+    heavy_long_dec: bool = False   # HEAVYLONGDEC - Aggressively reduce LONG positions
+    heavy_short_dec: bool = False  # HEAVYSHORTDEC - Aggressively reduce SHORT positions
+    
+    # HEAVY Mode Configurable Parameters (persisted to Redis)
+    heavy_lot_pct: int = 30              # Lot percentage for HEAVY mode (default: 30%)
+    heavy_long_threshold: float = 0.02   # Min pahalilik score for LONG reduction (default: 0.02)
+    heavy_short_threshold: float = -0.02 # Max ucuzluk score for SHORT reduction (default: -0.02)
+    
     # --- Emergency / Overrides ---
     # FORCE TRIM: If True, bypasses ALL vetoes/checks (except hard risk limits).
     # Use with CAUTION.
@@ -71,23 +87,82 @@ class AccountRuntimeControls:
                 logger.warning(f"[RuntimeControls] Unknown control field: {k}")
 
 
+# Redis key for persisting HEAVY settings
+HEAVY_SETTINGS_REDIS_KEY = "psfalgo:heavy_settings"
+
+
 class RuntimeControlsManager:
     """Singleton manager for all account controls."""
     
     def __init__(self):
         self._controls: Dict[str, AccountRuntimeControls] = {}
+        self._heavy_settings_loaded = False
+    
+    def _load_heavy_settings_from_redis(self) -> Dict[str, Any]:
+        """Load persisted HEAVY settings from Redis."""
+        try:
+            from app.core.redis_client import get_redis
+            import json
+            
+            redis = get_redis()
+            if redis:
+                raw = redis.get(HEAVY_SETTINGS_REDIS_KEY)
+                if raw:
+                    data = json.loads(raw.decode() if isinstance(raw, bytes) else raw)
+                    logger.info(f"[RuntimeControls] Loaded HEAVY settings from Redis: {data}")
+                    return data
+        except Exception as e:
+            logger.warning(f"[RuntimeControls] Failed to load HEAVY settings from Redis: {e}")
+        return {}
+    
+    def _save_heavy_settings_to_redis(self, settings: Dict[str, Any]):
+        """Persist HEAVY settings to Redis."""
+        try:
+            from app.core.redis_client import get_redis
+            import json
+            
+            redis = get_redis()
+            if redis:
+                redis.set(HEAVY_SETTINGS_REDIS_KEY, json.dumps(settings))
+                logger.info(f"[RuntimeControls] Saved HEAVY settings to Redis: {settings}")
+        except Exception as e:
+            logger.warning(f"[RuntimeControls] Failed to save HEAVY settings to Redis: {e}")
     
     def get_controls(self, account_id: str) -> AccountRuntimeControls:
-        """Get controls for an account (creates default if missing)."""
+        """Get controls for an account (creates default if missing, loads persisted HEAVY settings)."""
         if account_id not in self._controls:
-            self._controls[account_id] = AccountRuntimeControls()
-            logger.info(f"[RuntimeControls] Initialized default controls for {account_id}")
+            ctrl = AccountRuntimeControls()
+            
+            # Load persisted HEAVY settings (once per session or if not loaded yet)
+            if not self._heavy_settings_loaded:
+                persisted = self._load_heavy_settings_from_redis()
+                if persisted:
+                    if 'heavy_lot_pct' in persisted:
+                        ctrl.heavy_lot_pct = int(persisted['heavy_lot_pct'])
+                    if 'heavy_long_threshold' in persisted:
+                        ctrl.heavy_long_threshold = float(persisted['heavy_long_threshold'])
+                    if 'heavy_short_threshold' in persisted:
+                        ctrl.heavy_short_threshold = float(persisted['heavy_short_threshold'])
+                self._heavy_settings_loaded = True
+            
+            self._controls[account_id] = ctrl
+            logger.info(f"[RuntimeControls] Initialized controls for {account_id} (HEAVY: lot={ctrl.heavy_lot_pct}%, long_th={ctrl.heavy_long_threshold}, short_th={ctrl.heavy_short_threshold})")
         return self._controls[account_id]
     
     def update_controls(self, account_id: str, updates: Dict[str, Any]) -> AccountRuntimeControls:
-        """Update controls for an account."""
+        """Update controls for an account. Persists HEAVY settings to Redis."""
         ctrl = self.get_controls(account_id)
         ctrl.update(**updates)
+        
+        # Persist HEAVY settings if any were updated
+        heavy_keys = ['heavy_lot_pct', 'heavy_long_threshold', 'heavy_short_threshold']
+        if any(k in updates for k in heavy_keys):
+            self._save_heavy_settings_to_redis({
+                'heavy_lot_pct': ctrl.heavy_lot_pct,
+                'heavy_long_threshold': ctrl.heavy_long_threshold,
+                'heavy_short_threshold': ctrl.heavy_short_threshold
+            })
+        
         return ctrl
         
     def reset_controls(self, account_id: str):
@@ -100,3 +175,4 @@ _runtime_controls_manager = RuntimeControlsManager()
 
 def get_runtime_controls_manager() -> RuntimeControlsManager:
     return _runtime_controls_manager
+

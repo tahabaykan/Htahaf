@@ -1,0 +1,61 @@
+## MM SYSTEM v3 — GERCEK MEKANIK
+
+### STRATEJI KURALLARI:
+1. BID + $0.01 = HIDDEN BUY emri (NBBO'yu $0.01 improve et)
+2. ASK - $0.01 = HIDDEN SELL emri (NBBO'yu $0.01 improve et)
+3. Minimum $0.05/share profit per roundtrip
+4. Alternatif: Son truth tick'i frontla. Print $25.58 ise -> BUY $25.51, SELL $25.57
+5. Dolayisiyla: Spread en az $0.07 olmali (- $0.02 improvement = $0.05 profit)
+6. Toplam dagitilabilir exposure: $500K
+7. Fill rate varsayimi: %20-35 (pasif emir, hep doluyor degil)
+8. Hidden emir: Piyasada gorunmuyor, ama truth tick ile fill oluyor
+
+### UYGUN HiSSELER: 7 adet (spread >= $0.07)
+
+Sym          Grp                    ADV   Fiyat  Sprd$  Capt$  TT/d   V/A% ThmGun$        Peak
+----------------------------------------------------------------------------------------------
+GNL PRB      heldotelremorta      4,496 $22.40 $0.090 $0.070    10  21.0% $  0.21 14:30-15:00
+LFT PRA      salakilliquid        1,085 $20.84 $0.093 $0.073     3  20.1% $  0.07 14:30-15:00
+GGT PRG      notcefilliquid       1,242 $21.42 $0.088 $0.068     3  16.5% $  0.06 15:30-16:00
+PEB PRF      heldotelremorta      7,723 $19.83 $0.173 $0.153     1   1.1% $  0.05 15:30-16:00
+DCOMG        helddeznff           2,401 $26.35 $0.080 $0.060     2   7.3% $  0.04 15:00-15:30
+CMRE PRB     nottitrekhc          1,815 $25.56 $0.085 $0.065     2  46.1% $  0.04 14:30-15:00
+ACR PRD      shitremhc            3,975 $22.01 $0.072 $0.052     2   6.2% $  0.03 15:00-15:30
+
+### SINIRDA KALANLAR (capture $0.03-$0.04): 2 hisse
+  PMTU         spread=$0.053 capture=$0.033 TT/d=5 ADV=3,042
+  ETI PR       spread=$0.050 capture=$0.030 TT/d=11 ADV=1,735
+
+### GOREV — DETAYLI MM PLANI:
+
+**A. Her uygun hisse icin tablo:**
+Symbol | Price | Spread$ | BUY lot @ fiyat | SELL lot @ fiyat | Capture$/share | Lot (ADV %) | $/roundtrip | RT/gun tahmini | Gunluk gelir$
+
+**B. LOT BUYUKLUGU HESABI:**
+- ADV'nin %1-2'si kadar lot (piyasayi etkilememek icin)
+- Max $25K per stock
+- Her lot icin: capture * lot = roundtrip gelir
+- Gunluk roundtrip sayisi = truth tick frequency'ye gore
+
+**C. ORNEK SENARYO (en iyi 3 hisse icin adim adim):**
+1. Bid/Ask'i gor
+2. Hidden buy ve sell emirlerini yerlesir
+3. Buy dolunca SELL'i truth tick'e gore ayarla
+4. Sell dolunca pozisyon kapandi, kar realize edildi
+5. Yeni roundtrip basla
+6. Fiyat aleyhine giderse ne yapilir?
+7. Gun sonu pozisyon kaldiysa ne yapilir?
+
+**D. $500K EXPOSURE DAGITIMI:**
+- Kac hisseye dagilir?
+- Her hisseye kac $ ayrillir?
+- Gunluk TOPLAM net gelir (fill rate %25-30, adverse selection %30 dusulmus)
+- Aylik ve yillik net gelir
+- Yillik % return ($500K uzerinden)
+
+**E. RISK:**
+- Worst case gunluk zarar?
+- Per-stock stop: kac $ drop'ta pozisyon kapatilir?
+- Kac gunde 1 zarar gunu beklenir?
+
+GERCEKCI rakamlar ver. Her hisse icin ayri satir. Turkce yaz.

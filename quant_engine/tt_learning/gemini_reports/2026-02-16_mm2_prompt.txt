@@ -1,0 +1,74 @@
+## GERCEKCI MM SISTEM TASARIMI — PREFERRED STOCKS
+
+Asagida 5 is gunu truth tick verileriyle dogrulanmis MM adaylari var.
+
+### ONEMLI GERCEKLER (bu varsayimlari kullan!):
+- Bu hisseler PREFERRED STOCK — fiyatlari genelde $18-28 arasi, dusuk volatilite
+- Preferred'lar $0.01 tick size ile islem gorur
+- Tipik bid-ask spread $0.01-0.10 arasi (1-40 bps)
+- AVG_ADV = toplam gunluk hacim (tum printler). Truth tick = sadece %15-20'si
+- GERCEKCI lot buyuklugu = AVG_ADV'nin %1-3'u (daha fazlasi piyasayi etkiler!)
+- Fill rate gercekci: %20-40 (her emir dolmaz!)
+- Spread capture = bid-ask spread'in YARISIDIR (tam capture degil)
+- Adverse selection riski: %30-50 fill'de ters gider
+- Ortalama holding time: 5-60 dakika
+- RISK: $500K toplam dagitilabilir exposure, per-stock max $25K
+
+### 20 MM ADAYI (gercek fiyatlarla):
+
+Sym          Grp                  ADV   Price  TT/d   V/A%  Sprd  MM    DDV$        Peak
+----------------------------------------------------------------------------------------
+FITBI        heldff            24,660 $25.60   346 107.3%   1.8 4.5 $ 8,857 15:30-16:00
+VOYA PRB     heldnff           18,259 $24.17   103  71.8%   6.4 4.5 $ 2,501 15:00-15:30
+SCHW PRD     heldsolidbig      35,284 $25.13    77  26.4%   1.2 4.5 $ 1,947 15:30-16:00
+MS PRI       heldsolidbig      53,824 $25.20    67  14.0%   1.4 4.5 $ 1,701 15:00-15:30
+JPM PRD      heldsolidbig      97,913 $24.88   125  18.1%   1.1 4.5 $ 3,122 15:30-16:00
+NCV PRA      notcefilliquid     4,963 $21.28   103 258.2%   5.4 4.5 $ 2,202 15:30-16:00
+VNO PRO      heldcommonsuz     18,574 $15.07    48  28.4%   7.0 4.4 $   730 14:30-15:00
+RLJ PRA      heldtitrekhc      14,500 $25.51    48  38.7%   3.9 4.4 $ 1,237 15:00-15:30
+WBS PRF      heldkuponlukreor   9,081 $21.34    44 330.3%   5.9 4.3 $   949 15:00-15:30
+PEB PRF      heldotelremorta    7,723 $19.83     1   1.1%  87.4 4.2 $    29 15:30-16:00
+RITM PRA     heldff            10,762 $25.30    34  65.7%   3.5 3.9 $   872 15:00-15:30
+MBINN        heldkuponlukreci  10,129 $20.14    36 103.2%   6.9 3.9 $   725 15:30-16:00
+CRBD         heldcilizyeniyed  45,847 $23.90    85  20.1%   5.8 3.8 $ 2,043 15:00-15:30
+LOB PRA      helddeznff        14,939 $25.85    71  81.8%   4.6 3.8 $ 1,848 15:00-15:30
+VLYPO        heldff             4,534 $25.10    32  86.1%   5.0 3.8 $   815 15:30-16:00
+WBS PRG      heldgarabetaltiy  10,277 $24.67    64 143.6%   3.5 3.8 $ 1,578 15:00-15:30
+ADC PRA      heldkuponlu       11,974 $17.11    49  47.9%   5.6 3.8 $   838 15:00-15:30
+KEY PRJ      heldkuponlukreor  29,103 $22.06    95  44.5%   3.6 3.8 $ 2,106 15:30-16:00
+MTB PRH      heldnff           30,912 $25.05    70  61.2%   2.6 3.8 $ 1,766 15:30-16:00
+RF PRC       heldnff           25,878 $24.23    95  29.9%   4.8 3.8 $ 2,301 15:30-16:00
+
+### GOREV:
+
+Yukaridaki verilere dayanarak GERCEKCI bir MM sistemi tasarla.
+
+**A. LOT FORMULU:**
+- Her hisse icin: ADV'nin yuzde kaci lot olarak kullanilmali?
+- Minimum lot: 50, Maximum lot: ADV'nin %3'u
+- Dolar bazli max: $25K per stock ($500K / 20 hisse)
+- Tablo: Symbol | ADV | Price | Onerilen Lot | $ Deger
+
+**B. HIDDEN EMIR PLANI (her hisse icin):**
+Tablo: Symbol | BUY: lot @ fiyat (how far from truth tick) | SELL: lot @ fiyat | Hedef spread capture ($) | Gunluk RT hedefi | Tahmini gunluk gelir ($) | Cancel-Replace suresi (dk)
+
+**C. SENARYO: FITBI ($25.60, ADV=24660)**
+Adim adim:
+1. Truth tick $25.60 geldi. BUY ve SELL emirlerini nereye, kac lot?
+2. BUY doldu ($25.58'den 200 lot aldik). Simdi ne yapilir?
+3. SELL emrimiz $25.62'de duruyor. Truth tick $25.55'e dustu — ne yapilir?
+4. Gun sonu pozisyon kaldi — ne yapilir?
+5. En kotu senaryo: 200 lot aldik, fiyat $25.40'a dustu. Max zarar ne?
+
+**D. RETURN HESABI (GERCEKCI):**
+Her hisse icin tablo:
+Symbol | Lot | Spread($) | Fill% | RT/gun | Gross$/gun | Net$/gun (adv.sel. dusulmus)
+TOPLAM: 20 hisse icin gunluk/aylik/yillik net gelir
+
+**E. HONEST ASSESSMENT:**
+- Bu stratejinin gercekci Sharpe ratio'su kac?
+- En buyuk risk nedir?
+- Otomatize etmek icin ne gerekir?
+- Bu strateji $500K exposure uzerinden yillik net yuzde kac getirir?
+
+RAKAMLARLA ve GERCEKCI varsayimlarla cevap ver. Fantastik beklentiler yazma.

@@ -40,7 +40,7 @@ class ProposalEngine:
     def __init__(self):
         """Initialize Proposal Engine"""
         self.proposal_dedupe_cache = {}  # key -> timestamp
-        logger.info("ProposalEngine initialized")
+        logger.info("[PROPOSAL_ENGINE] Initialized (dedupe cache cleared)")
     
     def map_decision_to_proposal(
         self,
@@ -48,7 +48,8 @@ class ProposalEngine:
         cycle_id: int,
         decision_source: str,
         decision_timestamp: datetime,
-        market_context: Optional[Dict[str, Any]] = None
+        market_context: Optional[Dict[str, Any]] = None,
+        account_id: Optional[str] = None
     ) -> Optional[OrderProposal]:
         """
         Map a Decision to OrderProposal.
@@ -65,19 +66,22 @@ class ProposalEngine:
         """
         # Skip filtered decisions
         if decision.action == "FILTERED" or decision.filtered_out:
+            logger.debug(f"[PROPOSAL] Skipping filtered decision for {decision.symbol}")
             return None
         
         # DEDUPLICATION CHECK
         # Create a unique key for this proposal content
         try:
-            dedupe_key = f"{decision.symbol}_{decision.action}_{decision.calculated_lot}_{decision.price_hint}"
+            # IDENTICAL CHECK: Include price (rounded to 2 decimals) for true duplicate detection
+            price_rounded = round(decision.price_hint or 0, 2) if decision.price_hint else 0
+            dedupe_key = f"{decision.symbol}_{decision.action}_{decision.calculated_lot}_{price_rounded}"
             now = datetime.now()
             
-            # Check if recently proposed (e.g. within last 30 seconds)
+            # Check if recently proposed (within last 5 seconds to prevent spam)
             if dedupe_key in self.proposal_dedupe_cache:
                 last_ts = self.proposal_dedupe_cache[dedupe_key]
-                if (now - last_ts).total_seconds() < 30:  # 30 second suppression
-                    # logger.debug(f"[PROPOSAL] Suppressing duplicate proposal {dedupe_key}")
+                if (now - last_ts).total_seconds() < 5:  # 5 second suppression (reduced from 30s)
+                    logger.debug(f"[PROPOSAL] Suppressing duplicate proposal {dedupe_key} (last seen {(now - last_ts).total_seconds():.1f}s ago)")
                     return None
             
             # Update cache
@@ -87,23 +91,24 @@ class ProposalEngine:
             if len(self.proposal_dedupe_cache) > 1000:
                 self.proposal_dedupe_cache.clear()
                 
-        except Exception:
-            pass  # Don't fail on dedupe error
+        except Exception as de:
+            logger.warning(f"[PROPOSAL] Dedupe error for {decision.symbol}: {de}")
         
         # Map action to side
+        # ADDNEWPOS uses SHORT/ADD_SHORT for short entries → map to SELL
         side = None
-        if decision.action in ["SELL", "REDUCE"]:
+        if decision.action in ["SELL", "REDUCE", "SHORT", "ADD_SHORT"]:
             side = "SELL"
         elif decision.action in ["BUY", "ADD"]:
             side = decision.action  # "BUY" or "ADD"
         else:
-            logger.warning(f"[PROPOSAL] Unknown action: {decision.action}")
+            logger.warning(f"[PROPOSAL] Unknown action for {decision.symbol}: {decision.action}")
             return None
         
         # Get quantity
         qty = decision.calculated_lot
         if qty is None or qty <= 0:
-            logger.warning(f"[PROPOSAL] Invalid quantity for {decision.symbol}: {qty}")
+            logger.warning(f"[PROPOSAL] Invalid quantity for {decision.symbol}: {qty} (action={decision.action})")
             return None
         
         # Map order_type from decision
@@ -157,15 +162,21 @@ class ProposalEngine:
                     if ucuzluk_score is None:
                         ucuzluk_score = snapshot.get('bid_buy_ucuzluk') or snapshot.get('Bid_buy_ucuzluk_skoru')
                     
-                    # Fill in missing bid/ask/last from snapshot
-                    if bid is None:
+                    # Fill in missing bid/ask/last from snapshot (CRITICAL FALLBACK)
+                    if bid is None or bid <= 0:
                         bid = snapshot.get('bid')
-                    if ask is None:
+                    if ask is None or ask <= 0:
                         ask = snapshot.get('ask')
-                    if last is None:
+                    if last is None or last <= 0:
                         last = snapshot.get('last')
         except Exception as e:
             logger.debug(f"[PROPOSAL] Could not get extended market context: {e}")
+        
+        # Fallback from decision (runall enriches symbol_metrics -> decision.bench_chg / ask_sell_pahalilik for Ask ph / B: in UI)
+        if bench_chg is None:
+            bench_chg = getattr(decision, 'bench_chg', None)
+        if pahalilik_score is None:
+            pahalilik_score = getattr(decision, 'ask_sell_pahalilik', None)
         
         # Calculate spread
         spread = None
@@ -215,13 +226,23 @@ class ProposalEngine:
         
         # Check market context completeness
         market_context_complete = (
-            bid is not None and
-            ask is not None and
-            last is not None and
+            bid is not None and bid > 0 and
+            ask is not None and ask > 0 and
+            last is not None and last > 0 and
             spread_percent is not None
         )
         if not market_context_complete:
             warnings.append("MARKET_CONTEXT_INCOMPLETE")
+            logger.warning(
+                f"[PROPOSAL] Warning for {decision.symbol}: Incomplete Market Context (No Live Data). "
+                f"Bid={bid}, Ask={ask}, Last={last}, Spread%={spread_percent}. "
+                f"Proposal will be marked invalid in UI if prices are 0."
+            )
+            # CRITICAL: We still return the proposal but it might have 0 prices if fallbacks failed.
+            # However, if bid/ask are 0, proposed_price will be None.
+            if proposed_price is None or proposed_price <= 0:
+                 logger.error(f"[PROPOSAL] ❌ REJECTED {decision.symbol}: Could not determine proposed price (Bid={bid}, Ask={ask})")
+                 return None
         
         # Check decision context completeness
         decision_context_complete = (
@@ -244,38 +265,195 @@ class ProposalEngine:
                 'intensity': decision.metrics_used.get('intensity'),
             }
         
-        # Determine Book and Order Subtype
-        from app.psfalgo.proposal_models import PositionBook, OrderSubtype
+        # ═══════════════════════════════════════════════════════════════
+        # DUAL TAG SYSTEM v4
+        # ═══════════════════════════════════════════════════════════════
+        # POS TAG: MM or LT (from portfolio position)
+        # ENGINE TAG: MM, PA, AN, KB, TRIM (from which engine generated)
+        # Combined: {POS}_{ENGINE}_{DIRECTION}_{ACTION}
+        # ═══════════════════════════════════════════════════════════════
+        from app.psfalgo.proposal_models import PositionBook, EngineTag, OrderSubtype
         
-        # Default Book
-        book = PositionBook.LT.value
-        if decision_source in ["GREATEST_MM", "SIDEHIT_PRESS", "AURA_MM"]:
-            book = PositionBook.MM.value
+        engine_name = decision.engine_name if decision.engine_name else decision_source
+        
+        # ── ENGINE TAG (which engine generated this order) ──
+        engine_tag = "MM"  # Default
+        if engine_name in ["GREATEST_MM", "SIDEHIT_PRESS", "AURA_MM"]:
+            engine_tag = "MM"
+        elif engine_name in ["PATADD", "PATADD_ENGINE"]:
+            engine_tag = "PA"
+        elif engine_name in ["ADDNEWPOS", "ADDNEWPOS_ENGINE"]:
+            engine_tag = "AN"
+        elif engine_name in ["KARBOTU", "KARBOTU_V2"]:
+            engine_tag = "KB"
+        elif engine_name in ["LT_TRIM", "REDUCEMORE"]:
+            engine_tag = "TRIM"
+        
+        # ── POS TAG (what type of position is this in portfolio) ──
+        # For INC engines (PA, AN, MM): if no existing position, assign based on engine
+        # For DEC engines (KB, TRIM): look up existing position's POS TAG
+        pos_tag = "MM"  # Default (migration: all existing = MM)
+        current_pos_tag = self._lookup_pos_tag(decision.symbol, account_id)
+        current_qty = getattr(decision, 'current_qty', None) or 0
+        
+        # ═══════════════════════════════════════════════════════════════
+        # RULE 1: MM ENGINE BLOCKED ON LT POSITIONS
+        # ═══════════════════════════════════════════════════════════════
+        # LT pos tag'lı bir hissede MM engine increase yapamaz.
+        # KB ve TRIM decrease yapar, MM karışmaz.
+        # ═══════════════════════════════════════════════════════════════
+        if engine_tag == "MM" and current_pos_tag == "LT" and current_qty != 0:
+            logger.warning(
+                f"[PROPOSAL] ❌ BLOCKED: {decision.symbol} | MM engine cannot operate "
+                f"on LT position (current_qty={current_qty}). KB/TRIM handles LT decrease."
+            )
+            return None
+        
+        # ═══════════════════════════════════════════════════════════════
+        # RULE 2 & 3: PA/AN vs MM POSITION — DOMINANCE RULES
+        # ═══════════════════════════════════════════════════════════════
+        if engine_tag in ("PA", "AN") and current_pos_tag == "MM" and current_qty != 0:
+            # Determine if PA/AN wants same or opposite direction
+            is_long_pos = current_qty > 0
+            pa_wants_long = (side == "BUY")
+            same_direction = (is_long_pos == pa_wants_long)
             
-        # Determine Subtype
-        order_subtype = OrderSubtype.UNKNOWN.value
-        
-        if decision_source == "ADDNEWPOS":
-            # ADDNEWPOS implies entering/increasing
-            if side == "BUY":
-                order_subtype = OrderSubtype.LT_LONG_INCREASE.value
-            elif side == "SELL": # Short Entry
-                order_subtype = OrderSubtype.LT_SHORT_INCREASE.value
-                
-        elif decision_source in ["KARBOTU", "REDUCEMORE", "LT_TRIM"]:
-            # These are REDUCTION/EXIT engines
-            if side == "SELL": # Selling Long
-                order_subtype = OrderSubtype.LT_LONG_DECREASE.value
-            elif side == "BUY": # Covering Short
-                order_subtype = OrderSubtype.LT_SHORT_DECREASE.value
-                
-        # MM Logic (Future placeholder)
-        elif book == PositionBook.MM.value:
-            if "INCREASE" in str(decision.reason).upper(): # Heuristic
-                order_subtype = OrderSubtype.MM_LONG_INCREASE.value if side=="BUY" else OrderSubtype.MM_SHORT_INCREASE.value
+            if same_direction:
+                # ── RULE 2: Same direction → LT baskın, POS TAG = LT ──
+                # MM tag'li long +500 var, PA BUY istiyor → POS TAG MM→LT
+                pos_tag = "LT"
+                logger.info(
+                    f"[PROPOSAL] 🏷️ {decision.symbol}: PA/AN same dir → "
+                    f"POS TAG MM→LT (qty={current_qty}, engine={engine_tag})"
+                )
+                # Also update PositionTagStore immediately
+                try:
+                    from app.psfalgo.position_tag_store import get_position_tag_store
+                    store = get_position_tag_store()
+                    if store:
+                        store.set_tag(decision.symbol, "LT", account_id)
+                except Exception:
+                    pass
             else:
-                order_subtype = OrderSubtype.MM_LONG_DECREASE.value if side=="SELL" else OrderSubtype.MM_SHORT_DECREASE.value
-
+                # ── RULE 3: Opposite direction → MM tasfiye (0'lama) ──
+                # MM tag'li long +500 var, PA SHORT istiyor →
+                # MM mağlup → pozisyon 0'lanmalı → tasfiye emri
+                # Tasfiye: long ise SELL @ ask-spread*0.15, short ise BUY @ bid+spread*0.15
+                logger.warning(
+                    f"[PROPOSAL] ⚠️ {decision.symbol}: PA/AN opposite dir! "
+                    f"MM position must be liquidated first. "
+                    f"current_qty={current_qty}, PA wants {'LONG' if pa_wants_long else 'SHORT'}"
+                )
+                
+                # Generate LIQUIDATION order instead of PA/AN order
+                liq_qty = abs(current_qty)
+                if is_long_pos:
+                    liq_side = "SELL"
+                    # ask - spread*0.15 pricing
+                    if ask and spread:
+                        liq_price = round(ask - (spread * 0.15), 2)
+                    else:
+                        liq_price = proposed_price  # fallback
+                    liq_direction = "LONG_DEC"
+                else:
+                    liq_side = "BUY"
+                    # bid + spread*0.15 pricing
+                    if bid and spread:
+                        liq_price = round(bid + (spread * 0.15), 2)
+                    else:
+                        liq_price = proposed_price  # fallback
+                    liq_direction = "SHORT_DEC"
+                
+                # Tasfiye tag: MM_MM_*_DEC (MM DECREASE = en agresif frontlama hakkı)
+                pos_tag = "MM"
+                engine_tag = "MM"
+                order_subtype = f"OZEL_MM_MM_{liq_direction}"
+                book = "MM"
+                side = liq_side
+                qty = liq_qty
+                proposed_price = liq_price
+                
+                logger.info(
+                    f"[PROPOSAL] 🔄 {decision.symbol}: OZEL Liquidation order generated: "
+                    f"{liq_side} {liq_qty} @ ${liq_price:.2f} | Tag: {order_subtype} "
+                    f"(MM_DECREASE = max frontlama sacrifice: $0.60, 50%)"
+                )
+                
+                # Build direction_action and skip to proposal creation
+                direction_action = liq_direction
+                order_subtype = f"OZEL_{pos_tag}_{engine_tag}_{direction_action}"
+                book = pos_tag
+                
+                # Skip normal tag assignment below
+                # (falls through to proposal creation with overridden values)
+                # Create proposal with liquidation params
+                proposal = OrderProposal(
+                    symbol=decision.symbol,
+                    side=side,
+                    qty=qty,
+                    order_type="LIMIT",
+                    proposed_price=proposed_price,
+                    bid=bid,
+                    ask=ask,
+                    last=last,
+                    spread=spread,
+                    spread_percent=spread_percent,
+                    prev_close=prev_close,
+                    daily_chg=daily_chg,
+                    bench_chg=bench_chg,
+                    pahalilik_score=pahalilik_score,
+                    ucuzluk_score=ucuzluk_score,
+                    decision_thresholds=decision_thresholds,
+                    book=book,
+                    order_subtype=order_subtype,
+                    pos_tag=pos_tag,
+                    engine_tag=engine_tag,
+                    engine=engine_name,
+                    reason=f"LT_DOMINANCE_LIQUIDATION: {engine_tag} wants opposite dir, MM pos must close",
+                    confidence=1.0,
+                    metrics_used=decision.metrics_used or {},
+                    cycle_id=cycle_id,
+                    decision_ts=decision_timestamp,
+                    proposal_ts=datetime.now(),
+                    status=ProposalStatus.PROPOSED.value,
+                    step_number=decision.step_number,
+                    lot_percentage=100.0,
+                    price_hint=proposed_price,
+                    current_qty=current_qty,
+                    potential_qty=0,
+                    account_id=account_id
+                )
+                
+                logger.info(
+                    f"[PROPOSAL] Generated LIQUIDATION: {decision.symbol} {side} {qty} @ {proposed_price} "
+                    f"| Tag: {order_subtype} | POS=MM ENGINE=MM (LT dominance liquidation)"
+                )
+                return proposal
+        
+        # ── Normal POS TAG assignment ──
+        if engine_tag in ("PA", "AN"):
+            pos_tag = "LT"
+        elif engine_tag == "MM":
+            pos_tag = "MM"
+        elif engine_tag in ("KB", "TRIM"):
+            pos_tag = current_pos_tag  # Inherit from existing position
+        
+        # ── DIRECTION + ACTION ──
+        if side == "BUY":
+            if engine_tag in ("PA", "AN", "MM"):
+                direction_action = "LONG_INC"
+            else:  # KB, TRIM → buying covers short
+                direction_action = "SHORT_DEC"
+        else:  # SELL
+            if engine_tag in ("PA", "AN", "MM"):
+                direction_action = "SHORT_INC"
+            else:  # KB, TRIM → selling trims long
+                direction_action = "LONG_DEC"
+        
+        # ── FULL TAG ──
+        order_subtype = f"{pos_tag}_{engine_tag}_{direction_action}"
+        book = pos_tag  # book = pos_tag for backwards compat
+        
         # Create proposal
         proposal = OrderProposal(
             symbol=decision.symbol,
@@ -295,11 +473,13 @@ class ProposalEngine:
             pahalilik_score=pahalilik_score,
             ucuzluk_score=ucuzluk_score,
             decision_thresholds=decision_thresholds,
-            # Tags
+            # Dual Tag System v4
             book=book,
             order_subtype=order_subtype,
+            pos_tag=pos_tag,
+            engine_tag=engine_tag,
             # Decision context
-            engine=decision_source,
+            engine=engine_name,
             reason=decision.reason,
             confidence=decision.confidence or 0.0,
             metrics_used=decision.metrics_used or {},
@@ -312,30 +492,57 @@ class ProposalEngine:
             price_hint=decision.price_hint,
             # Position Context (Phase 11 UI)
             current_qty=decision.current_qty,
-            potential_qty=decision.potential_qty
+            potential_qty=decision.potential_qty,
+            # Account tagging (CRITICAL for per-account filtering)
+            account_id=account_id
         )
         
         # Add warnings if any
         if warnings:
             # Store warnings in proposal (can be added to to_dict/to_human_readable)
             proposal.warnings = warnings
-            logger.warning(
-                f"[PROPOSAL] Proposal {decision.symbol} has warnings: {', '.join(warnings)}"
-            )
+            # DECISION_CONTEXT_INCOMPLETE is informational (some engines don't populate reason/metrics)
+            serious_warnings = [w for w in warnings if w != "DECISION_CONTEXT_INCOMPLETE"]
+            if serious_warnings:
+                logger.warning(
+                    f"[PROPOSAL] Proposal {decision.symbol} has warnings: {', '.join(warnings)}"
+                )
+            else:
+                logger.debug(
+                    f"[PROPOSAL] Proposal {decision.symbol} minor: {', '.join(warnings)}"
+                )
         
-        logger.debug(
-            f"[PROPOSAL] Generated proposal: {decision.symbol} {side} {qty} @ {proposed_price} "
-            f"(engine={decision_source}, cycle={cycle_id})"
+        logger.info(
+            f"[PROPOSAL] Generated: {decision.symbol} {side} {qty} @ {proposed_price} "
+            f"| Tag: {order_subtype} | POS={pos_tag} ENGINE={engine_tag} "
+            f"(engine={engine_name}, cycle={cycle_id})"
         )
         
         return proposal
+    
+    def _lookup_pos_tag(self, symbol: str, account_id: str = None) -> str:
+        """
+        Look up POS TAG for a symbol from PositionTagStore (per-account).
+        
+        Returns 'MM' or 'LT'. Defaults to 'MM' (migration default).
+        """
+        try:
+            from app.psfalgo.position_tag_store import get_position_tag_store
+            store = get_position_tag_store()
+            if store:
+                return store.get_tag(symbol, account_id)
+        except Exception as e:
+            logger.debug(f"[PROPOSAL] POS TAG lookup error for {symbol}: {e}")
+        
+        return "MM"  # Migration default
     
     async def process_decision_response(
         self,
         response: DecisionResponse,
         cycle_id: int,
         decision_source: str,
-        decision_timestamp: datetime
+        decision_timestamp: datetime,
+        account_id: Optional[str] = None
     ) -> List[OrderProposal]:
         """
         Process DecisionResponse and create OrderProposals.
@@ -385,7 +592,8 @@ class ProposalEngine:
                 cycle_id=cycle_id,
                 decision_source=decision_source,
                 decision_timestamp=decision_timestamp,
-                market_context=market_context
+                market_context=market_context,
+                account_id=account_id
             )
             
             if proposal:

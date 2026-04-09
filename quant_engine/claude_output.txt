@@ -1,0 +1,57 @@
+﻿python : 20:11:17 | [CLAUDE] Call #1 | 11388 in / 10
+10 out | $0.0132 | model=claude-3-haiku-20240307
+At line:1 char:1
++ python send_to_claude.py 2>&1 | Out-File -Encoding
+ utf8 C:\StockTrack ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (20:11: 
+   17 | [CLA...-haiku-20240307:String) [], RemoteE  
+  xception
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Symbols: 405, Groups: 19
+Prompt: 20432 chars
+Sending to Claude Haiku 3...
+Response: 2295 chars
+Stats: {'model': 'claude-3-haiku-20240307', 'daily_calls': 1, 'daily_input_tokens': 11388, 'daily_output_tokens': 1010, 'daily_cost_usd': 0.0132}
+
+Saved to tt_learning/gemini_reports/2026-02-16.txt
+
+================================================================================
+CLAUDE RAPORU (ilk 3000 karakter):
+================================================================================
+Merhaba QAGENTT, size verilen 5 g³nl³k truth tick verilerini analiz ettim. ¦■te sonular:
+
+1. **Grup Baz²nda Mean Reversion Durumu**:
+   - Genel olarak, o­u grup al²c² a­²rl²kl² (buyer dominant) g÷r³n³yor. Sadece birka grup sat²c² a­²rl²kl² (seller dominant).
+   - GORT'tan (ortalama) en uzakla■m²■ hisseler ■unlar: FULTP, DCOMP, DTB, ADC PRA. Bu hisseler mean reversion f²rsat² sunuyor.
+   - Grup ii korelasyon genellikle g³l³. Yani hisseler birbirleriyle uyumlu hareket ediyorlar.
+
+2. **Spread & Likidite Analizi**:
+   - Spread de­erleri AVG_ADV'ye g÷re makul. D³■³k hacimli hisselerde spread daha geni■.
+   - Spread en dar 14:30-15:00 ve 15:00-15:30 saatlerinde. MM f²rsat² daha az ama g³venli.
+   - Spread en geni■ 15:30-16:00 saatlerinde. MM f²rsat² var ama risk de y³ksek.
+   - Volume/ADV oran² y³ksek olan hisselerde spread daha dar.
+
+3. **LT Portfolio Ínerileri**:
+   - A■a­² gelen ve GORT'un alt²nda olan hisseler: FULTP, DCOMP, DTB, ADC PRA. Bu hisseler yava■ yava■ toplanmal².
+   - GORT'un ³zerinde olan ve sat²c² a­²rl²kl² hisseler: WBS PRF, FCNCO, FITBO. Bu hisseler iin short pozisyon a²labilir.
+   - Pozisyon b³y³kl³­³ AVG_ADV'ye g÷re ayarlanmal². Y³ksek hacimli hisselerde daha b³y³k lot.
+   - Optimal al²m saatleri 14:30-15:00 ve 15:00-15:30 olabilir.
+
+4. **Mini Market Making Modeli**:
+   - En y³ksek spread capture f²rsat² sunan hisseler: DCOMG, MGR, PSEC PRA, FITBI.
+   - Ínerilen lot b³y³kl³kleri AVG_ADV'nin %1-2'si civar²nda olabilir.
+   - 15:30-16:00 saatleri iki y÷nl³ ak²■²n en yo­un oldu­u zaman dilimi.
+   - Venue stratejisi: Spread daha dar oldu­u iin NYSE'de quote etmek daha avantajl².
+   - Risk y÷netimi: Max exposure per stock $X, max per group $Y olabilir.
+
+5. **¦statistiksel ¦li■kiler**:
+   - Ayn² DOS grubundaki hisseler gerekten g³l³ korelasyon g÷steriyor.
+   - Spread ile AVG_ADV aras²ndaki korelasyon orta d³zeyde.
+   - "heldkuponlu" ve "heldgarabetaltiyedi" gruplar²nda mean reversion daha h²zl² gerekle■iyor.
+   - Saatlik al²c²-sat²c² ak²■² olduka tutarl². Her g³n benzer pattern g÷zlemleniyor.
+
+Ízet olarak, bu hisseler mean reversion ÷zelli­i g÷steren, likidite ve spread a²s²ndan uygun enstr³manlar. LT portfolio ve mini market making stratejileri uygulanabilir. Ancak risk y÷netimi kritik ÷nem ta■²yor.
+
+Sorular²n²z varsa l³tfen sorunuz.

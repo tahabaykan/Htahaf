@@ -146,26 +146,32 @@ def calculate_rounded_lot(
     if action == "SELL" or action == "ASK_SELL":
         pos_size = abs(existing_qty)
         
-        # Rule: Small positions (< 400) -> Exact (No rounding)
+        # 1. Base Rounding Policy
         if pos_size < 400:
-            return int(raw_lot)
+            # Rule: Small positions (< 400) -> Exact (No rounding)
+            rounded = int(raw_lot)
+        else:
+            # Rule: Large positions (>= 400) -> Round to 100s
+            rounded = int((raw_lot / 100.0) + 0.5) * 100
             
-        # Rule: Large positions (>= 400) -> Round to 100s
-        rounded = int((raw_lot / 100.0) + 0.5) * 100
         return rounded
 
     # --- BUY LOGIC ---
-    # Rule: Raw < 100 -> 0
-    if raw_lot < 100:
-        return 0
+    # 1. Base Rounding Policy
+    pos_size = abs(existing_qty)
     
-    # Rule: Round to nearest 100
-    rounded = int((raw_lot / 100.0) + 0.5) * 100
-    
-    # Rule: Min Lot 200 (if not 0)
-    if rounded > 0 and rounded < min_lot_buy:
-        return min_lot_buy
+    # If reducing a small short position (< 400), use exact lots
+    if existing_qty < 0 and pos_size < 400:
+        rounded = int(raw_lot)
+    else:
+        # Rule: Round to nearest 100
+        rounded = int((raw_lot / 100.0) + 0.5) * 100
         
+        # Rule: Min Lot 200 (if not 0)
+        if 0 < rounded < min_lot_buy:
+            rounded = min_lot_buy
+
+                
     return rounded
 
 

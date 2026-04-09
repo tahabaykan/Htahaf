@@ -23,14 +23,14 @@ from app.psfalgo.execution_ledger import PSFALGOExecutionLedger
 logger = logging.getLogger(__name__)
 
 STRATEGY_TAGS = [
-    "LT_LONG_INCREASE",
-    "LT_SHORT_INCREASE",
-    "LT_LONG_DECREASE",
-    "LT_SHORT_DECREASE",
-    "MM_LONG_INCREASE",
-    "MM_SHORT_INCREASE",
-    "MM_LONG_DECREASE",
-    "MM_SHORT_DECREASE"
+    "LT_LONG_INC",
+    "LT_SHORT_INC",
+    "LT_LONG_DEC",
+    "LT_SHORT_DEC",
+    "MM_LONG_INC",
+    "MM_SHORT_INC",
+    "MM_LONG_DEC",
+    "MM_SHORT_DEC"
 ]
 
 class JanallControlPanel(tk.Tk):
@@ -147,7 +147,7 @@ class JanallControlPanel(tk.Tk):
     def load_csv(self):
         try:
             # Try default path
-            path = "c:/StockTracker/janall/janalldata.csv"
+            path = "c:/StockTracker/janalldata.csv"
             self.df = pd.read_csv(path)
             
             # Clear tree

@@ -1,16 +1,16 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 from enum import Enum
 
 class StrategyTag(str, Enum):
-    LT_LONG_INCREASE = "LT_LONG_INCREASE"
-    LT_SHORT_INCREASE = "LT_SHORT_INCREASE"
-    LT_LONG_DECREASE = "LT_LONG_DECREASE"
-    LT_SHORT_DECREASE = "LT_SHORT_DECREASE"
-    MM_LONG_INCREASE = "MM_LONG_INCREASE"
-    MM_SHORT_INCREASE = "MM_SHORT_INCREASE"
-    MM_LONG_DECREASE = "MM_LONG_DECREASE"
-    MM_SHORT_DECREASE = "MM_SHORT_DECREASE"
+    LT_LONG_INC = "LT_LONG_INC"
+    LT_SHORT_INC = "LT_SHORT_INC"
+    LT_LONG_DEC = "LT_LONG_DEC"
+    LT_SHORT_DEC = "LT_SHORT_DEC"
+    MM_LONG_INC = "MM_LONG_INC"
+    MM_SHORT_INC = "MM_SHORT_INC"
+    MM_LONG_DEC = "MM_LONG_DEC"
+    MM_SHORT_DEC = "MM_SHORT_DEC"
 
 class PositionTag(str, Enum):
     # LT (Liquidity Taking / Long Term)
@@ -43,7 +43,7 @@ class BulkOrderResponse(BaseModel):
     results: List[dict]
 
 class CancelOrderRequest(BaseModel):
-    order_ids: List[str]
+    order_ids: List[Any]
 
 class GenericResponse(BaseModel):
     success: bool

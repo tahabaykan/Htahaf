@@ -46,6 +46,9 @@ class ExecutionService:
                 
             # 3. Prepare Order Plan
             # Convert Proposal fields to Order Plan format expected by Router
+            # CRITICAL: Map order_subtype to strategy_tag for proper 8-tag system
+            strategy_tag = proposal.order_subtype if hasattr(proposal, 'order_subtype') and proposal.order_subtype else f"Proposal-{proposal_id}"
+            
             order_plan = {
                 'symbol': proposal.symbol,
                 'action': proposal.side, # BUY/SELL
@@ -53,7 +56,8 @@ class ExecutionService:
                 'price': proposal.proposed_price,
                 'style': proposal.order_type, # LIMIT/MARKET
                 'psfalgo_source': True,
-                'psfalgo_action': f"Proposal-{proposal_id}" 
+                'psfalgo_action': f"Proposal-{proposal_id}",
+                'strategy_tag': strategy_tag  # 8-tag system: MM_LONG_INCREASE, MM_SHORT_INCREASE, etc.
             }
             
             # 4. Determine Active Account
@@ -89,7 +93,51 @@ class ExecutionService:
             
             gate_status = {'gate_status': 'MANUAL_APPROVE'} # Dummy gate status for manual action
             
-            # 6. Execute via Router
+            # 6. CHECK SIMULATION MODE (Critical!)
+            # If simulation mode is active, route to FakeOrderTracker instead of real broker
+            from app.core.simulation_controller import get_simulation_controller
+            sim_controller = get_simulation_controller()
+            
+            if sim_controller.is_simulation_mode():
+                # SIMULATION MODE: Create FAKE order
+                logger.warning(f"[EXEC_SERVICE] 🎭 SIMULATION MODE: Creating FAKE order for {proposal.symbol}")
+                
+                from app.simulation.fake_order_tracker import get_fake_order_tracker
+                tracker = get_fake_order_tracker()
+                
+                # Correct method is submit_order(), not create_order()
+                fake_order_id = tracker.submit_order(
+                    symbol=proposal.symbol,
+                    side=proposal.side,
+                    qty=proposal.qty,
+                    price=proposal.proposed_price if proposal.order_type == 'LIMIT' else 0.0,
+                    tag=f"{proposal.engine}_{proposal.side}",
+                    cycle_id=str(proposal.cycle_id) if proposal.cycle_id else None,
+                    engine=proposal.engine,
+                    reason=proposal.reason
+                )
+                
+                logger.info(f"[EXEC_SERVICE] 🎭 Created FAKE order: {fake_order_id}")
+                
+                # Update proposal as SENT with fake order ID
+                proposal.status = 'SENT'
+                proposal.order_id = fake_order_id
+                proposal.execution_result = {
+                    'execution_status': 'SIMULATED',
+                    'execution_reason': 'Simulation mode active',
+                    'order_id': fake_order_id,
+                    'simulation': True
+                }
+                
+                return {
+                    'success': True,
+                    'proposal_id': proposal_id,
+                    'simulated': True,
+                    'order_id': fake_order_id,
+                    'message': '🎭 FAKE order created (Simulation Mode)'
+                }
+            
+            # REAL MODE: Execute order through router
             logger.info(f"[EXEC_SERVICE] Routing proposal {proposal_id} to {current_mode}...")
             result = self.router.handle(
                 order_plan=order_plan,

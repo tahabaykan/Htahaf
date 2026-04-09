@@ -16,7 +16,7 @@ import time
 import signal
 import threading
 from typing import Dict, Any, Optional, List, Set
-from datetime import datetime
+from datetime import datetime, date
 from collections import Counter
 
 # Add parent directory to path for imports
@@ -142,26 +142,45 @@ class GreatestMMWorker:
         """Load truth ticks from Redis (shared by truth_ticks_worker)"""
         all_ticks = {}
         try:
-            JOB_RESULT_PREFIX = "truth_ticks:"
-            pattern = f"{JOB_RESULT_PREFIX}*"
-            result_keys = self.redis_client.keys(pattern)
+            # Targeted lookup of 'inspect' keys which contain the PRE-FILTERED truth ticks
+            # This ensures we use the exact same logic as the UI and other components
+            symbols = self.static_store.get_all_symbols() if self.static_store else []
             
-            if result_keys:
-                result_keys = [k.decode('utf-8') if isinstance(k, bytes) else k for k in result_keys]
-                result_keys = [k for k in result_keys if ':inspect:' not in k]
+            if not symbols:
+                return all_ticks
                 
-                for key in result_keys:
-                    try:
-                        result_json = self.redis_client.get(key)
-                        if result_json:
+            # Use pipeline for performance if we have many symbols
+            pipe = self.redis_client.pipeline()
+            # Split into batches of 200 to avoid blocking Redis for too long
+            for i in range(0, len(symbols), 200):
+                batch = symbols[i:i+200]
+                for symbol in batch:
+                    pipe.get(f"truth_ticks:inspect:{symbol}")
+                
+                results = pipe.execute()
+                
+                for idx, result_json in enumerate(results):
+                    if result_json:
+                        try:
+                            symbol = batch[idx]
                             if isinstance(result_json, bytes):
                                 result_json = result_json.decode('utf-8')
                             result_data = json.loads(result_json)
-                            if result_data.get('data'):
-                                all_ticks = result_data['data']
-                                break
-                    except:
-                        continue
+                            # Extract path_dataset (the latest 100 qualified truth ticks)
+                            path_data = result_data.get('data', {}).get('path_dataset', [])
+                            if path_data:
+                                # Normalize for MM engine
+                                normalized_ticks = []
+                                for t in path_data:
+                                    normalized_ticks.append({
+                                        'ts': t.get('timestamp'),
+                                        'price': t.get('price'),
+                                        'size': t.get('size'),
+                                        'exch': t.get('venue')
+                                    })
+                                all_ticks[symbol] = normalized_ticks
+                        except:
+                            continue
         except Exception as e:
             logger.warning(f"⚠️ [{self.worker_name}] Could not load ticks from Redis: {e}")
         
@@ -169,26 +188,14 @@ class GreatestMMWorker:
     
     def compute_son5_tick(self, ticks: List[Dict]) -> Optional[float]:
         """Compute Son5Tick (mode of last 5 truth ticks)"""
-        if not ticks:
+        if not ticks or not isinstance(ticks, list):
             return None
         
-        # Filter truth ticks (using CENTRAL logic)
-        truth_ticks = []
-        for tick in ticks:
-            # Check using central engine
-            if self.truth_engine.is_truth_tick(tick):
-                truth_ticks.append(tick)
-        
-        if not truth_ticks:
-            truth_ticks = [t for t in ticks if t.get('price', 0) > 0]
-        
-        if not truth_ticks:
-            return None
-        
-        # Sort by timestamp descending
+        # Ticks from 'path_dataset' are ALREADY truth filtered!
+        # Just sort by timestamp descending
         sorted_ticks = sorted(
-            truth_ticks,
-            key=lambda t: t.get('ts', t.get('timestamp', 0)),
+            ticks,
+            key=lambda t: t.get('ts', 0),
             reverse=True
         )
         
@@ -205,30 +212,20 @@ class GreatestMMWorker:
     def get_new_print(self, ticks: List[Dict], son5_tick: float) -> Optional[float]:
         """
         Get 'NewPrint' (Latest Truth Tick).
-        
-        Logic:
-        1. Find the most recent Truth Tick (based on timestamp).
-        2. It MUST be a valid Truth Tick (filtered by TruthTicksEngine).
-        3. It defines the 'Latest' state, potentially different from Son5Tick (Mode).
         """
-        if not ticks:
+        if not ticks or not isinstance(ticks, list):
             return None
         
+        # Ticks from 'path_dataset' are ALREADY truth filtered!
         # Sort by timestamp descending (Latest first)
         sorted_ticks = sorted(
             ticks,
-            key=lambda t: t.get('ts', t.get('timestamp', 0)),
+            key=lambda t: t.get('ts', 0),
             reverse=True
         )
         
-        for tick in sorted_ticks:
-            price = tick.get('price', 0)
-            if price > 0:
-                # Return the very first (latest) valid truth tick price
-                # We do NOT require it to be different from son5_tick to report it found.
-                # However, for 'analysis divergence', the engine checks difference.
-                # Here we just return the "Latest Truth Tick".
-                return price
+        if sorted_ticks and sorted_ticks[0].get('price', 0) > 0:
+            return sorted_ticks[0]['price']
         
         return None
     
@@ -382,26 +379,34 @@ class GreatestMMWorker:
             }
         }
     
+    def _json_sanitize(self, obj: Any) -> Any:
+        """Recursively convert datetime/date to ISO strings so json.dumps works."""
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        if isinstance(obj, dict):
+            return {k: self._json_sanitize(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [self._json_sanitize(v) for v in obj]
+        return obj
+
     def publish_to_redis(self, data: Dict[str, Any]):
         """Publish results and signals to Redis"""
         try:
+            sanitized = self._json_sanitize(data)
             # Main results
             self.redis_client.setex(
                 RESULT_KEY,
                 3600,  # 1 hour TTL
-                json.dumps(data)
+                json.dumps(sanitized)
             )
-            
             # Signals (for other terminals)
-            if data.get('signals'):
+            if sanitized.get('signals'):
                 self.redis_client.setex(
                     SIGNAL_KEY,
                     600,  # 10 minutes TTL
-                    json.dumps(data['signals'])
+                    json.dumps(sanitized['signals'])
                 )
-            
             logger.info(f"✅ [{self.worker_name}] Published to Redis: {RESULT_KEY}")
-            
         except Exception as e:
             logger.error(f"❌ [{self.worker_name}] Redis publish failed: {e}")
     

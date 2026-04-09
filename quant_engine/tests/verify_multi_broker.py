@@ -38,7 +38,7 @@ class TestMultiBroker(unittest.TestCase):
         # Reset Context
         self.context.set_trading_mode(TradingAccountMode.HAMPRO)
         self.context.set_hammer_connected(True)
-        self.context.set_ibkr_paper_connected(True) # Mock connection
+        self.context.set_ibkr_ped_connected(True) # Mock connection
         
     def test_safe_mode_switching(self):
         print("\n=== TEST: Safe Mode Switching ===")

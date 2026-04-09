@@ -1,0 +1,569 @@
+/* ADDNEWPOS Settings Panel - Per-Tab Settings Support */
+
+.addnewpos-settings-panel {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  margin: 4px 8px;
+  overflow: hidden;
+}
+
+.addnewpos-settings-panel.collapsed {
+  margin-bottom: 2px;
+}
+
+.addnewpos-settings-panel .panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
+  cursor: pointer;
+  user-select: none;
+}
+
+.addnewpos-settings-panel .panel-header:hover {
+  background: linear-gradient(135deg, #1a4a7a 0%, #1a1a2e 100%);
+}
+
+.addnewpos-settings-panel .panel-header h3 {
+  margin: 0;
+  font-size: 11px;
+  color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.addnewpos-settings-panel .collapse-icon {
+  font-size: 8px;
+  color: #a0aec0;
+}
+
+.addnewpos-settings-panel .panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.addnewpos-settings-panel .save-btn {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 10px;
+}
+
+.addnewpos-settings-panel .save-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+}
+
+.addnewpos-settings-panel .save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.addnewpos-settings-panel .success-msg {
+  color: #68d391;
+  font-size: 10px;
+}
+
+.addnewpos-settings-panel .error-msg {
+  color: #fc8181;
+  font-size: 10px;
+}
+
+.addnewpos-settings-panel .panel-content {
+  padding: 8px 12px;
+  min-height: 120px;
+  background: linear-gradient(180deg, rgba(15, 52, 96, 0.2) 0%, rgba(26, 26, 46, 0.3) 100%);
+}
+
+/* Settings Rows */
+.addnewpos-settings-panel .settings-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.addnewpos-settings-panel .settings-row.compact-row {
+  margin-bottom: 8px;
+}
+
+.addnewpos-settings-panel .settings-row.compact-row:last-child {
+  margin-bottom: 0;
+}
+
+/* Row Labels - GLOBAL / TAB */
+.addnewpos-settings-panel .global-label,
+.addnewpos-settings-panel .tab-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 3px;
+  min-width: 55px;
+  text-align: center;
+}
+
+.addnewpos-settings-panel .global-label {
+  background: #553c9a;
+  color: #d6bcfa;
+}
+
+.addnewpos-settings-panel .tab-label {
+  background: #0ea5e9;
+  color: white;
+}
+
+/* Tab Settings Row - highlighted */
+.addnewpos-settings-panel .tab-settings-row {
+  background: rgba(14, 165, 233, 0.1);
+  padding: 8px 12px;
+  margin: 0 -12px;
+  margin-bottom: 0 !important;
+  border-radius: 0 0 4px 4px;
+}
+
+.addnewpos-settings-panel .setting-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.addnewpos-settings-panel .setting-group>label {
+  color: #a0aec0;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Vertical Divider */
+.addnewpos-settings-panel .v-divider {
+  width: 1px;
+  height: 24px;
+  background: #4a5568;
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+/* Mode Radio Group */
+.addnewpos-settings-panel .radio-group {
+  display: flex;
+  gap: 4px;
+}
+
+.addnewpos-settings-panel .radio-group label {
+  display: flex;
+  align-items: center;
+  color: #e0e0e0;
+  font-size: 10px;
+  padding: 4px 10px;
+  background: #2d3748;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.addnewpos-settings-panel .radio-group label.active {
+  background: #0ea5e9;
+  color: white;
+}
+
+.addnewpos-settings-panel .radio-group label:hover:not(.active) {
+  background: #4a5568;
+}
+
+.addnewpos-settings-panel .radio-group input[type="radio"] {
+  display: none;
+}
+
+/* Enabled Checkbox */
+.addnewpos-settings-panel .enabled-group label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #e0e0e0;
+  font-size: 10px;
+  cursor: pointer;
+  padding: 4px 8px;
+  background: #2d3748;
+  border-radius: 3px;
+}
+
+.addnewpos-settings-panel .enabled-group input[type="checkbox"] {
+  width: 12px;
+  height: 12px;
+  accent-color: #22c55e;
+}
+
+/* Inline Filter Group */
+.addnewpos-settings-panel .filter-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.addnewpos-settings-panel .filter-inline>label {
+  color: #a0aec0;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.addnewpos-settings-panel .filter-inline input[type="number"] {
+  width: 55px;
+  padding: 4px 6px;
+  border: 1px solid #4a5568;
+  background: #1a1f2e;
+  color: #e0e0e0;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.addnewpos-settings-panel .filter-inline input[type="number"]:focus {
+  outline: none;
+  border-color: #0ea5e9;
+}
+
+.addnewpos-settings-panel .filter-inline>span {
+  color: #718096;
+  font-size: 10px;
+}
+
+/* Mini Radio for direction */
+.addnewpos-settings-panel .mini-radio {
+  display: flex;
+  gap: 2px;
+}
+
+.addnewpos-settings-panel .mini-radio label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a0aec0;
+  font-size: 11px;
+  padding: 3px 8px;
+  background: #2d3748;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 20px;
+}
+
+.addnewpos-settings-panel .mini-radio label.active {
+  background: #0ea5e9;
+  color: white;
+}
+
+.addnewpos-settings-panel .mini-radio input[type="radio"] {
+  display: none;
+}
+
+/* Clear Filters Button */
+.addnewpos-settings-panel .clear-filters-btn {
+  background: #742a2a;
+  color: #fc8181;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: bold;
+  margin-left: auto;
+}
+
+.addnewpos-settings-panel .clear-filters-btn:hover {
+  background: #991b1b;
+}
+
+/* Ratio Slider */
+.addnewpos-settings-panel .ratio-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.addnewpos-settings-panel .ratio-group>label {
+  color: #a0aec0;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.addnewpos-settings-panel .ratio-label {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 6px;
+  border-radius: 3px;
+  min-width: 35px;
+  text-align: center;
+}
+
+.addnewpos-settings-panel .ratio-label.long {
+  background: #22543d;
+  color: #68d391;
+}
+
+.addnewpos-settings-panel .ratio-label.short {
+  background: #742a2a;
+  color: #fc8181;
+}
+
+.addnewpos-settings-panel .ratio-slider {
+  width: 100px;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: linear-gradient(90deg, #22c55e 0%, #ef4444 100%);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.addnewpos-settings-panel .ratio-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* JFIN Buttons */
+.addnewpos-settings-panel .jfin-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.addnewpos-settings-panel .jfin-group>label {
+  color: #a0aec0;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.addnewpos-settings-panel .jfin-buttons {
+  display: flex;
+  gap: 3px;
+}
+
+.addnewpos-settings-panel .jfin-buttons button {
+  padding: 4px 10px;
+  border: 1px solid #4a5568;
+  background: #2d3748;
+  color: #e0e0e0;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+
+.addnewpos-settings-panel .jfin-buttons button.active {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  color: white;
+}
+
+.addnewpos-settings-panel .jfin-buttons button:hover:not(.active) {
+  background: #4a5568;
+}
+
+/* Tab Buttons - Prominent */
+.addnewpos-settings-panel .tab-group {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.addnewpos-settings-panel .tab-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.addnewpos-settings-panel .tab-btn {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+
+.addnewpos-settings-panel .tab-btn.bb {
+  background: #22543d;
+  color: #68d391;
+}
+
+.addnewpos-settings-panel .tab-btn.fb {
+  background: #1e3a5f;
+  color: #63b3ed;
+}
+
+.addnewpos-settings-panel .tab-btn.sas {
+  background: #742a2a;
+  color: #fc8181;
+}
+
+.addnewpos-settings-panel .tab-btn.sfs {
+  background: #553c9a;
+  color: #d6bcfa;
+}
+
+.addnewpos-settings-panel .tab-btn.active {
+  box-shadow: 0 0 0 2px white;
+  transform: scale(1.05);
+}
+
+/* Loading */
+.addnewpos-settings-panel.loading {
+  padding: 10px;
+  text-align: center;
+}
+
+.addnewpos-settings-panel .loading-spinner {
+  color: #a0aec0;
+  font-size: 10px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Account Selector
+   ═══════════════════════════════════════════════════════════════ */
+.addnewpos-settings-panel .account-row {
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(74, 85, 104, 0.4);
+}
+
+.addnewpos-settings-panel .account-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.addnewpos-settings-panel .account-btn {
+  padding: 4px 14px;
+  border: 1px solid #4a5568;
+  background: #2d3748;
+  color: #a0aec0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+
+.addnewpos-settings-panel .account-btn:hover:not(.active) {
+  background: #4a5568;
+  color: #e0e0e0;
+}
+
+.addnewpos-settings-panel .account-btn.active {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border-color: #6366f1;
+  color: white;
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
+}
+
+/* Account Badge in Header */
+.addnewpos-settings-panel .account-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  letter-spacing: 0.5px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Auto-Save Indicator
+   ═══════════════════════════════════════════════════════════════ */
+.addnewpos-settings-panel .autosave-indicator {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.addnewpos-settings-panel .autosave-indicator.saving {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.15);
+  animation: pulse-save 1s infinite;
+}
+
+.addnewpos-settings-panel .autosave-indicator.saved {
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.15);
+  animation: fadeInOut 1.5s ease-out;
+}
+
+.addnewpos-settings-panel .autosave-indicator.error {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.15);
+}
+
+@keyframes pulse-save {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+
+  20% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Reset to Default Button
+   ═══════════════════════════════════════════════════════════════ */
+.addnewpos-settings-panel .reset-btn {
+  background: #374151;
+  color: #d1d5db;
+  border: 1px solid #4b5563;
+  padding: 4px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 10px;
+  transition: all 0.2s ease;
+}
+
+.addnewpos-settings-panel .reset-btn:hover {
+  background: #4b5563;
+  color: #f3f4f6;
+  border-color: #6b7280;
+}

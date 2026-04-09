@@ -8,29 +8,77 @@ function TradingAccountSelector({ onModeChange }) {
   const [hammerConnected, setHammerConnected] = useState(false)
   const [loading, setLoading] = useState(false)
   const [connectionError, setConnectionError] = useState(null)
+  const [dualProcessState, setDualProcessState] = useState({ state: 'STOPPED', current_account: null })
 
-  // Load account mode on mount
+  // Map backend account id to frontend selector mode (dual process uses HAMPRO, frontend uses HAMMER_PRO)
+  const backendToFrontendMode = (backend) => {
+    if (!backend) return null
+    const u = (backend || '').toUpperCase()
+    if (u === 'HAMPRO') return 'HAMMER_PRO'
+    if (u === 'IBKR_PED' || u === 'IBKR_GUN') return u
+    return backend
+  }
+
+  // Load account mode on mount; when dual process is RUNNING, sync UI to current_account so positions/orders match
   useEffect(() => {
     fetchAccountMode()
-    // Poll connection status every 5 seconds
     const interval = setInterval(fetchAccountMode, 5000)
     return () => clearInterval(interval)
   }, [])
 
+  // Poll dual-process state more frequently when running so UI follows account switch (no stuck / wrong data)
+  useEffect(() => {
+    let interval
+    const poll = async () => {
+      try {
+        const res = await fetch('/api/xnl/dual-process/state')
+        const data = await res.json()
+        if (data && data.state) {
+          setDualProcessState(prev => ({
+            ...prev,
+            state: data.state || 'STOPPED',
+            current_account: data.current_account ?? null
+          }))
+          if (data.state === 'RUNNING' && data.current_account) {
+            const effectiveMode = backendToFrontendMode(data.current_account)
+            if (effectiveMode) {
+              setAccountMode(effectiveMode)
+              if (onModeChange) onModeChange(effectiveMode)
+            }
+          }
+        }
+      } catch (e) {
+        console.debug('Dual process state poll:', e)
+      }
+    }
+    poll()
+    interval = setInterval(poll, 2000)
+    return () => clearInterval(interval)
+  }, [onModeChange])
+
   const fetchAccountMode = async () => {
     try {
-      const response = await fetch('/api/psfalgo/account/mode')
-      const result = await response.json()
+      const [modeRes, dualRes] = await Promise.all([
+        fetch('/api/psfalgo/account/mode'),
+        fetch('/api/xnl/dual-process/state')
+      ])
+      const result = await modeRes.json()
+      let dual = { state: 'STOPPED', current_account: null }
+      try {
+        dual = await dualRes.json()
+      } catch (_) {}
 
       if (result.success) {
-        setAccountMode(result.mode)
+        const isDualRunning = dual.state === 'RUNNING' || dual.state === 'STOPPING'
+        const effectiveMode = isDualRunning && dual.current_account
+          ? backendToFrontendMode(dual.current_account)
+          : result.mode
+        setDualProcessState(prev => ({ ...prev, state: dual.state || prev.state, current_account: dual.current_account ?? prev.current_account }))
+        setAccountMode(effectiveMode)
+        if (onModeChange) onModeChange(effectiveMode)
         setIbkrGunConnected(result.ibkr_gun_connected || false)
         setIbkrPedConnected(result.ibkr_ped_connected || false)
         setConnectionError(null)
-
-        if (onModeChange) {
-          onModeChange(result.mode)
-        }
       }
 
       // Also fetch Hammer status
@@ -98,9 +146,20 @@ function TradingAccountSelector({ onModeChange }) {
         // Show connection error if any
         if (result.connection_error) {
           setConnectionError(result.connection_error)
-          alert(`IBKR connection failed: ${result.connection_error}\n\nMake sure IBKR Gateway/TWS is running and API is enabled.`)
+          const err = (result.connection_error || '').toLowerCase()
+          const isLibraryMissing = err.includes('ib_insync') || err.includes('ib_async') || err.includes('missing')
+          const isTimeout = err.includes('timeout') || err.includes('connect timeout')
+          let hint = ''
+          if (isLibraryMissing) {
+            hint = 'IBKR bağlantısı için Python paketi gerekiyor. Backend çalıştığınız ortamda: pip install ib_insync'
+          } else if (isTimeout) {
+            hint = 'Bağlantı timeout (3 saniye). IBKR Gateway/TWS çalışıyor ve API açık mı kontrol edin.\n\n• IBKR Gateway/TWS başlatıldı mı?\n• API Settings → "Enable ActiveX and Socket Clients" açık mı?\n• Port 4001 (Gateway) veya 7497 (TWS) açık mı?'
+          } else {
+            hint = 'IBKR Gateway/TWS çalışıyor ve API açık mı kontrol edin.'
+          }
+          alert(`IBKR bağlantı hatası: ${result.connection_error}\n\n${hint}`)
         } else if (result.new_mode !== 'HAMMER_PRO' && !result.connected) {
-          setConnectionError('Connection failed. Check IBKR Gateway/TWS.')
+          setConnectionError('Bağlantı kurulamadı. IBKR Gateway/TWS ve API’yi kontrol edin.')
         }
 
         if (onModeChange) {
@@ -304,6 +363,11 @@ function TradingAccountSelector({ onModeChange }) {
         {isModeActive('IBKR_PED') && (
           <span className="active-indicator ibkr-active">
             Active: IBKR PED {isModeConnected('IBKR_PED') ? '✓' : '⚠️'}
+          </span>
+        )}
+        {dualProcessState.state === 'RUNNING' && (
+          <span className="active-indicator dual-process-indicator" title="Dual Process: UI follows current account">
+            Dual: {dualProcessState.current_account || '—'}
           </span>
         )}
       </div>

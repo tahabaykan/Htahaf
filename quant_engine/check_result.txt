@@ -1,0 +1,188 @@
+﻿TODAY = 2026-02-16
+
+============================================================
+  CMSA
+============================================================
+  Detected dates (12):
+    2022-05-13  conf=MEDIUM
+    2022-08-10  conf=LOW
+    2022-11-14  conf=HIGH
+    2023-02-10  conf=LOW
+    2024-02-15  conf=MEDIUM
+    2024-05-17  conf=MEDIUM
+    2024-08-15  conf=LOW
+    2024-11-11  conf=HIGH
+    2025-02-12  conf=HIGH
+    2025-05-16  conf=MEDIUM
+    2025-08-12  conf=MEDIUM
+    2025-11-18  conf=MEDIUM
+  Pipeline: n_exdivs=9  avg_period=?
+  best_long: entry=-3  exit=3  name=QUICK_FLIP
+  Last ex-div: 2025-11-18
+  All ex-div dates:
+    2022-05-13
+    2022-08-10  (gap: 89 days)
+    2022-11-14  (gap: 96 days)
+    2023-02-10  (gap: 88 days)
+    2024-02-15  (gap: 370 days)
+    2024-05-17  (gap: 92 days)
+    2024-08-15  (gap: 90 days)
+    2024-11-11  (gap: 88 days)
+    2025-02-12  (gap: 93 days)
+    2025-05-16  (gap: 93 days)
+    2025-08-12  (gap: 88 days)
+    2025-11-18  (gap: 98 days)
+  Intervals: [89, 96, 88, 370, 92, 90, 88, 93, 93, 88, 98]
+  Avg interval: 117 days
+  >> CURRENT projection (3mo): 2026-02-18  (2d away)
+  >> BETTER projection (avg): 2026-03-14  (26d away)
+
+============================================================
+  ONBPO
+============================================================
+  Detected dates (12):
+    2022-05-10  conf=MEDIUM
+    2022-08-17  conf=HIGH
+    2022-11-17  conf=HIGH
+    2023-02-15  conf=HIGH
+    2024-02-16  conf=HIGH
+    2024-05-17  conf=NONE
+    2024-08-12  conf=HIGH
+    2024-11-20  conf=HIGH
+    2025-02-13  conf=MEDIUM
+    2025-05-13  conf=MEDIUM
+    2025-08-12  conf=HIGH
+    2025-11-19  conf=MEDIUM
+  Pipeline: n_exdivs=11  avg_period=?
+  best_long: entry=-3  exit=3  name=QUICK_FLIP
+  Last ex-div: 2025-11-19
+  All ex-div dates:
+    2022-05-10
+    2022-08-17  (gap: 99 days)
+    2022-11-17  (gap: 92 days)
+    2023-02-15  (gap: 90 days)
+    2024-02-16  (gap: 366 days)
+    2024-08-12  (gap: 178 days)
+    2024-11-20  (gap: 100 days)
+    2025-02-13  (gap: 85 days)
+    2025-05-13  (gap: 89 days)
+    2025-08-12  (gap: 91 days)
+    2025-11-19  (gap: 99 days)
+  Intervals: [99, 92, 90, 366, 178, 100, 85, 89, 91, 99]
+  Avg interval: 129 days
+  >> CURRENT projection (3mo): 2026-02-19  (3d away)
+  >> BETTER projection (avg): 2026-03-27  (39d away)
+
+============================================================
+  COF PRI
+============================================================
+  Detected dates (12):
+    2022-05-16  conf=HIGH
+    2022-08-16  conf=HIGH
+    2022-11-15  conf=HIGH
+    2023-02-13  conf=HIGH
+    2024-02-14  conf=HIGH
+    2024-05-16  conf=HIGH
+    2024-08-19  conf=HIGH
+    2024-11-14  conf=HIGH
+    2025-02-18  conf=HIGH
+    2025-05-19  conf=MEDIUM
+    2025-08-15  conf=HIGH
+    2025-11-17  conf=HIGH
+  Pipeline: n_exdivs=12  avg_period=?
+  best_long: entry=-20  exit=0  name=OPTIMAL_LONG
+  Last ex-div: 2025-11-17
+  All ex-div dates:
+    2022-05-16
+    2022-08-16  (gap: 92 days)
+    2022-11-15  (gap: 91 days)
+    2023-02-13  (gap: 90 days)
+    2024-02-14  (gap: 366 days)
+    2024-05-16  (gap: 92 days)
+    2024-08-19  (gap: 95 days)
+    2024-11-14  (gap: 87 days)
+    2025-02-18  (gap: 96 days)
+    2025-05-19  (gap: 90 days)
+    2025-08-15  (gap: 88 days)
+    2025-11-17  (gap: 94 days)
+  Intervals: [92, 91, 90, 366, 92, 95, 87, 96, 90, 88, 94]
+  Avg interval: 116 days
+  >> CURRENT projection (3mo): 2026-02-17  (1d away)
+  >> BETTER projection (avg): 2026-03-13  (25d away)
+
+============================================================
+  COF PRN
+============================================================
+  Detected dates (12):
+    2022-05-16  conf=HIGH
+    2022-08-16  conf=HIGH
+    2022-11-15  conf=HIGH
+    2023-02-13  conf=HIGH
+    2024-02-14  conf=HIGH
+    2024-05-16  conf=HIGH
+    2024-08-19  conf=HIGH
+    2024-11-14  conf=HIGH
+    2025-02-18  conf=HIGH
+    2025-05-20  conf=MEDIUM
+    2025-08-15  conf=HIGH
+    2025-11-17  conf=HIGH
+  Pipeline: n_exdivs=12  avg_period=?
+  best_long: entry=-10  exit=10  name=OPTIMAL_LONG
+  Last ex-div: 2025-11-17
+  All ex-div dates:
+    2022-05-16
+    2022-08-16  (gap: 92 days)
+    2022-11-15  (gap: 91 days)
+    2023-02-13  (gap: 90 days)
+    2024-02-14  (gap: 366 days)
+    2024-05-16  (gap: 92 days)
+    2024-08-19  (gap: 95 days)
+    2024-11-14  (gap: 87 days)
+    2025-02-18  (gap: 96 days)
+    2025-05-20  (gap: 91 days)
+    2025-08-15  (gap: 87 days)
+    2025-11-17  (gap: 94 days)
+  Intervals: [92, 91, 90, 366, 92, 95, 87, 96, 91, 87, 94]
+  Avg interval: 116 days
+  >> CURRENT projection (3mo): 2026-02-17  (1d away)
+  >> BETTER projection (avg): 2026-03-13  (25d away)
+
+============================================================
+  STT PRG
+============================================================
+  Detected dates (12):
+    2022-05-13  conf=MEDIUM
+    2022-08-17  conf=HIGH
+    2022-11-16  conf=MEDIUM
+    2023-02-16  conf=MEDIUM
+    2024-02-13  conf=MEDIUM
+    2024-05-20  conf=MEDIUM
+    2024-08-15  conf=LOW
+    2024-11-15  conf=MEDIUM
+    2025-02-12  conf=HIGH
+    2025-05-14  conf=LOW
+    2025-08-14  conf=LOW
+    2025-11-17  conf=MEDIUM
+  Pipeline: n_exdivs=9  avg_period=?
+  best_long: entry=-2  exit=2  name=DIV_HOLD
+  Last ex-div: 2025-11-17
+  All ex-div dates:
+    2022-05-13
+    2022-08-17  (gap: 96 days)
+    2022-11-16  (gap: 91 days)
+    2023-02-16  (gap: 92 days)
+    2024-02-13  (gap: 362 days)
+    2024-05-20  (gap: 97 days)
+    2024-08-15  (gap: 87 days)
+    2024-11-15  (gap: 92 days)
+    2025-02-12  (gap: 89 days)
+    2025-05-14  (gap: 91 days)
+    2025-08-14  (gap: 92 days)
+    2025-11-17  (gap: 95 days)
+  Intervals: [96, 91, 92, 362, 97, 87, 92, 89, 91, 92, 95]
+  Avg interval: 117 days
+  >> CURRENT projection (3mo): 2026-02-17  (1d away)
+  >> BETTER projection (avg): 2026-03-13  (25d away)
+
+
+DONE

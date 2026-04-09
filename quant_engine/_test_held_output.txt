@@ -1,0 +1,30 @@
+Summary: 418 hisse
+Base exdiv: 447 ticker
+Held tickers: 319 ticker
+
+=== 50L/50S, Held=50% ===
+  Long adaylar: 205
+  Short adaylar: 176
+  Selected Long: 16
+    - HELD:     8
+    - NOT-HELD: 8
+  Selected Short: 16
+    - HELD:     8
+    - NOT-HELD: 8
+
+  Held longs actually in ekheld CSVs: True
+  NotHeld longs actually NOT in ekheld CSVs: True
+
+=== 50L/50S, Held=80% ===
+  Selected Long: 16
+    - HELD:     13
+    - NOT-HELD: 3
+  Selected Short: 16
+    - HELD:     13
+    - NOT-HELD: 3
+
+  Sample HELD Long tickers: ['KKRT', 'RF PRF', 'ATHS', 'MBINL', 'SEAL PRA']
+  Sample NOT-HELD Long tickers: ['RWT PRA', 'TRINI', 'PMTV', 'GECCI', 'GDV PRH']
+  KKRT: is_held=True -> in held_tickers: True
+  RF PRF: is_held=True -> in held_tickers: True
+  ATHS: is_held=True -> in held_tickers: True

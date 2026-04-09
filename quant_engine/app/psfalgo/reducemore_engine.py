@@ -59,6 +59,7 @@ class ReducemoreEngine:
     
     def __init__(self, config_manager=None):
         self.config_manager = config_manager
+        self.last_diagnostic = None  # Store last cycle diagnostic for API access
         
     async def run(
         self, 
@@ -71,6 +72,21 @@ class ReducemoreEngine:
         start_time = datetime.now()
         output = ReducemoreOutput()
         
+        # Diagnostic tracking
+        diagnostic = {
+            'exposure_ratio': 0.0,
+            'exposure_pot_total': 0.0,
+            'exposure_pot_max': 0.0,
+            'regime': 'UNKNOWN',
+            'base_multiplier': 1.0,
+            'positions_analyzed': 0,
+            'intent_generated': 0,
+            'mode': request.exposure.mode if request.exposure else 'N/A',
+            'threshold': rules.get('reducemore', {}).get('eligibility', {}).get('exposure_ratio_threshold', 0.8),
+            'triggered': False,
+            'trigger_reason': []
+        }
+        
         try:
             # 1. Exposure Check -> Global Regime & Multiplier Base
             exposure = request.exposure
@@ -81,21 +97,41 @@ class ReducemoreEngine:
                 # Basic Logic: If exposure > 80%, defensive.
                 ratio = exposure.pot_total / exposure.pot_max if exposure.pot_max > 0 else 0
                 
+                diagnostic['exposure_ratio'] = ratio
+                diagnostic['exposure_pot_total'] = exposure.pot_total
+                diagnostic['exposure_pot_max'] = exposure.pot_max
+                
                 # Load thresholds from rules
                 eligibility = rules.get('reducemore', {}).get('eligibility', {})
                 threshold = eligibility.get('exposure_ratio_threshold', 0.8)
+                diagnostic['threshold'] = threshold
                 
                 if ratio >= threshold:
                     regime = "DEFENSIVE"
-                    base_multiplier = 1.5 # Start scaling up
+                    base_multiplier = 1.5  # Start scaling up
+                    diagnostic['triggered'] = True
+                    diagnostic['trigger_reason'].append(f"Exposure ratio {ratio:.2%} >= threshold {threshold:.2%}")
                 
                 # Check Mode (GECIS / DEFANSIF)
                 if exposure.mode in ['DEFANSIF', 'GECIS']:
-                    regime = "AGGRESSIVE" # Or "DEFENSIVE" depending on definition
+                    regime = "AGGRESSIVE"  # Or "DEFENSIVE" depending on definition
                     base_multiplier = max(base_multiplier, 1.5)
+                    diagnostic['triggered'] = True
+                    diagnostic['trigger_reason'].append(f"Mode is {exposure.mode}")
+                
+                diagnostic['regime'] = regime
+                diagnostic['base_multiplier'] = base_multiplier
 
             # 2. Per-Symbol Analysis
             for pos in request.positions:
+                # MM Position Filter - LT engines should NOT process MM positions
+                pos_tag = getattr(pos, 'tag', '') or ''
+                if 'MM' in pos_tag.upper():
+                    logger.debug(f"[REDUCEMORE] Skipping MM position: {pos.symbol} (tag={pos_tag})")
+                    continue
+                    
+                diagnostic['positions_analyzed'] += 1
+                
                 # Generate Multiplier
                 # We can refine multiplier based on symbol metrics too (e.g. illiquid gets higher multiplier)
                 mult_val = base_multiplier
@@ -117,9 +153,38 @@ class ReducemoreEngine:
                 if regime == "AGGRESSIVE" and mult_val >= 2.0:
                     # Logic to determine if we should FORCE dump
                     # Placeholder for Phase 11 basic impl
-                    pass 
+                    pass
 
+            diagnostic['intent_generated'] = len(output.intents)
             output.execution_time_ms = (datetime.now() - start_time).total_seconds() * 1000
+            
+            # Log comprehensive diagnostic summary
+            logger.info("=" * 80)
+            logger.info("[REDUCEMORE DIAGNOSTIC] Cycle Summary:")
+            logger.info(f"  Exposure: {diagnostic['exposure_ratio']:.2%} ({diagnostic['exposure_pot_total']:.0f}/{diagnostic['exposure_pot_max']:.0f})")
+            logger.info(f"  Threshold: {diagnostic['threshold']:.2%}")
+            logger.info(f"  Regime: {diagnostic['regime']}, Multiplier: {diagnostic['base_multiplier']}")
+            logger.info(f"  Mode: {diagnostic['mode']}")
+            logger.info(f"  Triggered: {diagnostic['triggered']}")
+            if diagnostic['trigger_reason']:
+                for reason in diagnostic['trigger_reason']:
+                    logger.info(f"    - {reason}")
+            logger.info(f"  Positions Analyzed: {diagnostic['positions_analyzed']}")
+            logger.info(f"  Intents Generated: {diagnostic['intent_generated']}")
+            
+            if diagnostic['intent_generated'] == 0:
+                if not diagnostic['triggered']:
+                    logger.warning(f"[REDUCEMORE] ⚠️ NO INTENTS - Exposure below threshold ({diagnostic['exposure_ratio']:.2%} < {diagnostic['threshold']:.2%})")
+                else:
+                    logger.warning(f"[REDUCEMORE] ⚠️ NO INTENTS - Regime {diagnostic['regime']} but no emergency conditions met")
+            else:
+                logger.info(f"[REDUCEMORE] ✅ Generated {diagnostic['intent_generated']} intents")
+            logger.info("=" * 80)
+            
+            # Store diagnostic for API access
+            output.diagnostic = diagnostic
+            self.last_diagnostic = diagnostic
+            
             return output
 
         except Exception as e:

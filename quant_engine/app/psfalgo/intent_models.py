@@ -58,6 +58,10 @@ class Intent(BaseModel):
     price: Optional[float] = Field(None, description="Limit price (if limit order)")
     order_type: OrderType = Field(OrderType.LIMIT, description="Order type")
     
+    # Priority & categorization (Added for RunallEngine compatibility Phase 11)
+    priority: int = Field(20, description="Execution priority (High=40, Low=10)")
+    intent_category: str = Field("GENERAL", description="Intent category (e.g. KARBOTU_MACRO)")
+    
     # Reasoning
     reason_code: str = Field(..., description="Reason code (e.g., 'KARBOTU_TAKE_PROFIT', 'ADDNEWPOS_BUY')")
     reason_text: str = Field(..., description="Human-readable reason")

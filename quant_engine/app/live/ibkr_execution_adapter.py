@@ -1,6 +1,13 @@
 """app/live/ibkr_execution_adapter.py
 
-IBKR Execution Adapter.
+⚠️ DEPRECATED — NOT IMPORTED BY ANY MODULE ⚠️
+
+Superseded by: app.psfalgo.ibkr_connector.IBKRConnector
+which provides account-aware connections, event loop isolation,
+orderRef tagging, and Redis auto-push.
+
+This adapter used the old IBKRClient (app/ibkr/ibkr_client.py).
+Both are deprecated. TODO: Delete this file.
 
 Handles order execution via IBKR Gateway/TWS.
 Market data is NOT used from IBKR - always from Hammer.

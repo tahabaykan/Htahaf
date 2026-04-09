@@ -1,0 +1,15 @@
+Symbol,Group,Round_Lots_Count,Execution_Mode,Profit_Target,Strategy_Desc,Trend_Status,Mid_Point_Action,Gem_Davg,Size_Adjustment,Group_Vol_Alert,Avg_Inter_Arrival_Sec,Persistence_Risk_Score,OFI_Score,Optimal_Spread,PM_Transition_Plan,ADV
+AEFC,heldkuponlu:c500,34,SHADOW,0.05,"Front-run inside spread, fast churn.",RANGE,NONE,0.108,NEUTRAL,False,134.0,0.04,-0.09,0.05,NORMAL,38346.0
+ALL PRH,heldkuponlu:c500,125,SHADOW,0.05,"Front-run inside spread, fast churn.",RANGE,NONE,0.051,NEUTRAL,False,167.0,0.05,0.03,0.05,NORMAL,79435.0
+AFGC,heldkuponlu:c500,73,NORMAL,0.10,Balanced approach.,RANGE,NONE,-0.06,NEUTRAL,False,2070.0,0.57,-0.76,0.05,NORMAL,9631.0
+T PRA,heldkuponlu:c500,102,SHADOW,0.05,"Front-run inside spread, fast churn.",RANGE,NONE,0.015,NEUTRAL,False,309.0,0.09,-0.25,0.05,NORMAL,115155.0
+BAC PRN,heldkuponlu:c500,120,SHADOW,0.05,"Front-run inside spread, fast churn.",RANGE,NONE,-0.045,NEUTRAL,False,177.0,0.05,0.59,0.05,NORMAL,111008.0
+COF PRI,heldkuponlu:c500,116,SHADOW,0.05,"Front-run inside spread, fast churn.",RANGE,NONE,0.005,NEUTRAL,False,222.0,0.06,-0.02,0.05,NORMAL,111608.0
+CNO PRA,heldkuponlu:c500,4,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | DETECTED MID-POINT ACTION -> FRONT RUN EXIT!,RANGE,FRONT_RUN_EXIT,0.01,NEUTRAL,False,4107.0,1.0,1.0,0.2,STRICT_3H_EXIT,1018.0
+FRT PRC,heldkuponlu:c500,28,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents.,RANGE,NONE,-0.031,NEUTRAL,False,4339.0,1.0,0.24,0.2,STRICT_3H_EXIT,10013.0
+GPJA,heldkuponlu:c500,89,NORMAL,0.10,Balanced approach.,RANGE,NONE,0.041,NEUTRAL,False,2306.0,0.64,0.09,0.05,NORMAL,15165.0
+KIM PRL,heldkuponlu:c500,52,NORMAL,0.10,Balanced approach.,RANGE,NONE,-0.075,NEUTRAL,False,2737.0,0.76,0.3,0.05,STRICT_3H_EXIT,8447.0
+PSA PRF,heldkuponlu:c500,41,NORMAL,0.10,Balanced approach.,RANGE,NONE,-0.008,NEUTRAL,False,3598.0,1.0,0.22,0.05,STRICT_3H_EXIT,14363.0
+PSA PRG,heldkuponlu:c500,85,NORMAL,0.10,Balanced approach.,RANGE,NONE,0.02,NEUTRAL,False,1822.0,0.51,-0.18,0.05,NORMAL,17477.0
+SOJD,heldkuponlu:c500,53,SHADOW,0.05,"Front-run inside spread, fast churn.",RANGE,NONE,0.029,NEUTRAL,False,459.0,0.13,0.52,0.05,NORMAL,96614.0
+WRB PRF,heldkuponlu:c500,47,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents.,RANGE,NONE,-0.107,NEUTRAL,False,3865.0,1.0,-0.1,0.2,STRICT_3H_EXIT,19832.0

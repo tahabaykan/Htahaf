@@ -1,0 +1,61 @@
+﻿================================================================================
+MEVCUT ANALIZ VERISI ù KAYITLI
+================================================================================
+Timestamp: 2026-02-16T19:20:56.111628
+Symbols analyzed: 405
+Groups: 19
+Elapsed: 303s
+Mode: backtest
+Lookback: 5 trading days
+Prompt size: 20432 chars
+Gemini: NO (rate limited)
+
+GROUP                     STOCKS  TICKS       DIRECTION         BUSIEST
+--------------------------------------------------------------------------------
+heldcilizyeniyedi              8    766  buyer_dominant     14:30-15:00
+heldcommonsuz                 16   1144 seller_dominant     15:30-16:00
+helddeznff                    28   2985  buyer_dominant     15:30-16:00
+heldff                        31   2406  buyer_dominant     15:00-15:30
+heldflr                       12   1342  buyer_dominant     15:30-16:00
+heldgarabetaltiyedi           15    921  buyer_dominant     14:30-15:00
+heldkuponlu                  100  10443  buyer_dominant     15:30-16:00
+heldkuponlukreciliz           12    595  buyer_dominant     15:30-16:00
+heldkuponlukreorta             9    805 seller_dominant     15:00-15:30
+heldnff                       17   1742  buyer_dominant     15:30-16:00
+heldotelremorta               21    823  buyer_dominant     15:00-15:30
+heldsolidbig                   6    876  buyer_dominant     14:30-15:00
+heldtitrekhc                  10    379 seller_dominant     15:00-15:30
+highmatur                     43   1779 seller_dominant     15:00-15:30
+notbesmaturlu                 12    233 seller_dominant     15:30-16:00
+notcefilliquid                23   1120        balanced     15:30-16:00
+nottitrekhc                   15    444 seller_dominant     15:00-15:30
+salakilliquid                 20    682  buyer_dominant     15:30-16:00
+shitremhc                      7    193  buyer_dominant     15:30-16:00
+--------------------------------------------------------------------------------
+TOTAL                        405  29678
+
+TOP 20 MOST INTERESTING (by interest_score):
+SYMBOL         GROUP                    INT    MM  TICKS  VOL/ADV   SPREAD    FBtot   SFStot    GORT
+----------------------------------------------------------------------------------------------------
+REXR PRB       notcefilliquid           6.4   2.6     90     146%    13.3  1235.07  1417.87     0.0
+MITT PRA       shitremhc                6.3   1.9     15      37%    18.5  1102.83  1469.53     0.0
+GOODO          salakilliquid            6.2   3.4     82      95%    11.4   993.61  1250.71     0.0
+PSEC PRA       heldcommonsuz            6.0   3.1     55      58%    24.8   973.34  1079.74     0.0
+CMRE PRD       nottitrekhc              5.6   0.7     16      51%    10.8   375.54  648.640     N/A
+NHPBP          salakilliquid            5.5   1.9     13      19%    18.4   874.22  1198.92     0.0
+DCOMG          helddeznff               5.5   2.1      5       7%    30.4    629.3  696.699     N/A
+ETI PR         notcefilliquid           5.4   2.4     22      95%    21.0  1072.33  1418.53     0.0
+OXLCI          highmatur                5.3   3.5     82     139%     2.8   974.92  1578.92     N/A
+SB PRD         nottitrekhc              5.3   3.5    152     233%     5.3   780.55  1017.45     N/A
+SAY            highmatur                5.0   3.5     83     165%     4.1  1054.54  1098.84     N/A
+CHMI PRB       nottitrekhc              5.0   1.1     28      49%     5.6  1124.68  1189.28     N/A
+DSX PRB        nottitrekhc              4.9   0.8     17      23%    14.3  1296.46  1795.46     N/A
+AMH PRG        heldgarabetaltiyedi      4.9   2.8     51      48%    13.9   1377.0   2358.4     0.0
+WBS PRG        heldgarabetaltiyedi      4.8   3.8    128     144%     3.5   928.61  1007.01     0.0
+BIPJ           heldcilizyeniyedi        4.7   3.2     74      29%    11.2  1315.18  1714.58     0.0
+GGT PRG        notcefilliquid           4.5   2.7      6      17%    41.2  1138.45  1327.85     0.0
+GMRE PRA       salakilliquid            4.5   3.0     58     118%     5.3  1121.37  1348.46     0.0
+LFT PRA        salakilliquid            4.4   3.4      7      20%    44.5  1172.54  1320.04     0.0
+CMRE PRB       nottitrekhc              4.3   3.2      5      46%    33.1   652.58  1654.98     N/A
+
+File size: 147 KB

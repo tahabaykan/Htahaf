@@ -1,0 +1,307 @@
+
+## TRUTH TICK 30-DAKİKALIK WİNDOW ANALİZİ — MEAN REVERSION & MARKET MAKING
+
+Sen QAGENTT'sin — Preferred Stock Learning Agent.
+Aşağıda son 5 **İŞ GÜNÜ** (trading days) truth tick verilerinin 30 dakikalık periyotlara bölünmüş analizi var.
+
+### 🎯 ANALİZ MODU: BACKTEST (Geriye Dönük)
+Geriye dönük analiz modu. Bid/ask verileri YOK — spread, printlerden tahmin ediliyor. 
+🎯 AMAÇ: Pattern'ı öğren, mantığı anla, kendini eğit. Her 30dk window'ı sadece o ana kadar görülebilir verilerle değerlendir (no look-ahead).
+
+### 🔑 SKORLAMA SİSTEMİ:
+- **FBtot (FINAL_THG)**: Uzun vadeli LONG uygunluk skoru. Yüksek = güçlü long adayı
+- **SFStot (SHORT_FINAL)**: Uzun vadeli SHORT uygunluk skoru. Yüksek = güçlü short adayı
+- **GORT**: Mean reversion pozisyonu. 0 = ortalamada, + = ortamanın üstü, - = altı
+- **GORT_NORM**: Normalize GORT (0-100, 50 = ortalama)
+
+### 🔑 TEMEL FELSEFEMİZ:
+Bu hisseler **MEAN REVERSION hisseleri**. Yakın vadede olmasa bile orta-uzun vadede kendi
+DOS grubundaki ortalamaya (GORT) geri dönerler. Bu varsayımla:
+- **Aşağı düştükçe yavaş yavaş mal ekliyoruz** (LT Portfolio — accumulation)
+- **Yukarı geldikçe short açıyoruz** (mean reversion short)
+- Her hisse kendi DOS grubu ile mean reversion içerisine girer diye varsayıyoruz
+- GORT (SMA246 chg) bu nedenle çok önemli — mean reversion anchor
+
+### 📊 SPREAD ↔ LİKİDİTE İLİŞKİSİ:
+- Bir hissede 0.30¢ spread ile işlem görürken, başka bir hissede 0.02¢ spread olabilir
+- Bu BÜYÜK OLASLIKLA **AVG_ADV (likidite)** ile ilgili
+- Spread'ler AVG_ADV'ye göre normalize edildi (spread_bps ve spread_adv_ratio olarak)
+- Düşük ADV → geniş spread → MM fırsatı AMA risk de yüksek
+- Yüksek ADV → dar spread → güvenli ama marj düşük
+
+### İKİ STRATEJİ:
+1. **LT Portfolio (Long-Term Mean Reversion):**
+   - Grup ortalamasının altında kalan hisseleri yavaş yavaş topla
+   - GORT'a (SMA246) göre ne kadar uzakta olduğunu ölç
+   - Exposure kontrolü — aşırı yüklenmeden, dollar cost averaging mantığı
+
+2. **Mini Market Making (Spread Capture):**
+   - Yeterli hacim olan hisselerde bid/ask spread'inden para kazan
+   - Likiditeye göre lot büyüklüğü ayarla (avg_adv / 100 gibi)
+   - İki yönlü akış olan saatleri hedefle
+   - Venue stratejisi: NYSE (lit orders) vs FNRA (dark pool) farkını kullan
+
+### Genel Bilgi:
+- Analiz edilen toplam hisse: 405
+- DOS grup sayısı: 19
+- Analiz zamanı: 2026-02-16T19:20:55.822413
+
+### DOS Grup Verisi:
+
+#### heldcilizyeniyedi
+  8/8 aktif, ticks=766, yön=buyer_dominant (6B / 0S), yoğun=14:30-15:00
+  BIPJ         int=4.7 mm=3.2 ticks=74 vol/ADV=29% sprd=11bps FBtot=1315.18 SFStot=1714.58 GORT=0.0 SMA63=-3.29 peak=15:00-15:30
+  CRBD         int=3.1 mm=3.8 ticks=171 vol/ADV=20% sprd=6bps FBtot=1229.7 SFStot=1274.4 GORT=0.0 SMA63=-0.92 peak=15:00-15:30
+  FGSN         int=2.8 mm=2.7 ticks=112 vol/ADV=17% sprd=10bps FBtot=1419.4 SFStot=1452.5 GORT=0.0 SMA63=-4.31 peak=14:30-15:00
+  AHL PRF      int=2.4 mm=0.9 ticks=21 vol/ADV=6% sprd=6bps FBtot=1125.32 SFStot=1204.4199999999998 GORT=0.0 SMA63=-3.69 peak=14:30-15:00
+  MGRE         int=2.0 mm=3.0 ticks=60 vol/ADV=11% sprd=9bps FBtot=1332.6 SFStot=1376.9 GORT=0.0 SMA63=-1.1 peak=15:30-16:00
+
+#### heldcommonsuz
+  16/16 aktif, ticks=1144, yön=seller_dominant (1B / 3S), yoğun=15:30-16:00
+  PSEC PRA     int=6.0 mm=3.1 ticks=55 vol/ADV=58% sprd=25bps FBtot=973.34 SFStot=1079.74 GORT=0.0 SMA63=3.61 peak=15:00-15:30
+  VNO PRL      int=3.0 mm=2.8 ticks=64 vol/ADV=23% sprd=6bps FBtot=1251.05 SFStot=1266.45 GORT=0.0 SMA63=-0.76 peak=15:30-16:00
+  AHL PRD      int=2.5 mm=2.7 ticks=60 vol/ADV=34% sprd=7bps FBtot=1390.51 SFStot=1445.61 GORT=0.0 SMA63=-1.9 peak=15:30-16:00
+  TDS PRV      int=2.0 mm=3.5 ticks=141 vol/ADV=22% sprd=4bps FBtot=1034.63 SFStot=1049.5300000000002 GORT=0.0 SMA63=1.95 peak=15:00-15:30
+  VNO PRO      int=1.8 mm=4.4 ticks=97 vol/ADV=28% sprd=7bps FBtot=1233.28 SFStot=1339.08 GORT=0.0 SMA63=1.06 peak=14:30-15:00
+
+#### helddeznff
+  28/28 aktif, ticks=2985, yön=buyer_dominant (9B / 3S), yoğun=15:30-16:00
+  DCOMG        int=5.5 mm=2.1 ticks=5 vol/ADV=7% sprd=30bps FBtot=629.3 SFStot=696.6999999999999 GORT=N/A SMA63=-0.67 peak=15:00-15:30
+  UMBFO        int=4.2 mm=2.8 ticks=67 vol/ADV=14% sprd=7bps FBtot=672.08 SFStot=741.6800000000001 GORT=N/A SMA63=None peak=14:30-15:00
+  LOB PRA      int=3.9 mm=3.8 ticks=143 vol/ADV=82% sprd=5bps FBtot=724.01 SFStot=792.81 GORT=N/A SMA63=None peak=15:00-15:30
+  LNC PRD      int=3.6 mm=2.5 ticks=291 vol/ADV=77% sprd=3bps FBtot=935.11 SFStot=952.91 GORT=N/A SMA63=-2.2 peak=15:00-15:30
+  BOH PRB      int=3.2 mm=2.5 ticks=68 vol/ADV=25% sprd=8bps FBtot=738.47 SFStot=840.07 GORT=N/A SMA63=-1.33 peak=14:30-15:00
+
+#### heldff
+  31/31 aktif, ticks=2406, yön=buyer_dominant (3B / 1S), yoğun=15:00-15:30
+  DDT          int=3.8 mm=2.5 ticks=33 vol/ADV=21% sprd=18bps FBtot=649.19 SFStot=744.8900000000001 GORT=N/A SMA63=-0.46 peak=15:00-15:30
+  CHSCO        int=2.9 mm=1.4 ticks=46 vol/ADV=14% sprd=6bps FBtot=703.61 SFStot=743.21 GORT=N/A SMA63=-0.66 peak=14:30-15:00
+  RITM PRA     int=2.4 mm=3.9 ticks=69 vol/ADV=66% sprd=4bps FBtot=812.45 SFStot=840.5500000000001 GORT=N/A SMA63=-1.06 peak=15:00-15:30
+  VLYPO        int=2.2 mm=3.8 ticks=65 vol/ADV=86% sprd=5bps FBtot=953.94 SFStot=997.84 GORT=N/A SMA63=-1.58 peak=15:30-16:00
+  FITBI        int=2.1 mm=4.5 ticks=346 vol/ADV=107% sprd=2bps FBtot=895.5 SFStot=957.7 GORT=N/A SMA63=-1.36 peak=15:30-16:00
+
+#### heldflr
+  12/12 aktif, ticks=1342, yön=buyer_dominant (4B / 1S), yoğun=15:30-16:00
+  BML PRG      int=3.2 mm=2.4 ticks=32 vol/ADV=22% sprd=13bps FBtot=731.73 SFStot=1063.23 GORT=N/A SMA63=-0.14 peak=14:30-15:00
+  BAC PRE      int=2.8 mm=3.2 ticks=56 vol/ADV=13% sprd=12bps FBtot=863.48 SFStot=908.58 GORT=N/A SMA63=-0.89 peak=15:30-16:00
+  GS PRC       int=2.8 mm=1.8 ticks=65 vol/ADV=22% sprd=4bps FBtot=612.9 SFStot=728.8 GORT=N/A SMA63=0.47 peak=15:30-16:00
+  MET PRA      int=2.1 mm=3.5 ticks=240 vol/ADV=22% sprd=3bps FBtot=1386.54 SFStot=1426.84 GORT=N/A SMA63=-3.98 peak=14:30-15:00
+  BML PRJ      int=2.1 mm=2.9 ticks=52 vol/ADV=26% sprd=4bps FBtot=524.43 SFStot=649.53 GORT=N/A SMA63=1.04 peak=15:30-16:00
+
+#### heldgarabetaltiyedi
+  15/15 aktif, ticks=921, yön=buyer_dominant (5B / 3S), yoğun=14:30-15:00
+  AMH PRG      int=4.9 mm=2.8 ticks=51 vol/ADV=48% sprd=14bps FBtot=1377.0 SFStot=2358.4 GORT=0.0 SMA63=-1.38 peak=15:00-15:30
+  WBS PRG      int=4.8 mm=3.8 ticks=128 vol/ADV=144% sprd=4bps FBtot=928.61 SFStot=1007.01 GORT=0.0 SMA63=2.06 peak=15:00-15:30
+  FITBP        int=4.0 mm=1.4 ticks=45 vol/ADV=51% sprd=6bps FBtot=1357.09 SFStot=1603.79 GORT=0.0 SMA63=-1.76 peak=15:00-15:30
+  AMH PRH      int=4.0 mm=3.3 ticks=89 vol/ADV=112% sprd=7bps FBtot=1363.29 SFStot=1596.59 GORT=0.0 SMA63=-1.43 peak=15:30-16:00
+  HWCPZ        int=3.8 mm=1.2 ticks=26 vol/ADV=25% sprd=11bps FBtot=1238.29 SFStot=1488.29 GORT=0.0 SMA63=0.58 peak=15:00-15:30
+
+#### heldkuponlu
+  100/100 aktif, ticks=10443, yön=buyer_dominant (26B / 14S), yoğun=15:30-16:00
+  MS PRL       int=4.2 mm=2.5 ticks=121 vol/ADV=33% sprd=5bps FBtot=1234.11 SFStot=1297.61 GORT=0.29 SMA63=-2.01 peak=15:30-16:00
+  ADC PRA      int=3.7 mm=3.8 ticks=98 vol/ADV=48% sprd=6bps FBtot=1399.67 SFStot=1597.0700000000002 GORT=-1.52 SMA63=-2.13 peak=15:00-15:30
+  DTB          int=3.3 mm=3.5 ticks=122 vol/ADV=36% sprd=5bps FBtot=1420.33 SFStot=1464.03 GORT=-1.5 SMA63=-1.69 peak=15:30-16:00
+  GPJA         int=3.2 mm=2.9 ticks=58 vol/ADV=19% sprd=10bps FBtot=753.78 SFStot=804.28 GORT=2.78 SMA63=0.34 peak=15:30-16:00
+  MGR          int=3.1 mm=2.6 ticks=40 vol/ADV=10% sprd=16bps FBtot=1352.67 SFStot=1423.97 GORT=-0.85 SMA63=-0.68 peak=15:00-15:30
+
+#### heldkuponlukreciliz
+  12/12 aktif, ticks=595, yön=buyer_dominant (6B / 2S), yoğun=15:30-16:00
+  FHN PRF      int=3.2 mm=2.0 ticks=26 vol/ADV=13% sprd=18bps FBtot=985.31 SFStot=1053.61 GORT=-0.27 SMA63=-1.69 peak=15:00-15:30
+  FULTP        int=2.6 mm=1.6 ticks=39 vol/ADV=31% sprd=14bps FBtot=1857.37 SFStot=1914.27 GORT=-5.01 SMA63=-4.67 peak=15:30-16:00
+  MBINN        int=2.4 mm=3.9 ticks=72 vol/ADV=103% sprd=7bps FBtot=1060.21 SFStot=1110.61 GORT=-0.31 SMA63=2.53 peak=15:30-16:00
+  DCOMP        int=2.3 mm=3.5 ticks=38 vol/ADV=32% sprd=14bps FBtot=488.54 SFStot=573.94 GORT=1.08 SMA63=3.63 peak=15:30-16:00
+  SYF PRA      int=2.2 mm=3.6 ticks=87 vol/ADV=12% sprd=7bps FBtot=723.82 SFStot=759.9200000000001 GORT=0.57 SMA63=0.16 peak=14:30-15:00
+
+#### heldkuponlukreorta
+  9/9 aktif, ticks=805, yön=seller_dominant (3B / 4S), yoğun=15:00-15:30
+  WBS PRF      int=4.1 mm=4.3 ticks=89 vol/ADV=330% sprd=6bps FBtot=278.6 SFStot=375.1 GORT=11.13 SMA63=7.71 peak=15:00-15:30
+  FCNCO        int=3.0 mm=2.6 ticks=57 vol/ADV=24% sprd=9bps FBtot=1453.35 SFStot=1612.85 GORT=-2.06 SMA63=-1.16 peak=15:30-16:00
+  FITBO        int=2.6 mm=2.9 ticks=71 vol/ADV=17% sprd=7bps FBtot=1471.45 SFStot=1638.65 GORT=-2.68 SMA63=-1.22 peak=14:30-15:00
+  CFG PRE      int=2.6 mm=3.5 ticks=143 vol/ADV=27% sprd=4bps FBtot=1159.61 SFStot=1323.41 GORT=2.68 SMA63=-0.94 peak=15:00-15:30
+  KEY PRJ      int=2.6 mm=3.8 ticks=191 vol/ADV=45% sprd=4bps FBtot=996.77 SFStot=1065.77 GORT=1.58 SMA63=0.74 peak=15:30-16:00
+
+#### heldnff
+  17/17 aktif, ticks=1742, yön=buyer_dominant (7B / 3S), yoğun=15:30-16:00
+  MTB PRH      int=3.2 mm=3.8 ticks=141 vol/ADV=61% sprd=3bps FBtot=537.73 SFStot=676.23 GORT=N/A SMA63=-0.74 peak=15:30-16:00
+  WAL PRA      int=3.1 mm=3.5 ticks=84 vol/ADV=35% sprd=2bps FBtot=582.51 SFStot=626.51 GORT=N/A SMA63=1.91 peak=15:30-16:00
+  VOYA PRB     int=2.9 mm=4.5 ticks=207 vol/ADV=72% sprd=6bps FBtot=325.71 SFStot=479.21 GORT=N/A SMA63=0.53 peak=15:00-15:30
+  RF PRC       int=2.5 mm=3.8 ticks=190 vol/ADV=30% sprd=5bps FBtot=262.83 SFStot=286.23 GORT=N/A SMA63=2.22 peak=15:30-16:00
+  RITM PRD     int=2.3 mm=3.5 ticks=121 vol/ADV=30% sprd=3bps FBtot=500.47 SFStot=549.6700000000001 GORT=N/A SMA63=-0.75 peak=15:00-15:30
+
+#### heldotelremorta
+  21/21 aktif, ticks=823, yön=buyer_dominant (4B / 3S), yoğun=15:00-15:30
+  INN PRE      int=4.2 mm=3.1 ticks=64 vol/ADV=63% sprd=16bps FBtot=1187.5 SFStot=1357.8 GORT=0.0 SMA63=-0.83 peak=15:00-15:30
+  AHH PRA      int=3.0 mm=1.7 ticks=51 vol/ADV=40% sprd=10bps FBtot=1098.12 SFStot=1410.32 GORT=0.0 SMA63=-0.43 peak=15:30-16:00
+  PEB PRF      int=2.8 mm=4.2 ticks=3 vol/ADV=1% sprd=87bps FBtot=1162.19 SFStot=1308.29 GORT=0.0 SMA63=1.46 peak=15:30-16:00
+  SHO PRH      int=2.7 mm=3.8 ticks=65 vol/ADV=136% sprd=2bps FBtot=1299.91 SFStot=1570.5100000000002 GORT=0.0 SMA63=-0.85 peak=15:30-16:00
+  GNL PRB      int=2.6 mm=3.7 ticks=21 vol/ADV=21% sprd=40bps FBtot=1136.88 SFStot=1234.18 GORT=0.0 SMA63=-0.65 peak=14:30-15:00
+
+#### heldsolidbig
+  6/6 aktif, ticks=876, yön=buyer_dominant (2B / 0S), yoğun=14:30-15:00
+  HIG PRG      int=2.5 mm=2.2 ticks=33 vol/ADV=16% sprd=5bps FBtot=1001.99 SFStot=1045.29 GORT=N/A SMA63=-0.71 peak=14:30-15:00
+  BAC PRB      int=1.8 mm=3.8 ticks=126 vol/ADV=14% sprd=1bps FBtot=1229.89 SFStot=1266.59 GORT=N/A SMA63=-0.92 peak=14:30-15:00
+  SCHW PRD     int=0.5 mm=4.5 ticks=155 vol/ADV=26% sprd=1bps FBtot=237.84 SFStot=258.74 GORT=N/A SMA63=0.15 peak=15:30-16:00
+  MS PRI       int=0.5 mm=4.5 ticks=135 vol/ADV=14% sprd=1bps FBtot=1200.45 SFStot=1232.75 GORT=N/A SMA63=-0.89 peak=15:00-15:30
+  JPM PRD      int=0.5 mm=4.5 ticks=251 vol/ADV=18% sprd=1bps FBtot=1186.66 SFStot=1196.5600000000002 GORT=N/A SMA63=-0.87 peak=15:30-16:00
+
+#### heldtitrekhc
+  10/10 aktif, ticks=379, yön=seller_dominant (0B / 1S), yoğun=15:00-15:30
+  ACR PRC      int=2.5 mm=2.6 ticks=38 vol/ADV=25% sprd=7bps FBtot=1296.62 SFStot=1337.9199999999998 GORT=N/A SMA63=-1.69 peak=15:30-16:00
+  SEAL PRA     int=1.4 mm=3.3 ticks=42 vol/ADV=51% sprd=8bps FBtot=1122.65 SFStot=1156.95 GORT=N/A SMA63=-1.45 peak=15:30-16:00
+  TRTN PRB     int=1.2 mm=3.2 ticks=35 vol/ADV=35% sprd=8bps FBtot=1121.24 SFStot=1226.84 GORT=N/A SMA63=-1.44 peak=15:30-16:00
+  RLJ PRA      int=1.2 mm=4.4 ticks=97 vol/ADV=39% sprd=4bps FBtot=124.62 SFStot=166.02 GORT=N/A SMA63=0.2 peak=15:00-15:30
+  GSL PRB      int=0.9 mm=3.0 ticks=25 vol/ADV=28% sprd=10bps FBtot=904.98 SFStot=1269.58 GORT=N/A SMA63=-1.0 peak=15:30-16:00
+
+#### highmatur
+  43/43 aktif, ticks=1779, yön=seller_dominant (5B / 7S), yoğun=15:00-15:30
+  OXLCI        int=5.3 mm=3.5 ticks=82 vol/ADV=139% sprd=3bps FBtot=974.92 SFStot=1578.92 GORT=N/A SMA63=-0.93 peak=15:00-15:30
+  SAY          int=5.0 mm=3.5 ticks=83 vol/ADV=165% sprd=4bps FBtot=1054.54 SFStot=1098.84 GORT=N/A SMA63=-1.37 peak=14:30-15:00
+  PRIF PRD     int=4.2 mm=2.2 ticks=25 vol/ADV=81% sprd=10bps FBtot=259.26 SFStot=651.26 GORT=N/A SMA63=2.8 peak=15:30-16:00
+  OXSQH        int=4.1 mm=3.2 ticks=68 vol/ADV=61% sprd=8bps FBtot=883.11 SFStot=1091.3054545454545 GORT=N/A SMA63=None peak=14:30-15:00
+  PMTU         int=4.0 mm=1.9 ticks=11 vol/ADV=18% sprd=21bps FBtot=1089.86 SFStot=1141.86 GORT=N/A SMA63=-1.52 peak=15:00-15:30
+
+#### notbesmaturlu
+  12/12 aktif, ticks=233, yön=seller_dominant (0B / 1S), yoğun=15:30-16:00
+  HTFC         int=3.8 mm=1.9 ticks=22 vol/ADV=83% sprd=6bps FBtot=976.87 SFStot=1182.47 GORT=N/A SMA63=-0.46 peak=15:00-15:30
+  OCCIO        int=2.4 mm=2.5 ticks=10 vol/ADV=46% sprd=2bps FBtot=735.51 SFStot=974.21 GORT=N/A SMA63=0.15 peak=15:30-16:00
+  SSSSL        int=0.7 mm=2.8 ticks=6 vol/ADV=12% sprd=13bps FBtot=944.92 SFStot=1363.52 GORT=N/A SMA63=-0.27 peak=15:00-15:30
+  OCCIN        int=0.5 mm=2.7 ticks=7 vol/ADV=6% sprd=12bps FBtot=733.01 SFStot=6134.610000000001 GORT=N/A SMA63=0.28 peak=15:00-15:30
+  OXLCP        int=0.3 mm=2.5 ticks=6 vol/ADV=4% sprd=7bps FBtot=768.66 SFStot=1242.76 GORT=N/A SMA63=0.09 peak=15:00-15:30
+
+#### notcefilliquid
+  23/23 aktif, ticks=1120, yön=balanced (3B / 3S), yoğun=15:30-16:00
+  REXR PRB     int=6.4 mm=2.6 ticks=90 vol/ADV=146% sprd=13bps FBtot=1235.07 SFStot=1417.87 GORT=0.0 SMA63=-2.69 peak=15:30-16:00
+  ETI PR       int=5.4 mm=2.4 ticks=22 vol/ADV=95% sprd=21bps FBtot=1072.33 SFStot=1418.53 GORT=0.0 SMA63=1.7 peak=15:00-15:30
+  GGT PRG      int=4.5 mm=2.7 ticks=6 vol/ADV=17% sprd=41bps FBtot=1138.45 SFStot=1327.85 GORT=0.0 SMA63=-1.78 peak=15:30-16:00
+  NCV PRA      int=3.4 mm=4.5 ticks=207 vol/ADV=258% sprd=5bps FBtot=1086.46 SFStot=1104.36 GORT=0.0 SMA63=-2.03 peak=15:30-16:00
+  ACP PRA      int=3.3 mm=1.9 ticks=14 vol/ADV=13% sprd=17bps FBtot=1048.93 SFStot=1097.63 GORT=0.0 SMA63=-0.23 peak=15:00-15:30
+
+#### nottitrekhc
+  15/15 aktif, ticks=444, yön=seller_dominant (3B / 5S), yoğun=15:00-15:30
+  CMRE PRD     int=5.6 mm=0.7 ticks=16 vol/ADV=51% sprd=11bps FBtot=375.54 SFStot=648.6400000000001 GORT=N/A SMA63=2.19 peak=15:00-15:30
+  SB PRD       int=5.3 mm=3.5 ticks=152 vol/ADV=233% sprd=5bps FBtot=780.55 SFStot=1017.45 GORT=N/A SMA63=0.63 peak=15:30-16:00
+  CHMI PRB     int=5.0 mm=1.1 ticks=28 vol/ADV=49% sprd=6bps FBtot=1124.68 SFStot=1189.28 GORT=N/A SMA63=-0.79 peak=15:30-16:00
+  DSX PRB      int=4.9 mm=0.8 ticks=17 vol/ADV=23% sprd=14bps FBtot=1296.46 SFStot=1795.46 GORT=N/A SMA63=-1.37 peak=14:30-15:00
+  CMRE PRB     int=4.3 mm=3.2 ticks=5 vol/ADV=46% sprd=33bps FBtot=652.58 SFStot=1654.98 GORT=N/A SMA63=1.16 peak=14:30-15:00
+
+#### salakilliquid
+  20/20 aktif, ticks=682, yön=buyer_dominant (4B / 1S), yoğun=15:30-16:00
+  GOODO        int=6.2 mm=3.4 ticks=82 vol/ADV=95% sprd=11bps FBtot=993.61 SFStot=1250.71 GORT=0.0 SMA63=3.44 peak=15:30-16:00
+  NHPBP        int=5.5 mm=1.9 ticks=13 vol/ADV=19% sprd=18bps FBtot=874.22 SFStot=1198.92 GORT=0.0 SMA63=0.53 peak=15:00-15:30
+  GMRE PRA     int=4.5 mm=3.0 ticks=58 vol/ADV=118% sprd=5bps FBtot=1121.37 SFStot=1348.4699999999998 GORT=0.0 SMA63=1.13 peak=15:30-16:00
+  LFT PRA      int=4.4 mm=3.4 ticks=7 vol/ADV=20% sprd=44bps FBtot=1172.54 SFStot=1320.04 GORT=0.0 SMA63=-1.22 peak=14:30-15:00
+  LANDO        int=2.8 mm=2.8 ticks=47 vol/ADV=18% sprd=9bps FBtot=1102.32 SFStot=1267.32 GORT=0.0 SMA63=1.01 peak=14:30-15:00
+
+#### shitremhc
+  7/7 aktif, ticks=193, yön=buyer_dominant (2B / 1S), yoğun=15:30-16:00
+  MITT PRA     int=6.3 mm=1.9 ticks=15 vol/ADV=37% sprd=18bps FBtot=1102.83 SFStot=1469.53 GORT=0.0 SMA63=2.04 peak=15:30-16:00
+  MITT PRB     int=3.8 mm=2.7 ticks=48 vol/ADV=42% sprd=11bps FBtot=1112.89 SFStot=1412.39 GORT=0.0 SMA63=2.19 peak=15:30-16:00
+  MFA PRB      int=3.2 mm=2.8 ticks=31 vol/ADV=12% sprd=15bps FBtot=1529.7 SFStot=1610.5 GORT=0.0 SMA63=-3.03 peak=15:30-16:00
+  ACR PRD      int=2.0 mm=3.2 ticks=5 vol/ADV=6% sprd=33bps FBtot=1356.75 SFStot=1513.15 GORT=0.0 SMA63=-0.94 peak=15:00-15:30
+  CHMI PRA     int=1.3 mm=3.3 ticks=26 vol/ADV=37% sprd=16bps FBtot=1392.89 SFStot=1578.69 GORT=0.0 SMA63=-2.93 peak=14:30-15:00
+
+### GÖREV:
+Yukarıdaki verileri inceleyerek şu soruları yanıtla:
+
+1. **Grup Bazında Mean Reversion Durumu**: Her DOS grubunda:
+   - Grubun genel yönü ne? (tüm grup alıcı mı satıcı mı?)
+   - Hangi hisseler GORT'tan çok uzaklaşmış? (reversion fırsatı)
+   - Grup içi korelasyon ne kadar güçlü? (beraber mi hareket ediyorlar?)
+
+2. **Spread & Likidite Analizi**: Her hisse/grup için:
+   - Spread kaç bps? Bu AVG_ADV'ye göre makul mü?
+   - Spread hangi saatlerde daralıyor (MM fırsatı azalır ama güvenli)
+   - Spread hangi saatlerde genişliyor (MM fırsatı var ama risk de var)
+   - Volume/ADV oranı spread'i nasıl etkiliyor?
+
+3. **LT Portfolio Önerileri**: Mean reversion mantığıyla:
+   - Hangi hisseler aşağı geldikçe toplanmalı? (GORT altı, buyer sinyalleri)
+   - Hangi hisseler yukarıdayken short açılmalı? (GORT üstü, seller dominant)
+   - Hangi hisselerde pozisyon büyüklüğü ne olmalı? (AVG_ADV'ye göre)
+   - Optimal accumulation saatleri? (en ucuz alım saati)
+
+4. **Mini Market Making Modeli**: İstatistiksel olarak:
+   - Hangi hisselerde spread capture fırsatı en yüksek? (mm_score'a bak)
+   - Her hisse için önerilen lot büyüklüğü? (avg_adv tabanlı)
+   - Hangi 30dk periyotlarda iki yönlü akış var? (buyer+seller balanced)
+   - Venue stratejisi: FNRA'da mı NYSE'de mi quote etmek daha avantajlı?
+   - Risk yönetimi: max exposure per stock, max per group?
+
+5. **İstatistiksel İlişkiler**:
+   - Aynı DOS grubundaki hisseler gerçekten beraber mi hareket ediyor?
+   - Spread ile ADV arasındaki korelasyon ne kadar güçlü?
+   - Hangi gruplarda mean reversion daha hızlı gerçekleşiyor?
+   - Saatlik pattern'ler tutarlı mı (her gün aynı saatte mi alıcı geliyor?)
+
+### ÇIKTI FORMATI (JSON):
+```json
+{
+    "grup_gozlemleri": {
+        "<grup_adi>": {
+            "genel_yorum": "...",
+            "mean_reversion_durumu": "fırsat_var/nötr/aşırı_uzaklaşmış",
+            "dominant_yön": "buyer/seller/balanced",
+            "aktif_saatler": ["09:30-10:00", "15:30-16:00"],
+            "ortalama_spread_bps": 0,
+            "öne_çıkan_hisseler": ["SYM1", "SYM2", "SYM3"],
+            "mm_uygunluk": "yüksek/orta/düşük",
+            "grup_korelasyon": "güçlü/orta/zayıf"
+        }
+    },
+    "lt_portfolio": {
+        "accumulation_listesi": [
+            {
+                "symbol": "...",
+                "neden": "GORT altında, buyer geliyor, spread makul",
+                "gort_uzaklik_pct": -2.5,
+                "önerilen_lot": 100,
+                "optimal_alim_saati": "10:00-10:30",
+                "güven": 0.0-1.0
+            }
+        ],
+        "short_listesi": [
+            {
+                "symbol": "...",
+                "neden": "GORT üstünde, seller dominant, mean revert edecek",
+                "gort_uzaklik_pct": 3.1,
+                "önerilen_lot": 50,
+                "güven": 0.0-1.0
+            }
+        ]
+    },
+    "mm_model": {
+        "uygun_hisseler": [
+            {
+                "symbol": "...",
+                "mm_score": 0.0,
+                "spread_bps": 0,
+                "önerilen_lot": 0,
+                "aktif_periyot": "...",
+                "iki_yönlü_akış": true,
+                "venue_strateji": "NYSE lit preferred / FNRA dark capture",
+                "max_exposure": "$X veya Y lot",
+                "beklenen_günlük_pnl": "$X (spread * lot * turnover)"
+            }
+        ],
+        "risk_yönetimi": {
+            "max_per_stock": "...",
+            "max_per_group": "...",
+            "stop_loss_mantığı": "..."
+        },
+        "genel_strateji": "..."
+    },
+    "spread_likidite_analizi": {
+        "spread_adv_korelasyon": "güçlü/orta/zayıf",
+        "en_dar_spread_grubu": "...",
+        "en_geniş_spread_grubu": "...",
+        "spread_saatlik_pattern": "sabah geniş→öğlen daralır→kapanış genişler"
+    },
+    "istatistiksel_iliskiler": {
+        "grup_ici_korelasyon": "...",
+        "mean_reversion_hizi": "...",
+        "korelasyon_notları": ["..."]
+    },
+    "öğrendiklerim": ["...", "..."],
+    "sorularım": ["...", "..."]
+}
+```

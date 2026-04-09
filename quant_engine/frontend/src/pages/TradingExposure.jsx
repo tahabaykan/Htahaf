@@ -103,6 +103,42 @@ function TradingExposure() {
                 {exposure.position_count || 0}
               </div>
             </div>
+
+            {/* BEFDAY + Intraday (per account) */}
+            {(exposure.befday_long_exp != null || exposure.intraday_total_chg_exp != null) && (
+              <div className="exposure-befday-row">
+                <div className="metric-card small">
+                  <div className="metric-label">BEFDAY Long</div>
+                  <div className="metric-value positive">
+                    ${exposure.befday_long_exp?.toFixed(0) ?? '—'} <span className="pct">({exposure.befday_long_exp_pct?.toFixed(1) ?? '—'}%)</span>
+                  </div>
+                </div>
+                <div className="metric-card small">
+                  <div className="metric-label">BEFDAY Short</div>
+                  <div className="metric-value negative">
+                    ${exposure.befday_short_exp?.toFixed(0) ?? '—'} <span className="pct">({exposure.befday_short_exp_pct?.toFixed(1) ?? '—'}%)</span>
+                  </div>
+                </div>
+                <div className="metric-card small">
+                  <div className="metric-label">Intra Long Chg</div>
+                  <div className={`metric-value ${(exposure.intraday_long_chg_exp ?? 0) >= 0 ? 'positive' : 'negative'}`}>
+                    ${exposure.intraday_long_chg_exp?.toFixed(0) ?? '—'} <span className="pct">({exposure.intraday_long_chg_exp_pct?.toFixed(1) ?? '—'}%)</span>
+                  </div>
+                </div>
+                <div className="metric-card small">
+                  <div className="metric-label">Intra Short Chg</div>
+                  <div className={`metric-value ${(exposure.intraday_short_chg_exp ?? 0) >= 0 ? 'negative' : 'positive'}`}>
+                    ${exposure.intraday_short_chg_exp?.toFixed(0) ?? '—'} <span className="pct">({exposure.intraday_short_chg_exp_pct?.toFixed(1) ?? '—'}%)</span>
+                  </div>
+                </div>
+                <div className="metric-card small">
+                  <div className="metric-label">Intra Total Chg</div>
+                  <div className={`metric-value ${(exposure.intraday_total_chg_exp ?? 0) >= 0 ? 'positive' : 'negative'}`}>
+                    ${exposure.intraday_total_chg_exp?.toFixed(0) ?? '—'} <span className="pct">({exposure.intraday_total_chg_exp_pct?.toFixed(1) ?? '—'}%)</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

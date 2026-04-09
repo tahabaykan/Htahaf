@@ -1,0 +1,2 @@
+❌ claude-3-5-haiku-20241022: HTTP 404 — {"type":"error","error":{"type":"not_found_error","message":"model: claude-3-5-haiku-20241022"},"request_id":"req_011CYC7dSoboj81zw48Z8ofX"}
+✅ claude-3-haiku-20240307: Hello! (in=9, out=5)

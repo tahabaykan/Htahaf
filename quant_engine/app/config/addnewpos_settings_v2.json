@@ -1,0 +1,134 @@
+{
+  "version": 2,
+  "accounts": {
+    "HAMPRO": {
+      "enabled": true,
+      "mode": "both",
+      "long_ratio": 50.0,
+      "short_ratio": 50.0,
+      "active_tab": "BB",
+      "tab_bb": {
+        "jfin_pct": 50,
+        "gort_min": null,
+        "gort_max": -1,
+        "tot_threshold": 1,
+        "tot_direction": "above",
+        "sma63chg_threshold": null,
+        "sma63chg_direction": "below"
+      },
+      "tab_fb": {
+        "jfin_pct": 0,
+        "gort_min": null,
+        "gort_max": null,
+        "tot_threshold": null,
+        "tot_direction": "above",
+        "sma63chg_threshold": null,
+        "sma63chg_direction": "below"
+      },
+      "tab_sas": {
+        "jfin_pct": 50,
+        "gort_min": 0.5,
+        "gort_max": null,
+        "tot_threshold": null,
+        "tot_direction": "above",
+        "sma63chg_threshold": -1,
+        "sma63chg_direction": "above"
+      },
+      "tab_sfs": {
+        "jfin_pct": 0,
+        "gort_min": null,
+        "gort_max": null,
+        "tot_threshold": null,
+        "tot_direction": "above",
+        "sma63chg_threshold": null,
+        "sma63chg_direction": "below"
+      }
+    },
+    "IBKR_PED": {
+      "enabled": true,
+      "mode": "both",
+      "long_ratio": 50.0,
+      "short_ratio": 50.0,
+      "active_tab": "BB",
+      "tab_bb": {
+        "jfin_pct": 50,
+        "gort_min": null,
+        "gort_max": -1,
+        "tot_threshold": 1,
+        "tot_direction": "above",
+        "sma63chg_threshold": null,
+        "sma63chg_direction": "below"
+      },
+      "tab_fb": {
+        "jfin_pct": 0,
+        "gort_min": null,
+        "gort_max": null,
+        "tot_threshold": null,
+        "tot_direction": "above",
+        "sma63chg_threshold": null,
+        "sma63chg_direction": "below"
+      },
+      "tab_sas": {
+        "jfin_pct": 50,
+        "gort_min": 0.5,
+        "gort_max": null,
+        "tot_threshold": null,
+        "tot_direction": "above",
+        "sma63chg_threshold": 0.5,
+        "sma63chg_direction": "below"
+      },
+      "tab_sfs": {
+        "jfin_pct": 0,
+        "gort_min": null,
+        "gort_max": null,
+        "tot_threshold": null,
+        "tot_direction": "above",
+        "sma63chg_threshold": null,
+        "sma63chg_direction": "below"
+      }
+    },
+    "IBKR_GUN": {
+      "enabled": true,
+      "mode": "both",
+      "long_ratio": 76.0,
+      "short_ratio": 24.0,
+      "active_tab": "SFS",
+      "tab_bb": {
+        "jfin_pct": 50,
+        "gort_min": null,
+        "gort_max": null,
+        "tot_threshold": null,
+        "tot_direction": "above",
+        "sma63chg_threshold": null,
+        "sma63chg_direction": "below"
+      },
+      "tab_fb": {
+        "jfin_pct": 50,
+        "gort_min": null,
+        "gort_max": null,
+        "tot_threshold": null,
+        "tot_direction": "above",
+        "sma63chg_threshold": null,
+        "sma63chg_direction": "below"
+      },
+      "tab_sas": {
+        "jfin_pct": 50,
+        "gort_min": null,
+        "gort_max": null,
+        "tot_threshold": null,
+        "tot_direction": "above",
+        "sma63chg_threshold": null,
+        "sma63chg_direction": "below"
+      },
+      "tab_sfs": {
+        "jfin_pct": 50,
+        "gort_min": null,
+        "gort_max": null,
+        "tot_threshold": null,
+        "tot_direction": "above",
+        "sma63chg_threshold": null,
+        "sma63chg_direction": "below"
+      }
+    }
+  }
+}

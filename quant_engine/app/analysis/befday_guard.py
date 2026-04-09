@@ -21,16 +21,29 @@ class BefDayGuard:
         maxalw: float,
         portfolio_total_qty: float,
         daily_net_change: float,
-        account_id: str = "IBKR_GUN"
+        account_id: str = "IBKR_GUN",
+        is_increase: Optional[bool] = None
     ) -> Tuple[bool, float, str]:
         """
         Validates if an order is safe based on:
         1. BefDay limits (via DailyLimitService).
         2. Exposure constraints.
         
+        Args:
+            is_increase: Explicit flag. If None, inferred from current_qty + side:
+                         Long(qty>=0) + BUY = increase, Long + SELL = decrease,
+                         Short(qty<0) + SELL = increase, Short + BUY = decrease.
+        
         Returns:
             (Allowed: bool, SafeQty: float, Reason: str)
         """
+        # Infer is_increase from position direction if not provided
+        if is_increase is None:
+            if current_qty >= 0:
+                is_increase = (side == 'BUY')   # Long: BUY=increase, SELL=decrease
+            else:
+                is_increase = (side == 'SELL')  # Short: SELL=increase, BUY=decrease (cover)
+        
         # 1. Calculate Daily Limits
         limits = self.daily_limit_service.calculate_limits(
             symbol=symbol,
@@ -47,7 +60,8 @@ class BefDayGuard:
             symbol=symbol,
             side=side,
             qty=qty,
-            limits=limits
+            limits=limits,
+            is_increase=is_increase
         )
         
         if not is_allowed:

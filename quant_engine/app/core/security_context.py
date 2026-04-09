@@ -172,6 +172,7 @@ class ScoreState:
     final_sfs_skor: Optional[float] = None
     final_bb_skor: Optional[float] = None
     final_sas_skor: Optional[float] = None
+    bench_chg: Optional[float] = None  # NEW: Group-based Benchmark Change
     last_computed: Optional[datetime] = None
     computed_by: str = "UNKNOWN"
     
@@ -466,6 +467,7 @@ class SecurityContext:
         final_sfs_skor: Optional[float] = None,
         final_bb_skor: Optional[float] = None,
         final_sas_skor: Optional[float] = None,
+        bench_chg: Optional[float] = None, # NEW
         computed_by: str = "UNKNOWN"
     ) -> None:
         """
@@ -496,6 +498,8 @@ class SecurityContext:
                 self.scores.final_bb_skor = safe_num(final_bb_skor)
             if final_sas_skor is not None:
                 self.scores.final_sas_skor = safe_num(final_sas_skor)
+            if bench_chg is not None:
+                self.scores.bench_chg = safe_num(bench_chg)
             
             self.scores.last_computed = datetime.now()
             self.scores.computed_by = computed_by
@@ -664,6 +668,7 @@ class SecurityContext:
                     "fbtot": self.scores.fbtot,
                     "sfstot": self.scores.sfstot,
                     "gort": self.scores.gort,
+                    "bench_chg": self.scores.bench_chg, # NEW
                     "has_scores": self.scores.has_scores()
                 },
                 "position": {
@@ -711,6 +716,7 @@ class SecurityContext:
             "spread_pct": self.derived.spread_percent,
             "ucuzluk": self.scores.bid_buy_ucuzluk,
             "pahalilik": self.scores.ask_sell_pahalilik,
+            "bench_chg": self.scores.bench_chg, # NEW
             "qty": self.position.qty,
             "status": self.get_status().value,
             "reason": self.get_missing_reason().value

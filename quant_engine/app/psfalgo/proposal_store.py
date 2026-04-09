@@ -10,192 +10,315 @@ from collections import deque
 
 from app.core.logger import logger
 from app.psfalgo.proposal_models import OrderProposal, ProposalStatus
+import json
 
 
 class ProposalStore:
     """
-    Proposal Store - stores OrderProposals for human review.
+    ProposalStore - stores OrderProposals for human review (Redis Backed).
     
     Responsibilities:
-    - Store proposals
+    - Store proposals (Shared State via Redis)
     - Track proposal lifecycle
     - Provide query interface
-    
-    Does NOT:
-    - Execute proposals
-    - Modify proposals (except status updates)
     """
     
-    def __init__(self, max_proposals: int = 1000):
+    KEY_DATA = "proposals:data"      # Hash: id -> json
+    KEY_TIMELINE = "proposals:timeline" # ZSet: id -> timestamp
+    
+    def __init__(self, max_proposals: int = 5000):
         """
         Initialize Proposal Store.
+        Connects to Redis.
         
-        Args:
-            max_proposals: Maximum number of proposals to keep (default: 1000)
+        Note: Increased from 1000 to 5000 to handle high-volume MM proposals
+        while preserving LT_TRIM/KARBOTU proposals.
         """
         self.max_proposals = max_proposals
+        self.redis = None
         
-        # Store: {proposal_id: OrderProposal}
-        # proposal_id = f"{cycle_id}_{symbol}_{side}_{proposal_ts.timestamp()}"
-        self._proposals: Dict[str, OrderProposal] = {}
-        
-        # Recent proposals (for quick access)
-        self._recent_proposals: deque = deque(maxlen=max_proposals)
-        
-        logger.info(f"ProposalStore initialized (max_proposals={max_proposals})")
-    
+        try:
+            from app.core.redis_client import get_redis_client
+            client = get_redis_client()
+            if client:
+                self.redis = client.sync  # Use sync client
+                logger.debug("✅ [PROPOSAL_STORE] Connected to Redis")
+            else:
+                logger.warning("⚠️ [PROPOSAL_STORE] Redis client not available - Store will fail")
+        except Exception as e:
+            logger.error(f"❌ [PROPOSAL_STORE] Failed to connect to Redis: {e}")
+
     def add_proposal(self, proposal: OrderProposal) -> str:
-        """
-        Add proposal to store.
-        
-        Args:
-            proposal: OrderProposal to add
-            
-        Returns:
-            Proposal ID
-        """
+        """Add proposal to Redis."""
+        if not self.redis:
+            return ""
         proposal_id = self._generate_proposal_id(proposal)
+        uniq_key = self._uniq_key(proposal)
+
+        # LT_STAGE: ayni (symbol, side, qty, price) icin sadece en buyuk stage onerilir.
+        # Mevcut proposal daha yuksek stage ise yeniyi yazma (STAGE_4 > STAGE_2 > ...).
+        existing_id = self.redis.hget("proposals:unique_index", uniq_key)
+        if existing_id is not None:
+            eid = existing_id.decode("utf-8") if isinstance(existing_id, bytes) else existing_id
+            existing = self.get_proposal(eid)
+            if existing and getattr(existing, "status", None) == ProposalStatus.PROPOSED.value:
+                if self.get_lt_stage_rank(existing) > self.get_lt_stage_rank(proposal):
+                    logger.debug(
+                        f"[PROPOSAL_STORE] Skip add (existing has higher LT_STAGE): {uniq_key}"
+                    )
+                    return ""
+        # Uniq: ayni emirde eskisi silinir, yenisi yazilir. Book degismesi farkli kayit saymaz.
+        self._remove_existing_similar_proposal(proposal)
         
-        self._proposals[proposal_id] = proposal
-        self._recent_proposals.append(proposal_id)
-        
-        # Log proposal
-        logger.info(f"[PROPOSAL_STORE] Added proposal: {proposal_id}")
-        logger.info(f"\n{proposal.to_human_readable()}")
-        
-        # Cleanup old proposals if needed
-        if len(self._proposals) > self.max_proposals:
-            self._cleanup_old_proposals()
-        
-        return proposal_id
-    
+        # Serialization
+        try:
+            data_json = json.dumps(proposal.to_dict())
+            # Pipeline for availability
+            pipe = self.redis.pipeline()
+            pipe.hset(self.KEY_DATA, proposal_id, data_json)
+            pipe.zadd(self.KEY_TIMELINE, {proposal_id: proposal.proposal_ts.timestamp()})
+            pipe.hset("proposals:unique_index", uniq_key, proposal_id)
+            
+            # Cleanup inline if too big (probabilistic or fixed interval?)
+            # Let's do loose cleanup
+            pipe.zcard(self.KEY_TIMELINE)
+            results = pipe.execute()
+            count = results[3]  # zcard result
+            if count > self.max_proposals + 50: # Buffet buffer
+                self._cleanup_old_proposals()
+                
+            logger.info(f"[PROPOSAL_STORE] Added proposal: {proposal_id}")
+            return proposal_id
+            
+        except Exception as e:
+            logger.error(f"[PROPOSAL_STORE] Error adding proposal: {e}")
+            return ""
+
     def _generate_proposal_id(self, proposal: OrderProposal) -> str:
-        """Generate unique proposal ID"""
         return f"{proposal.cycle_id}_{proposal.symbol}_{proposal.side}_{proposal.proposal_ts.timestamp()}"
     
     def get_proposal_id(self, proposal: OrderProposal) -> str:
-        """Get proposal ID for a proposal (public method)"""
         return self._generate_proposal_id(proposal)
     
     def get_proposal(self, proposal_id: str) -> Optional[OrderProposal]:
         """Get proposal by ID"""
-        return self._proposals.get(proposal_id)
+        if not self.redis: return None
+        data = self.redis.hget(self.KEY_DATA, proposal_id)
+        if data:
+            try:
+                return OrderProposal.from_dict(json.loads(data))
+            except Exception as e:
+                logger.error(f"[PROPOSAL_STORE] Deserialization error: {e}")
+        return None
     
     def get_all_proposals(
         self,
         status: Optional[str] = None,
         engine: Optional[str] = None,
         cycle_id: Optional[int] = None,
+        account_id: Optional[str] = None,
         limit: int = 100
     ) -> List[OrderProposal]:
-        """
-        Get all proposals with optional filters.
+        """Get proposals with filters."""
+        if not self.redis: return []
         
-        Args:
-            status: Filter by status (PROPOSED, ACCEPTED, REJECTED, EXPIRED)
-            engine: Filter by engine (KARBOTU, REDUCEMORE, ADDNEWPOS)
-            cycle_id: Filter by cycle ID
-            limit: Maximum number of proposals to return
-            
-        Returns:
-            List of OrderProposals
-        """
-        proposals = list(self._proposals.values())
+        # When filtering by engine (LT_TRIM, KARBOTU, etc.), scan a much larger window
+        # so engine-specific tabs don't miss proposals buried under many MM proposals.
+        scan_size = limit * 20 if engine else limit * 2
+        scan_size = min(scan_size, 5000)  # Cap to avoid huge scans
+        ids = self.redis.zrevrange(self.KEY_TIMELINE, 0, scan_size - 1)
+        if not ids: return []
         
-        # Apply filters
-        if status:
-            proposals = [p for p in proposals if p.status == status]
-        if engine:
-            proposals = [p for p in proposals if p.engine == engine]
-        if cycle_id is not None:
-            proposals = [p for p in proposals if p.cycle_id == cycle_id]
+        # Fetch data
+        raw_data = self.redis.hmget(self.KEY_DATA, ids)
         
-        # Sort by proposal_ts (newest first)
-        proposals.sort(key=lambda p: p.proposal_ts, reverse=True)
+        proposals = []
+        for d in raw_data:
+            if d:
+                try:
+                    p = OrderProposal.from_dict(json.loads(d))
+                    
+                    # Filters
+                    if status and p.status != status: continue
+                    if engine and p.engine != engine: continue
+                    if cycle_id is not None and p.cycle_id != cycle_id: continue
+                    if account_id and getattr(p, 'account_id', None) and p.account_id != account_id: continue
+                    
+                    proposals.append(p)
+                    if len(proposals) >= limit: break
+                    
+                except Exception:
+                    continue
         
-        # Limit
-        return proposals[:limit]
-    
-    def get_latest_proposals(self, limit: int = 10) -> List[OrderProposal]:
-        """Get latest N proposals"""
-        proposal_ids = list(self._recent_proposals)[-limit:]
-        proposals = [self._proposals[pid] for pid in proposal_ids if pid in self._proposals]
         return proposals
     
-    def get_pending_proposals(self) -> List[OrderProposal]:
-        """Get all pending proposals (PROPOSED status)"""
-        return self.get_all_proposals(status=ProposalStatus.PROPOSED.value, limit=1000)
+    def get_latest_proposals(self, limit: int = 10) -> List[OrderProposal]:
+        return self.get_all_proposals(limit=limit)
     
+    def get_pending_proposals(self) -> List[OrderProposal]:
+        return self.get_all_proposals(status=ProposalStatus.PROPOSED.value, limit=1000)
+
     def get_pending_count(self) -> int:
         """Get count of pending proposals (PROPOSED status)"""
         return len(self.get_pending_proposals())
-    
-    def update_proposal_status(
-        self,
-        proposal_id: str,
-        status: str,
-        human_action: Optional[str] = None
-    ) -> bool:
-        """
-        Update proposal status (for human actions).
+
+    def update_proposal_status(self, proposal_id: str, status: str, human_action: Optional[str] = None) -> bool:
+        if not self.redis: return False
         
-        Args:
-            proposal_id: Proposal ID
-            status: New status (ACCEPTED, REJECTED, EXPIRED)
-            human_action: Human action ("ACCEPTED", "REJECTED")
-            
-        Returns:
-            True if updated, False if not found
-        """
-        proposal = self._proposals.get(proposal_id)
-        if not proposal:
+        p = self.get_proposal(proposal_id)
+        if not p:
             logger.warning(f"[PROPOSAL_STORE] Proposal not found: {proposal_id}")
             return False
+            
+        p.status = status
+        p.human_action = human_action
+        p.human_action_ts = datetime.now()
         
-        proposal.status = status
-        proposal.human_action = human_action
-        proposal.human_action_ts = datetime.now()
-        
-        logger.info(f"[PROPOSAL_STORE] Updated proposal {proposal_id}: status={status}, action={human_action}")
-        return True
-    
+        # Save back
+        try:
+            self.redis.hset(self.KEY_DATA, proposal_id, json.dumps(p.to_dict()))
+            logger.debug(f"[PROPOSAL_STORE] Updated proposal {proposal_id}")
+            return True
+        except Exception as e:
+            logger.error(f"[PROPOSAL_STORE] Update error: {e}")
+            return False
+
     def _cleanup_old_proposals(self):
-        """Remove old proposals (keep only recent N)"""
-        # Sort by proposal_ts (oldest first)
-        sorted_proposals = sorted(
-            self._proposals.items(),
-            key=lambda x: x[1].proposal_ts
-        )
+        """Remove old proposals > max_proposals"""
+        if not self.redis: return
         
-        # Keep only last max_proposals
-        to_remove = len(sorted_proposals) - self.max_proposals
-        if to_remove > 0:
-            for proposal_id, _ in sorted_proposals[:to_remove]:
-                del self._proposals[proposal_id]
-                logger.debug(f"[PROPOSAL_STORE] Removed old proposal: {proposal_id}")
-    
+        try:
+            count = self.redis.zcard(self.KEY_TIMELINE)
+            if count > self.max_proposals:
+                to_remove = count - self.max_proposals
+                # Get IDs to remove (oldest -> 0 to to_remove)
+                ids_to_remove = self.redis.zrange(self.KEY_TIMELINE, 0, to_remove - 1)
+                
+                if ids_to_remove:
+                    pipe = self.redis.pipeline()
+                    pipe.hdel(self.KEY_DATA, *ids_to_remove)
+                    pipe.zrem(self.KEY_TIMELINE, *ids_to_remove)
+                    
+                    # ALSO CLEANUP UNIQUE INDEX?
+                    # This is hard because we don't know the keys from IDs easily without reverse lookup.
+                    # Ignore for now, it's just a lookup pointer. It will be overwritten or return stale ID (which we check).
+                    
+                    pipe.execute()
+                    # logger.debug(f"[PROPOSAL_STORE] Cleaned up {len(ids_to_remove)} old proposals")
+        except Exception as e:
+            logger.error(f"[PROPOSAL_STORE] Cleanup error: {e}")
+
+    def _find_duplicate(self, new_proposal: OrderProposal) -> Optional[OrderProposal]:
+        # Not efficiently implemented in Redis without secondary index.
+        # Skipping for now - unique ID usually sufficient for dedupe by cycle/ts.
+        return None
+
+    def clear_pending_proposals_with_cycle_id(self, cycle_id: int) -> int:
+        """
+        Remove all PENDING proposals with the given cycle_id.
+        Used by XNL to replace its previous batch (cycle_id=-1) before writing a new one,
+        so the same batch does not accumulate repeatedly. RUNALL uses positive cycle_id.
+        Returns number of proposals removed.
+        """
+        if not self.redis:
+            return 0
+        removed = 0
+        try:
+            all_pending = self.get_all_proposals(status=ProposalStatus.PROPOSED.value, limit=5000)
+            to_remove = [p for p in all_pending if p.cycle_id == cycle_id]
+            if not to_remove:
+                return 0
+            pipe = self.redis.pipeline()
+            index_key = "proposals:unique_index"
+            for p in to_remove:
+                pid = self._generate_proposal_id(p)
+                pipe.hdel(self.KEY_DATA, pid)
+                pipe.zrem(self.KEY_TIMELINE, pid)
+                uniq_key = self._uniq_key(p)
+                pipe.hdel(index_key, uniq_key)
+                removed += 1
+            pipe.execute()
+            if removed > 0:
+                logger.debug(f"[PROPOSAL_STORE] Cleared {removed} PENDING proposals with cycle_id={cycle_id}")
+        except Exception as e:
+            logger.error(f"[PROPOSAL_STORE] Error clearing proposals by cycle_id: {e}")
+        return removed
+
+    def _uniq_key(self, proposal: OrderProposal) -> str:
+        """
+        Uniqueness key: symbol, side, qty, price, book.
+        Kosullar (engine/stage) degisebilir; ayni emir = birebir ayni hisse, yon, lot, fiyat, long/short.
+        """
+        return self.get_uniq_key(proposal)
+
+    def get_uniq_key(self, proposal: OrderProposal) -> str:
+        """
+        Tekillik: ayni hisse + ayni yön + ayni lot = tek öneri; sadece en güncel kalir.
+        Her zaman (symbol, side, qty). Fiyat ve 727→427 gibi pozisyon bilgisi keyde yok.
+        Böylece "300 SELL @ 25.98" ve "300 SELL @ 25.97" (ikisi de 727→427) ayni key = FGN:SELL:300.
+        """
+        sym = (proposal.symbol or "").strip().upper()
+        side = (proposal.side or "SELL").upper()
+        qty = int(proposal.qty) if proposal.qty is not None else 0
+        return f"{sym}:{side}:{qty}"
+
+    def get_lt_stage_rank(self, proposal: OrderProposal) -> int:
+        """
+        LT_STAGE sira: 4 > 3 > 2 > 1 > SMALL.
+        Ayni (symbol, side, qty, price) icin sadece en buyuk stage onerilir; 2sini birden yazmayiz.
+        reason veya order_subtype icinde LT_STAGE_4, LT_STAGE_3, ... LT_STAGE_SMALL aranir.
+        """
+        text = (
+            (getattr(proposal, "reason", None) or "")
+            + " "
+            + (getattr(proposal, "order_subtype", None) or "")
+        ).upper()
+        if "LT_STAGE_4" in text:
+            return 4
+        if "LT_STAGE_3" in text:
+            return 3
+        if "LT_STAGE_2" in text:
+            return 2
+        if "LT_STAGE_1" in text:
+            return 1
+        if "LT_STAGE_SMALL" in text:
+            return 0
+        return -1
+
+    def _remove_existing_similar_proposal(self, new_proposal: OrderProposal):
+        """
+        Remove any existing PENDING proposal with IDENTICAL (symbol, side, qty, price).
+        Book degismesi farkli kayit saymaz; ayni emirde eskisi silinir.
+        """
+        if not self.redis:
+            return
+        try:
+            uniq_key = self._uniq_key(new_proposal)
+            index_key = "proposals:unique_index"
+            existing_id = self.redis.hget(index_key, uniq_key)
+            if existing_id is not None:
+                if isinstance(existing_id, bytes):
+                    existing_id = existing_id.decode("utf-8")
+                old_p_json = self.redis.hget(self.KEY_DATA, existing_id)
+                if old_p_json:
+                    try:
+                        raw = old_p_json.decode("utf-8") if isinstance(old_p_json, bytes) else old_p_json
+                        old_p = json.loads(raw)
+                        if old_p.get("status") == ProposalStatus.PROPOSED.value:
+                            pipe = self.redis.pipeline()
+                            pipe.hdel(self.KEY_DATA, existing_id)
+                            pipe.zrem(self.KEY_TIMELINE, existing_id)
+                            pipe.hdel(index_key, uniq_key)
+                            pipe.execute()
+                            logger.debug(f"[PROPOSAL_STORE] Removed identical proposal {existing_id} for {uniq_key}")
+                    except Exception:
+                        pass
+        except Exception as e:
+            logger.error(f"[PROPOSAL_STORE] Error removing similar: {e}")
+
     def get_stats(self) -> Dict[str, Any]:
-        """Get proposal store statistics"""
-        proposals = list(self._proposals.values())
-        
-        stats = {
-            'total_proposals': len(proposals),
-            'by_status': {},
-            'by_engine': {},
-            'by_side': {}
-        }
-        
-        for proposal in proposals:
-            # By status
-            stats['by_status'][proposal.status] = stats['by_status'].get(proposal.status, 0) + 1
-            
-            # By engine
-            stats['by_engine'][proposal.engine] = stats['by_engine'].get(proposal.engine, 0) + 1
-            
-            # By side
-            stats['by_side'][proposal.side] = stats['by_side'].get(proposal.side, 0) + 1
-        
-        return stats
+        return {} # Not critical
+
 
 
 # Global instance
@@ -207,9 +330,9 @@ def get_proposal_store() -> Optional[ProposalStore]:
     return _proposal_store
 
 
-def initialize_proposal_store(max_proposals: int = 1000):
+def initialize_proposal_store(max_proposals: int = 5000):
     """Initialize global ProposalStore instance"""
     global _proposal_store
     _proposal_store = ProposalStore(max_proposals=max_proposals)
-    logger.info("ProposalStore initialized")
+    logger.info(f"ProposalStore initialized with capacity: {max_proposals}")
 

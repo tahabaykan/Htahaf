@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import asyncio
 import json
+import os
 
 from app.core.logger import logger
 from app.config.settings import settings
@@ -64,6 +65,12 @@ except ImportError as e:
     port_adjuster_router = None
 
 try:
+    from app.port_adjuster.port_adjuster_routes_v2 import router as port_adjuster_v2_router
+except ImportError as e:
+    logger.warning(f"Could not import port_adjuster_v2_router: {e}")
+    port_adjuster_v2_router = None
+
+try:
     from app.api.log_routes import router as log_router
 except ImportError as e:
     logger.warning(f"Could not import log_router: {e}")
@@ -94,9 +101,6 @@ except ImportError as e:
     decision_helper_router = None
 
 try:
-    from app.api.decision_helper_v2_routes import router as decision_helper_v2_router
-except ImportError as e:
-    logger.warning(f"Could not import decision_helper_v2_router: {e}")
     from app.api.decision_helper_v2_routes import router as decision_helper_v2_router
 except ImportError as e:
     logger.warning(f"Could not import decision_helper_v2_router: {e}")
@@ -182,12 +186,102 @@ except Exception as e:
     system_router = None
 
 try:
+    from app.api.simulation_routes import router as simulation_router
+except Exception as e:
+    logger.warning(f"Could not import simulation_router: {e}")
+    simulation_router = None
+
+try:
+    from app.api.karbotu_diagnostic_routes import router as karbotu_diagnostic_router
+except Exception as e:
+    logger.warning(f"Could not import karbotu_diagnostic_router: {e}")
+    karbotu_diagnostic_router = None
+
+try:
+    from app.api.runall_diagnostic_routes import router as runall_diagnostic_router
+except Exception as e:
+    logger.warning(f"Could not import runall_diagnostic_router: {e}")
+    runall_diagnostic_router = None
+
+try:
+    from app.api.excluded_list_routes import router as excluded_list_router
+except Exception as e:
+    logger.warning(f"Could not import excluded_list_router: {e}")
+    excluded_list_router = None
+
+try:
+    from app.api.general_logic_routes import router as general_logic_router
+except Exception as e:
+    logger.warning(f"Could not import general_logic_router: {e}")
+    general_logic_router = None
+
+try:
     from app.api.janall_routes import router as janall_router
 except Exception as e:
     with open("import_error.log", "w") as f:
         f.write(f"Janall Import Error: {e}")
     logger.warning(f"Could not import janall_router: {e}")
     janall_router = None
+
+try:
+    from app.api.xnl_routes import router as xnl_router
+except Exception as e:
+    logger.warning(f"Could not import xnl_router: {e}")
+    xnl_router = None
+
+try:
+    from app.api.rev_orders_routes import router as rev_orders_router
+except Exception as e:
+    logger.warning(f"Could not import rev_orders_router: {e}")
+    rev_orders_router = None
+
+try:
+    from app.api.pattern_suggestions_routes import router as pattern_suggestions_router
+except Exception as e:
+    logger.warning(f"Could not import pattern_suggestions_router: {e}")
+    pattern_suggestions_router = None
+
+try:
+    from app.api.ops_dashboard_routes import router as ops_dashboard_router
+except Exception as e:
+    logger.warning(f"Could not import ops_dashboard_router: {e}")
+    ops_dashboard_router = None
+
+try:
+    from app.api.fill_report_routes import router as fill_report_router
+except Exception as e:
+    logger.warning(f"Could not import fill_report_router: {e}")
+    fill_report_router = None
+
+try:
+    from app.api.fill_history_routes import router as fill_history_router
+except Exception as e:
+    logger.warning(f"Could not import fill_history_router: {e}")
+    fill_history_router = None
+
+try:
+    from app.api.fill_aggregation_routes import router as fill_agg_router
+except Exception as e:
+    logger.warning(f"Could not import fill_agg_router: {e}")
+    fill_agg_router = None
+
+try:
+    from app.api.etf_guard_routes import router as etf_guard_router
+except Exception as e:
+    logger.warning(f"Could not import etf_guard_router: {e}")
+    etf_guard_router = None
+
+try:
+    from app.api.truth_shift_routes import router as truth_shift_router
+except Exception as e:
+    logger.warning(f"Could not import truth_shift_router: {e}")
+    truth_shift_router = None
+
+try:
+    from app.api.admin_routes import router as admin_router
+except Exception as e:
+    logger.warning(f"Could not import admin_router: {e}")
+    admin_router = None
 
 # Create FastAPI app
 app = FastAPI(
@@ -222,6 +316,8 @@ if jfin_router:
     app.include_router(jfin_router)
 if port_adjuster_router:
     app.include_router(port_adjuster_router)
+if port_adjuster_v2_router:
+    app.include_router(port_adjuster_v2_router)
 if log_router:
     app.include_router(log_router)
 if ticker_alert_router:
@@ -260,9 +356,69 @@ if qebench_router:
     app.include_router(qebench_router)
 if system_router:
     app.include_router(system_router)
+if simulation_router:
+    app.include_router(simulation_router)
+if karbotu_diagnostic_router:
+    app.include_router(karbotu_diagnostic_router)
+if runall_diagnostic_router:
+    app.include_router(runall_diagnostic_router)
+if excluded_list_router:
+    app.include_router(excluded_list_router)
+if general_logic_router:
+    app.include_router(general_logic_router)
+if xnl_router:
+    app.include_router(xnl_router)
+if rev_orders_router:
+    app.include_router(rev_orders_router)
+if pattern_suggestions_router:
+    app.include_router(pattern_suggestions_router)
+if ops_dashboard_router:
+    app.include_router(ops_dashboard_router)
+if fill_report_router:
+    app.include_router(fill_report_router)
+if fill_history_router:
+    app.include_router(fill_history_router)
+if fill_agg_router:
+    app.include_router(fill_agg_router)
+if etf_guard_router:
+    app.include_router(etf_guard_router)
+if truth_shift_router:
+    app.include_router(truth_shift_router)
+if admin_router:
+    app.include_router(admin_router)
 # IMPORTANT: static_files_router must be LAST because it has catch-all route
+# Trading Observer Agent routes (before static files)
+try:
+    from app.agent.agent_routes import router as observer_router
+except Exception as e:
+    logger.warning(f"Could not import observer_router: {e}")
+    observer_router = None
+
+if observer_router:
+    app.include_router(observer_router)
+
+# Learning Agent (QAGENTT) routes
+try:
+    from app.agent.learning_agent_routes import router as learning_agent_router
+except Exception as e:
+    logger.warning(f"Could not import learning_agent_router: {e}")
+    learning_agent_router = None
+
+if learning_agent_router:
+    app.include_router(learning_agent_router)
+
+# Ex-Dividend Analysis routes
+try:
+    from app.agent.exdiv_routes import router as exdiv_router
+except Exception as e:
+    logger.warning(f"Could not import exdiv_router: {e}")
+    exdiv_router = None
+
+if exdiv_router:
+    app.include_router(exdiv_router)
+
 if static_files_router:
-    app.include_router(static_files_router)
+    app.include_router(static_files_router, prefix="/static")
 
 
 
@@ -285,10 +441,41 @@ async def health():
     }
 
 
+@app.get("/tss-v2")
+async def tss_v2_dashboard():
+    """TSS v2 Dashboard endpoint — returns latest Truth Shift Scores."""
+    try:
+        from app.market_data.truth_shift_v2_engine import get_truth_shift_v2_engine
+        engine = get_truth_shift_v2_engine()
+        
+        if not engine:
+            return {"success": False, "error": "TSS v2 Engine not initialized"}
+        
+        data = engine.get_all_scores()
+        
+        # Clean metrics from symbol_scores (too large for API response)
+        clean_symbols = {}
+        for sym, windows in data.get('symbol_scores', {}).items():
+            clean_symbols[sym] = {}
+            for wname, wdata in windows.items():
+                clean_symbols[sym][wname] = {k: v for k, v in wdata.items() if k != 'metrics'}
+        
+        return {
+            "success": True,
+            "symbol_scores": clean_symbols,
+            "group_scores": data.get('group_scores', {}),
+            "market_scores": data.get('market_scores', {}),
+            "compute_count": data.get('compute_count', 0),
+            "last_compute": data.get('last_compute', 0),
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
     """Global exception handler"""
-    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    logger.error("Unhandled exception: {}", exc, exc_info=True)
     # Show detail only if log level is DEBUG
     show_detail = settings.LOG_LEVEL.upper() == "DEBUG"
     return JSONResponse(
@@ -341,13 +528,12 @@ async def startup_event():
             import pandas as pd
             
             etf_csv_paths = [
-                # PRIORITY: Local
-                Path(os.getcwd()) / 'janall' / 'janeketfs.csv',
-                Path(os.getcwd()) / 'janeketfs.csv',
+                # PRIORITY: C Drive Project Path
+                Path(r"C:\StockTracker\janall") / 'janeketfs.csv',
                 
                 # Fallbacks
-                Path(r"C:\StockTracker\janall") / 'janeketfs.csv',
-                Path(r"C:\Users\User\OneDrive\Masaüstü\Proje\StockTracker\janall") / 'janeketfs.csv',
+                Path(os.getcwd()) / 'janall' / 'janeketfs.csv',
+                Path(os.getcwd()) / 'janeketfs.csv',
             ]
             
             for etf_path in etf_csv_paths:
@@ -373,8 +559,7 @@ async def startup_event():
     # Initialize Hammer feed (for live market data)
     try:
         from app.live.hammer_client import HammerClient
-        from app.live.hammer_feed import HammerFeed
-        from app.api.market_data_routes import set_hammer_feed
+        from app.live.hammer_feed import HammerFeed, set_hammer_feed
         
         # Check if Hammer password is configured
         if settings.HAMMER_PASSWORD:
@@ -412,40 +597,169 @@ async def startup_event():
                             set_hammer_execution_service(hammer_client, settings.HAMMER_ACCOUNT_KEY)
                             
                             logger.info("✅ Hammer execution services initialized")
-
-                            # --- BEFDAY TRACKING FOR HAMPRO (User Request) ---
+                            
+                            # 🔥 CRITICAL: Auto-subscribe to all preferred symbols on startup
+                            # Market data (bid/ask/last) ALWAYS comes from Hammer Pro, regardless of trading account mode
                             try:
-                                import asyncio
-                                from app.psfalgo.befday_tracker import get_befday_tracker, initialize_befday_tracker
-                                from app.api.trading_routes import get_hammer_positions_service
+                                from app.market_data.static_data_store import get_static_store
+                                from app.api.market_data_routes import ETF_TICKERS
                                 
-                                # Run in separate safe block to not crash connection
-                                def run_befday_check():
-                                    try:
-                                        tracker = get_befday_tracker()
-                                        if not tracker:
-                                            tracker = initialize_befday_tracker()
-                                        
-                                        should_track, reason = tracker.should_track('hampro')
-                                        if should_track:
-                                            logger.info(f"[BEFDAY] Need snapshot for HAMPRO ({reason})...")
-                                            pos_service = get_hammer_positions_service()
-                                            if pos_service:
-                                                # Hammer positions are sync usually
-                                                positions = pos_service.get_positions(force_refresh=True)
-                                                if positions:
-                                                    # Run async tracker in new event loop for this thread
-                                                    asyncio.run(tracker.track_positions(positions, 'hampro', 'HAMPRO'))
-                                                    logger.info("[BEFDAY] ✅ HAMPRO Snapshot created (befham.csv)")
-                                                else:
-                                                    logger.warning("[BEFDAY] No HAMPRO positions found. Snapshot skipped.")
-                                    except Exception as be:
-                                        logger.error(f"[BEFDAY] HAMPRO Auto-track error: {be}")
-
-                                run_befday_check()
-
+                                static_store = get_static_store()
+                                if static_store and static_store.is_loaded():
+                                    # Get all preferred symbols (exclude ETFs - they are subscribed separately)
+                                    all_symbols = static_store.get_all_symbols()
+                                    preferred_symbols = [s for s in all_symbols if s not in ETF_TICKERS]
+                                    
+                                    if preferred_symbols:
+                                        logger.info(f"📊 [STARTUP] Auto-subscribing to {len(preferred_symbols)} preferred stocks (L1 only)...")
+                                        subscribed_count = hammer_feed.subscribe_symbols_batch(
+                                            preferred_symbols,
+                                            include_l2=False,  # L1 only for preferred stocks
+                                            batch_size=50
+                                        )
+                                        logger.info(f"✅ [STARTUP] Auto-subscription complete: {subscribed_count}/{len(preferred_symbols)} preferred stocks (L1 only)")
+                                    else:
+                                        logger.warning("⚠️ [STARTUP] No preferred symbols found to subscribe")
+                                else:
+                                    logger.warning("⚠️ [STARTUP] Static store not loaded yet - preferred subscription will happen when ScannerPage loads")
                             except Exception as e:
-                                logger.error(f"[BEFDAY] Error initiating HAMPRO check: {e}")
+                                logger.error(f"❌ [STARTUP] Error auto-subscribing to preferred symbols: {e}", exc_info=True)
+
+                            # --- BEFDAY: Startup Stale Cleanup + Auto-Capture ---
+                            # On the first boot of each day, clean stale yesterday CSV/Redis
+                            # and auto-capture fresh BEFDAY for HAMPRO.
+                            # IBKR befday is captured later via _auto_track_befday_task on IBKR connect.
+                            try:
+                                import os
+                                from pathlib import Path
+                                from datetime import datetime as dt_cls, date as date_cls
+                                
+                                # Clean ALL stale befday CSVs (befham, befibped, befibgun)
+                                stale_files = {
+                                    "befham.csv": "HAMPRO",
+                                    "befibped.csv": "IBKR_PED",
+                                    "befibgun.csv": "IBKR_GUN",
+                                }
+                                for csv_name, redis_account in stale_files.items():
+                                    csv_path = Path("C:/StockTracker") / csv_name
+                                    if csv_path.exists():
+                                        old_mtime = os.path.getmtime(csv_path)
+                                        old_date = dt_cls.fromtimestamp(old_mtime).date()
+                                        if old_date != date_cls.today():
+                                            logger.info(f"[BEFDAY] 🗑️ Startup: Deleting stale {csv_name} from {old_date}")
+                                            os.remove(csv_path)
+                                            # Also clean stale Redis BEFDAY cache
+                                            try:
+                                                from app.core.redis_client import get_redis_client
+                                                r = get_redis_client()
+                                                if r and r.sync:
+                                                    r.sync.delete(f"psfalgo:befday:positions:{redis_account}")
+                                                    logger.info(f"[BEFDAY] 🗑️ Startup: Cleared yesterday's Redis BEFDAY for {redis_account}")
+                                            except Exception:
+                                                pass
+                                        else:
+                                            logger.info(f"[BEFDAY] ✅ {csv_name} exists for today — preserving (sacred)")
+                                
+                                # Auto-capture HAMPRO BEFDAY (first boot of the day)
+                                # ═══════════════════════════════════════════════════════════════
+                                # FIX: Retry loop — Hammer auth succeeds but positions may not
+                                # be populated yet. Poll up to 6x (5s apart, ~30s total) until
+                                # positions are available. Without this, capture returns 0
+                                # positions and BEFDAY is never saved, breaking REV engine.
+                                # ═══════════════════════════════════════════════════════════════
+                                try:
+                                    from app.api.befday_routes import has_captured_today, capture_befday
+                                    if not has_captured_today("ham"):
+                                        logger.info("[BEFDAY] 🔥 First boot today — auto-capturing HAMPRO BEFDAY (with retry)...")
+                                        import asyncio as _aio
+                                        
+                                        max_retries = 12
+                                        retry_delay = 10  # seconds (12 × 10 = 120s total)
+                                        captured = False
+                                        
+                                        # Wait 15s before first attempt — Hammer Pro needs time to load positions
+                                        logger.info("[BEFDAY] ⏳ Waiting 15s for Hammer Pro positions to load before first capture attempt...")
+                                        time.sleep(15)
+                                        
+                                        for attempt in range(1, max_retries + 1):
+                                            # Wait before retry (not first attempt — already waited above)
+                                            if attempt > 1:
+                                                logger.info(f"[BEFDAY] ⏳ Waiting {retry_delay}s for positions to load (attempt {attempt}/{max_retries})...")
+                                                time.sleep(retry_delay)
+                                            
+                                            _cap_loop = _aio.new_event_loop()
+                                            try:
+                                                result = _cap_loop.run_until_complete(capture_befday("ham", force=False))
+                                                if result and result.get("success") and result.get("position_count", 0) > 0:
+                                                    pos_count = result.get("position_count", 0)
+                                                    logger.info(f"[BEFDAY] ✅ HAMPRO BEFDAY auto-captured: {pos_count} positions (attempt {attempt})")
+                                                    captured = True
+                                                    break
+                                                else:
+                                                    pos_count = result.get("position_count", 0) if result else 0
+                                                    logger.warning(f"[BEFDAY] Attempt {attempt}/{max_retries}: got {pos_count} positions — retrying...")
+                                            except Exception as retry_err:
+                                                logger.warning(f"[BEFDAY] Attempt {attempt}/{max_retries} error: {retry_err}")
+                                            finally:
+                                                _cap_loop.close()
+                                        
+                                        if not captured:
+                                            logger.error(
+                                                f"[BEFDAY] ❌ HAMPRO BEFDAY FAILED after {max_retries} inline attempts! "
+                                                f"Scheduling background retry task..."
+                                            )
+                                            # Set flag so background task knows to retry
+                                            try:
+                                                from app.core.redis_client import get_redis_client
+                                                _br = get_redis_client()
+                                                if _br and _br.sync:
+                                                    _br.sync.set("psfalgo:befday:hampro_needs_capture", "true", ex=3600)
+                                            except Exception:
+                                                pass
+                                    else:
+                                        logger.info("[BEFDAY] ✅ HAMPRO BEFDAY already captured today — skipping")
+                                except Exception as cap_err:
+                                    logger.error(f"[BEFDAY] HAMPRO auto-capture failed: {cap_err}", exc_info=True)
+                                    
+                            except Exception as e:
+                                logger.error(f"[BEFDAY] Startup cleanup/capture error: {e}")
+
+                            # ═══════════════════════════════════════════════════════════════
+                            # AUTO-SELECT HAMPRO ACCOUNT (Critical: Unblock Runall Engine)
+                            # ═══════════════════════════════════════════════════════════════
+                            # Without this, Runall Engine's run_single_cycle() checks
+                            # psfalgo:account_selected and SKIPs if not set.
+                            # On 3 March this caused a 13-hour engine outage.
+                            # ═══════════════════════════════════════════════════════════════
+                            try:
+                                from app.core.redis_client import get_redis_client
+                                r = get_redis_client()
+                                if r and r.sync:
+                                    r.sync.set("psfalgo:account_selected", "true", ex=86400)
+                                    r.sync.set("psfalgo:trading:account_mode", "HAMPRO")
+                                    logger.info("[STARTUP] ✅ Auto-selected HAMPRO account (psfalgo:account_selected set)")
+                                
+                                # Also sync TradingAccountContext
+                                try:
+                                    from app.trading.trading_account_context import get_trading_context, TradingAccountMode
+                                    ctx = get_trading_context()
+                                    ctx.set_trading_mode(TradingAccountMode.HAMPRO)
+                                    logger.info("[STARTUP] ✅ TradingAccountContext synced to HAMPRO")
+                                except Exception as ctx_err:
+                                    logger.warning(f"[STARTUP] TradingAccountContext sync failed: {ctx_err}")
+                                    
+                            except Exception as acct_err:
+                                logger.error(f"[STARTUP] Auto-account selection failed: {acct_err}")
+                            
+                            # Signal main thread: Runall Engine can start now
+                            try:
+                                from app.core.redis_client import get_redis_client
+                                r2 = get_redis_client()
+                                if r2 and r2.sync:
+                                    r2.sync.set("psfalgo:hammer_ready", "true", ex=86400)
+                                    logger.info("[STARTUP] ✅ psfalgo:hammer_ready signal set — Runall Engine will auto-start")
+                            except Exception:
+                                pass
 
                         else:
                             logger.warning("⚠️ Hammer client connected but authentication timeout")
@@ -454,10 +768,14 @@ async def startup_event():
                 except Exception as e:
                     logger.warning(f"⚠️ Error connecting to Hammer Pro: {e}")
             
-            # Start connection in background thread
+            # Start connection in background thread and WAIT for it to complete
+            # This is necessary because DualConnectionManager._connect_hammer_pro() 
+            # needs get_hammer_feed() to be set BEFORE it runs
             import threading
             hammer_thread = threading.Thread(target=connect_hammer, daemon=True)
             hammer_thread.start()
+            hammer_thread.join(timeout=15)  # Wait up to 15 seconds for Hammer connection
+            logger.info("✅ Hammer connection thread completed (or timeout)")
         else:
             logger.warning("⚠️ HAMMER_PASSWORD not configured - live market data will not be available")
     except Exception as e:
@@ -576,6 +894,59 @@ async def startup_event():
         
     except Exception as e:
         logger.warning(f"⚠️ Could not initialize Metrics/Exposure APIs: {e}")
+    
+    
+    # =========================================================================
+    # PHASE 11: Initialize Dual Connection Manager (HAMMER_PRO + ONE IBKR)
+    # IMPORTANT: IBKR_PED and IBKR_GUN CANNOT connect at same time (same Gateway)
+    # =========================================================================
+    try:
+        from app.psfalgo.dual_connection_manager import initialize_dual_connection_manager, get_dual_connection_manager
+        
+        # Initialize manager
+        initialize_dual_connection_manager()
+        dual_conn_mgr = get_dual_connection_manager()
+        
+        if dual_conn_mgr:
+            logger.info("[STARTUP] 🔌 Connecting to HAMMER_PRO + IBKR_PED (default)...")
+            
+            # Connect HAMMER_PRO + ONE IBKR account
+            # IBKR_PED and IBKR_GUN share same Gateway - only ONE can be connected
+            connection_results = await dual_conn_mgr.connect_startup(default_ibkr="IBKR_PED")
+            
+            # Log results
+            ibkr_status = "✅" if connection_results['ibkr'].get('connected') else "❌"
+            hammer_status = "✅" if connection_results['hammer_pro'].get('connected') else "❌"
+            
+            logger.info(f"[STARTUP] Connection Results:")
+            logger.info(f"  IBKR_PED: {ibkr_status} {connection_results['ibkr'].get('error', '')}")
+            logger.info(f"  HAMMER_PRO: {hammer_status} {connection_results['hammer_pro'].get('error', '')}")
+            
+            # Set default active account to HAMMER_PRO (data routing)
+            from app.psfalgo.ibkr_connector import set_active_ibkr_account
+            from app.core.redis_client import get_redis_client
+            import json
+            
+            try:
+                r = get_redis_client()
+                if r and getattr(r, 'sync', None):
+                    # IBKR_PED connected but default to HAMPRO for data routing
+                    r.sync.set("psfalgo:recovery:account_open", "HAMPRO")
+                    r.sync.set("psfalgo:account_mode", json.dumps({"mode": "HAMMER_PRO"}))
+                    r.sync.set("psfalgo:trading:account_mode", "HAMPRO")
+                    set_active_ibkr_account(None)  # No IBKR active by default
+                    logger.info("[STARTUP] ✅ Default active account: HAMMER_PRO")
+            except Exception as e:
+                logger.warning(f"[STARTUP] Failed to set default account: {e}")
+                
+        else:
+            logger.warning("[STARTUP] ⚠️ Dual Connection Manager not initialized")
+            
+    except Exception as e:
+        logger.error(f"[STARTUP] ❌ Failed to initialize dual connections: {e}", exc_info=True)
+    
+    # Phase 11: HAMMER_PRO + ONE IBKR account connected via DualConnectionManager
+    pass
 
     # Initialize Runall Engine & State API (Core Logic)
     try:
@@ -589,6 +960,14 @@ async def startup_event():
         initialize_proposal_store()
         logger.info("✅ Proposal Engine & Store initialized")
         
+        # Initialize PositionTagStore (Dual Tag System v4: POS TAG in Redis)
+        try:
+            from app.psfalgo.position_tag_store import initialize_position_tag_store
+            initialize_position_tag_store()
+            logger.info("✅ PositionTagStore initialized (Dual Tag v4)")
+        except Exception as pts_err:
+            logger.warning(f"⚠️ PositionTagStore init failed: {pts_err}")
+        
         # Initialize Engine
         initialize_runall_engine()
         runall_engine = get_runall_engine()
@@ -597,10 +976,148 @@ async def startup_event():
         initialize_runall_state_api(runall_engine)
         logger.info("✅ Runall Engine & State API initialized")
 
-        # Auto-start Runall Engine
-        if runall_engine:
-            logger.info("Auto-starting Runall Engine...")
-            await runall_engine.start()
+        # ═══════════════════════════════════════════════════════════════
+        # AUTO-START RUNALL ENGINE
+        # ═══════════════════════════════════════════════════════════════
+        # Previously: Engine waited for manual account selection via UI.
+        # This caused a 13-hour outage on 3 March when nobody clicked.
+        # 
+        # New behavior: Start a background task that waits for Hammer
+        # to connect (psfalgo:hammer_ready signal) then auto-starts
+        # the Runall Engine. Maximum wait: 90s (enough for BEFDAY retry).
+        # If Hammer doesn't connect, we still start with whatever
+        # account was last used (from Redis persistence).
+        # ═══════════════════════════════════════════════════════════════
+        async def _auto_start_runall():
+            """Wait for Hammer connection, then auto-start Runall Engine."""
+            try:
+                from app.core.redis_client import get_redis_client
+                
+                max_wait = 90  # seconds (covers BEFDAY retry: 6 attempts × 5s + overhead)
+                poll_interval = 3  # seconds
+                waited = 0
+                
+                while waited < max_wait:
+                    try:
+                        r = get_redis_client()
+                        if r and r.sync:
+                            hammer_ready = r.sync.get("psfalgo:hammer_ready")
+                            account_selected = r.sync.get("psfalgo:account_selected")
+                            if hammer_ready or account_selected:
+                                logger.info(f"[STARTUP] 🚀 Hammer ready signal received (waited {waited}s) — starting Runall Engine")
+                                break
+                    except Exception:
+                        pass
+                    
+                    await asyncio.sleep(poll_interval)
+                    waited += poll_interval
+                
+                if waited >= max_wait:
+                    # Timeout — force start anyway with HAMPRO default
+                    logger.warning(f"[STARTUP] ⚠️ Hammer ready signal timeout ({max_wait}s) — force-starting Runall Engine with HAMPRO")
+                    try:
+                        r = get_redis_client()
+                        if r and r.sync:
+                            r.sync.set("psfalgo:account_selected", "true", ex=86400)
+                            r.sync.set("psfalgo:trading:account_mode", "HAMPRO")
+                    except Exception:
+                        pass
+                    try:
+                        from app.trading.trading_account_context import get_trading_context, TradingAccountMode
+                        ctx = get_trading_context()
+                        ctx.set_trading_mode(TradingAccountMode.HAMPRO)
+                    except Exception:
+                        pass
+                
+                # Start Runall Engine
+                from app.psfalgo.runall_engine import get_runall_engine
+                engine = get_runall_engine()
+                if engine and not engine.loop_running:
+                    await engine.start()
+                    logger.info("[STARTUP] ✅ Runall Engine AUTO-STARTED successfully")
+                elif engine and engine.loop_running:
+                    logger.info("[STARTUP] ℹ️ Runall Engine already running (started by manual account selection)")
+                    
+            except Exception as e:
+                logger.error(f"[STARTUP] Auto-start Runall Engine failed: {e}", exc_info=True)
+        
+        asyncio.create_task(_auto_start_runall())
+        logger.info("⏳ Runall Engine auto-start task scheduled (waiting for Hammer connection)")
+        
+        # ═══════════════════════════════════════════════════════════════
+        # BACKGROUND RETRY: HAMPRO BEFDAY Capture
+        # If inline startup capture failed (positions weren't ready),
+        # this task retries every 30s for up to 10 minutes.
+        # Once captured, it stops. REV engine needs BEFDAY to work.
+        # ═══════════════════════════════════════════════════════════════
+        async def _befday_background_retry_hampro():
+            """Background task: retry HAMPRO BEFDAY capture until successful."""
+            try:
+                from app.core.redis_client import get_redis_client
+                import asyncio as _bg_aio
+                
+                # Wait 30s before first check (let inline attempt finish)
+                await _bg_aio.sleep(30)
+                
+                r = get_redis_client()
+                if not r or not r.sync:
+                    return
+                
+                # Check if capture is still needed
+                needs_capture = r.sync.get("psfalgo:befday:hampro_needs_capture")
+                if not needs_capture:
+                    logger.debug("[BEFDAY_BG] HAMPRO BEFDAY already captured — background retry not needed")
+                    return
+                
+                logger.info("[BEFDAY_BG] 🔄 Starting background BEFDAY retry for HAMPRO...")
+                
+                max_bg_duration = 600  # 10 minutes
+                bg_interval = 30      # 30 seconds between attempts
+                elapsed = 0
+                attempt = 0
+                
+                while elapsed < max_bg_duration:
+                    attempt += 1
+                    
+                    # Re-check if already captured (another path may have succeeded)
+                    from app.api.befday_routes import has_captured_today, capture_befday
+                    if has_captured_today("ham"):
+                        logger.info(f"[BEFDAY_BG] ✅ HAMPRO BEFDAY already captured (detected at bg attempt {attempt}) — stopping")
+                        r.sync.delete("psfalgo:befday:hampro_needs_capture")
+                        return
+                    
+                    try:
+                        result = await capture_befday("ham", force=False)
+                        if result and result.get("already_captured"):
+                            logger.info(f"[BEFDAY_BG] ✅ HAMPRO BEFDAY already captured by another path — stopping")
+                            r.sync.delete("psfalgo:befday:hampro_needs_capture")
+                            return
+                        if result and result.get("success") and result.get("position_count", 0) > 0:
+                            pos_count = result.get("position_count", 0)
+                            logger.info(
+                                f"[BEFDAY_BG] ✅ HAMPRO BEFDAY captured: {pos_count} positions "
+                                f"(background attempt {attempt}, elapsed={elapsed}s)"
+                            )
+                            r.sync.delete("psfalgo:befday:hampro_needs_capture")
+                            return
+                        else:
+                            pos_count = result.get("position_count", 0) if result else 0
+                            logger.warning(f"[BEFDAY_BG] Attempt {attempt}: got {pos_count} positions — retrying in {bg_interval}s...")
+                    except Exception as bg_err:
+                        logger.warning(f"[BEFDAY_BG] Attempt {attempt} error: {bg_err}")
+                    
+                    await _bg_aio.sleep(bg_interval)
+                    elapsed += bg_interval
+                
+                logger.error(
+                    f"[BEFDAY_BG] ❌ HAMPRO BEFDAY FAILED after {max_bg_duration}s background retry! "
+                    f"REV engine will be DISABLED for HAMPRO today. Manual capture required via UI."
+                )
+            except Exception as e:
+                logger.error(f"[BEFDAY_BG] Background retry task error: {e}", exc_info=True)
+        
+        asyncio.create_task(_befday_background_retry_hampro())
+        logger.info("⏳ BEFDAY background retry task scheduled for HAMPRO")
 
     except Exception as e:
         logger.warning(f"⚠️ Could not initialize Runall Engine: {e}")
@@ -619,6 +1136,374 @@ async def startup_event():
         logger.info("✅ Auto deeper analysis scheduler started (15 min interval)")
     except Exception as e:
         logger.warning(f"⚠️ Could not start auto deeper analysis scheduler: {e}")
+
+    # ═══════════════════════════════════════════════════════════════
+    # Truth Shift Score v2 Engine (5-minute cycle, reads truth ticks from Redis)
+    # Must be AFTER market data services (needs static store for ADV/groups)
+    # ═══════════════════════════════════════════════════════════════
+    try:
+        from app.market_data.truth_shift_v2_engine import initialize_truth_shift_v2_engine
+        tss_engine = initialize_truth_shift_v2_engine(compute_interval=300.0)  # 5 min
+        if tss_engine:
+            logger.info("✅ Truth Shift Score v2 Engine initialized (5 min cycle)")
+        else:
+            logger.warning("⚠️ TSS v2 Engine not initialized (Redis may not be available)")
+    except Exception as e:
+        logger.warning(f"⚠️ Could not initialize TSS v2 Engine: {e}")
+
+    # Start L1 Feed Service Listener (connects L1 Worker -> DataFabric)
+    try:
+        asyncio.create_task(start_l1_feed_listener())
+        logger.info("✅ L1 Feed Service listener started")
+    except Exception as e:
+        logger.warning(f"⚠️ Could not start L1 Feed listener: {e}")
+    
+    # CRITICAL: Start Position Redis Worker (writes active account positions/orders to Redis for terminals)
+    try:
+        from app.workers.position_redis_worker import start_position_redis_worker
+        start_position_redis_worker()
+        logger.info("✅ Position Redis Worker started (updates every 30s)")
+    except Exception as e:
+        logger.warning(f"⚠️ Could not start Position Redis Worker: {e}")
+    
+    # CRITICAL: Start Order Queue Worker (processes orders from Redis queue)
+    try:
+        from app.workers.order_queue_worker import start_order_queue_worker
+        start_order_queue_worker()
+        logger.info("✅ Order Queue Worker started (processes orders from Redis queue)")
+    except Exception as e:
+        logger.warning(f"⚠️ Could not start Order Queue Worker: {e}")
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # CRITICAL: Auto-Launch Truth Tick Workers (with crash auto-restart)
+    # ═══════════════════════════════════════════════════════════════════════════
+    # Problem: 334/466 symbols had NO truth tick data (March 10, 2026)
+    # because truth tick workers were launched via separate cluster_launcher
+    # terminal that crashed silently. Workers 2-6 never collected data.
+    #
+    # Fix: Backend now owns the truth tick worker lifecycle:
+    # 1. Generates cluster configs (same as launch_cluster.py)
+    # 2. Spawns worker subprocesses  
+    # 3. Monitors health every 60s and auto-restarts crashed workers
+    # ═══════════════════════════════════════════════════════════════════════════
+    try:
+        import subprocess as _sp
+        import threading as _th
+        
+        def _launch_truth_tick_cluster():
+            """Launch truth tick workers as subprocesses with auto-restart.
+            
+            SINGLE SOURCE OF TRUTH: Only backend manages TT workers.
+            - Sets Redis flag 'tt_cluster:managed_by=backend' to prevent double-launch
+            - launch_cluster.py checks this flag and refuses to start if backend is managing
+            - baslat.py no longer has a separate cluster option
+            """
+            try:
+                import time
+                import math
+                import json as _json
+                from pathlib import Path as _Path
+                from app.market_data.static_data_store import get_static_store
+                from app.market_data.grouping import get_all_group_keys
+                
+                # Wait for Hammer connection and static store to be ready
+                time.sleep(10)
+                
+                # ═══ DOUBLE-LAUNCH PROTECTION ═══
+                try:
+                    from app.core.redis_client import get_redis_client
+                    r = get_redis_client()
+                    if r and r.sync:
+                        # Set management flag — tells launch_cluster.py NOT to launch
+                        r.sync.set("tt_cluster:managed_by", "backend", ex=3600)  # 1-hour TTL
+                        r.sync.set("tt_cluster:started_at", str(time.time()), ex=3600)
+                        logger.info("[TT-CLUSTER] 🔒 Set management lock: tt_cluster:managed_by=backend")
+                except Exception as flag_err:
+                    logger.debug(f"[TT-CLUSTER] Flag set warning: {flag_err}")
+                
+                # ═══ CLEANUP: Kill zombie workers from previous sessions ═══
+                try:
+                    from app.core.redis_client import get_redis_client
+                    r = get_redis_client()
+                    if r and r.sync:
+                        old_pids_raw = r.sync.get("tt_cluster:worker_pids")
+                        if old_pids_raw:
+                            old_pids = _json.loads(old_pids_raw)
+                            for pid in old_pids:
+                                try:
+                                    os.kill(int(pid), 9)  # SIGKILL
+                                    logger.info(f"[TT-CLUSTER] 🧹 Killed zombie worker PID {pid}")
+                                except (ProcessLookupError, OSError):
+                                    pass  # Already dead
+                except Exception as cleanup_err:
+                    logger.debug(f"[TT-CLUSTER] Cleanup: {cleanup_err}")
+                
+                store = get_static_store()
+                if not store or not store.is_loaded():
+                    logger.warning("[TT-CLUSTER] Static store not loaded — will launch single all-symbol worker")
+                    # Fallback: single worker, auto-load safety net will handle all symbols
+                    worker_configs = {1: []}
+                else:
+                    # Partition symbols (same logic as launch_cluster.py)
+                    groups = get_all_group_keys(store)
+                    heldkuponlu_symbols = []
+                    other_symbols = []
+                    
+                    for group, symbols in groups.items():
+                        if "heldkuponlu" in group:
+                            heldkuponlu_symbols.extend(symbols)
+                        else:
+                            other_symbols.extend(symbols)
+                    
+                    heldkuponlu_symbols = sorted(list(set(heldkuponlu_symbols)))
+                    other_symbols = sorted(list(set(other_symbols)))
+                    
+                    total = len(heldkuponlu_symbols) + len(other_symbols)
+                    logger.info(f"[TT-CLUSTER] Partitioning {total} symbols: {len(heldkuponlu_symbols)} kuponlu + {len(other_symbols)} others")
+                    
+                    CLUSTER_SIZE = 6
+                    worker_configs = {1: heldkuponlu_symbols}
+                    
+                    other_count = CLUSTER_SIZE - 1
+                    chunk_size = math.ceil(len(other_symbols) / other_count) if other_symbols else 0
+                    
+                    for i in range(other_count):
+                        wid = i + 2
+                        start_idx = i * chunk_size
+                        end_idx = min((i + 1) * chunk_size, len(other_symbols))
+                        worker_configs[wid] = other_symbols[start_idx:end_idx]
+                
+                # Write config files
+                config_dir = _Path("config/cluster_configs")
+                config_dir.mkdir(parents=True, exist_ok=True)
+                
+                for wid, symbols in worker_configs.items():
+                    config_path = config_dir / f"worker_{wid}.json"
+                    with open(config_path, "w") as f:
+                        _json.dump({"worker_id": wid, "count": len(symbols), "symbols": symbols}, f, indent=2)
+                
+                # Launch and monitor workers
+                import sys as _sys
+                worker_script = "app/workers/truth_ticks_worker.py"
+                processes = {}
+                
+                for wid, symbols in worker_configs.items():
+                    config_path = str(config_dir / f"worker_{wid}.json")
+                    cmd = [_sys.executable, "-u", worker_script, "--name", f"tt_worker_{wid}", "--config", config_path]
+                    
+                    try:
+                        if os.name == 'nt':
+                            p = _sp.Popen(cmd, creationflags=_sp.CREATE_NEW_CONSOLE)
+                        else:
+                            p = _sp.Popen(cmd)
+                        processes[wid] = {"process": p, "cmd": cmd, "config": config_path, "restarts": 0}
+                        logger.info(f"[TT-CLUSTER] ✅ Worker {wid} launched (PID: {p.pid}, {len(symbols)} symbols)")
+                        time.sleep(2)  # Stagger starts
+                    except Exception as spawn_err:
+                        logger.error(f"[TT-CLUSTER] ❌ Failed to launch worker {wid}: {spawn_err}")
+                
+                # Save PIDs to Redis for zombie cleanup on next restart
+                try:
+                    from app.core.redis_client import get_redis_client
+                    r = get_redis_client()
+                    if r and r.sync:
+                        pids = [str(info["process"].pid) for info in processes.values()]
+                        r.sync.set("tt_cluster:worker_pids", _json.dumps(pids), ex=86400)  # 24h TTL
+                        r.sync.set("tt_cluster:worker_count", str(len(processes)), ex=86400)
+                        # Refresh management lock
+                        r.sync.set("tt_cluster:managed_by", "backend", ex=3600)
+                except Exception:
+                    pass
+                
+                total_syms = sum(len(worker_configs.get(wid, [])) for wid in processes.keys())
+                logger.info(f"[TT-CLUSTER] 🚀 {len(processes)} truth tick workers launched ({total_syms} total symbols)")
+                
+                # Health monitor loop — auto-restart crashed workers
+                MAX_RESTARTS = 5
+                CHECK_INTERVAL = 60  # seconds
+                
+                while True:
+                    time.sleep(CHECK_INTERVAL)
+                    
+                    # Refresh management lock periodically
+                    try:
+                        from app.core.redis_client import get_redis_client
+                        r = get_redis_client()
+                        if r and r.sync:
+                            r.sync.set("tt_cluster:managed_by", "backend", ex=3600)
+                            alive_count = sum(1 for info in processes.values() if info["process"].poll() is None)
+                            r.sync.set("tt_cluster:alive_count", str(alive_count), ex=300)
+                    except Exception:
+                        pass
+                    
+                    for wid, info in list(processes.items()):
+                        p = info["process"]
+                        retcode = p.poll()  # None = still running
+                        
+                        if retcode is not None:
+                            # Worker crashed!
+                            if info["restarts"] < MAX_RESTARTS:
+                                info["restarts"] += 1
+                                logger.warning(
+                                    f"[TT-CLUSTER] 🔴 Worker {wid} crashed (exit={retcode})! "
+                                    f"Auto-restarting ({info['restarts']}/{MAX_RESTARTS})..."
+                                )
+                                try:
+                                    if os.name == 'nt':
+                                        new_p = _sp.Popen(info["cmd"], creationflags=_sp.CREATE_NEW_CONSOLE)
+                                    else:
+                                        new_p = _sp.Popen(info["cmd"])
+                                    info["process"] = new_p
+                                    logger.info(f"[TT-CLUSTER] ✅ Worker {wid} restarted (new PID: {new_p.pid})")
+                                except Exception as restart_err:
+                                    logger.error(f"[TT-CLUSTER] ❌ Failed to restart worker {wid}: {restart_err}")
+                            else:
+                                logger.error(
+                                    f"[TT-CLUSTER] ❌ Worker {wid} exceeded max restarts ({MAX_RESTARTS})! "
+                                    f"Manual intervention required."
+                                )
+                
+            except Exception as e:
+                logger.error(f"[TT-CLUSTER] ❌ Cluster launch failed: {e}", exc_info=True)
+        
+        # Launch cluster in background daemon thread
+        cluster_thread = _th.Thread(target=_launch_truth_tick_cluster, daemon=True, name="tt_cluster_launcher")
+        cluster_thread.start()
+        logger.info("✅ Truth Tick Cluster auto-launcher started (background thread)")
+        
+    except Exception as e:
+        logger.warning(f"⚠️ Could not start Truth Tick Cluster: {e}")
+
+    # Initialize Janall Order Mechanisms (Bulk Logic + Native IBKR)
+    try:
+        from app.api.janall_routes import router as janall_router, set_janall_dependencies
+        from app.algo.janall_bulk_manager import JanallBulkOrderManager
+        from app.ibkr.ib_native_connector import IBNativeConnector
+        from app.live.hammer_feed import get_hammer_feed  # Reuse existing feed for market data
+        
+        # 1. Initialize Native Client (STRICT LEGACY MODE)
+        # User Rule: Always use Port 4001 (Real Gateway), even for PED account.
+        # User Rule: ASLA 4002 kullanılmıyor, her zaman 4001 (Gateway)
+        # Match Legacy Janall Client ID (1)
+        
+        target_port = settings.IBKR_PORT # Default 4001
+        logger.info(f"🔌 Initializing IBKR Native Connector on STRICT PORT {target_port} (Client ID: 1)...")
+        
+        native_client = IBNativeConnector(host=settings.IBKR_HOST, port=target_port, client_id=1)
+        
+        try:
+            if native_client.connect_client():
+                logger.info(f"✅ IB Native Connected on Port {target_port}")
+            else:
+                logger.warning(f"⚠️ IB Native Connection Failed on Port {target_port}")
+        except Exception as e:
+            logger.warning(f"⚠️ IB Native Connection Error: {e}")
+        
+        # 2. Market Data Adapter (Reuse Hammer Feed if available)
+        class HammerFeedAdapter:
+            def __init__(self):
+                pass
+            def get_market_data(self, ticker):
+                # Fetch fresh data from backend cache
+                try:
+                    from app.api.market_data_routes import market_data_cache
+                    from app.live.symbol_mapper import SymbolMapper
+                    
+                    # 1. Try direct lookup (e.g. CIM PRB)
+                    data = market_data_cache.get(ticker)
+                    
+                    # 2. Try Display mapping (e.g. CIM-B -> CIM PRB)
+                    if not data:
+                        disp = SymbolMapper.to_display_symbol(ticker)
+                        data = market_data_cache.get(disp)
+                    
+                    # 3. Try Hammer mapping (e.g. CIM PRB -> CIM-B) - rare but possible
+                    if not data:
+                        ham = SymbolMapper.to_hammer_symbol(ticker)
+                        data = market_data_cache.get(ham) 
+                        
+                    if data:
+                        return {
+                            'bid': float(data.get('bid') or 0.0),
+                            'ask': float(data.get('ask') or 0.0),
+                            'last': float(data.get('last') or 0.0)
+                        }
+                except Exception:
+                    pass
+                return {'bid':0.0, 'ask':0.0, 'last':0.0}
+
+        md_adapter = HammerFeedAdapter() # Use real adapter in production
+        
+        # 3. Initialize Manager
+        janall_manager = JanallBulkOrderManager(native_client, md_adapter)
+        
+        # 4. Set Dependencies
+        set_janall_dependencies(janall_manager, native_client)
+        
+        logger.info("✅ Janall Order Mechanisms initialized")
+        
+    except Exception as e:
+        logger.error(f"❌ Critical Error initializing Janall Mechanisms: {e}", exc_info=True)
+        # Fallback: Initialize with Dummy/None to allow API to start
+        try:
+             from app.api.janall_routes import set_janall_dependencies
+             set_janall_dependencies(None, None)
+        except: pass
+
+    # =========================================================================
+    # PHASE 8: Start Periodic Position Refresh Task (for RevnBookCheck terminal)
+    # =========================================================================
+    # This ensures positions are always fresh in Redis, even when UI is not polling
+    async def periodic_position_refresh():
+        """Refresh active account positions to Redis every 60 seconds"""
+        import json
+        await asyncio.sleep(30)  # Wait 30s before first refresh (let connections establish)
+        
+        while True:
+            try:
+                from app.core.redis_client import get_redis_client
+                redis = get_redis_client()
+                if not redis:
+                    await asyncio.sleep(60)
+                    continue
+                
+                # Get active account from Redis
+                raw = redis.sync.get("psfalgo:recovery:account_open")
+                if not raw:
+                    # Try fallback
+                    raw = redis.sync.get("psfalgo:account_mode")
+                    if raw:
+                        data = json.loads(raw.decode() if isinstance(raw, bytes) else raw)
+                        active_account = data.get("mode", None)
+                    else:
+                        active_account = None
+                else:
+                    active_account = raw.decode() if isinstance(raw, bytes) else raw
+                
+                if active_account:
+                    # Normalize HAMMER_PRO -> HAMPRO
+                    if active_account == "HAMMER_PRO":
+                        active_account = "HAMPRO"
+                    
+                    # Trigger position snapshot (this writes to Redis)
+                    from app.psfalgo.position_snapshot_api import get_position_snapshot_api, initialize_position_snapshot_api
+                    pos_api = get_position_snapshot_api()
+                    if not pos_api:
+                        initialize_position_snapshot_api()
+                        pos_api = get_position_snapshot_api()
+                    
+                    if pos_api:
+                        await pos_api.get_position_snapshot(account_id=active_account, include_zero_positions=False)
+                        logger.debug(f"[PeriodicRefresh] Positions refreshed for {active_account}")
+                
+            except Exception as e:
+                logger.debug(f"[PeriodicRefresh] Position refresh error: {e}")
+            
+            await asyncio.sleep(60)  # Refresh every 60 seconds
+    
+    # Start the periodic refresh task
+    asyncio.create_task(periodic_position_refresh())
+    logger.info("✅ Periodic position refresh task started (60s interval)")
 
 
 async def start_auto_deeper_analysis_scheduler():
@@ -711,89 +1596,75 @@ async def start_ticker_alert_listener(connection_manager):
         logger.error(f"Error starting ticker alert listener: {e}", exc_info=True)
 
 
-    # Initialize Janall Order Mechanisms (Bulk Logic + Native IBKR)
+async def start_l1_feed_listener():
+    """Start Redis pub/sub listener for L1 Feed Service"""
     try:
-        from app.api.janall_routes import router as janall_router, set_janall_dependencies
-        from app.algo.janall_bulk_manager import JanallBulkOrderManager
-        from app.ibkr.ib_native_connector import IBNativeConnector
-        from app.live.hammer_feed import get_hammer_feed  # Reuse existing feed for market data
+        from app.core.redis_client import get_redis_client
+        from app.core.data_fabric import get_data_fabric
         
-        # 1. Initialize Native Client (STRICT LEGACY MODE)
-        # User Rule: Always use Port 4001 (Real Gateway), even for PED account.
-        # User Rule: "ASLA PAPER PORTU KULLANMIYORUM"
-        # Match Legacy Janall Client ID (1)
+        redis_client = get_redis_client()
+        if not redis_client:
+            logger.warning("⚠️ Redis client not available, L1 Feed listener skipped")
+            return
         
-        target_port = settings.IBKR_PORT # Default 4001
-        logger.info(f"🔌 Initializing IBKR Native Connector on STRICT PORT {target_port} (Client ID: 1)...")
+        data_fabric = get_data_fabric()
         
-        native_client = IBNativeConnector(host=settings.IBKR_HOST, port=target_port, client_id=1)
+        # Get async client
+        async_redis = await redis_client.async_client()
+        pubsub = async_redis.pubsub()
+        await pubsub.subscribe("market:live:updates")
         
-        try:
-            if native_client.connect_client():
-                logger.info(f"✅ IB Native Connected on Port {target_port}")
-            else:
-                logger.warning(f"⚠️ IB Native Connection Failed on Port {target_port}")
-        except Exception as e:
-            logger.warning(f"⚠️ IB Native Connection Error: {e}")
+        logger.info("✅ Subscribed to market:live:updates channel")
         
-        # 2. Market Data Adapter (Reuse Hammer Feed if available)
-        class HammerFeedAdapter:
-            def __init__(self):
-                pass
-            def get_market_data(self, ticker):
-                # Fetch fresh data from backend cache
-                try:
-                    from app.api.market_data_routes import market_data_cache
-                    from app.live.symbol_mapper import SymbolMapper
-                    
-                    # 1. Try direct lookup (e.g. CIM PRB)
-                    data = market_data_cache.get(ticker)
-                    
-                    # 2. Try Display mapping (e.g. CIM-B -> CIM PRB)
-                    if not data:
-                        disp = SymbolMapper.to_display_symbol(ticker)
-                        data = market_data_cache.get(disp)
-                    
-                    # 3. Try Hammer mapping (e.g. CIM PRB -> CIM-B) - rare but possible
-                    if not data:
-                        ham = SymbolMapper.to_hammer_symbol(ticker)
-                        data = market_data_cache.get(ham) 
-                        
-                    if data:
-                        return {
-                            'bid': float(data.get('bid') or 0.0),
-                            'ask': float(data.get('ask') or 0.0),
-                            'last': float(data.get('last') or 0.0)
-                        }
-                except Exception:
-                    pass
-                return {'bid':0.0, 'ask':0.0, 'last':0.0}
-
-        md_adapter = HammerFeedAdapter() # Use real adapter in production
-        
-        # 3. Initialize Manager
-        janall_manager = JanallBulkOrderManager(native_client, md_adapter)
-        
-        # 4. Set Dependencies
-        set_janall_dependencies(janall_manager, native_client)
-        
-        logger.info("✅ Janall Order Mechanisms initialized")
-        
-    except Exception as e:
-        logger.error(f"❌ Critical Error initializing Janall Mechanisms: {e}", exc_info=True)
-        # Fallback: Initialize with Dummy/None to allow API to start
-        try:
-             from app.api.janall_routes import set_janall_dependencies
-             set_janall_dependencies(None, None)
-        except: pass
-
-    # Shutdown event
-    @app.on_event("shutdown")
-    async def shutdown_event():
-        """Cleanup on shutdown"""
-        logger.info("🛑 Quant Engine API shutting down...")
-        if 'native_client' in locals() and native_client:
+        while True:
             try:
-                native_client.disconnect()
-                logger.info("IBKR Native disconnected")
-            except: pass
+                message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0)
+                if message and message.get('type') == 'message':
+                    updates = json.loads(message['data'])
+                    if updates:
+                        # Batch update DataFabric
+                        data_fabric.update_live_batch(updates)
+                        
+            except asyncio.TimeoutError:
+                continue
+            except Exception as e:
+                logger.error(f"Error processing L1 update: {e}", exc_info=True)
+                await asyncio.sleep(1)
+                
+    except ImportError:
+        logger.warning("⚠️ redis.asyncio not available")
+    except Exception as e:
+        logger.error(f"Error starting L1 listener: {e}", exc_info=True)
+
+
+# Shutdown event (MUST be at module level, not inside startup)
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on shutdown"""
+    logger.info("🛑 Quant Engine API shutting down...")
+    
+    # Disconnect Hammer client
+    try:
+        from app.api.market_data_routes import get_hammer_feed
+        hammer_feed = get_hammer_feed()
+        if hammer_feed and hasattr(hammer_feed, 'client'):
+            hammer_feed.client.disconnect()
+            logger.info("✅ Hammer client disconnected")
+    except Exception as e:
+        logger.warning(f"Error disconnecting Hammer: {e}")
+    
+    # Disconnect IBKR connections via DualConnectionManager
+    try:
+        from app.psfalgo.dual_connection_manager import get_dual_connection_manager
+        dual_conn_mgr = get_dual_connection_manager()
+        if dual_conn_mgr:
+            # Use disconnect method if available, otherwise skip
+            if hasattr(dual_conn_mgr, 'disconnect_all'):
+                await dual_conn_mgr.disconnect_all()
+            elif hasattr(dual_conn_mgr, 'disconnect'):
+                await dual_conn_mgr.disconnect()
+            logger.info("✅ IBKR connections disconnected")
+    except Exception as e:
+        logger.warning(f"Error disconnecting IBKR: {e}")
+    
+    logger.info("🛑 Shutdown complete")

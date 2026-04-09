@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import './TradingPage.css'
 import JFINModal from '../components/JFINModal'
@@ -10,37 +10,46 @@ const groupOrder = [
   'notbesmaturlu', 'notcefilliquid', 'nottitrekhc', 'rumoreddanger', 'salakilliquid', 'shitremhc'
 ]
 
+const ACCOUNT_OPTIONS = ['IBKR_PED', 'HAMPRO', 'IBKR_GUN']
+
 function PortAdjusterPage() {
+  const [accountId, setAccountId] = useState('IBKR_PED')
   const [config, setConfig] = useState(null)
   const [snapshot, setSnapshot] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [saving, setSaving] = useState(false)
+  const [autoSaveStatus, setAutoSaveStatus] = useState(null)
+  const autoSaveTimer = useRef(null)
   const [recalcLoading, setRecalcLoading] = useState(false)
   const [presets, setPresets] = useState([])
   const [presetName, setPresetName] = useState('')
   const [csvImporting, setCsvImporting] = useState(false)
+  const [csvFilename, setCsvFilename] = useState('')
+  const [lastCsv, setLastCsv] = useState(null)
   const [jfinModalOpen, setJfinModalOpen] = useState(false)
 
-  useEffect(() => {
-    loadInitial()
-  }, [])
-
-  const loadInitial = async () => {
+  const loadInitial = useCallback(async (acc) => {
+    const targetAcc = acc || accountId
     try {
       setLoading(true)
-      const [cfgRes, snapRes, presetRes] = await Promise.all([
-        fetch('/api/psfalgo/port-adjuster/config'),
-        fetch('/api/psfalgo/port-adjuster/snapshot'),
+      // Use V2 endpoints with account parameter
+      const [cfgRes, presetRes] = await Promise.all([
+        fetch(`/api/psfalgo/port-adjuster-v2/config?account_id=${targetAcc}`),
         fetch('/api/psfalgo/port-adjuster/presets/list')
       ])
       if (cfgRes.ok) {
-        const cfg = await cfgRes.json()
-        setConfig(cfg)
+        const result = await cfgRes.json()
+        if (result.success && result.config) {
+          setConfig(result.config)
+        }
       }
+      // Get snapshot separately
+      const snapRes = await fetch(`/api/psfalgo/port-adjuster-v2/snapshot?account_id=${targetAcc}`)
       if (snapRes.ok) {
-        const snap = await snapRes.json()
-        setSnapshot(snap)
+        const snapResult = await snapRes.json()
+        if (snapResult.success && snapResult.snapshot) {
+          setSnapshot(snapResult.snapshot)
+        }
       }
       if (presetRes.ok) {
         const pres = await presetRes.json()
@@ -53,6 +62,16 @@ function PortAdjusterPage() {
     } finally {
       setLoading(false)
     }
+  }, [accountId])
+
+  useEffect(() => {
+    loadInitial()
+  }, [])
+
+  // Reload when account changes
+  const handleAccountChange = (newAcc) => {
+    setAccountId(newAcc)
+    loadInitial(newAcc)
   }
 
   const longTotal = useMemo(() => config ? Object.values(config.long_groups || {}).reduce((a, b) => a + Number(b || 0), 0) : 0, [config])
@@ -61,45 +80,64 @@ function PortAdjusterPage() {
 
   const isValidTotals = (longTotal >= 99 && longTotal <= 101) && (shortTotal >= 99 && shortTotal <= 101) && (ltMmTotal >= 99 && ltMmTotal <= 101)
 
+  // Auto-save config (debounced 1000ms)
+  const doAutoSave = useCallback(async (configToSave, accId) => {
+    if (!configToSave) return
+    try {
+      setAutoSaveStatus('saving')
+      const res = await fetch(`/api/psfalgo/port-adjuster-v2/config?account_id=${accId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(configToSave)
+      })
+      const result = await res.json()
+      if (!res.ok || !result.success) throw new Error(result.detail || 'Save failed')
+      setSnapshot(result.snapshot)
+      setAutoSaveStatus('saved')
+      setTimeout(() => setAutoSaveStatus(null), 1500)
+      setError(null)
+    } catch (e) {
+      setAutoSaveStatus('error')
+      setTimeout(() => setAutoSaveStatus(null), 3000)
+    }
+  }, [])
+
+  const scheduleAutoSave = useCallback((configToSave, accId) => {
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+    autoSaveTimer.current = setTimeout(() => doAutoSave(configToSave, accId), 1000)
+  }, [doAutoSave])
+
+  useEffect(() => {
+    return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) }
+  }, [])
+
   const updateCore = (key, value) => {
-    setConfig(prev => ({ ...prev, [key]: value }))
+    setConfig(prev => {
+      const updated = { ...prev, [key]: value }
+      scheduleAutoSave(updated, accountId)
+      return updated
+    })
   }
 
   const updateGroup = (side, group, value) => {
     setConfig(prev => {
       const target = side === 'long' ? { ...(prev.long_groups || {}) } : { ...(prev.short_groups || {}) }
       target[group] = Number(value)
-      return {
+      const updated = {
         ...prev,
         [`${side}_groups`]: target
       }
+      scheduleAutoSave(updated, accountId)
+      return updated
     })
   }
 
-  const handleSave = async () => {
-    if (!config) return
-    setSaving(true)
-    try {
-      const res = await fetch('/api/psfalgo/port-adjuster/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config)
-      })
-      const result = await res.json()
-      if (!res.ok || !result.success) throw new Error(result.detail || result.error || 'Save failed')
-      setSnapshot(result.snapshot)
-      setError(null)
-    } catch (e) {
-      setError(e.message)
-    } finally {
-      setSaving(false)
-    }
-  }
+
 
   const handleRecalc = async () => {
     setRecalcLoading(true)
     try {
-      const res = await fetch('/api/psfalgo/port-adjuster/recalculate', { method: 'POST' })
+      const res = await fetch(`/api/psfalgo/port-adjuster-v2/recalculate?account_id=${accountId}`, { method: 'POST' })
       const result = await res.json()
       if (!res.ok || !result.success) throw new Error(result.detail || result.error || 'Recalculate failed')
       setSnapshot(result.snapshot)
@@ -161,6 +199,44 @@ function PortAdjusterPage() {
       if (!res.ok || !result.success) throw new Error(result.detail || result.error || 'Import failed')
       setConfig(result.config)
       setSnapshot(result.snapshot)
+      if (result.filename) setLastCsv(result.filename)
+      setError(null)
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setCsvImporting(false)
+    }
+  }
+
+  const handleSaveCsv = async () => {
+    const name = (csvFilename || 'exposureadjuster').trim()
+    if (!name) return
+    setCsvImporting(true)
+    try {
+      const res = await fetch('/api/psfalgo/port-adjuster/save-csv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: name })
+      })
+      const result = await res.json()
+      if (!res.ok || !result.success) throw new Error(result.detail || result.error || 'Save CSV failed')
+      setLastCsv(result.filename || name + (name.endsWith('.csv') ? '' : '.csv'))
+      setError(null)
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setCsvImporting(false)
+    }
+  }
+
+  const handleLoadLastCsv = async () => {
+    setCsvImporting(true)
+    try {
+      const res = await fetch('/api/psfalgo/port-adjuster/load-last-csv', { method: 'POST' })
+      const result = await res.json()
+      if (!res.ok || !result.success) throw new Error(result.detail || result.error || 'Load last failed')
+      setConfig(result.config)
+      setSnapshot(result.snapshot)
       setError(null)
     } catch (e) {
       setError(e.message)
@@ -176,7 +252,7 @@ function PortAdjusterPage() {
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'exposureadjuster.csv'
+    a.download = lastCsv || 'exposureadjuster.csv'
     a.click()
     window.URL.revokeObjectURL(url)
   }
@@ -193,6 +269,53 @@ function PortAdjusterPage() {
         </div>
       </header>
 
+      {/* Account Selector */}
+      <section className="card" style={{
+        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+        marginBottom: '20px',
+        padding: '15px 20px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
+          <span style={{ color: '#9ca3af', fontWeight: '500' }}>Active Account:</span>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {ACCOUNT_OPTIONS.map(acc => (
+              <button
+                key={acc}
+                onClick={() => handleAccountChange(acc)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  transition: 'all 0.2s ease',
+                  background: accountId === acc
+                    ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
+                    : 'rgba(75, 85, 99, 0.5)',
+                  color: accountId === acc ? 'white' : '#9ca3af',
+                  boxShadow: accountId === acc ? '0 4px 15px rgba(99, 102, 241, 0.4)' : 'none'
+                }}
+              >
+                {acc === 'IBKR_PED' ? '📊 IBKR PED' :
+                  acc === 'HAMPRO' ? '🔨 Hammer' :
+                    '🔥 IBKR GUN'}
+              </button>
+            ))}
+          </div>
+          <span style={{
+            marginLeft: 'auto',
+            color: '#60a5fa',
+            fontSize: '12px',
+            background: 'rgba(96, 165, 250, 0.1)',
+            padding: '4px 10px',
+            borderRadius: '4px'
+          }}>
+            💾 Settings auto-sync with GenExpo Limiter
+          </span>
+        </div>
+      </section>
+
       {error && <div className="error-message">{error}</div>}
 
       <section className="card">
@@ -200,7 +323,9 @@ function PortAdjusterPage() {
           <h3>Core Inputs</h3>
           <div className="card-actions">
             <button className="btn btn-secondary" onClick={handleRecalc} disabled={recalcLoading}>Recalculate</button>
-            <button className="btn btn-primary" onClick={handleSave} disabled={!isValidTotals || saving}>{saving ? 'Saving...' : 'Save'}</button>
+            {autoSaveStatus === 'saving' && <span style={{ color: '#fbbf24', fontSize: '12px', padding: '4px 10px' }}>⏳ Saving...</span>}
+            {autoSaveStatus === 'saved' && <span style={{ color: '#34d399', fontSize: '12px', padding: '4px 10px' }}>✓ Saved</span>}
+            {autoSaveStatus === 'error' && <span style={{ color: '#f87171', fontSize: '12px', padding: '4px 10px' }}>⚠️ Save failed</span>}
           </div>
         </div>
         <div className="card-body grid-4">
@@ -399,10 +524,24 @@ function PortAdjusterPage() {
 
       <section className="card">
         <div className="card-header">
-          <h3>CSV Import/Export</h3>
-          <div className="card-actions">
-            <input type="file" accept=".csv" onChange={e => handleImportCsv(e.target.files[0])} disabled={csvImporting} />
-            <button className="btn btn-secondary" onClick={handleExportCsv}>Export CSV</button>
+          <h3>CSV Save/Load (isim ile; son kullanılan varsayılan)</h3>
+          <div className="card-actions" style={{ flexWrap: 'wrap', gap: '8px' }}>
+            <input type="text" placeholder="Dosya adı (örn. exposure_ocak)" value={csvFilename} onChange={e => setCsvFilename(e.target.value)} style={{ width: '180px' }} />
+            <button className="btn btn-primary" onClick={handleSaveCsv} disabled={csvImporting || !(csvFilename || '').trim()}>
+              {csvImporting ? '...' : 'Save CSV'}
+            </button>
+            <span style={{ margin: '0 4px' }}>|</span>
+            <label className="btn btn-secondary" style={{ marginBottom: 0 }}>
+              Dosyadan yükle
+              <input type="file" accept=".csv" onChange={e => handleImportCsv(e.target.files?.[0])} disabled={csvImporting} style={{ display: 'none' }} />
+            </label>
+            <button className="btn btn-secondary" onClick={handleExportCsv} disabled={csvImporting}>Export CSV</button>
+            {lastCsv && (
+              <>
+                <span style={{ color: '#888', marginLeft: '8px' }}>Son: {lastCsv}</span>
+                <button className="btn btn-secondary" onClick={handleLoadLastCsv} disabled={csvImporting}>Load last</button>
+              </>
+            )}
           </div>
         </div>
       </section>

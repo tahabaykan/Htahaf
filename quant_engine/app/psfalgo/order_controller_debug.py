@@ -1,19 +1,18 @@
 """
 Order Controller - Janall-Compatible (Controller ON)
 
+⚠️ DEPRECATED — NOT IMPORTED BY ANY MODULE ⚠️
+
+This is a STALE COPY of the active file:
+    app.psfalgo.order_manager.OrderController
+
+The active version (order_manager.py) has additional features:
+- TrackedOrder.tag field for strategy tag filtering
+- Tag inheritance in _replace_order()
+
+TODO: Delete this file.
+
 Manages order lifecycle: tracking, cancellation, replacement.
-
-Features:
-- Order Cancel Loop: Cancel unfilled orders after timeout
-- Replace Loop: Replace orders with better prices
-- Order tracking and status management
-- BEFDAY tracking
-
-Janall Logic:
-- Orders are tracked from creation
-- Unfilled orders are cancelled after 2 minutes (120 seconds)
-- Orders can be replaced with better prices
-- All order activity is logged
 """
 
 import asyncio

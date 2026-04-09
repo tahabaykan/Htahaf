@@ -69,6 +69,8 @@ class MarketSnapshot:
     final_as: Optional[float] = None  # Final Ask Sell
     final_fs: Optional[float] = None  # Final Front Sell
     final_bs: Optional[float] = None  # Final Bid Sell
+    final_sfs: Optional[float] = None # Final Short Front Sell
+    final_sbs: Optional[float] = None # Final Short Bid Sell
     final_sas: Optional[float] = None  # Final Short Ask Sell
     
     # Benchmark metrics
@@ -117,6 +119,8 @@ class MarketSnapshot:
             'final_as': self.final_as,
             'final_fs': self.final_fs,
             'final_bs': self.final_bs,
+            'final_sfs': self.final_sfs,
+            'final_sbs': self.final_sbs,
             'final_sas': self.final_sas,
             'benchmark_chg': self.benchmark_chg,
             'final_thg': self.final_thg,
@@ -157,6 +161,8 @@ class MarketSnapshot:
             'FINAL_AS': self.final_as,
             'FINAL_FS': self.final_fs,
             'FINAL_BS': self.final_bs,
+            'FINAL_SFS': self.final_sfs,
+            'FINAL_SBS': self.final_sbs,
             'FINAL_SAS': self.final_sas,
             'BENCHMARK_CHG': self.benchmark_chg,
             'FINAL_THG': self.final_thg,

@@ -2,7 +2,7 @@
   background: white;
   margin: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   max-height: 800px;
@@ -445,7 +445,7 @@
 .psfalgo-interval-input:focus {
   outline: none;
   border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
 }
 
 .psfalgo-interval-input:disabled {
@@ -754,3 +754,36 @@
   color: #6c757d;
 }
 
+
+/* NEW BUTTON STYLES */
+.psfalgo-simulation-btn {
+  padding: 8px 16px;
+  border: 1px solid #fd7e14;
+  border-radius: 4px;
+  background: #fd7e14;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.psfalgo-simulation-btn:hover {
+  background: #e36d0d;
+}
+
+.psfalgo-report-btn {
+  padding: 8px 16px;
+  border: 1px solid #6f42c1;
+  border-radius: 4px;
+  background: #6f42c1;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.psfalgo-report-btn:hover {
+  background: #59359a;
+}

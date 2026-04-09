@@ -113,7 +113,7 @@ class TickerAlertWorker:
                 try:
                     csv_path = os.path.join(
                         os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
-                        "janall", "janalldata.csv"
+                        "janalldata.csv"
                     )
                     if os.path.exists(csv_path):
                         self.static_store.load_csv(csv_path)

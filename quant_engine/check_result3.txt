@@ -1,0 +1,87 @@
+﻿janalldata.csv: 443 satir, 105 kolon
+Kolonlar: ['PREF IBKR', 'CMON', 'EX-DIV DATE', 'CALL DATE', 'MATUR DATE', 'DIV AMOUNT', 'COUPON', 'Aug2022_Price', 'Oct19_Price', 'CGRUP', 'QDI', 'Type', 'Sector', 'IG', 'CRDT_RTNG']
+
+Ex-div kolon: 'EX-DIV DATE'
+
+Ticker kolon: 'PREF IBKR'
+
+==================================================
+  CMSA
+==================================================
+  Ticker: CMSA
+  EX-DIV DATE: 11/29/2024
+    PREF IBKR: CMSA
+    CMON: CMS
+    EX-DIV DATE: 11/29/2024
+    CALL DATE: 3/15/2023
+    MATUR DATE: nan
+    DIV AMOUNT: 0.35
+    COUPON: 5.63%
+    Aug2022_Price: 26.19
+    Oct19_Price: 21.25
+    CGRUP: c550
+
+==================================================
+  ONBPO
+==================================================
+  Ticker: ONBPO
+  EX-DIV DATE: 08/01/2025
+    PREF IBKR: ONBPO
+    CMON: ONB
+    EX-DIV DATE: 08/01/2025
+    CALL DATE: 8/20/2025
+    MATUR DATE: NONE
+    DIV AMOUNT: 0.44
+    COUPON: 7.00%
+    Aug2022_Price: nan
+    Oct19_Price: nan
+    CGRUP: nan
+
+==================================================
+  COF PRI
+==================================================
+  Ticker: COF PRI
+  EX-DIV DATE: 11/13/2024
+    PREF IBKR: COF PRI
+    CMON: COF
+    EX-DIV DATE: 11/13/2024
+    CALL DATE: nan
+    MATUR DATE: nan
+    DIV AMOUNT: 0.31
+    COUPON: 5.00%
+    Aug2022_Price: 23.21
+    Oct19_Price: 16.12
+    CGRUP: c500
+
+==================================================
+  COF PRN
+==================================================
+  Ticker: COF PRN
+  EX-DIV DATE: 11/13/2024
+    PREF IBKR: COF PRN
+    CMON: COF
+    EX-DIV DATE: 11/13/2024
+    CALL DATE: nan
+    MATUR DATE: nan
+    DIV AMOUNT: 0.26
+    COUPON: 4.25%
+    Aug2022_Price: 19.9
+    Oct19_Price: 13.7
+    CGRUP: c425
+
+==================================================
+  STT PRG
+==================================================
+  Ticker: STT PRG
+  EX-DIV DATE: 11/27/2024
+    PREF IBKR: STT PRG
+    CMON: STT
+    EX-DIV DATE: 11/27/2024
+    CALL DATE: nan
+    MATUR DATE: nan
+    DIV AMOUNT: 0.33
+    COUPON: 5.35%
+    Aug2022_Price: 26.9
+    Oct19_Price: 21.63
+    CGRUP: c525
+

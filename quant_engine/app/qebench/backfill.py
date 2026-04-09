@@ -1,8 +1,10 @@
 """
 QeBench Historical Backfill
 
-Recovers bench@fill values using historical 5-minute bars
-when real-time benchmark data is unavailable.
+Recovers bench@fill values using:
+1. DataFabric derived data (preferred - already computed)
+2. Redis cached group averages (fallback)
+3. Historical 5-minute bars from Hammer Pro (last resort)
 
 Uses DOS Group average price at fill time as bench@fill.
 """
@@ -16,12 +18,12 @@ async def recover_bench_fill_from_history(
     fill_time: datetime
 ) -> Optional[float]:
     """
-    Recover bench@fill using historical 5-minute bars.
+    Recover bench@fill using best available data source.
     
-    Process:
-    1. Get DOS Group for symbol
-    2. For each peer in group, fetch 5min bar at fill_time
-    3. Calculate average peer close price = bench@fill
+    Priority:
+    1. DataFabric derived data (group_avg_price or compute from peers)
+    2. Redis cached group average
+    3. Historical 5-minute bars from Hammer
     
     Args:
         symbol: Stock symbol
@@ -30,165 +32,160 @@ async def recover_bench_fill_from_history(
     Returns:
         Average DOS Group price at fill_time, or None if unavailable
     """
+    # === Priority 1: DataFabric ===
     try:
-        # Get DOS Group for symbol
-        dos_group = _get_dos_group(symbol)
-        if not dos_group:
-            logger.warning(f"[QeBench Backfill] No DOS Group for {symbol}")
-            return None
-        
-        # Get group members (peers)
-        peers = _get_group_members(dos_group, exclude_symbol=symbol)
-        if not peers:
-            logger.warning(f"[QeBench Backfill] No peers in group {dos_group}")
-            return None
-        
-        logger.info(f"[QeBench Backfill] {symbol} → Group: {dos_group}, Peers: {len(peers)}")
-        
-        # Fetch 5min bars for all peers at fill_time
-        peer_prices = []
-        for peer in peers:
-            bar_price = await _fetch_5min_bar_price(peer, fill_time)
-            if bar_price is not None:
-                peer_prices.append(bar_price)
-        
-        # Calculate average
-        if peer_prices:
-            avg_price = sum(peer_prices) / len(peer_prices)
-            logger.info(f"[QeBench Backfill] {symbol} bench@fill={avg_price:.2f} "
-                       f"(avg of {len(peer_prices)}/{len(peers)} peers)")
-            return avg_price
-        else:
-            logger.warning(f"[QeBench Backfill] No peer prices available for {symbol}")
-            return None
-            
+        bench_price = _try_datafabric(symbol)
+        if bench_price:
+            logger.info(f"[QeBench Backfill] {symbol} bench@fill={bench_price:.2f} (DataFabric)")
+            return bench_price
     except Exception as e:
-        logger.error(f"[QeBench Backfill] Error for {symbol}: {e}")
+        logger.debug(f"[QeBench Backfill] DataFabric failed for {symbol}: {e}")
+    
+    # === Priority 2: Redis Cached Group Average ===
+    try:
+        bench_price = _try_redis_group_avg(symbol)
+        if bench_price:
+            logger.info(f"[QeBench Backfill] {symbol} bench@fill={bench_price:.2f} (Redis)")
+            return bench_price
+    except Exception as e:
+        logger.debug(f"[QeBench Backfill] Redis failed for {symbol}: {e}")
+    
+    # === Priority 3: Compute from peers ===
+    try:
+        dos_group = _get_dos_group(symbol)
+        if dos_group:
+            peers = _get_group_members(dos_group, exclude_symbol=symbol)
+            if peers:
+                peer_prices = _get_peer_prices_from_fabric(peers)
+                if peer_prices:
+                    avg_price = sum(peer_prices) / len(peer_prices)
+                    logger.info(f"[QeBench Backfill] {symbol} bench@fill={avg_price:.2f} "
+                               f"(computed from {len(peer_prices)}/{len(peers)} peers)")
+                    return avg_price
+    except Exception as e:
+        logger.debug(f"[QeBench Backfill] Peer computation failed for {symbol}: {e}")
+    
+    logger.warning(f"[QeBench Backfill] No benchmark available for {symbol}")
+    return None
+
+
+def _try_datafabric(symbol: str) -> Optional[float]:
+    """Get benchmark from DataFabric derived data"""
+    try:
+        from app.core.data_fabric import get_data_fabric
+        fabric = get_data_fabric()
+        if not fabric:
+            return None
+        
+        derived = fabric.get_derived(symbol)
+        if derived:
+            # Check for pre-computed group average price
+            group_avg = derived.get('group_avg_price')
+            if group_avg and float(group_avg) > 0:
+                return float(group_avg)
+        
+        return None
+    except Exception:
         return None
 
 
-def _get_dos_group(symbol: str) -> Optional[str]:
-    """
-    Get DOS Group for symbol.
-    
-    Uses existing grouping system.
-    """
+def _try_redis_group_avg(symbol: str) -> Optional[float]:
+    """Try to get group avg price from Redis"""
     try:
-        from app.market_data.grouping import resolve_primary_group
+        from app.qebench.benchmark import get_benchmark_fetcher
+        fetcher = get_benchmark_fetcher()
+        return fetcher._get_from_redis(symbol)
+    except Exception:
+        return None
+
+
+def _get_peer_prices_from_fabric(peers: List[str]) -> List[float]:
+    """Get current prices of peer symbols from DataFabric"""
+    try:
+        from app.core.data_fabric import get_data_fabric
+        fabric = get_data_fabric()
+        if not fabric:
+            return []
         
-        group = resolve_primary_group(symbol)
-        return group
+        prices = []
+        for peer in peers:
+            snapshot = fabric.get_snapshot(peer)
+            if snapshot:
+                price = snapshot.get('last') or snapshot.get('bid') or snapshot.get('close')
+                if price and float(price) > 0:
+                    prices.append(float(price))
         
+        return prices
+    except Exception:
+        return []
+
+
+def _get_dos_group(symbol: str) -> Optional[str]:
+    """Get DOS Group for symbol."""
+    try:
+        from app.market_data.static_data_store import get_static_store
+        store = get_static_store()
+        if store:
+            data = store.get_static_data(symbol)
+            if data:
+                group = data.get('GROUP', '')
+                cgrup = data.get('CGRUP', '')
+                
+                # For heldkuponlu, use CGRUP as the refined group
+                if 'heldkuponlu' in str(group).lower() and cgrup:
+                    return f"heldkuponlu:{cgrup}"
+                return group
+        return None
     except Exception as e:
         logger.error(f"[QeBench Backfill] Error getting group for {symbol}: {e}")
         return None
 
 
 def _get_group_members(dos_group: str, exclude_symbol: str = None) -> List[str]:
-    """
-    Get all members of DOS Group.
-    
-    Returns list of peer symbols in the same group.
-    """
+    """Get all members of DOS Group."""
     try:
-        from app.market_data.grouping import get_group_members
+        from app.market_data.static_data_store import get_static_store
+        store = get_static_store()
+        if not store:
+            return []
         
-        members = get_group_members(dos_group)
+        # Parse composite group key (e.g. "heldkuponlu:c525")
+        use_cgrup = False
+        target_group = dos_group
+        target_cgrup = None
         
-        # Exclude the symbol itself
-        if exclude_symbol and exclude_symbol in members:
-            members.remove(exclude_symbol)
+        if ':' in dos_group:
+            parts = dos_group.split(':', 1)
+            target_group = parts[0]
+            target_cgrup = parts[1]
+            use_cgrup = True
+        
+        members = []
+        all_symbols = store.get_all_symbols()
+        
+        for s in all_symbols:
+            if s == exclude_symbol:
+                continue
+            
+            s_data = store.get_static_data(s)
+            if not s_data:
+                continue
+            
+            s_group = s_data.get('GROUP', '')
+            
+            if use_cgrup:
+                s_cgrup = s_data.get('CGRUP', '')
+                if s_group == target_group and s_cgrup == target_cgrup:
+                    members.append(s)
+            else:
+                if s_group == target_group:
+                    members.append(s)
         
         return members
         
     except Exception as e:
         logger.error(f"[QeBench Backfill] Error getting members for {dos_group}: {e}")
         return []
-
-
-async def _fetch_5min_bar_price(symbol: str, timestamp: datetime) -> Optional[float]:
-    """
-    Fetch 5-minute bar close price at specific timestamp.
-    
-    Uses Hammer Pro historical data API.
-    
-    Args:
-        symbol: Stock symbol
-        timestamp: Target timestamp
-        
-    Returns:
-        Close price from 5min bar, or None if unavailable
-    """
-    try:
-        # Try Redis cache first (if GRPAN data available)
-        cached_price = _try_redis_cache(symbol, timestamp)
-        if cached_price is not None:
-            return cached_price
-        
-        # Fallback: Hammer Pro historical bars
-        return await _fetch_from_hammer(symbol, timestamp)
-        
-    except Exception as e:
-        logger.error(f"[QeBench Backfill] Error fetching bar for {symbol}: {e}")
-        return None
-
-
-def _try_redis_cache(symbol: str, timestamp: datetime) -> Optional[float]:
-    """
-    Try to get price from Redis (GRPAN data).
-    
-    GRPAN stores 5-minute bars in Redis.
-    """
-    try:
-        from app.core.redis_client import get_sync_redis_client
-        
-        redis_client = get_sync_redis_client()
-        
-        # Round timestamp to 5-minute interval
-        rounded_time = _round_to_5min(timestamp)
-        
-        # Key format: grpan:5min:{symbol}:{timestamp}
-        key = f"grpan:5min:{symbol}:{int(rounded_time.timestamp())}"
-        
-        data = redis_client.get(key)
-        if data:
-            import json
-            bar = json.loads(data)
-            return bar.get('close')
-        
-        return None
-        
-    except Exception as e:
-        logger.debug(f"[QeBench Backfill] Redis cache miss for {symbol}: {e}")
-        return None
-
-
-async def _fetch_from_hammer(symbol: str, timestamp: datetime) -> Optional[float]:
-    """
-    Fetch historical 5-minute bar from Hammer Pro.
-    
-    Uses Hammer's historical data API.
-    """
-    try:
-        from app.live.hammer_client import get_hammer_client
-        
-        hammer_client = get_hammer_client()
-        if not hammer_client or not hammer_client.is_connected():
-            logger.warning("[QeBench Backfill] Hammer not connected")
-            return None
-        
-        # Round to 5min interval
-        rounded_time = _round_to_5min(timestamp)
-        
-        # Request historical bar
-        # Note: Hammer API format TBD - adjust based on actual API
-        # This is placeholder for now
-        logger.warning(f"[QeBench Backfill] Hammer historical API not yet implemented for {symbol}")
-        return None
-        
-    except Exception as e:
-        logger.error(f"[QeBench Backfill] Hammer fetch error for {symbol}: {e}")
-        return None
 
 
 def _round_to_5min(dt: datetime) -> datetime:

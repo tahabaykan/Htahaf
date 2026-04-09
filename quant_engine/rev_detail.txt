@@ -1,0 +1,75 @@
+﻿=== REV ORDER STRUCTURE (DDT) ===
+{
+  "symbol": "DDT",
+  "original_fill": {
+    "order_id": "rec_DDT_1771361090",
+    "action": "SELL",
+    "qty": 255.0,
+    "price": 26.23,
+    "timestamp": "2026-02-17T23:44:57.079899"
+  },
+  "rev_order": {
+    "order_id": "34ad3a0f-4c56-462b-8e21-0f3eba55f6f1",
+    "action": "BUY",
+    "qty": 255.0,
+    "price": 26.09,
+    "tag": "REV_UNKNOWN_SHORT_RELOAD",
+    "timestamp": "2026-02-17T23:44:57.079899",
+    "status": "PENDING",
+    "account_id": "HAMPRO",
+    "method": "L1_BID_FRONT"
+  }
+}
+
+=== REV QUEUE HAMPRO ===
+
+--- Item 0 ---
+{
+  "symbol": "FCNCO",
+  "action": "BUY",
+  "qty": 900.0,
+  "price": 22.02,
+  "tag": "REV_HAMPRO_LONG_RELOAD",
+  "hidden": true,
+  "account_id": "HAMPRO",
+  "created_at": "2026-02-17T23:56:09.016045",
+  "source": "dual_account_rev_service",
+  "gap": 900.0,
+  "rev_type": "RELOAD",
+  "method": "L1_BID_FRONT"
+}
+
+--- Item 1 ---
+{
+  "symbol": "INN PRE",
+  "action": "BUY",
+  "qty": 400.0,
+  "price": 18.68,
+  "tag": "REV_HAMPRO_SHORT_TP",
+  "hidden": true,
+  "account_id": "HAMPRO",
+  "created_at": "2026-02-17T23:56:09.017645",
+  "source": "dual_account_rev_service",
+  "gap": 400.0,
+  "rev_type": "TP",
+  "method": "L1_BID_FRONT"
+}
+
+--- Item 2 ---
+{
+  "symbol": "GNL PRB",
+  "action": "BUY",
+  "qty": 290.0,
+  "price": 22.62,
+  "tag": "REV_HAMPRO_LONG_RELOAD",
+  "hidden": true,
+  "account_id": "HAMPRO",
+  "created_at": "2026-02-17T23:56:09.019762",
+  "source": "dual_account_rev_service",
+  "gap": 290.0,
+  "rev_type": "RELOAD",
+  "method": "L1_BID_FRONT"
+}
+
+rev_queue type: b'list'
+rev_queue length: 10

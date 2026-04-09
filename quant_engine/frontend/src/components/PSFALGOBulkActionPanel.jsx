@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react'
 import PSFALGOApproveModal from './PSFALGOApproveModal'
 import './PSFALGOBulkActionPanel.css'
 
-function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
+function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate, onOpenSimulation, onOpenReport }) {
   const [selectedSymbols, setSelectedSymbols] = useState(new Set())
   const [latestEntries, setLatestEntries] = useState([])
   const [showLatestEntries, setShowLatestEntries] = useState(false)
@@ -12,19 +12,19 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
   const [autocycleInterval, setAutocycleInterval] = useState(120)
   const [showApproveModal, setShowApproveModal] = useState(false)
   const [pendingCycleId, setPendingCycleId] = useState(null)
-  
+
   // Filter and group data by action type
   const groupedData = useMemo(() => {
     if (!data || !Array.isArray(data)) {
       return {}
     }
-    
+
     // Filter: only symbols where psfalgo_action_plan.action != 'HOLD'
     const filtered = data.filter(row => {
       const actionPlan = row.psfalgo_action_plan
       return actionPlan && actionPlan.action && actionPlan.action !== 'HOLD' && actionPlan.action !== 'BLOCKED'
     })
-    
+
     // Group by action type
     const grouped = {}
     filtered.forEach(row => {
@@ -34,13 +34,13 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
       }
       grouped[action].push(row)
     })
-    
+
     return grouped
   }, [data])
-  
+
   // Get all action types
   const actionTypes = Object.keys(groupedData).sort()
-  
+
   // Toggle selection for a symbol
   const toggleSelection = (symbol) => {
     setSelectedSymbols(prev => {
@@ -53,12 +53,12 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
       return newSet
     })
   }
-  
+
   // Toggle all in a group
   const toggleGroup = (actionType) => {
     const symbols = groupedData[actionType].map(row => row.PREF_IBKR)
     const allSelected = symbols.every(sym => selectedSymbols.has(sym))
-    
+
     setSelectedSymbols(prev => {
       const newSet = new Set(prev)
       if (allSelected) {
@@ -69,12 +69,12 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
       return newSet
     })
   }
-  
+
   // Toggle all
   const toggleAll = () => {
     const allSymbols = Object.values(groupedData).flat().map(row => row.PREF_IBKR)
     const allSelected = allSymbols.every(sym => selectedSymbols.has(sym))
-    
+
     setSelectedSymbols(prev => {
       const newSet = new Set(prev)
       if (allSelected) {
@@ -85,7 +85,47 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
       return newSet
     })
   }
-  
+
+  // Toggle all BUYS (LONG actions: ADDNEWPOS, INCLONG, DECSHORT, etc.)
+  const toggleAllBuys = () => {
+    const buyActions = ['ADDNEWPOS', 'INCLONG', 'ADDNEWPOS_LONG', 'DECSHORT', 'COVER']
+    const buySymbols = Object.entries(groupedData)
+      .filter(([actionType]) => buyActions.some(a => actionType.toUpperCase().includes(a)))
+      .flatMap(([, rows]) => rows.map(row => row.PREF_IBKR))
+
+    const allSelected = buySymbols.length > 0 && buySymbols.every(sym => selectedSymbols.has(sym))
+
+    setSelectedSymbols(prev => {
+      const newSet = new Set(prev)
+      if (allSelected) {
+        buySymbols.forEach(sym => newSet.delete(sym))
+      } else {
+        buySymbols.forEach(sym => newSet.add(sym))
+      }
+      return newSet
+    })
+  }
+
+  // Toggle all SELLS (SHORT actions: ADDNEWPOS_SHORT, INCSHORT, DECLONG, TRIM, etc.)
+  const toggleAllSells = () => {
+    const sellActions = ['ADDNEWPOS_SHORT', 'INCSHORT', 'DECLONG', 'TRIM', 'REDUCEMORE', 'KARBOTU']
+    const sellSymbols = Object.entries(groupedData)
+      .filter(([actionType]) => sellActions.some(a => actionType.toUpperCase().includes(a)))
+      .flatMap(([, rows]) => rows.map(row => row.PREF_IBKR))
+
+    const allSelected = sellSymbols.length > 0 && sellSymbols.every(sym => selectedSymbols.has(sym))
+
+    setSelectedSymbols(prev => {
+      const newSet = new Set(prev)
+      if (allSelected) {
+        sellSymbols.forEach(sym => newSet.delete(sym))
+      } else {
+        sellSymbols.forEach(sym => newSet.add(sym))
+      }
+      return newSet
+    })
+  }
+
   // Fetch cycle status
   const fetchCycleStatus = async () => {
     try {
@@ -133,16 +173,16 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
       setIsRunningCycle(false)
     }
   }
-  
+
   // Bulk approve (DRY-RUN ONLY - writes to ledger, no broker execution)
   const handleBulkApprove = async () => {
     const selectedRows = data.filter(row => selectedSymbols.has(row.PREF_IBKR))
-    
+
     if (selectedRows.length === 0) {
       alert('No actions selected')
       return
     }
-    
+
     // Prepare actions for ledger
     const actions = selectedRows.map(row => ({
       symbol: row.PREF_IBKR,
@@ -158,7 +198,7 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
         potential_qty: row.potential_qty
       }
     }))
-    
+
     try {
       const response = await fetch('/api/psfalgo/ledger/approve', {
         method: 'POST',
@@ -167,9 +207,9 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
         },
         body: JSON.stringify(actions),
       })
-      
+
       const result = await response.json()
-      
+
       if (result.success) {
         alert(`DRY-RUN: ${result.approved_count} actions approved and written to ledger. No broker execution.`)
         // Clear selection after approval
@@ -195,7 +235,7 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
       alert(`Error approving actions: ${error.message}`)
     }
   }
-  
+
   // Load AutoCycle status
   useEffect(() => {
     const loadAutocycleStatus = async () => {
@@ -212,13 +252,13 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
         console.error('Error loading AutoCycle status:', error)
       }
     }
-    
+
     loadAutocycleStatus()
     // Refresh every 2 seconds
     const interval = setInterval(loadAutocycleStatus, 2000)
     return () => clearInterval(interval)
   }, [])
-  
+
   // Handle approve cycle (called from modal)
   const handleApproveCycle = async (cycleId) => {
     try {
@@ -327,10 +367,10 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
       alert(`Error: ${error.message}`)
     }
   }
-  
+
   // Get total count
   const totalCount = Object.values(groupedData).reduce((sum, rows) => sum + rows.length, 0)
-  
+
   if (totalCount === 0) {
     return (
       <div className="psfalgo-bulk-panel">
@@ -343,13 +383,13 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
       </div>
     )
   }
-  
+
   return (
     <div className="psfalgo-bulk-panel">
       <div className="psfalgo-bulk-header">
         <h3>PSFALGO Bulk Actions</h3>
         <div className="psfalgo-bulk-actions">
-          <button 
+          <button
             className="psfalgo-runall-btn"
             onClick={handleRunAll}
             disabled={isRunningCycle}
@@ -357,22 +397,46 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
           >
             {isRunningCycle ? 'Running...' : 'RUNALL (SHADOW)'}
           </button>
-          <button 
-            className="psfalgo-toggle-all-btn"
-            onClick={toggleAll}
+          <button
+            className="psfalgo-toggle-all-btn psfalgo-btn-buys"
+            onClick={toggleAllBuys}
+            title="Select all Long actions (ADDNEWPOS, INCLONG, DECSHORT, COVER)"
           >
-            {Object.values(groupedData).flat().every(row => selectedSymbols.has(row.PREF_IBKR)) ? 'Deselect All' : 'Select All'}
+            📈 All Buys
           </button>
-          <button 
+          <button
+            className="psfalgo-toggle-all-btn psfalgo-btn-sells"
+            onClick={toggleAllSells}
+            title="Select all Short actions (TRIM, REDUCEMORE, INCSHORT, DECLONG)"
+          >
+            📉 All Sells
+          </button>
+          <button
             className="psfalgo-approve-btn"
             onClick={handleBulkApprove}
             disabled={selectedSymbols.size === 0}
           >
             Bulk Approve ({selectedSymbols.size})
           </button>
+
+          {/* New Diagnostic Buttons */}
+          <button
+            className="psfalgo-simulation-btn"
+            onClick={onOpenSimulation}
+            title="Open 10 Min Later Simulation Panel"
+          >
+            🎭 Simulation
+          </button>
+          <button
+            className="psfalgo-report-btn"
+            onClick={onOpenReport}
+            title="Open Universal Decision Report"
+          >
+            🧭 Report
+          </button>
         </div>
       </div>
-      
+
       {/* AutoCycle Control Section */}
       <div className="psfalgo-autocycle-control">
         <div className="psfalgo-autocycle-header">
@@ -431,7 +495,7 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
           )}
         </div>
       </div>
-      
+
       {/* AutoCycle Control Section */}
       <div className="psfalgo-autocycle-control">
         <div className="psfalgo-autocycle-header">
@@ -490,216 +554,218 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
           )}
         </div>
       </div>
-      
+
       {/* Cycle Status Section */}
-      {cycleStatus && (
-        <div className="psfalgo-cycle-status">
-          <div className="psfalgo-cycle-header">
-            <h4>Last Cycle: {cycleStatus.cycle_id || 'N/A'}</h4>
-            <div className="psfalgo-cycle-actions">
-              {cycleStatus.status === 'PENDING_APPROVAL' && (
-                <>
-                  <button
-                    className="psfalgo-approve-cycle-btn"
-                    onClick={() => {
-                      setPendingCycleId(cycleStatus.cycle_id)
-                      setShowApproveModal(true)
-                    }}
-                  >
-                    Approve Cycle
-                  </button>
-                  <button
-                    className="psfalgo-reject-cycle-btn"
-                    onClick={() => handleRejectCycle(cycleStatus.cycle_id)}
-                  >
-                    Reject
-                  </button>
-                </>
+      {
+        cycleStatus && (
+          <div className="psfalgo-cycle-status">
+            <div className="psfalgo-cycle-header">
+              <h4>Last Cycle: {cycleStatus.cycle_id || 'N/A'}</h4>
+              <div className="psfalgo-cycle-actions">
+                {cycleStatus.status === 'PENDING_APPROVAL' && (
+                  <>
+                    <button
+                      className="psfalgo-approve-cycle-btn"
+                      onClick={() => {
+                        setPendingCycleId(cycleStatus.cycle_id)
+                        setShowApproveModal(true)
+                      }}
+                    >
+                      Approve Cycle
+                    </button>
+                    <button
+                      className="psfalgo-reject-cycle-btn"
+                      onClick={() => handleRejectCycle(cycleStatus.cycle_id)}
+                    >
+                      Reject
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="psfalgo-cycle-details">
+              <div className="cycle-info">
+                <div className="cycle-info-item">
+                  <span className="cycle-label">Status:</span>
+                  <span className={`cycle-value cycle-status-${cycleStatus.status?.toLowerCase()}`}>
+                    {cycleStatus.status}
+                  </span>
+                </div>
+                <div className="cycle-info-item">
+                  <span className="cycle-label">Actions:</span>
+                  <span className="cycle-value">{cycleStatus.action_count || 0}</span>
+                </div>
+                <div className="cycle-info-item">
+                  <span className="cycle-label">Timestamp:</span>
+                  <span className="cycle-value">
+                    {cycleStatus.cycle_timestamp ? new Date(cycleStatus.cycle_timestamp).toLocaleString() : 'N/A'}
+                  </span>
+                </div>
+              </div>
+
+              {cycleStatus.exposure_before && (
+                <div className="cycle-exposure">
+                  <h5>Exposure Before:</h5>
+                  <div className="exposure-stats">
+                    <div className="stat-item">
+                      <span className="stat-label">Total:</span>
+                      <span className="stat-value">${cycleStatus.exposure_before.total_exposure?.toFixed(2) || '0.00'}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Long:</span>
+                      <span className="stat-value positive">${cycleStatus.exposure_before.long_exposure?.toFixed(2) || '0.00'}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Short:</span>
+                      <span className="stat-value negative">${cycleStatus.exposure_before.short_exposure?.toFixed(2) || '0.00'}</span>
+                    </div>
+                  </div>
+                </div>
               )}
-            </div>
-          </div>
-          
-          <div className="psfalgo-cycle-details">
-            <div className="cycle-info">
-              <div className="cycle-info-item">
-                <span className="cycle-label">Status:</span>
-                <span className={`cycle-value cycle-status-${cycleStatus.status?.toLowerCase()}`}>
-                  {cycleStatus.status}
-                </span>
-              </div>
-              <div className="cycle-info-item">
-                <span className="cycle-label">Actions:</span>
-                <span className="cycle-value">{cycleStatus.action_count || 0}</span>
-              </div>
-              <div className="cycle-info-item">
-                <span className="cycle-label">Timestamp:</span>
-                <span className="cycle-value">
-                  {cycleStatus.cycle_timestamp ? new Date(cycleStatus.cycle_timestamp).toLocaleString() : 'N/A'}
-                </span>
-              </div>
-            </div>
-            
-            {cycleStatus.exposure_before && (
-              <div className="cycle-exposure">
-                <h5>Exposure Before:</h5>
-                <div className="exposure-stats">
-                  <div className="stat-item">
-                    <span className="stat-label">Total:</span>
-                    <span className="stat-value">${cycleStatus.exposure_before.total_exposure?.toFixed(2) || '0.00'}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Long:</span>
-                    <span className="stat-value positive">${cycleStatus.exposure_before.long_exposure?.toFixed(2) || '0.00'}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Short:</span>
-                    <span className="stat-value negative">${cycleStatus.exposure_before.short_exposure?.toFixed(2) || '0.00'}</span>
+
+              {cycleStatus.exposure_after && (
+                <div className="cycle-exposure">
+                  <h5>Exposure After:</h5>
+                  <div className="exposure-stats">
+                    <div className="stat-item">
+                      <span className="stat-label">Total:</span>
+                      <span className="stat-value">${cycleStatus.exposure_after.total_exposure?.toFixed(2) || '0.00'}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Long:</span>
+                      <span className="stat-value positive">${cycleStatus.exposure_after.long_exposure?.toFixed(2) || '0.00'}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Short:</span>
+                      <span className="stat-value negative">${cycleStatus.exposure_after.short_exposure?.toFixed(2) || '0.00'}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-            
-            {cycleStatus.exposure_after && (
-              <div className="cycle-exposure">
-                <h5>Exposure After:</h5>
-                <div className="exposure-stats">
-                  <div className="stat-item">
-                    <span className="stat-label">Total:</span>
-                    <span className="stat-value">${cycleStatus.exposure_after.total_exposure?.toFixed(2) || '0.00'}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Long:</span>
-                    <span className="stat-value positive">${cycleStatus.exposure_after.long_exposure?.toFixed(2) || '0.00'}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Short:</span>
-                    <span className="stat-value negative">${cycleStatus.exposure_after.short_exposure?.toFixed(2) || '0.00'}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* PSFALGO Cycle Summary */}
-            {cycleStatus.cycle_summary && (
-              <div className="psfalgo-cycle-summary">
-                <h5>Cycle Summary:</h5>
-                <div className="summary-stats">
-                  <div className="summary-stat-item">
-                    <span className="summary-label">Total Actions:</span>
-                    <span className="summary-value">{cycleStatus.cycle_summary.total_actions || 0}</span>
-                  </div>
-                  {cycleStatus.cycle_summary.blocked_count > 0 && (
+              )}
+
+              {/* PSFALGO Cycle Summary */}
+              {cycleStatus.cycle_summary && (
+                <div className="psfalgo-cycle-summary">
+                  <h5>Cycle Summary:</h5>
+                  <div className="summary-stats">
                     <div className="summary-stat-item">
-                      <span className="summary-label">Blocked:</span>
-                      <span className="summary-value negative">{cycleStatus.cycle_summary.blocked_count}</span>
+                      <span className="summary-label">Total Actions:</span>
+                      <span className="summary-value">{cycleStatus.cycle_summary.total_actions || 0}</span>
+                    </div>
+                    {cycleStatus.cycle_summary.blocked_count > 0 && (
+                      <div className="summary-stat-item">
+                        <span className="summary-label">Blocked:</span>
+                        <span className="summary-value negative">{cycleStatus.cycle_summary.blocked_count}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Counts by Type */}
+                  {cycleStatus.cycle_summary.action_counts && Object.keys(cycleStatus.cycle_summary.action_counts).length > 0 && (
+                    <div className="action-counts-section">
+                      <h6>Actions by Type:</h6>
+                      <div className="action-counts-grid">
+                        {Object.entries(cycleStatus.cycle_summary.action_counts).map(([actionType, count]) => (
+                          <div key={actionType} className="action-count-item">
+                            <span className="action-type">{actionType}:</span>
+                            <span className="action-count">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Top Block Reasons */}
+                  {cycleStatus.cycle_summary.top_block_reasons && cycleStatus.cycle_summary.top_block_reasons.length > 0 && (
+                    <div className="block-reasons-section">
+                      <h6>Top Block Reasons:</h6>
+                      <ul className="block-reasons-list">
+                        {cycleStatus.cycle_summary.top_block_reasons.map((item, idx) => (
+                          <li key={idx} className="block-reason-item">
+                            <span className="reason-text">{item.reason}</span>
+                            <span className="reason-count">({item.count}x)</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Exposure Change */}
+                  {cycleStatus.cycle_summary.exposure_change && (
+                    <div className="exposure-change-section">
+                      <h6>Exposure Change:</h6>
+                      <div className="exposure-change-stats">
+                        <div className="change-stat-item">
+                          <span className="change-label">Total:</span>
+                          <span className={`change-value ${cycleStatus.cycle_summary.exposure_change.total_change >= 0 ? 'positive' : 'negative'}`}>
+                            ${cycleStatus.cycle_summary.exposure_change.total_change?.toFixed(2) || '0.00'}
+                          </span>
+                        </div>
+                        <div className="change-stat-item">
+                          <span className="change-label">Long:</span>
+                          <span className={`change-value ${cycleStatus.cycle_summary.exposure_change.long_change >= 0 ? 'positive' : 'negative'}`}>
+                            ${cycleStatus.cycle_summary.exposure_change.long_change?.toFixed(2) || '0.00'}
+                          </span>
+                        </div>
+                        <div className="change-stat-item">
+                          <span className="change-label">Short:</span>
+                          <span className={`change-value ${cycleStatus.cycle_summary.exposure_change.short_change >= 0 ? 'positive' : 'negative'}`}>
+                            ${cycleStatus.cycle_summary.exposure_change.short_change?.toFixed(2) || '0.00'}
+                          </span>
+                        </div>
+                        <div className="change-stat-item">
+                          <span className="change-label">Net Value:</span>
+                          <span className={`change-value ${cycleStatus.cycle_summary.exposure_change.net_value_change >= 0 ? 'positive' : 'negative'}`}>
+                            ${cycleStatus.cycle_summary.exposure_change.net_value_change?.toFixed(2) || '0.00'}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
-                
-                {/* Action Counts by Type */}
-                {cycleStatus.cycle_summary.action_counts && Object.keys(cycleStatus.cycle_summary.action_counts).length > 0 && (
-                  <div className="action-counts-section">
-                    <h6>Actions by Type:</h6>
-                    <div className="action-counts-grid">
-                      {Object.entries(cycleStatus.cycle_summary.action_counts).map(([actionType, count]) => (
-                        <div key={actionType} className="action-count-item">
-                          <span className="action-type">{actionType}:</span>
-                          <span className="action-count">{count}</span>
-                        </div>
-                      ))}
+              )}
+
+              {/* PSFALGO Execution Results */}
+              {cycleStatus.execution_results && (
+                <div className="psfalgo-exec-section">
+                  <h5>PSFALGO Execution:</h5>
+                  <div className="execution-stats">
+                    <div className="stat-item">
+                      <span className="stat-label">Simulated:</span>
+                      <span className="stat-value">{cycleStatus.execution_results.simulated_count || 0}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Executed:</span>
+                      <span className="stat-value positive">{cycleStatus.execution_results.executed_count || 0}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Blocked:</span>
+                      <span className="stat-value negative">{cycleStatus.execution_results.blocked_count || 0}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Skipped:</span>
+                      <span className="stat-value">{cycleStatus.execution_results.skipped_count || 0}</span>
                     </div>
                   </div>
-                )}
-                
-                {/* Top Block Reasons */}
-                {cycleStatus.cycle_summary.top_block_reasons && cycleStatus.cycle_summary.top_block_reasons.length > 0 && (
-                  <div className="block-reasons-section">
-                    <h6>Top Block Reasons:</h6>
-                    <ul className="block-reasons-list">
-                      {cycleStatus.cycle_summary.top_block_reasons.map((item, idx) => (
-                        <li key={idx} className="block-reason-item">
-                          <span className="reason-text">{item.reason}</span>
-                          <span className="reason-count">({item.count}x)</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
-                {/* Exposure Change */}
-                {cycleStatus.cycle_summary.exposure_change && (
-                  <div className="exposure-change-section">
-                    <h6>Exposure Change:</h6>
-                    <div className="exposure-change-stats">
-                      <div className="change-stat-item">
-                        <span className="change-label">Total:</span>
-                        <span className={`change-value ${cycleStatus.cycle_summary.exposure_change.total_change >= 0 ? 'positive' : 'negative'}`}>
-                          ${cycleStatus.cycle_summary.exposure_change.total_change?.toFixed(2) || '0.00'}
-                        </span>
-                      </div>
-                      <div className="change-stat-item">
-                        <span className="change-label">Long:</span>
-                        <span className={`change-value ${cycleStatus.cycle_summary.exposure_change.long_change >= 0 ? 'positive' : 'negative'}`}>
-                          ${cycleStatus.cycle_summary.exposure_change.long_change?.toFixed(2) || '0.00'}
-                        </span>
-                      </div>
-                      <div className="change-stat-item">
-                        <span className="change-label">Short:</span>
-                        <span className={`change-value ${cycleStatus.cycle_summary.exposure_change.short_change >= 0 ? 'positive' : 'negative'}`}>
-                          ${cycleStatus.cycle_summary.exposure_change.short_change?.toFixed(2) || '0.00'}
-                        </span>
-                      </div>
-                      <div className="change-stat-item">
-                        <span className="change-label">Net Value:</span>
-                        <span className={`change-value ${cycleStatus.cycle_summary.exposure_change.net_value_change >= 0 ? 'positive' : 'negative'}`}>
-                          ${cycleStatus.cycle_summary.exposure_change.net_value_change?.toFixed(2) || '0.00'}
-                        </span>
-                      </div>
+                  {cycleStatus.execution_results.reason && (
+                    <div className="execution-reason">
+                      <span className="reason-label">Note:</span>
+                      <span className="reason-text">{cycleStatus.execution_results.reason}</span>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {/* PSFALGO Execution Results */}
-            {cycleStatus.execution_results && (
-              <div className="psfalgo-exec-section">
-                <h5>PSFALGO Execution:</h5>
-                <div className="execution-stats">
-                  <div className="stat-item">
-                    <span className="stat-label">Simulated:</span>
-                    <span className="stat-value">{cycleStatus.execution_results.simulated_count || 0}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Executed:</span>
-                    <span className="stat-value positive">{cycleStatus.execution_results.executed_count || 0}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Blocked:</span>
-                    <span className="stat-value negative">{cycleStatus.execution_results.blocked_count || 0}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Skipped:</span>
-                    <span className="stat-value">{cycleStatus.execution_results.skipped_count || 0}</span>
-                  </div>
+                  )}
                 </div>
-                {cycleStatus.execution_results.reason && (
-                  <div className="execution-reason">
-                    <span className="reason-label">Note:</span>
-                    <span className="reason-text">{cycleStatus.execution_results.reason}</span>
-                  </div>
-                )}
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
-      )}
-      
+        )
+      }
+
       <div className="psfalgo-bulk-content">
         {actionTypes.map(actionType => {
           const rows = groupedData[actionType]
           const groupSelected = rows.every(row => selectedSymbols.has(row.PREF_IBKR))
-          
+
           return (
             <div key={actionType} className="psfalgo-action-group">
               <div className="psfalgo-group-header">
@@ -713,7 +779,7 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
                   {actionType} ({rows.length})
                 </h4>
               </div>
-              
+
               <div className="psfalgo-group-table">
                 <div className="psfalgo-table-header">
                   <div className="psfalgo-col-checkbox"></div>
@@ -723,16 +789,16 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
                   <div className="psfalgo-col-size-lot">Size (Lot)</div>
                   <div className="psfalgo-col-reason">Reason</div>
                 </div>
-                
+
                 <div className="psfalgo-table-body">
                   {rows.map(row => {
                     const symbol = row.PREF_IBKR
                     const actionPlan = row.psfalgo_action_plan || {}
                     const isSelected = selectedSymbols.has(symbol)
-                    
+
                     return (
-                      <div 
-                        key={symbol} 
+                      <div
+                        key={symbol}
                         className={`psfalgo-table-row ${isSelected ? 'selected' : ''}`}
                         onClick={() => toggleSelection(symbol)}
                       >
@@ -748,13 +814,13 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
                         <div className="psfalgo-col-symbol">{symbol}</div>
                         <div className="psfalgo-col-action">{actionPlan.action || 'N/A'}</div>
                         <div className="psfalgo-col-size-pct">
-                          {actionPlan.size_percent !== null && actionPlan.size_percent !== undefined 
-                            ? `${actionPlan.size_percent.toFixed(2)}%` 
+                          {actionPlan.size_percent !== null && actionPlan.size_percent !== undefined
+                            ? `${actionPlan.size_percent.toFixed(2)}%`
                             : 'N/A'}
                         </div>
                         <div className="psfalgo-col-size-lot">
-                          {actionPlan.size_lot_estimate !== null && actionPlan.size_lot_estimate !== undefined 
-                            ? actionPlan.size_lot_estimate 
+                          {actionPlan.size_lot_estimate !== null && actionPlan.size_lot_estimate !== undefined
+                            ? actionPlan.size_lot_estimate
                             : 'N/A'}
                         </div>
                         <div className="psfalgo-col-reason" title={actionPlan.reason || ''}>
@@ -769,74 +835,78 @@ function PSFALGOBulkActionPanel({ data, onLedgerUpdate, onCycleUpdate }) {
           )
         })}
       </div>
-      
+
       {/* Last Approved Actions Section */}
-      {latestEntries.length > 0 && (
-        <div className="psfalgo-latest-entries">
-          <div className="psfalgo-latest-header">
-            <h4>Last Approved Actions (DRY-RUN)</h4>
-            <button
-              className="psfalgo-toggle-entries-btn"
-              onClick={() => setShowLatestEntries(!showLatestEntries)}
-            >
-              {showLatestEntries ? 'Hide' : 'Show'} ({latestEntries.length})
-            </button>
-          </div>
-          
-          {showLatestEntries && (
-            <div className="psfalgo-latest-table">
-              <div className="psfalgo-table-header">
-                <div className="psfalgo-col-timestamp">Timestamp</div>
-                <div className="psfalgo-col-symbol">Symbol</div>
-                <div className="psfalgo-col-action">Action</div>
-                <div className="psfalgo-col-size-pct">Size %</div>
-                <div className="psfalgo-col-size-lot">Size (Lot)</div>
-                <div className="psfalgo-col-reason">Reason</div>
-              </div>
-              
-              <div className="psfalgo-table-body">
-                {latestEntries.map((entry, idx) => (
-                  <div key={idx} className="psfalgo-table-row">
-                    <div className="psfalgo-col-timestamp">
-                      {new Date(entry.timestamp).toLocaleString()}
-                    </div>
-                    <div className="psfalgo-col-symbol">{entry.symbol}</div>
-                    <div className="psfalgo-col-action">{entry.psfalgo_action}</div>
-                    <div className="psfalgo-col-size-pct">
-                      {entry.size_percent?.toFixed(2)}%
-                    </div>
-                    <div className="psfalgo-col-size-lot">{entry.size_lot_estimate}</div>
-                    <div className="psfalgo-col-reason" title={entry.action_reason || ''}>
-                      {entry.action_reason || 'N/A'}
-                    </div>
-                  </div>
-                ))}
-              </div>
+      {
+        latestEntries.length > 0 && (
+          <div className="psfalgo-latest-entries">
+            <div className="psfalgo-latest-header">
+              <h4>Last Approved Actions (DRY-RUN)</h4>
+              <button
+                className="psfalgo-toggle-entries-btn"
+                onClick={() => setShowLatestEntries(!showLatestEntries)}
+              >
+                {showLatestEntries ? 'Hide' : 'Show'} ({latestEntries.length})
+              </button>
             </div>
-          )}
-        </div>
-      )}
-      
+
+            {showLatestEntries && (
+              <div className="psfalgo-latest-table">
+                <div className="psfalgo-table-header">
+                  <div className="psfalgo-col-timestamp">Timestamp</div>
+                  <div className="psfalgo-col-symbol">Symbol</div>
+                  <div className="psfalgo-col-action">Action</div>
+                  <div className="psfalgo-col-size-pct">Size %</div>
+                  <div className="psfalgo-col-size-lot">Size (Lot)</div>
+                  <div className="psfalgo-col-reason">Reason</div>
+                </div>
+
+                <div className="psfalgo-table-body">
+                  {latestEntries.map((entry, idx) => (
+                    <div key={idx} className="psfalgo-table-row">
+                      <div className="psfalgo-col-timestamp">
+                        {new Date(entry.timestamp).toLocaleString()}
+                      </div>
+                      <div className="psfalgo-col-symbol">{entry.symbol}</div>
+                      <div className="psfalgo-col-action">{entry.psfalgo_action}</div>
+                      <div className="psfalgo-col-size-pct">
+                        {entry.size_percent?.toFixed(2)}%
+                      </div>
+                      <div className="psfalgo-col-size-lot">{entry.size_lot_estimate}</div>
+                      <div className="psfalgo-col-reason" title={entry.action_reason || ''}>
+                        {entry.action_reason || 'N/A'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      }
+
       <div className="psfalgo-bulk-footer">
         Total: {totalCount} actions | Selected: {selectedSymbols.size}
       </div>
 
       {/* Approve Modal */}
-      {showApproveModal && cycleStatus && (
-        <PSFALGOApproveModal
-          cycle={cycleStatus}
-          onConfirm={async () => {
-            await handleApproveCycle(pendingCycleId)
-            setShowApproveModal(false)
-            setPendingCycleId(null)
-          }}
-          onCancel={() => {
-            setShowApproveModal(false)
-            setPendingCycleId(null)
-          }}
-        />
-      )}
-    </div>
+      {
+        showApproveModal && cycleStatus && (
+          <PSFALGOApproveModal
+            cycle={cycleStatus}
+            onConfirm={async () => {
+              await handleApproveCycle(pendingCycleId)
+              setShowApproveModal(false)
+              setPendingCycleId(null)
+            }}
+            onCancel={() => {
+              setShowApproveModal(false)
+              setPendingCycleId(null)
+            }}
+          />
+        )
+      }
+    </div >
   )
 }
 

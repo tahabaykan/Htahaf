@@ -278,6 +278,20 @@ class PSFALGOActionPlanner:
                             applied_rule_key = 'addnewpos_default'
                         reason_parts.append(f"ADDNEWPOS: ExposureMode OFFENSIVE, SFStot {sfstot:.2f} >= {min_sfstot}")
             
+            # DUST SWEEP logic: Close small positions in (-200, 200) range
+            # Overrides HOLD or partial reductions to ensure full cleanup of "dust"
+            if 0 < abs(current_qty) < 200:
+                if current_qty > 0 and 'REDUCE_LONG' in allowed_actions:
+                    action = 'REDUCE_LONG'
+                    size_percent = 100.0
+                    applied_rule_key = 'dust_sweep'
+                    reason_parts = [f"DUST SWEEP: Position {current_qty} in (0, 200) range"]
+                elif current_qty < 0 and 'REDUCE_SHORT' in allowed_actions:
+                    action = 'REDUCE_SHORT'
+                    size_percent = 100.0
+                    applied_rule_key = 'dust_sweep'
+                    reason_parts = [f"DUST SWEEP: Position {current_qty} in (-200, 0) range"]
+
             # Calculate size_lot_estimate (with min_lot constraint)
             size_lot_estimate = 0
             size_lot_capped_reason = None
@@ -294,7 +308,9 @@ class PSFALGOActionPlanner:
                 
                 # Apply Smart Rounding (User Rules: Buy Min 200, Sell Small Exact)
                 # Map action to "BUY" or "SELL" context
-                rounding_action = "BUY" if "ADD" in action else "SELL"
+                # BUY: ADD_LONG or REDUCE_SHORT (Cover)
+                # SELL: REDUCE_LONG or ADD_SHORT
+                rounding_action = "BUY" if (action == "ADD_LONG" or action == "REDUCE_SHORT") else "SELL"
                 size_lot_estimate = calculate_rounded_lot(
                     raw_lot=raw_estimate, 
                     policy={}, 
@@ -321,15 +337,18 @@ class PSFALGOActionPlanner:
                 # Check Capacity
                 # Map Action to Side for Check
                 check_side = 'BUY' if 'ADD_LONG' in action or 'REDUCE_SHORT' in action else 'SELL'
-                # Note: 'REDUCE_SHORT' is technically a BUY order.
-                # However, logic in OpenOrderService checks 'BUY' orders. Correct.
+                # Determine if this is an increase or decrease in position risk
+                # ADD_LONG / ADD_SHORT = taking on new risk = INCREASE
+                # REDUCE_LONG / REDUCE_SHORT = reducing risk = DECREASE
+                check_is_increase = 'ADD' in action  # True for ADD_LONG, ADD_SHORT
                 
                 is_allowed, trimmed_qty, limit_reason = limit_service.check_capacity(
                     account_id=account_id,
                     symbol=symbol,
                     side=check_side,
                     qty=float(size_lot_estimate),
-                    limits=limits
+                    limits=limits,
+                    is_increase=check_is_increase
                 )
                 
                 if not is_allowed:
@@ -343,6 +362,30 @@ class PSFALGOActionPlanner:
                         old_est = size_lot_estimate
                         size_lot_estimate = int(trimmed_qty)
                         reason_parts.append(f"Trimmed by Daily Limit: {old_est}->{size_lot_estimate} ({limit_reason})")
+                
+                # -------------------------------------------------------------------------
+                # PHASE 11b: MINMAX AREA (todays_min_qty .. todays_max_qty)
+                # -------------------------------------------------------------------------
+                if action not in ('HOLD', 'BLOCKED') and size_lot_estimate > 0:
+                    from app.psfalgo.minmax_area_service import (
+                        get_minmax_area_service,
+                        validate_order_against_minmax,
+                    )
+                    minmax_svc = get_minmax_area_service()
+                    minmax_row = minmax_svc.get_row(account_id, symbol)
+                    order_side = 'BUY' if ('ADD_LONG' in action or 'REDUCE_SHORT' in action) else 'SELL'
+                    mma_allowed, mma_qty, mma_reason = validate_order_against_minmax(
+                        account_id, symbol, order_side, size_lot_estimate,
+                        current_qty, minmax_row=minmax_row, minmax_service=minmax_svc,
+                    )
+                    if not mma_allowed:
+                        action = 'BLOCKED'
+                        size_lot_estimate = 0
+                        reason_parts.append(f"Blocked by MinMax: {mma_reason}")
+                    elif mma_qty != size_lot_estimate:
+                        old_est = size_lot_estimate
+                        size_lot_estimate = mma_qty
+                        reason_parts.append(f"Trimmed by MinMax: {old_est}->{size_lot_estimate} ({mma_reason})")
                 
                 # -------------------------------------------------------------------------
                 
@@ -397,17 +440,6 @@ class PSFALGOActionPlanner:
                 'blocked': blocked,
                 'block_reason': block_reason,
                 'strategy_tag': strategy_tag
-            }
-            
-        except Exception as e:
-            logger.error(f"Error planning PSFALGO action for {symbol}: {e}", exc_info=True)
-            return {
-                'action': 'BLOCKED',
-                'size_percent': 0.0,
-                'size_lot_estimate': 0,
-                'reason': f'Error: {str(e)}',
-                'blocked': True,
-                'block_reason': str(e)
             }
             
         except Exception as e:

@@ -1,0 +1,1999 @@
+{
+  "log_file": "backend_20260306_225642.log",
+  "last_cycle": "2026-03-06 23:36",
+  "total_mm_orders": 38,
+  "total_mm_buys": 19,
+  "total_mm_sells": 19,
+  "bottom_15_buys": [
+    {
+      "action": "BUY",
+      "symbol": "ECCX",
+      "qty": 200,
+      "price": 24.83,
+      "score": 39.5,
+      "scenario": "ORIGINAL",
+      "bid": 24.8,
+      "ask": 24.99,
+      "son5": 24.95,
+      "volav_window": null,
+      "volav": null,
+      "fbtot": 2.2578,
+      "sfstot": 1.8309,
+      "gort": -0.864,
+      "ucuz": -0.0617,
+      "pah": 0.0713,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "BUY",
+      "symbol": "ECCW",
+      "qty": 200,
+      "price": 24.67,
+      "score": 40.2,
+      "scenario": "ORIGINAL",
+      "bid": 24.62,
+      "ask": 24.98,
+      "son5": 24.82,
+      "volav_window": null,
+      "volav": null,
+      "fbtot": 1.1552,
+      "sfstot": 1.2226,
+      "gort": 1.881,
+      "ucuz": -0.1462,
+      "pah": 0.1058,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "BUY",
+      "symbol": "OXSQH",
+      "qty": 200,
+      "price": 25.08,
+      "score": 43.8,
+      "scenario": "ORIGINAL",
+      "bid": 25.02,
+      "ask": 25.39,
+      "son5": 25.2,
+      "volav_window": null,
+      "volav": null,
+      "fbtot": 1.0902,
+      "sfstot": null,
+      "gort": 0.656,
+      "ucuz": -0.3247,
+      "pah": -0.0657,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "BUY",
+      "symbol": "MHLA",
+      "qty": 200,
+      "price": 12.33,
+      "score": 47.9,
+      "scenario": "ORIGINAL",
+      "bid": 12.25,
+      "ask": 12.8,
+      "son5": 12.55,
+      "volav_window": null,
+      "volav": null,
+      "fbtot": 2.3309,
+      "sfstot": 2.2182,
+      "gort": -11.9715,
+      "ucuz": -0.0175,
+      "pah": 0.3675,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "BUY",
+      "symbol": "NEWTH",
+      "qty": 200,
+      "price": 25.2,
+      "score": 49.0,
+      "scenario": "NEW_SON5",
+      "bid": 25.18,
+      "ask": 25.28,
+      "son5": 25.28,
+      "volav_window": "4h",
+      "volav": 25.27,
+      "fbtot": 1.6716,
+      "sfstot": 1.454,
+      "gort": 0.241,
+      "ucuz": -0.0792,
+      "pah": -0.0092,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "BUY",
+      "symbol": "NHPAP",
+      "qty": 200,
+      "price": 19.26,
+      "score": 51.1,
+      "scenario": "NEW_SON5",
+      "bid": 19.22,
+      "ask": 19.5,
+      "son5": 19.5,
+      "volav_window": null,
+      "volav": null,
+      "fbtot": 0.638,
+      "sfstot": 0.4597,
+      "gort": 10.3285,
+      "ucuz": -0.073,
+      "pah": 0.123,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "BUY",
+      "symbol": "RWTP",
+      "qty": 200,
+      "price": 24.5,
+      "score": 51.3,
+      "scenario": "NEW_SON5",
+      "bid": 24.48,
+      "ask": 24.58,
+      "son5": 24.49,
+      "volav_window": "4h",
+      "volav": 24.53,
+      "fbtot": 2.4862,
+      "sfstot": 1.9884,
+      "gort": -0.4265,
+      "ucuz": -0.1252,
+      "pah": -0.0552,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "BUY",
+      "symbol": "REGCO",
+      "qty": 200,
+      "price": 22.25,
+      "score": 55.7,
+      "scenario": "NEW_SON5",
+      "bid": 22.2,
+      "ask": 22.5,
+      "son5": 22.4,
+      "volav_window": null,
+      "volav": null,
+      "fbtot": 2.1748,
+      "sfstot": 2.1094,
+      "gort": -1.7853,
+      "ucuz": 0.0331,
+      "pah": 0.2431,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "BUY",
+      "symbol": "NHPBP",
+      "qty": 200,
+      "price": 18.92,
+      "score": 56.2,
+      "scenario": "BOTH_NEW",
+      "bid": 18.91,
+      "ask": 19.1,
+      "son5": 18.91,
+      "volav_window": "4h",
+      "volav": 19.07,
+      "fbtot": 0.4153,
+      "sfstot": 0.5936,
+      "gort": 11.6836,
+      "ucuz": -0.1065,
+      "pah": 0.0265,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "BUY",
+      "symbol": "ADAMN",
+      "qty": 200,
+      "price": 22.53,
+      "score": 57.8,
+      "scenario": "NEW_SON5",
+      "bid": 22.48,
+      "ask": 22.82,
+      "son5": 22.69,
+      "volav_window": null,
+      "volav": null,
+      "fbtot": 2.2531,
+      "sfstot": null,
+      "gort": 0.5968,
+      "ucuz": -0.1837,
+      "pah": 0.0543,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "BUY",
+      "symbol": "ECCC",
+      "qty": 200,
+      "price": 23.74,
+      "score": 58.9,
+      "scenario": "NEW_SON5",
+      "bid": 23.7,
+      "ask": 23.95,
+      "son5": 23.85,
+      "volav_window": "4h",
+      "volav": 23.89,
+      "fbtot": 2.9076,
+      "sfstot": 2.0904,
+      "gort": 0.3928,
+      "ucuz": -0.3846,
+      "pah": -0.2096,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "BUY",
+      "symbol": "HOVNP",
+      "qty": 200,
+      "price": 21.25,
+      "score": 60.0,
+      "scenario": "ORIGINAL",
+      "bid": 21.23,
+      "ask": 21.35,
+      "son5": 21.34,
+      "volav_window": "4h",
+      "volav": 21.34,
+      "fbtot": 0.5867,
+      "sfstot": 0.6972,
+      "gort": 8.026,
+      "ucuz": -0.097,
+      "pah": -0.013,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "BUY",
+      "symbol": "UZF",
+      "qty": 200,
+      "price": 18.41,
+      "score": 65.7,
+      "scenario": "BOTH_NEW",
+      "bid": 18.4,
+      "ask": 18.94,
+      "son5": 18.4,
+      "volav_window": "4h",
+      "volav": 18.67,
+      "fbtot": 0.9839,
+      "sfstot": 1.1221,
+      "gort": 0.8733,
+      "ucuz": -0.1258,
+      "pah": 0.2522,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "BUY",
+      "symbol": "SSSSL",
+      "qty": 200,
+      "price": 25.07,
+      "score": 70.5,
+      "scenario": "ORIGINAL",
+      "bid": 25.04,
+      "ask": 25.25,
+      "son5": 25.23,
+      "volav_window": null,
+      "volav": null,
+      "fbtot": 1.7768,
+      "sfstot": 1.7015,
+      "gort": -0.6447,
+      "ucuz": -0.1426,
+      "pah": 0.0044,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "BUY",
+      "symbol": "GECCI",
+      "qty": 200,
+      "price": 25.32,
+      "score": 71.4,
+      "scenario": "NEW_SON5",
+      "bid": 25.3,
+      "ask": 25.44,
+      "son5": 25.44,
+      "volav_window": null,
+      "volav": null,
+      "fbtot": 1.5688,
+      "sfstot": 1.9059,
+      "gort": -0.649,
+      "ucuz": -0.1192,
+      "pah": -0.0212,
+      "ts": "2026-03-06 23:36:37"
+    }
+  ],
+  "bottom_15_sells": [
+    {
+      "action": "SELL",
+      "symbol": "MHNC",
+      "qty": 200,
+      "price": 14.94,
+      "score": 43.2,
+      "scenario": "ORIGINAL",
+      "bid": 14.58,
+      "ask": 15.0,
+      "son5": 14.76,
+      "volav_window": null,
+      "volav": null,
+      "fbtot": 2.6946,
+      "sfstot": 2.5373,
+      "gort": -10.5314,
+      "ucuz": -0.217,
+      "pah": 0.077,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "SELL",
+      "symbol": "BWBBP",
+      "qty": 200,
+      "price": 20.72,
+      "score": 45.4,
+      "scenario": "NEW_SON5",
+      "bid": 20.25,
+      "ask": 20.8,
+      "son5": 20.25,
+      "volav_window": null,
+      "volav": null,
+      "fbtot": 0.7646,
+      "sfstot": 0.8664,
+      "gort": 2.7635,
+      "ucuz": 0.1125,
+      "pah": 0.4975,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "SELL",
+      "symbol": "ECCW",
+      "qty": 200,
+      "price": 24.93,
+      "score": 45.9,
+      "scenario": "NEW_SON5",
+      "bid": 24.62,
+      "ask": 24.98,
+      "son5": 24.82,
+      "volav_window": null,
+      "volav": null,
+      "fbtot": 1.1552,
+      "sfstot": 1.2226,
+      "gort": 1.881,
+      "ucuz": -0.1462,
+      "pah": 0.1058,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "SELL",
+      "symbol": "AFGC",
+      "qty": 200,
+      "price": 18.88,
+      "score": 47.0,
+      "scenario": "ORIGINAL",
+      "bid": 18.8,
+      "ask": 18.89,
+      "son5": 18.81,
+      "volav_window": null,
+      "volav": null,
+      "fbtot": 1.8781,
+      "sfstot": 2.1524,
+      "gort": -1.5082,
+      "ucuz": 0.0782,
+      "pah": 0.1412,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "SELL",
+      "symbol": "EICA",
+      "qty": 200,
+      "price": 24.88,
+      "score": 48.1,
+      "scenario": "VOLAV_ANCHOR",
+      "bid": 24.8,
+      "ask": 24.89,
+      "son5": 24.8,
+      "volav_window": "4h",
+      "volav": 24.8,
+      "fbtot": 1.0668,
+      "sfstot": 3.3898,
+      "gort": -0.4572,
+      "ucuz": 0.1014,
+      "pah": 0.1644,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "SELL",
+      "symbol": "NEWTG",
+      "qty": 200,
+      "price": 25.16,
+      "score": 48.3,
+      "scenario": "NEW_SON5",
+      "bid": 25.02,
+      "ask": 25.18,
+      "son5": 25.1,
+      "volav_window": null,
+      "volav": null,
+      "fbtot": 1.2414,
+      "sfstot": 1.4853,
+      "gort": 0.5285,
+      "ucuz": -0.0732,
+      "pah": 0.0388,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "SELL",
+      "symbol": "DCOMG",
+      "qty": 200,
+      "price": 26.37,
+      "score": 52.2,
+      "scenario": "VOLAV_ANCHOR",
+      "bid": 26.28,
+      "ask": 26.39,
+      "son5": 26.28,
+      "volav_window": "4h",
+      "volav": 26.25,
+      "fbtot": 1.883,
+      "sfstot": 1.9038,
+      "gort": -0.3244,
+      "ucuz": -0.0345,
+      "pah": 0.0425,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "SELL",
+      "symbol": "JSM",
+      "qty": 200,
+      "price": 19.38,
+      "score": 52.7,
+      "scenario": "VOLAV_ANCHOR",
+      "bid": 19.28,
+      "ask": 19.4,
+      "son5": 19.28,
+      "volav_window": "4h",
+      "volav": 19.27,
+      "fbtot": 1.7586,
+      "sfstot": 2.2252,
+      "gort": -0.2753,
+      "ucuz": -0.1339,
+      "pah": -0.0499,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "SELL",
+      "symbol": "UZF",
+      "qty": 200,
+      "price": 18.86,
+      "score": 53.2,
+      "scenario": "NEW_SON5",
+      "bid": 18.4,
+      "ask": 18.94,
+      "son5": 18.4,
+      "volav_window": "4h",
+      "volav": 18.67,
+      "fbtot": 0.9839,
+      "sfstot": 1.1221,
+      "gort": 0.8733,
+      "ucuz": -0.1258,
+      "pah": 0.2522,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "SELL",
+      "symbol": "UZD",
+      "qty": 200,
+      "price": 20.9,
+      "score": 53.2,
+      "scenario": "VOLAV_ANCHOR",
+      "bid": 20.81,
+      "ask": 20.92,
+      "son5": 20.81,
+      "volav_window": "4h",
+      "volav": 20.82,
+      "fbtot": 1.342,
+      "sfstot": 1.4256,
+      "gort": 0.3133,
+      "ucuz": -0.0153,
+      "pah": 0.0617,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "SELL",
+      "symbol": "MHLA",
+      "qty": 200,
+      "price": 12.72,
+      "score": 54.1,
+      "scenario": "ORIGINAL",
+      "bid": 12.25,
+      "ask": 12.8,
+      "son5": 12.55,
+      "volav_window": null,
+      "volav": null,
+      "fbtot": 2.3309,
+      "sfstot": 2.2182,
+      "gort": -11.9715,
+      "ucuz": -0.0175,
+      "pah": 0.3675,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "SELL",
+      "symbol": "DTW",
+      "qty": 300,
+      "price": 22.22,
+      "score": 62.2,
+      "scenario": "ORIGINAL",
+      "bid": 22.07,
+      "ask": 22.25,
+      "son5": 22.09,
+      "volav_window": null,
+      "volav": null,
+      "fbtot": 0.8222,
+      "sfstot": 0.8634,
+      "gort": 1.7259,
+      "ucuz": 0.0542,
+      "pah": 0.1802,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "SELL",
+      "symbol": "GOODN",
+      "qty": 200,
+      "price": 22.81,
+      "score": 64.8,
+      "scenario": "BOTH_NEW",
+      "bid": 22.69,
+      "ask": 22.82,
+      "son5": 22.82,
+      "volav_window": "4h",
+      "volav": 22.7,
+      "fbtot": 1.544,
+      "sfstot": 1.9193,
+      "gort": 0.3386,
+      "ucuz": -0.1255,
+      "pah": -0.0345,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "SELL",
+      "symbol": "BHFAM",
+      "qty": 700,
+      "price": 12.09,
+      "score": 66.4,
+      "scenario": "VOLAV_ANCHOR",
+      "bid": 11.96,
+      "ask": 12.11,
+      "son5": 11.96,
+      "volav_window": "4h",
+      "volav": 11.97,
+      "fbtot": 2.0154,
+      "sfstot": 1.8021,
+      "gort": -1.7692,
+      "ucuz": 0.0507,
+      "pah": 0.1557,
+      "ts": "2026-03-06 23:36:37"
+    },
+    {
+      "action": "SELL",
+      "symbol": "HWCPZ",
+      "qty": 200,
+      "price": 23.59,
+      "score": 66.9,
+      "scenario": "VOLAV_ANCHOR",
+      "bid": 23.26,
+      "ask": 23.65,
+      "son5": 23.34,
+      "volav_window": "4h",
+      "volav": 23.34,
+      "fbtot": 2.0062,
+      "sfstot": 1.974,
+      "gort": -0.2153,
+      "ucuz": -0.2134,
+      "pah": 0.0596,
+      "ts": "2026-03-06 23:36:37"
+    }
+  ],
+  "fills_200_plus": [
+    {
+      "symbol": "BHFAN",
+      "total_qty": 610.0,
+      "fill_count": 4,
+      "tags": [
+        "LT_SHORT_DEC",
+        "LT_LONG_INC"
+      ],
+      "accounts": [
+        "IBKR_PED",
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 22:57:02",
+          "symbol": "BHFAN",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 13.51,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:02",
+          "symbol": "BHFAN",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 13.51,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:33:09",
+          "symbol": "BHFAN",
+          "action": "BUY",
+          "qty": 1.0,
+          "price": 13.43,
+          "tag": "LT_SHORT_DEC",
+          "type": "POS_DEC",
+          "account": "IBKR_PED"
+        },
+        {
+          "ts": "2026-03-06 23:35:16",
+          "symbol": "BHFAN",
+          "action": "BUY",
+          "qty": 409.0,
+          "price": 13.43,
+          "tag": "LT_SHORT_DEC",
+          "type": "POS_DEC",
+          "account": "IBKR_PED"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": true,
+      "rev_symbol_match": [
+        "BHFAN"
+      ]
+    },
+    {
+      "symbol": "EQH-C",
+      "total_qty": 500.0,
+      "fill_count": 4,
+      "tags": [
+        "LT_SHORT_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 22:57:03",
+          "symbol": "EQH-C",
+          "action": "SELL",
+          "qty": 100.0,
+          "price": 16.44,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:03",
+          "symbol": "EQH-C",
+          "action": "SELL",
+          "qty": 100.0,
+          "price": 16.44,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:03",
+          "symbol": "EQH-C",
+          "action": "SELL",
+          "qty": 100.0,
+          "price": 16.44,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:03",
+          "symbol": "EQH-C",
+          "action": "SELL",
+          "qty": 200.0,
+          "price": 16.44,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "WFC-Z",
+      "total_qty": 500.0,
+      "fill_count": 1,
+      "tags": [
+        "LT_SHORT_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 23:21:14",
+          "symbol": "WFC-Z",
+          "action": "SHORT",
+          "qty": 500.0,
+          "price": 19.64,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "MBINN",
+      "total_qty": 500.0,
+      "fill_count": 3,
+      "tags": [
+        "LT_SHORT_DEC",
+        "LT_LONG_INC"
+      ],
+      "accounts": [
+        "IBKR_PED",
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 23:24:33",
+          "symbol": "MBINN",
+          "action": "BUY",
+          "qty": 200.0,
+          "price": 20.55,
+          "tag": "LT_SHORT_DEC",
+          "type": "POS_DEC",
+          "account": "IBKR_PED"
+        },
+        {
+          "ts": "2026-03-06 23:26:28",
+          "symbol": "MBINN",
+          "action": "BUY",
+          "qty": 200.0,
+          "price": 20.55,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:26:29",
+          "symbol": "MBINN",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 20.53,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": true,
+      "rev_symbol_match": [
+        "MBINN"
+      ]
+    },
+    {
+      "symbol": "KEY-J",
+      "total_qty": 497.0,
+      "fill_count": 10,
+      "tags": [
+        "LT_LONG_INC",
+        "LT_SHORT_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 22:56:58",
+          "symbol": "KEY-J",
+          "action": "SELL",
+          "qty": 100.0,
+          "price": 21.82,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:56:58",
+          "symbol": "KEY-J",
+          "action": "SELL",
+          "qty": 100.0,
+          "price": 21.82,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:56:59",
+          "symbol": "KEY-J",
+          "action": "SELL",
+          "qty": 100.0,
+          "price": 21.82,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:30:53",
+          "symbol": "KEY-J",
+          "action": "BUY",
+          "qty": 89.0,
+          "price": 21.75,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:30:54",
+          "symbol": "KEY-J",
+          "action": "BUY",
+          "qty": 18.0,
+          "price": 21.75,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:30:55",
+          "symbol": "KEY-J",
+          "action": "BUY",
+          "qty": 18.0,
+          "price": 21.75,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:30:56",
+          "symbol": "KEY-J",
+          "action": "BUY",
+          "qty": 18.0,
+          "price": 21.75,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:30:56",
+          "symbol": "KEY-J",
+          "action": "BUY",
+          "qty": 18.0,
+          "price": 21.75,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:30:56",
+          "symbol": "KEY-J",
+          "action": "BUY",
+          "qty": 18.0,
+          "price": 21.75,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:30:57",
+          "symbol": "KEY-J",
+          "action": "BUY",
+          "qty": 18.0,
+          "price": 21.75,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "AHL-D",
+      "total_qty": 448.0,
+      "fill_count": 4,
+      "tags": [
+        "LT_LONG_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 22:57:03",
+          "symbol": "AHL-D",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 20.89,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:03",
+          "symbol": "AHL-D",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 20.89,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:03",
+          "symbol": "AHL-D",
+          "action": "BUY",
+          "qty": 200.0,
+          "price": 20.88,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:03",
+          "symbol": "AHL-D",
+          "action": "BUY",
+          "qty": 48.0,
+          "price": 20.89,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "FLG-A",
+      "total_qty": 400.0,
+      "fill_count": 7,
+      "tags": [
+        "LT_LONG_INC",
+        "LT_SHORT_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 22:56:59",
+          "symbol": "FLG-A",
+          "action": "SELL",
+          "qty": 1.0,
+          "price": 22.7,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:04:07",
+          "symbol": "FLG-A",
+          "action": "SELL",
+          "qty": 68.0,
+          "price": 22.7,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:04:07",
+          "symbol": "FLG-A",
+          "action": "SELL",
+          "qty": 32.0,
+          "price": 22.7,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:04:09",
+          "symbol": "FLG-A",
+          "action": "SELL",
+          "qty": 100.0,
+          "price": 22.7,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:04:09",
+          "symbol": "FLG-A",
+          "action": "SELL",
+          "qty": 93.0,
+          "price": 22.7,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:11:23",
+          "symbol": "FLG-A",
+          "action": "SELL",
+          "qty": 100.0,
+          "price": 22.7,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:22:26",
+          "symbol": "FLG-A",
+          "action": "BUY",
+          "qty": 6.0,
+          "price": 22.67,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "ECCC",
+      "total_qty": 400.0,
+      "fill_count": 3,
+      "tags": [
+        "MM_LONG_INC"
+      ],
+      "accounts": [
+        "IBKR_PED"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 23:15:17",
+          "symbol": "ECCC",
+          "action": "BUY",
+          "qty": 200.0,
+          "price": 23.81,
+          "tag": "MM_LONG_INC",
+          "type": "POS_INC",
+          "account": "IBKR_PED"
+        },
+        {
+          "ts": "2026-03-06 23:18:50",
+          "symbol": "ECCC",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 23.79,
+          "tag": "MM_LONG_INC",
+          "type": "POS_INC",
+          "account": "IBKR_PED"
+        },
+        {
+          "ts": "2026-03-06 23:18:50",
+          "symbol": "ECCC",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 23.79,
+          "tag": "MM_LONG_INC",
+          "type": "POS_INC",
+          "account": "IBKR_PED"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "NSA-A",
+      "total_qty": 300.0,
+      "fill_count": 2,
+      "tags": [
+        "LT_LONG_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 22:57:01",
+          "symbol": "NSA-A",
+          "action": "BUY",
+          "qty": 200.0,
+          "price": 20.77,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:01",
+          "symbol": "NSA-A",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 20.77,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "MGR",
+      "total_qty": 300.0,
+      "fill_count": 2,
+      "tags": [
+        "LT_LONG_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 23:26:30",
+          "symbol": "MGR",
+          "action": "BUY",
+          "qty": 200.0,
+          "price": 20.85,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:26:31",
+          "symbol": "MGR",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 20.85,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "AHL-E",
+      "total_qty": 282.0,
+      "fill_count": 4,
+      "tags": [
+        "LT_LONG_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 22:57:02",
+          "symbol": "AHL-E",
+          "action": "BUY",
+          "qty": 60.0,
+          "price": 20.77,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:02",
+          "symbol": "AHL-E",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 20.77,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:02",
+          "symbol": "AHL-E",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 20.77,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:02",
+          "symbol": "AHL-E",
+          "action": "BUY",
+          "qty": 22.0,
+          "price": 20.75,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "PBI-B",
+      "total_qty": 250.0,
+      "fill_count": 2,
+      "tags": [
+        "LT_SHORT_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 22:57:03",
+          "symbol": "PBI-B",
+          "action": "SELL",
+          "qty": 111.0,
+          "price": 19.98,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:03",
+          "symbol": "PBI-B",
+          "action": "SELL",
+          "qty": 139.0,
+          "price": 19.98,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "ENO",
+      "total_qty": 236.0,
+      "fill_count": 2,
+      "tags": [
+        "LT_SHORT_DEC",
+        "LT_LONG_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 22:58:52",
+          "symbol": "ENO",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 22.6,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:30:27",
+          "symbol": "ENO",
+          "action": "BUY",
+          "qty": 136.0,
+          "price": 22.59,
+          "tag": "LT_SHORT_DEC",
+          "type": "POS_DEC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "AFGB",
+      "total_qty": 214.0,
+      "fill_count": 2,
+      "tags": [
+        "KARBOTU_LONG_DEC_STEP_6"
+      ],
+      "accounts": [
+        "IBKR_PED"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 23:33:23",
+          "symbol": "AFGB",
+          "action": "SELL",
+          "qty": 200.0,
+          "price": 21.99,
+          "tag": "KARBOTU_LONG_DEC_STEP_6",
+          "type": "POS_DEC",
+          "account": "IBKR_PED"
+        },
+        {
+          "ts": "2026-03-06 23:33:23",
+          "symbol": "AFGB",
+          "action": "SELL",
+          "qty": 14.0,
+          "price": 21.99,
+          "tag": "KARBOTU_LONG_DEC_STEP_6",
+          "type": "POS_DEC",
+          "account": "IBKR_PED"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "TRTN-A",
+      "total_qty": 205.0,
+      "fill_count": 1,
+      "tags": [
+        "LT_SHORT_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 23:20:53",
+          "symbol": "TRTN-A",
+          "action": "SELL",
+          "qty": 205.0,
+          "price": 25.93,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "RF-F",
+      "total_qty": 200.0,
+      "fill_count": 2,
+      "tags": [
+        "LT_LONG_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 22:56:59",
+          "symbol": "RF-F",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 25.17,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:56:59",
+          "symbol": "RF-F",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 25.17,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "AFGD",
+      "total_qty": 200.0,
+      "fill_count": 2,
+      "tags": [
+        "LT_LONG_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 22:57:00",
+          "symbol": "AFGD",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 20.72,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:00",
+          "symbol": "AFGD",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 20.72,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "CFR-B",
+      "total_qty": 200.0,
+      "fill_count": 2,
+      "tags": [
+        "LT_LONG_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 22:57:00",
+          "symbol": "CFR-B",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 17.61,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:00",
+          "symbol": "CFR-B",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 17.61,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "NHPBP",
+      "total_qty": 200.0,
+      "fill_count": 3,
+      "tags": [
+        "LT_SHORT_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 22:57:00",
+          "symbol": "NHPBP",
+          "action": "SELL",
+          "qty": 60.0,
+          "price": 18.97,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:01",
+          "symbol": "NHPBP",
+          "action": "SELL",
+          "qty": 40.0,
+          "price": 18.97,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:01",
+          "symbol": "NHPBP",
+          "action": "SELL",
+          "qty": 100.0,
+          "price": 18.97,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "PEB-F",
+      "total_qty": 200.0,
+      "fill_count": 3,
+      "tags": [
+        "LT_LONG_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 22:57:01",
+          "symbol": "PEB-F",
+          "action": "BUY",
+          "qty": 2.0,
+          "price": 20.05,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:01",
+          "symbol": "PEB-F",
+          "action": "BUY",
+          "qty": 98.0,
+          "price": 20.05,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:01",
+          "symbol": "PEB-F",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 20.05,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "RIV-A",
+      "total_qty": 200.0,
+      "fill_count": 2,
+      "tags": [
+        "LT_LONG_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 22:57:02",
+          "symbol": "RIV-A",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 23.21,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:02",
+          "symbol": "RIV-A",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 23.21,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "OXLCO",
+      "total_qty": 200.0,
+      "fill_count": 2,
+      "tags": [
+        "LT_LONG_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 22:57:02",
+          "symbol": "OXLCO",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 23.28,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 22:57:02",
+          "symbol": "OXLCO",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 23.28,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "GNL-E",
+      "total_qty": 200.0,
+      "fill_count": 2,
+      "tags": [
+        "LT_SHORT_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 23:27:38",
+          "symbol": "GNL-E",
+          "action": "SELL",
+          "qty": 100.0,
+          "price": 23.37,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:27:38",
+          "symbol": "GNL-E",
+          "action": "SELL",
+          "qty": 100.0,
+          "price": 23.37,
+          "tag": "LT_SHORT_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "OXLCP",
+      "total_qty": 200.0,
+      "fill_count": 2,
+      "tags": [
+        "MM_SHORT_INC"
+      ],
+      "accounts": [
+        "IBKR_PED"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 23:27:59",
+          "symbol": "OXLCP",
+          "action": "SELL",
+          "qty": 134.0,
+          "price": 24.69,
+          "tag": "MM_SHORT_INC",
+          "type": "POS_INC",
+          "account": "IBKR_PED"
+        },
+        {
+          "ts": "2026-03-06 23:28:08",
+          "symbol": "OXLCP",
+          "action": "SELL",
+          "qty": 66.0,
+          "price": 24.69,
+          "tag": "MM_SHORT_INC",
+          "type": "POS_INC",
+          "account": "IBKR_PED"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    },
+    {
+      "symbol": "AGM-F",
+      "total_qty": 200.0,
+      "fill_count": 2,
+      "tags": [
+        "LT_LONG_INC"
+      ],
+      "accounts": [
+        "HAMPRO"
+      ],
+      "fills": [
+        {
+          "ts": "2026-03-06 23:30:38",
+          "symbol": "AGM-F",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 19.82,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        },
+        {
+          "ts": "2026-03-06 23:30:39",
+          "symbol": "AGM-F",
+          "action": "BUY",
+          "qty": 100.0,
+          "price": 19.82,
+          "tag": "LT_LONG_INC",
+          "type": "POS_INC",
+          "account": "HAMPRO"
+        }
+      ],
+      "has_200_plus": true,
+      "rev_sent": false,
+      "rev_symbol_match": []
+    }
+  ],
+  "total_fills": 99,
+  "rev_orders": [
+    {
+      "ts": "2026-03-06 23:14:58",
+      "symbol": "SOJF",
+      "reason": "Duplicate order: SOJF",
+      "status": "FAILED"
+    },
+    {
+      "ts": "2026-03-06 23:14:58",
+      "symbol": "FITBP",
+      "reason": "Duplicate order: FITBP",
+      "status": "FAILED"
+    },
+    {
+      "ts": "2026-03-06 23:14:58",
+      "symbol": "PRH",
+      "reason": "Duplicate order: PRH",
+      "status": "FAILED"
+    },
+    {
+      "ts": "2026-03-06 23:14:58",
+      "action": "BUY",
+      "qty": 900.0,
+      "symbol": "BHFAN",
+      "price": 13.4,
+      "status": "SENT"
+    },
+    {
+      "ts": "2026-03-06 23:14:58",
+      "symbol": "NEWTH",
+      "reason": "Duplicate order: NEWTH",
+      "status": "FAILED"
+    },
+    {
+      "ts": "2026-03-06 23:22:11",
+      "symbol": "SOJF",
+      "reason": "Duplicate order: SOJF",
+      "status": "FAILED"
+    },
+    {
+      "ts": "2026-03-06 23:22:11",
+      "symbol": "FITBP",
+      "reason": "Duplicate order: FITBP",
+      "status": "FAILED"
+    },
+    {
+      "ts": "2026-03-06 23:22:11",
+      "action": "SELL",
+      "qty": 200.0,
+      "symbol": "NEWTH",
+      "price": 25.37,
+      "status": "SENT"
+    },
+    {
+      "ts": "2026-03-06 23:30:59",
+      "symbol": "MBINN",
+      "reason": "Duplicate order: MBINN",
+      "status": "FAILED"
+    },
+    {
+      "ts": "2026-03-06 23:30:59",
+      "symbol": "SOJF",
+      "reason": "Duplicate order: SOJF",
+      "status": "FAILED"
+    },
+    {
+      "ts": "2026-03-06 23:30:59",
+      "symbol": "FITBP",
+      "reason": "Duplicate order: FITBP",
+      "status": "FAILED"
+    },
+    {
+      "ts": "2026-03-06 23:30:59",
+      "action": "SELL",
+      "qty": 213.0,
+      "symbol": "PRH",
+      "price": 24.75,
+      "status": "SENT"
+    },
+    {
+      "ts": "2026-03-06 23:30:59",
+      "action": "BUY",
+      "qty": 900.0,
+      "symbol": "BHFAN",
+      "price": 13.4,
+      "status": "SENT"
+    },
+    {
+      "ts": "2026-03-06 23:31:00",
+      "symbol": "NEWTH",
+      "reason": "Duplicate order: NEWTH",
+      "status": "FAILED"
+    }
+  ],
+  "rev_symbols": [
+    "SOJF",
+    "PRH",
+    "FITBP",
+    "BHFAN",
+    "NEWTH",
+    "MBINN"
+  ],
+  "frontlama_orders": [
+    {
+      "ts": "2026-03-06 23:11:37",
+      "symbol": "AMH PRG",
+      "action": "BUY",
+      "qty": 196,
+      "base_price": 22.87,
+      "fronted_price": 22.91,
+      "sacrifice": 0.04,
+      "tag": "FR_KARBOTU_SHORT_DEC_STEP_9"
+    },
+    {
+      "ts": "2026-03-06 23:15:15",
+      "symbol": "WRB PRF",
+      "action": "SELL",
+      "qty": 500,
+      "base_price": 20.3,
+      "fronted_price": 20.28,
+      "sacrifice": 0.02,
+      "tag": "FR_LT_LONG_DEC"
+    },
+    {
+      "ts": "2026-03-06 23:15:16",
+      "symbol": "DLR PRJ",
+      "action": "SELL",
+      "qty": 400,
+      "base_price": 20.86,
+      "fronted_price": 20.84,
+      "sacrifice": 0.02,
+      "tag": "FR_LT_LONG_DEC"
+    },
+    {
+      "ts": "2026-03-06 23:15:20",
+      "symbol": "ADC PRA",
+      "action": "SELL",
+      "qty": 299,
+      "base_price": 17.37,
+      "fronted_price": 17.36,
+      "sacrifice": 0.01,
+      "tag": "FR_KARBOTU_LONG_DEC_STEP_6"
+    },
+    {
+      "ts": "2026-03-06 23:15:21",
+      "symbol": "OZKAP",
+      "action": "BUY",
+      "qty": 373,
+      "base_price": 16.65,
+      "fronted_price": 16.65,
+      "sacrifice": 0.0,
+      "tag": "FR_KARBOTU_SHORT_DEC_STEP_12"
+    },
+    {
+      "ts": "2026-03-06 23:18:47",
+      "symbol": "AMH PRG",
+      "action": "BUY",
+      "qty": 196,
+      "base_price": 22.87,
+      "fronted_price": 22.91,
+      "sacrifice": 0.04,
+      "tag": "FR_KARBOTU_SHORT_DEC_STEP_9"
+    },
+    {
+      "ts": "2026-03-06 23:18:49",
+      "symbol": "RPT PRC",
+      "action": "BUY",
+      "qty": 200,
+      "base_price": 24.92,
+      "fronted_price": 24.93,
+      "sacrifice": 0.01,
+      "tag": "FR_MM_LONG_INC"
+    },
+    {
+      "ts": "2026-03-06 23:18:52",
+      "symbol": "CMSD",
+      "action": "BUY",
+      "qty": 400,
+      "base_price": 23.12,
+      "fronted_price": 23.12,
+      "sacrifice": 0.0,
+      "tag": "FR_MM_LONG_INC"
+    },
+    {
+      "ts": "2026-03-06 23:18:52",
+      "symbol": "MGRB",
+      "action": "BUY",
+      "qty": 200,
+      "base_price": 17.35,
+      "fronted_price": 17.36,
+      "sacrifice": 0.01,
+      "tag": "FR_MM_LONG_INC"
+    },
+    {
+      "ts": "2026-03-06 23:27:35",
+      "symbol": "REXR PRB",
+      "action": "SELL",
+      "qty": 200,
+      "base_price": 22.37,
+      "fronted_price": 22.34,
+      "sacrifice": 0.03,
+      "tag": "FR_LT_LONG_DEC"
+    },
+    {
+      "ts": "2026-03-06 23:27:38",
+      "symbol": "AMH PRG",
+      "action": "BUY",
+      "qty": 196,
+      "base_price": 22.87,
+      "fronted_price": 22.91,
+      "sacrifice": 0.04,
+      "tag": "FR_KARBOTU_SHORT_DEC_STEP_9"
+    },
+    {
+      "ts": "2026-03-06 23:27:39",
+      "symbol": "CFG PRE",
+      "action": "BUY",
+      "qty": 182,
+      "base_price": 19.87,
+      "fronted_price": 19.88,
+      "sacrifice": 0.01,
+      "tag": "FR_KARBOTU_SHORT_DEC_STEP_12"
+    },
+    {
+      "ts": "2026-03-06 23:27:45",
+      "symbol": "CMSD",
+      "action": "BUY",
+      "qty": 400,
+      "base_price": 23.12,
+      "fronted_price": 23.12,
+      "sacrifice": 0.0,
+      "tag": "FR_MM_LONG_INC"
+    },
+    {
+      "ts": "2026-03-06 23:32:29",
+      "symbol": "KEY PRJ",
+      "action": "SELL",
+      "qty": 800,
+      "base_price": 21.83,
+      "fronted_price": 21.82,
+      "sacrifice": 0.01,
+      "tag": "FR_LT_LONG_DEC"
+    },
+    {
+      "ts": "2026-03-06 23:32:32",
+      "symbol": "OZKAP",
+      "action": "BUY",
+      "qty": 239,
+      "base_price": 16.65,
+      "fronted_price": 16.65,
+      "sacrifice": 0.0,
+      "tag": "FR_KARBOTU_SHORT_DEC_STEP_12"
+    },
+    {
+      "ts": "2026-03-06 23:36:39",
+      "symbol": "CUBB",
+      "action": "BUY",
+      "qty": 200,
+      "base_price": 23.11,
+      "fronted_price": 23.21,
+      "sacrifice": 0.1,
+      "tag": "FR_LT_SHORT_DEC"
+    },
+    {
+      "ts": "2026-03-06 23:36:42",
+      "symbol": "AMH PRG",
+      "action": "BUY",
+      "qty": 196,
+      "base_price": 22.87,
+      "fronted_price": 22.91,
+      "sacrifice": 0.04,
+      "tag": "FR_KARBOTU_SHORT_DEC_STEP_9"
+    }
+  ]
+}

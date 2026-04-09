@@ -62,7 +62,8 @@ class PositionSnapshot:
     realized_pnl: float
     position_type: str  # LONG, SHORT, FLAT
     export_time: str
-    book: str = "LT"  # LT (Long Term) or MM (Market Making)
+    book: str = "MM"  # POS TAG: MM (default, migration) or LT
+    pos_tag: str = "MM"  # POS TAG explicit: MM or LT (synced with book)
     account: str = ""
     exchange: str = ""
     last_price: float = 0.0
@@ -182,13 +183,23 @@ class BefDayTracker:
             return self.output_dir / f"bef{mode}.csv"
     
     def _is_csv_current(self, csv_path: Path) -> bool:
-        """Check if CSV file is from today"""
+        """Check if CSV file is from today AND has valid column format"""
         if not csv_path.exists():
             return False
         
         try:
             mtime = datetime.fromtimestamp(os.path.getmtime(csv_path))
-            return mtime.date() == date.today()
+            if mtime.date() != date.today():
+                return False
+            
+            # Also validate column format — reject CSVs with wrong (lowercase) headers
+            with open(csv_path, 'r', encoding='utf-8-sig') as f:
+                header = f.readline().strip()
+                if 'Symbol' not in header or 'Quantity' not in header:
+                    logger.warning(f"[BEFDAY] CSV {csv_path.name} has invalid columns, will regenerate")
+                    return False
+            
+            return True
         except Exception:
             return False
     
@@ -269,27 +280,50 @@ class BefDayTracker:
                 last_price = pos.get('last_price', pos.get('LastPrice', pos.get('current_price', 0)))
                 exchange = pos.get('exchange', pos.get('Exchange', ''))
                 
-                # Determine position type
+                # Determine position type; normalize qty so short is ALWAYS negative (never positive)
+                try:
+                    qty = float(qty)
+                except (TypeError, ValueError):
+                    qty = 0.0
                 if qty > 0:
                     position_type = "LONG"
                 elif qty < 0:
                     position_type = "SHORT"
+                    qty = -abs(qty)  # enforce short quantity is always negative
                 else:
                     position_type = "FLAT"
+                # Also respect explicit Side/Position_Type from source (e.g. IBKR can send Short with positive qty)
+                side_in = (pos.get('side') or pos.get('Side') or '').strip().lower()
+                pos_type_in = (pos.get('position_type') or pos.get('Position_Type') or '').strip().upper()
+                if side_in == 'short' or pos_type_in == 'SHORT':
+                    position_type = "SHORT"
+                    qty = -abs(float(qty)) if qty else -0.0
                 
                 # Calculate market value if not provided
                 if not market_value and avg_cost:
                     market_value = abs(qty) * avg_cost
                 
                 # Get book type (LT or MM)
-                # First check if provided in input
-                book = pos.get('book', pos.get('Book'))
+                # Priority 1: PositionTagStore (Redis — real-time POS TAG)
+                book = None
+                try:
+                    from app.psfalgo.position_tag_store import get_position_tag_store
+                    store = get_position_tag_store()
+                    if store:
+                        redis_tag = store.get_tag(symbol, mode)
+                        if redis_tag in ('LT', 'MM'):
+                            book = redis_tag
+                except Exception:
+                    pass
                 
-                # If not provided, try to resolve from ShadowPositionStore (Ledger history)
+                # Priority 2: Input data
+                if not book:
+                    book = pos.get('book', pos.get('Book'))
+                
+                # Priority 3: ShadowPositionStore (Ledger history)
                 if not book:
                     try:
                         from app.psfalgo.shadow_position_store import ShadowPositionStore
-                        # Lazy init purely for lookup
                         shadow_store = ShadowPositionStore()
                         shadow_pos = shadow_store.get_position(symbol)
                         if shadow_pos:
@@ -297,13 +331,14 @@ class BefDayTracker:
                     except Exception as e:
                         logger.warning(f"Failed to lookup book for {symbol}: {e}")
                 
-                # Default to LT if still not found or invalid
+                # Default to MM if still not found (migration default)
                 if book not in ['LT', 'MM']:
-                    book = 'LT'
+                    book = 'MM'
                 
+                # Store signed quantity: long > 0, short < 0 (BEFDAY ile current/potential aynı işaret olmalı)
                 snapshot = PositionSnapshot(
                     symbol=symbol,
-                    quantity=abs(qty),
+                    quantity=float(qty),
                     avg_cost=avg_cost,
                     market_value=market_value,
                     unrealized_pnl=unrealized_pnl,
@@ -311,6 +346,7 @@ class BefDayTracker:
                     position_type=position_type,
                     export_time=current_time,
                     book=book,
+                    pos_tag=book,  # POS TAG = book (MM or LT)
                     account=account,
                     exchange=exchange,
                     last_price=last_price,
@@ -329,7 +365,69 @@ class BefDayTracker:
                 # Mark as checked
                 self._checked_today[mode] = True
                 
+                # === NEW: Update PositionTagManager with BEFDAY positions ===
+                try:
+                    from app.psfalgo.position_tags import get_position_tag_manager
+                    tag_manager = get_position_tag_manager()
+                    for snap in snapshots:
+                        is_mm = snap.book == 'MM'
+                        qty = snap.quantity if snap.position_type == 'LONG' else -snap.quantity
+                        tag_manager.update_on_befday_load(snap.symbol, qty, is_mm)
+                    logger.info(f"[BEFDAY] PositionTagManager updated with {len(snapshots)} positions")
+                except Exception as tag_e:
+                    logger.warning(f"[BEFDAY] Could not update PositionTagManager: {tag_e}")
+                # === END NEW ===
+                
+                # === NEW: Sync POS TAGs to PositionTagStore (Redis) ===
+                try:
+                    from app.psfalgo.position_tag_store import get_position_tag_store
+                    store = get_position_tag_store()
+                    if store:
+                        befday_positions = [
+                            {'symbol': snap.symbol, 'pos_tag': snap.pos_tag}
+                            for snap in snapshots
+                            if snap.quantity != 0
+                        ]
+                        store.initialize_from_befday(befday_positions, account_id=mode)
+                        logger.info(f"[BEFDAY] PositionTagStore synced with {len(befday_positions)} POS TAGs for {mode}")
+                except Exception as store_e:
+                    logger.warning(f"[BEFDAY] Could not sync PositionTagStore: {store_e}")
+                # === END POS TAG SYNC ===
+                
                 logger.info(f"[BEFDAY] ✅ {len(snapshots)} positions saved to {csv_path.name}")
+                
+                # === AUTO MinMax Area CSV (both accounts) ===
+                try:
+                    from app.psfalgo.minmax_area_service import get_minmax_area_service
+                    minmax_svc = get_minmax_area_service()
+                    
+                    # Build pos/befday maps from snapshots for current account
+                    pos_map = {}
+                    befday_map = {}
+                    for snap in snapshots:
+                        pos_map[snap.symbol] = float(snap.quantity) if snap.position_type == 'LONG' else -float(snap.quantity)
+                        befday_map[snap.symbol] = pos_map[snap.symbol]
+                    
+                    # Save MinMax for current account
+                    count = minmax_svc.save_to_csv(
+                        mode,
+                        positions_override=pos_map,
+                        befday_override=befday_map,
+                    )
+                    logger.info(f"[BEFDAY] MinMax Area CSV saved for {mode}: {count} symbols")
+                    
+                    # Also compute for the OTHER account
+                    other_accounts = [a for a in ["HAMPRO", "IBKR_PED"] if a != mode]
+                    for other_acc in other_accounts:
+                        try:
+                            other_count = minmax_svc.save_to_csv(other_acc)
+                            logger.info(f"[BEFDAY] MinMax Area CSV saved for {other_acc}: {other_count} symbols")
+                        except Exception as other_e:
+                            logger.warning(f"[BEFDAY] MinMax Area for {other_acc} failed: {other_e}")
+                except Exception as mm_e:
+                    logger.warning(f"[BEFDAY] MinMax Area auto-save failed: {mm_e}")
+                # === END AUTO MinMax ===
+                
                 return True
             else:
                 return False
@@ -350,17 +448,22 @@ class BefDayTracker:
                 if snap.position_type == "SHORT": side = "Short" # Double check
                 
                 full_taxonomy = f"{snap.book} {origin} {side}"
+                # Short quantity MUST always be written as negative in BEFDAY (never positive)
+                qty_out = float(snap.quantity)
+                if snap.position_type == "SHORT" and qty_out > 0:
+                    qty_out = -qty_out
                 
                 data.append({
                     'Export_Time': snap.export_time,
                     'Symbol': snap.symbol,
                     'Book': snap.book,
+                    'Pos_Tag': snap.pos_tag,  # NEW: POS TAG (MM or LT)
                     'Strategy': snap.book, # Explicit Strategy column
                     'Origin': origin,      # Explicit Origin column
                     'Side': side,          # Explicit Side column
                     'Full_Taxonomy': full_taxonomy, # The requested 8-type tag
                     'Position_Type': snap.position_type,
-                    'Quantity': snap.quantity,
+                    'Quantity': qty_out,
                     'Avg_Cost': snap.avg_cost,
                     'Market_Value': snap.market_value,
                     'Unrealized_PnL': snap.unrealized_pnl,
@@ -397,6 +500,7 @@ class BefDayTracker:
                     {
                         'symbol': s.symbol,
                         'book': s.book,
+                        'pos_tag': s.pos_tag,
                         'quantity': s.quantity,
                         'avg_cost': s.avg_cost,
                         'position_type': s.position_type
@@ -443,13 +547,10 @@ class BefDayTracker:
                 'has_befday': False
             }
         
-        # Find position in snapshot
+        # Find position in snapshot (quantity is stored signed: long > 0, short < 0)
         for pos in today_snapshot.get('positions', []):
             if pos['symbol'] == symbol:
-                befday_qty = pos['quantity']
-                if pos['position_type'] == 'SHORT':
-                    befday_qty = -befday_qty
-                
+                befday_qty = float(pos['quantity'])
                 return {
                     'befday_qty': befday_qty,
                     'current_qty': 0,  # To be filled by caller
@@ -508,12 +609,13 @@ class BefDayTracker:
             pos_type = pos.get('position_type', 'FLAT')
             
             if book in result:
+                # quantity is signed: long > 0, short < 0
                 if pos_type == 'LONG':
                     result[book]['long_qty'] += qty
                     result[book]['net_qty'] += qty
                 elif pos_type == 'SHORT':
-                    result[book]['short_qty'] += qty
-                    result[book]['net_qty'] -= qty
+                    result[book]['short_qty'] += abs(qty)
+                    result[book]['net_qty'] += qty  # qty < 0, so net decreases
         
         return result
     

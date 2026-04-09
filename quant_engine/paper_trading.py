@@ -80,7 +80,7 @@ def tail_log(path, stop_event):
 
 def main():
     print("============================================================")
-    print("   PAPER TRADING MODE - OBSERVE_ONLY TEST LAUNCHER")
+    print("   OBSERVE-ONLY MODE - TEST LAUNCHER")
     print("============================================================")
     
     # Ensure log dir exists

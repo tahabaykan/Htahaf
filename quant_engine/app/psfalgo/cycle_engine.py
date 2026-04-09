@@ -62,7 +62,7 @@ class PSFALGOCycleEngine:
         # AutoCycle state
         self._autocycle_running = False
         self._autocycle_thread: Optional[threading.Thread] = None
-        self._autocycle_interval = 120  # Default: 120 seconds
+        self._autocycle_interval = 65   # Default: 65 sn (tekil ve en guncel emirler icin)
         self._autocycle_last_run: Optional[datetime] = None
         self._autocycle_lock = threading.Lock()
         self._autocycle_blocked_reason: Optional[str] = None  # Why AutoCycle is waiting
@@ -418,12 +418,12 @@ class PSFALGOCycleEngine:
             'cycle_count': len(self.cycle_history)
         }
     
-    def start_autocycle(self, interval_seconds: int = 120) -> Dict[str, Any]:
+    def start_autocycle(self, interval_seconds: int = 65) -> Dict[str, Any]:
         """
         Start AutoCycle loop (SHADOW MODE ONLY).
         
         Args:
-            interval_seconds: Interval between cycles in seconds (default: 120)
+            interval_seconds: Interval between cycles in seconds (default: 65)
             
         Returns:
             Status dict
@@ -570,6 +570,25 @@ class PSFALGOCycleEngine:
                                 except Exception as e:
                                     logger.debug(f"PSFALGO AutoCycle: Error fetching positions/orders for batch: {e}")
                             
+                            # Account ID once for this cycle (used by minmax preload and plan_action)
+                            account_id_arg = "IBKR_GUN"
+                            try:
+                                from app.trading.trading_account_context import get_trading_context, TradingAccountMode
+                                tc = get_trading_context()
+                                if tc and tc.trading_mode == TradingAccountMode.HAMMER_TRADING:
+                                    account_id_arg = "HAMMER_PRO"
+                                elif tc and tc.trading_mode == TradingAccountMode.IBKR_PED:
+                                    account_id_arg = "IBKR_PED"
+                            except ImportError:
+                                pass
+                            # MinMax: compute once for ALL symbols so plan_action get_row() hits cache (no per-symbol recompute)
+                            if psfalgo_action_planner:
+                                try:
+                                    from app.psfalgo.minmax_area_service import get_minmax_area_service
+                                    get_minmax_area_service().compute_for_account(account_id_arg, symbols=symbols)
+                                except Exception as e:
+                                    logger.debug(f"PSFALGO AutoCycle: MinMax preload: {e}")
+                            
                             # Build merged data dict (simplified - use cached data)
                             merged_data = {}
                             for symbol in symbols:
@@ -626,23 +645,9 @@ class PSFALGOCycleEngine:
                                         symbol, psfalgo_snapshot, static_data, order_plan
                                     )
                                 
-                                # Get PSFALGO action plan
+                                # Get PSFALGO action plan (MinMax cache already filled above for all symbols)
                                 psfalgo_action_plan = {}
                                 if psfalgo_action_planner and psfalgo_snapshot and psfalgo_guards:
-                                    # Need account context for Open Order service
-                                    # Try to get from Trading Context if available, else default
-                                    account_id_arg = "IBKR_GUN"
-                                    try:
-                                        from app.trading.trading_account_context import get_trading_context, TradingAccountMode
-                                        tc = get_trading_context()
-                                        if tc and tc.trading_mode == TradingAccountMode.HAMMER_TRADING:
-                                            account_id_arg = "HAMMER_PRO"
-                                        elif tc and tc.trading_mode == TradingAccountMode.IBKR_PED:
-                                            account_id_arg = "IBKR_PED"
-                                        # else IBKR_GUN (default)
-                                    except ImportError:
-                                        pass
-                                        
                                     psfalgo_action_plan = psfalgo_action_planner.plan_action(
                                         symbol, psfalgo_snapshot, psfalgo_guards, janall_metrics, exposure_mode,
                                         account_id=account_id_arg

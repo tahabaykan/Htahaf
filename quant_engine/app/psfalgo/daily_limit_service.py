@@ -106,18 +106,48 @@ class DailyLimitService:
             elif raw_decrease_limit < self.min_lot:
                 raw_decrease_limit = self.min_lot
 
+        # ═══════════════════════════════════════════════════════════════
+        # BUG-E FIX: Direction-aware consumed qty for remaining calc
+        # ═══════════════════════════════════════════════════════════════
+        # daily_net_change = current_qty - befday_qty (signed)
+        #
+        # LONG (befday >= 0):
+        #   +daily_net_change = bought more (increase consumed)
+        #   -daily_net_change = sold some   (decrease consumed)
+        #
+        # SHORT (befday < 0):
+        #   -daily_net_change = shorted more (abs position grew = INCREASE consumed)
+        #   +daily_net_change = covered some (abs position shrank = DECREASE consumed)
+        #
+        # General rule: increase moves abs(position) UP, decrease moves it DOWN.
+        # ═══════════════════════════════════════════════════════════════
+        if befday_qty >= 0:
+            # LONG side: positive net change = increase, negative = decrease
+            increase_consumed = max(0, daily_net_change)
+            decrease_consumed = max(0, -daily_net_change)
+        else:
+            # SHORT side: negative net change = increase (more short), positive = decrease (cover)
+            increase_consumed = max(0, -daily_net_change)
+            decrease_consumed = max(0, daily_net_change)
+
+        inc_remaining = max(0, int(raw_increase_limit) - increase_consumed)
+        if raw_decrease_limit == float('inf'):
+            dec_remaining = float('inf')
+        else:
+            dec_remaining = max(0, int(raw_decrease_limit) - decrease_consumed)
+
         return {
             'symbol': symbol,
             'portfolio_pct': portfolio_pct,
             'increase': {
                 'limit_qty': int(raw_increase_limit),
                 'rule_desc': f"Port% < {portfolio_pct:.1f}: Min(MaxAlw*{inc_maxalw_mult}, Port*{inc_port_pct}%)",
-                'remaining': max(0, int(raw_increase_limit) - max(0, daily_net_change)) # Simple net calculation
+                'remaining': inc_remaining
             },
             'decrease': {
                 'limit_qty': raw_decrease_limit if raw_decrease_limit == float('inf') else int(raw_decrease_limit),
                 'rule_desc': f"Port% < {portfolio_pct:.1f}: MaxAlw*{dec_maxalw_mult}, BefDay*{dec_befday_mult}" if dec_maxalw_mult else "Unlimited",
-                'remaining': float('inf') if raw_decrease_limit == float('inf') else max(0, int(raw_decrease_limit) - max(0, -daily_net_change))
+                'remaining': dec_remaining
             }
         }
 
@@ -126,12 +156,17 @@ class DailyLimitService:
                      symbol: str, 
                      side: str, 
                      qty: float,
-                     limits: Dict[str, Any]) -> Tuple[bool, float, str]:
+                     limits: Dict[str, Any],
+                     is_increase: Optional[bool] = None) -> Tuple[bool, float, str]:
         """
         Check if an order fits within limits, accounting for Pending Orders.
         
         Args:
             limits: Result from calculate_limits
+            is_increase: Explicit flag for increase vs decrease.
+                         If None, falls back to BUY=increase, SELL=decrease
+                         (which is wrong for short positions).
+                         Callers SHOULD provide this for correctness.
             
         Returns:
             (Allowed: bool, TrimmedQty: float, Reason: str)
@@ -142,7 +177,14 @@ class DailyLimitService:
         # Side mapping: If we want to BUY, we check pending BUYs
         pending_qty = open_order_service.get_pending_qty(account_id, symbol, side)
         
-        limit_info = limits['increase'] if side == 'BUY' else limits['decrease']
+        # Determine increase vs decrease
+        # If caller provides is_increase explicitly, use it (position-aware).
+        # Otherwise fall back to legacy BUY=increase assumption.
+        if is_increase is not None:
+            limit_info = limits['increase'] if is_increase else limits['decrease']
+        else:
+            # Legacy fallback (only correct for long positions)
+            limit_info = limits['increase'] if side == 'BUY' else limits['decrease']
         limit_total = limit_info['limit_qty']
         remaining_base = limit_info['remaining'] # This accounts for executed trades already (calc in calculate_limits)
         

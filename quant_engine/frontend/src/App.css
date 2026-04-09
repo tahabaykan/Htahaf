@@ -236,3 +236,34 @@
   background: #6b7280;
   border: 1px solid #4b5563;
 }
+
+/* IBKR Prefixed Tags - Make sure text is readable on light/white backgrounds */
+.order-tag[class*="ibkr"],
+.order-tag[class*="hampro"] {
+  color: #1f2937 !important;
+  text-shadow: none !important;
+  font-weight: 700;
+}
+
+/* Force dark text on all order tags when on light background */
+.orders-table .order-tag,
+table .order-tag {
+  color: #1f2937 !important;
+  text-shadow: none !important;
+}
+
+/* Long tags - green tones with dark text */
+.order-tag[class*="long-inc"],
+.order-tag[class*="long-dec"] {
+  background: linear-gradient(135deg, #86efac 0%, #6ee7b7 100%);
+  border: 1px solid #34d399;
+  color: #064e3b !important;
+}
+
+/* Short tags - red tones with dark text */
+.order-tag[class*="short-inc"],
+.order-tag[class*="short-dec"] {
+  background: linear-gradient(135deg, #fca5a5 0%, #f87171 100%);
+  border: 1px solid #f87171;
+  color: #7f1d1d !important;
+}

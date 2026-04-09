@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 import threading
 import time
 import math
+import json
 
 from app.core.logger import logger
 from app.market_data.trading_calendar import get_trading_calendar
@@ -77,6 +78,115 @@ class TruthTicksEngine:
         self.FLAT_EPSILON = 1e-6
         
         logger.info("TruthTicksEngine initialized (Weighted Print Realism)")
+        
+        # Redis persistence
+        self._persist_counter = 0
+        self._persist_interval = 500  # Auto-persist every N ticks
+        self._last_persist_time = 0
+        
+        # Try to restore from Redis on init
+        self.restore_from_redis()
+
+    def _get_redis_sync(self):
+        """Get sync Redis client for tick persistence."""
+        try:
+            from app.core.redis_client import get_sync_redis
+            return get_sync_redis()
+        except Exception:
+            try:
+                import redis
+                return redis.Redis(host='localhost', port=6379, db=0, socket_timeout=2)
+            except Exception:
+                return None
+
+    def persist_to_redis(self):
+        """
+        Persist all tick data to Redis.
+        Key format: tt:ticks:{symbol}
+        TTL: 12 days (covers 2 weekends + buffer)
+        """
+        r = self._get_redis_sync()
+        if not r:
+            return 0
+        
+        try:
+            count = 0
+            with self._tick_lock:
+                for symbol, ticks_deque in self.tick_store.items():
+                    if not ticks_deque:
+                        continue
+                    # Serialize ticks
+                    ticks_list = []
+                    for t in ticks_deque:
+                        ticks_list.append({
+                            "ts": t.get("ts", 0),
+                            "price": t.get("price", 0),
+                            "size": t.get("size", 0),
+                            "exch": t.get("exch", "UNK"),
+                        })
+                    
+                    key = f"tt:ticks:{symbol}"
+                    r.setex(
+                        key,
+                        12 * 86400,  # 12 days TTL
+                        json.dumps(ticks_list)
+                    )
+                    count += 1
+            
+            self._last_persist_time = time.time()
+            logger.info(f"[TT-ENGINE] 💾 Persisted {count} symbols to Redis")
+            return count
+        except Exception as e:
+            logger.warning(f"[TT-ENGINE] Redis persist error: {e}")
+            return 0
+
+    def restore_from_redis(self):
+        """
+        Restore tick data from Redis on startup.
+        This allows analysis even after restart or on weekends.
+        """
+        r = self._get_redis_sync()
+        if not r:
+            return 0
+        
+        try:
+            # Find all persisted tick keys
+            keys = list(r.scan_iter("tt:ticks:*", count=1000))
+            if not keys:
+                logger.debug("[TT-ENGINE] No persisted ticks in Redis")
+                return 0
+            
+            restored = 0
+            with self._tick_lock:
+                for key in keys:
+                    symbol = key.decode().replace("tt:ticks:", "") if isinstance(key, bytes) else key.replace("tt:ticks:", "")
+                    
+                    # Skip if already has in-memory data
+                    if symbol in self.tick_store and len(self.tick_store[symbol]) > 0:
+                        continue
+                    
+                    raw = r.get(key)
+                    if not raw:
+                        continue
+                    
+                    try:
+                        ticks = json.loads(raw)
+                        if not ticks:
+                            continue
+                        
+                        self.tick_store[symbol] = deque(maxlen=10000)
+                        for t in ticks:
+                            self.tick_store[symbol].append(t)
+                        restored += 1
+                    except (json.JSONDecodeError, TypeError):
+                        continue
+            
+            if restored > 0:
+                logger.info(f"[TT-ENGINE] 📥 Restored {restored} symbols from Redis")
+            return restored
+        except Exception as e:
+            logger.debug(f"[TT-ENGINE] Redis restore error: {e}")
+            return 0
         
     def _load_config(self) -> Dict[str, Any]:
         """Load microstructure rules from yaml"""
@@ -148,6 +258,16 @@ class TruthTicksEngine:
                         self.seen_hashes.add(tick_hash)
 
                     self.tick_store[symbol].append(normalized_tick)
+                    
+                    # Auto-persist to Redis periodically
+                    self._persist_counter += 1
+                    if self._persist_counter >= self._persist_interval:
+                        self._persist_counter = 0
+                        # Persist in a separate call (outside the lock)
+                        threading.Thread(
+                            target=self.persist_to_redis,
+                            daemon=True
+                        ).start()
                     
         except Exception as e:
             logger.error(f"Error adding tick for {symbol}: {e}", exc_info=True)
@@ -248,6 +368,10 @@ class TruthTicksEngine:
                     timestamp = time.time()
             elif isinstance(timestamp, (int, float)):
                 timestamp = float(timestamp)
+                # Hammer Pro sends epoch milliseconds (e.g., 1773195043000)
+                # Convert to seconds if needed
+                if timestamp > 1e12:
+                    timestamp = timestamp / 1000.0
             else:
                 return None
             
@@ -433,8 +557,9 @@ class TruthTicksEngine:
             if price <= 0 or size <= 0:
                 continue
             
-            # Weighted volume
-            weight = self.calculate_print_weight(size)
+            # Weighted volume (pass venue for FNRA rule consistency)
+            venue = tick.get('exch', 'UNKNOWN')
+            weight = self.calculate_print_weight(size, venue)
             weighted_size = size * weight
             
             if weighted_size <= 0:
@@ -502,7 +627,8 @@ class TruthTicksEngine:
             for tick in range_ticks:
                 size = tick.get('size', 0)
                 price = tick.get('price', 0)
-                weight = self.calculate_print_weight(size)
+                venue = tick.get('exch', 'UNKNOWN')
+                weight = self.calculate_print_weight(size, venue)
                 weighted_size = size * weight
                 
                 if weighted_size > 0:
@@ -545,7 +671,8 @@ class TruthTicksEngine:
                         for tick in combined_ticks:
                             size = tick.get('size', 0)
                             price = tick.get('price', 0)
-                            weight = self.calculate_print_weight(size)
+                            venue = tick.get('exch', 'UNKNOWN')
+                            weight = self.calculate_print_weight(size, venue)
                             weighted_size = size * weight
                             
                             if weighted_size > 0:
@@ -619,7 +746,8 @@ class TruthTicksEngine:
                             for tick in final_ticks:
                                 size = tick.get('size', 0)
                                 price = tick.get('price', 0)
-                                weight = self.calculate_print_weight(size)
+                                venue = tick.get('exch', 'UNKNOWN')
+                                weight = self.calculate_print_weight(size, venue)
                                 weighted_size = size * weight
                                 
                                 if weighted_size > 0:
@@ -789,7 +917,8 @@ class TruthTicksEngine:
                     for tick in combined_ticks:
                         size = tick.get('size', 0)
                         price = tick.get('price', 0)
-                        weight = self.calculate_print_weight(size)
+                        venue = tick.get('exch', 'UNKNOWN')
+                        weight = self.calculate_print_weight(size, venue)
                         weighted_size = size * weight
                         
                         if weighted_size > 0:

@@ -19,14 +19,14 @@ exposure:
   defensive_threshold_percent: 95.5
   offensive_threshold_percent: 92.7
   transition_mode: REDUCEMORE
-  default_exposure_limit: 1200000
+  default_exposure_limit: 1300000
   default_avg_price: 100
   pot_expo_limit: 1400000
 karbotu:
   gort_filter_longs:
     name: GORT Filter - Longs
     description: GORT > -1 ve Ask Sell Pahalılık > -0.05 olan pozisyonları filtrele
-    enabled: false  # DISABLED - Janall'da GORT filtresi yok
+    enabled: false
     filters:
       gort_gt: -1
       ask_sell_pahalilik_gt: -0.05
@@ -36,7 +36,7 @@ karbotu:
   gort_filter_shorts:
     name: GORT Filter - Shorts
     description: GORT < 1 ve Bid Buy Ucuzluk < +0.05 olan pozisyonları filtrele
-    enabled: false  # DISABLED - Janall'da GORT filtresi yok
+    enabled: false
     filters:
       gort_lt: 1
       bid_buy_ucuzluk_lt: 0.05
@@ -379,26 +379,15 @@ reducemore:
     exclude_sfstot_zero: true
 addnewpos:
   eligibility:
-    # exposure_ratio_threshold: REMOVED - Janall'da yok, sadece pot_total < pot_max kontrolü var
     exposure_mode: OFANSIF
   addlong:
     enabled: true
     order_type: BID_BUY
-    filters_disabled: true # Filters removed by user request
-    # filters:
-    #   bid_buy_ucuzluk_lt: -0.06
-    #   fbtot_gt: 1.10
-    #   spread_lt: 0.25
-    #   avg_adv_gt: 500
+    filters_disabled: true
   addshort:
     enabled: true
     order_type: ASK_SELL
-    filters_disabled: true # Filters removed by user request
-    # filters:
-    #   ask_sell_pahalilik_gt: 0.06
-    #   sfstot_gt: 1.10
-    #   spread_lt: 0.25
-    #   avg_adv_gt: 500
+    filters_disabled: true
   rules:
     thresholds:
     - max_portfolio_percent: 1
@@ -421,10 +410,10 @@ addnewpos:
       portfolio_percent: 1
     exposure_usage_percent: 60
   settings:
-    max_lot_per_symbol: 999999  # UNLIMITED (User request)
+    max_lot_per_symbol: 999999
     default_lot: 200
-    min_lot_size: 200 # User request: Min 200 always
-    cooldown_minutes: 0  # DISABLED - Janall'da cooldown yok
+    min_lot_size: 200
+    cooldown_minutes: 0
     min_avg_adv_divisor: 10
     mode: addlong_only
 lot_divider:
@@ -444,7 +433,6 @@ controller_on:
     check_interval_seconds: 60
     price_improvement_threshold: 0.01
     replace_partial_fills: false
-# guardrails: REMOVED BY USER REQUEST
 gort_lot_calculation:
   enabled: true
   method: PROPORTIONAL
@@ -470,29 +458,27 @@ jfin:
   tumcsv:
     selection_percent: 0.1
     min_selection: 2
-    heldkuponlu_pair_count: 8
-    # Janall selection criteria (two-step intersection)
-    long_percent: 25.0  # Top %X for LONG (Janall: 25%)
-    long_multiplier: 1.5  # Average × multiplier for LONG (Janall: 1.5x)
-    short_percent: 25.0  # Bottom %X for SHORT (Janall: 25%)
-    short_multiplier: 0.7  # Average × multiplier for SHORT (Janall: 0.7x)
-    max_short: 3  # Maximum SHORT stocks per group (Janall: 3)
-    # Company limit (Janall: limit_by_company)
+    heldkuponlu_pair_count: 16
+    long_percent: 25
+    long_multiplier: 1.5
+    short_percent: 25
+    short_multiplier: 0.7
+    max_short: 3
     company_limit_enabled: true
-    company_limit_divisor: 1.6  # Janall: max = total / 1.6
+    company_limit_divisor: 1.6
     presets:
       v10:
         selection_percent: 0.1
         min_selection: 2
-        heldkuponlu_pair_count: 8
+        heldkuponlu_pair_count: 16
       v15:
         selection_percent: 0.12
         min_selection: 2
-        heldkuponlu_pair_count: 10
+        heldkuponlu_pair_count: 20
       v20:
         selection_percent: 0.15
         min_selection: 3
-        heldkuponlu_pair_count: 12
+        heldkuponlu_pair_count: 24
   lot_distribution:
     alpha: 3
     total_long_rights: 28000
@@ -533,35 +519,18 @@ jfin:
       score_column: Final_SFS_skor
       order_type: FRONT_SELL
       direction: SHORT
-  # JFIN FİLTRELER - Kullanıcı tarafından ayarlanabilir
-  # Janall'da bu filtreler mevcuttu ve kullanıcı değiştirebiliyordu
-  # Filtreleri devre dışı bırakmak için değeri null yapın veya satırı silin
   filters:
-    bb_long:
-      # sma63_chg_lt: -1.6  # Opsiyonel - kullanıcı ayarlayabilir
-      # fbtot_gt: 0.8      # Opsiyonel - kullanıcı ayarlayabilir
-      # gort_lt: 1         # Opsiyonel - kullanıcı ayarlayabilir
-    fb_long:
-      # sma63_chg_lt: -1.6  # Opsiyonel - kullanıcı ayarlayabilir
-      # fbtot_gt: 0.8      # Opsiyonel - kullanıcı ayarlayabilir
-      # gort_lt: 1         # Opsiyonel - kullanıcı ayarlayabilir
-    sas_short:
-      # sma63_chg_gt: 1.6   # Opsiyonel - kullanıcı ayarlayabilir
-      # sfstot_gt: 0.8     # Opsiyonel - kullanıcı ayarlayabilir
-      # gort_gt: 1         # Opsiyonel - kullanıcı ayarlayabilir
-    sfs_short:
-      # sma63_chg_gt: 1.6   # Opsiyonel - kullanıcı ayarlayabilir
-      # sfstot_gt: 0.8     # Opsiyonel - kullanıcı ayarlayabilir
-      # gort_gt: 1         # Opsiyonel - kullanıcı ayarlayabilir
-  
-  # JANALL DOSYA BAZLI KURALLAR - get_file_specific_rules() fonksiyonundan
+    bb_long: null
+    fb_long: null
+    sas_short: null
+    sfs_short: null
   file_specific_rules:
     ssfinekheldkuponlu:
       long_percent: 35
       long_multiplier: 1.3
       short_percent: 40
-      short_multiplier: 0.80
-      max_short: 999  # Sınırsız
+      short_multiplier: 0.8
+      max_short: 999
     ssfinekheldff:
       long_percent: 30
       long_multiplier: 1.4
@@ -664,284 +633,211 @@ jfin:
     ttl_seconds: 300
     require_approval: true
     auto_approve: false
-
-# =============================================================================
-# NEW SECTIONS - V2.1 Orchestrator & Risk Integration
-# =============================================================================
-
-# -----------------------------------------------------------------------------
-# RISK REGIMES - Soft/Hard Derisk Thresholds (USER CONFIGURABLE)
-# -----------------------------------------------------------------------------
 risk_regimes:
-  # Thresholds are EXPOSURE PERCENTAGES
   soft_derisk:
-    threshold_pct: 120.0          # Soft de-risk starts at 120% exposure
-    addnewpos_step_multiplier: 0.25  # ADDNEWPOS step drops to 25%
-    engines_throttled: ["ADDNEWPOS"]
-  
+    # Aligned with intent_model soft zone (84.9%) - gradual throttling starts here
+    threshold_pct: 85
+    addnewpos_step_multiplier: 0.25
+    engines_throttled:
+    - ADDNEWPOS
   hard_derisk:
-    threshold_pct: 130.0          # Hard de-risk starts at 130% exposure
-    cancel_risk_increasing: true  # Cancel all risk-increasing orders
-    only_reduce_positions: true   # Only allow position reduction
-    spread_penalty_active: true   # Spread matters for exit cost
-  
+    # Aligned with ExposureThresholdServiceV2 current_threshold (92%)
+    threshold_pct: 92
+    cancel_risk_increasing: true
+    only_reduce_positions: true
+    spread_penalty_active: true
   close:
-    time_window_start: "15:00"    # Close mode starts at 3 PM
-    time_window_end: "16:00"
+    time_window_start: '15:00'
+    time_window_end: '16:00'
     allow_addnewpos: false
     force_reduce_residual: true
-  
-  # Spread interpretation by mode
   spread_rules:
-    # ADDNEWPOS: Spread = ADVANTAGE (pasif fill)
     addnewpos_spread_blocks: false
-    addnewpos_spread_log_threshold: 0.30  # 30 cent üzeri logla
-    # DERISK: Spread = COST (agresif exit)
+    addnewpos_spread_log_threshold: 0.3
     derisk_spread_penalty: true
-
-# -----------------------------------------------------------------------------
-# ORDER LIFECYCLE - TTL & Replace Policy
-# -----------------------------------------------------------------------------
 order_lifecycle:
-  # TTL per intent category (seconds)
   ttl_by_category:
-    LT_TRIM: 120        # 2 dakika
-    MM_CHURN: 60        # 1 dakika
-    ADDNEWPOS: 180      # 3 dakika
-    KARBOTU: 120        # 2 dakika
-    REDUCEMORE: 90      # 1.5 dakika
-    HARD_DERISK: 30     # 30 saniye (acil)
-    CLOSE_EXIT: 15      # 15 saniye (çok acil)
-    DEFAULT: 90         # Fallback
-  
-  # Replace discipline
-  min_replace_interval_seconds: 2.5  # Min 2.5s between replaces
-  price_change_threshold_cents: 1    # Replace only if price changed >= 1 cent
-  
-  # Stale detection
-  stale_data_threshold_seconds: 90   # Truth verisi >90s ise stale
-  
-  # Cancel policy
-  selective_cancel_enabled: true     # NO mass cancel, only selective
-  allow_emergency_cancel_all: false  # Manual emergency only
-
-# -----------------------------------------------------------------------------
-# ORCHESTRATOR - Phase Timing & Mode
-# -----------------------------------------------------------------------------
+    LT_TRIM: 120
+    MM_CHURN: 60
+    ADDNEWPOS: 180
+    KARBOTU: 120
+    REDUCEMORE: 90
+    HARD_DERISK: 30
+    CLOSE_EXIT: 15
+    DEFAULT: 90
+  min_replace_interval_seconds: 2.5
+  price_change_threshold_cents: 1
+  stale_data_threshold_seconds: 90
+  selective_cancel_enabled: true
+  allow_emergency_cancel_all: false
 orchestrator:
-  enabled: false # DISABLED for manual testing
-  # MODE: OBSERVE_ONLY | SELECTIVE_ONLY | FULL
-  mode: FULL # Was OBSERVE_ONLY
+  enabled: false
+  mode: FULL
   phase_tick_seconds: 30
-  
-  # Phase schedule (Eastern Time)
   phases:
     PRE_MARKET:
-      start: "04:00"
-      end: "09:30"
+      start: 04:00
+      end: 09:30
       engines: []
       allow_addnewpos: false
     OPEN:
-      start: "09:30"
-      end: "10:00"
-      engines: ["LT_TRIM", "MM_CHURN", "KARBOTU"]
-      allow_addnewpos: false   # İlk 30dk ADDNEWPOS yok
+      start: 09:30
+      end: '10:00'
+      engines:
+      - LT_TRIM
+      - MM_CHURN
+      - KARBOTU
+      allow_addnewpos: false
     ACTIVE:
-      start: "10:00"
-      end: "14:00"
-      engines: ["LT_TRIM", "MM_CHURN", "ADDNEWPOS", "KARBOTU", "REDUCEMORE"]
+      start: '10:00'
+      end: '14:00'
+      engines:
+      - LT_TRIM
+      - MM_CHURN
+      - ADDNEWPOS
+      - KARBOTU
+      - REDUCEMORE
       allow_addnewpos: true
     MIDDAY:
-      start: "14:00"
-      end: "15:00"
-      engines: ["LT_TRIM", "MM_CHURN", "KARBOTU"]
-      allow_addnewpos: false   # Son 2 saat yavaşla
-    CLOSE:
-      start: "15:00"
-      end: "16:00"
-      engines: ["LT_TRIM", "HARD_EXIT"]
+      start: '14:00'
+      end: '15:00'
+      engines:
+      - LT_TRIM
+      - MM_CHURN
+      - KARBOTU
       allow_addnewpos: false
-
-# -----------------------------------------------------------------------------
-# LEGACY PSFALGO COMPATIBILITY
-# -----------------------------------------------------------------------------
+    CLOSE:
+      start: '15:00'
+      end: '16:00'
+      engines:
+      - LT_TRIM
+      - HARD_EXIT
+      allow_addnewpos: false
 legacy_psfalgo:
-  # When orchestrator.mode = FULL, set this to false
   legacy_runall_enabled: true
-  legacy_autocycle_enabled: false  # DISABLED
-
-# -----------------------------------------------------------------------------
-# PRESETS (Hazır Ayar Setleri)
-# -----------------------------------------------------------------------------
+  legacy_autocycle_enabled: false
 presets:
   conservative:
-    description: "Düşük risk, küçük pozisyonlar"
+    description: Düşük risk, küçük pozisyonlar
     exposure.defensive_threshold_percent: 80
     exposure.offensive_threshold_percent: 75
-    risk_regimes.soft_derisk.threshold_pct: 90
-    risk_regimes.hard_derisk.threshold_pct: 100
+    risk_regimes.soft_derisk.threshold_pct: 75
+    risk_regimes.hard_derisk.threshold_pct: 80
     addnewpos.settings.max_lot_per_symbol: 100
-  
   aggressive:
-    description: "Yüksek risk, büyük pozisyonlar"
+    description: Yüksek risk, büyük pozisyonlar
     exposure.defensive_threshold_percent: 100
     exposure.offensive_threshold_percent: 95
-    risk_regimes.soft_derisk.threshold_pct: 130
-    risk_regimes.hard_derisk.threshold_pct: 145
+    risk_regimes.soft_derisk.threshold_pct: 90
+    risk_regimes.hard_derisk.threshold_pct: 95
     addnewpos.settings.max_lot_per_symbol: 500
-  
-  default:
-
-# =============================================================================
-# MENTAL MODEL V1 - Intent & Lot Discipline (NEW)
-# =============================================================================
-
-# 1.1 Intent model (exposure -> Add/Reduce)
+  default: null
 intent_model:
   type: piecewise_v1
-  
-  # User config: set HARD; SOFT auto derived with ratio 12/13
-  hard_threshold_pct: 130.0
+  # Hard threshold MUST match ExposureThresholdServiceV2 current_threshold (92%)
+  # so that intent gradual throttling happens BEFORE hard risk cuts ADDNEWPOS abruptly.
+  # Soft zone = 92 * 12/13 ≈ 84.9% → gradual AddIntent reduction from 20→0
+  # Hard zone = 92% → AddIntent=0 (matches ThresholdServiceV2 hard risk)
+  hard_threshold_pct: 92
   soft_ratio_num: 12
   soft_ratio_den: 13
-  
-  # Shape params (defaults; user adjustable)
-  Amax: 100.0  # Max Add Intent at 0% exposure
-  Asoft: 20.0  # Add Intent at Soft Threshold
-  pn: 1.25     # Normal zone curve
-  q: 2.14      # Normal zone x transformation
-  ps: 1.50     # Soft zone curve
-
-# 1.2 Lot policy (global)
+  Amax: 100
+  Asoft: 20
+  pn: 1.25
+  q: 2.14
+  ps: 1.5
 lot_policy:
   base_lot_default: 1000
-  k_multiplier_default: 1.0
-  
-  # 100-lot trades never happen
+  k_multiplier_default: 1
   rounding:
-    min_trade_lot: 200      # 100..199 -> 200
-    no_trade_below_raw: 100 # raw < 100 -> 0
-  
-  # After-trade holding preference (plan-level)
-  post_trade_hold_min: 200  # desired: holding is 0 or >=200
-
-# 1.3 Strategy gating differences LT vs MM
+    min_trade_lot: 200
+    no_trade_below_raw: 100
+  post_trade_hold_min: 200
 gating:
   lt:
     goodness_min_normal: 70
     goodness_min_soft: 90
-    goodness_min_hard: 999   # effectively blocked
-    allow_soft_minlot_200: false   # soft: LT can skip small lots
+    goodness_min_hard: 999
+    allow_soft_minlot_200: false
   mm:
     goodness_min_normal: 60
     goodness_min_soft: 80
     goodness_min_hard: 999
-    allow_soft_minlot_200: true    # soft: MM can still do 200-lot if opportunity
-
-# 1.4 Pick count / selectivity (how many candidates per group)
+    allow_soft_minlot_200: true
 pick_policy:
   add_intent_ge_70: 5
   add_intent_ge_40: 3
   add_intent_ge_20: 3
-  add_intent_lt_20: 3 # WAS 0 - Unblocked by user request
-  # MM override: if add_intent < 20, still allow picks if mm_goodness >= 90
+  add_intent_lt_20: 3
   mm_override_goodness: 90
-
-# 1.5 Position direction policy (no flip)
 position_direction:
-  allow_flip_in_one_step: false   # never
-  # MM churn allows reduce then re-add, but not exceed current position in a single trade
+  allow_flip_in_one_step: false
   mm_churn_allow_roundtrip: true
-
-
-# =============================================================================
-# JANALL DNA SECTIONS - Full Integration (V4.0)
-# =============================================================================
-
-# 4.1 Exit Logic (Time-Aware & Urgency)
 exit_logic:
-  urgency_multiplier: 1.8   # Compare MM vs LT loss (0.17 < 0.10 * 1.8)
-  
-  # Time Phases (Seconds Before Close)
+  urgency_multiplier: 1.8
   phases:
     phase_1:
-      start_seconds: 120  # T-120
-      end_seconds: 60     # T-60
-      mode: MM_FRONT_ONLY # Attempt MM Front (FB/SFS), no passive
+      start_seconds: 120
+      end_seconds: 60
+      mode: MM_FRONT_ONLY
     phase_2:
-      start_seconds: 60   # T-60
-      end_seconds: 30     # T-30
-      mode: LT_FRONT_OPT  # LT Front allowed if MM fail + urgency check
+      start_seconds: 60
+      end_seconds: 30
+      mode: LT_FRONT_OPT
     phase_3:
-      start_seconds: 30   # T-30
-      end_seconds: 0      # Close
-      mode: HARD_EXIT     # Active Hidden (AB/BS) - Aggressive
-
-# 4.2 Pricing Recipes (Standardized)
+      start_seconds: 30
+      end_seconds: 0
+      mode: HARD_EXIT
 pricing_recipes:
-  # Entry / Passive
   PASSIVE_HIDDEN_BB:
     base: BID
     offset_type: SPREAD
-    offset_value: 0.15    # + Spread * 0.15
+    offset_value: 0.15
   PASSIVE_HIDDEN_SAS:
     base: ASK
     offset_type: SPREAD
-    offset_value: -0.15   # - Spread * 0.15
-
-  # Front Run (MM & LT)
+    offset_value: -0.15
   FRONT_RUN_FB:
     base: LAST
     offset_type: FIXED
-    offset_value: 0.01    # + 0.01
+    offset_value: 0.01
   FRONT_RUN_SFS:
     base: LAST
     offset_type: FIXED
-    offset_value: -0.01   # - 0.01
-
-  # Aggressive Exit Only (Active Hidden)
+    offset_value: -0.01
   ACTIVE_HIDDEN_AB:
     base: ASK
     offset_type: FIXED
-    offset_value: 0.01    # + 0.01 (Cross spread)
+    offset_value: 0.01
   ACTIVE_HIDDEN_BS:
     base: BID
     offset_type: FIXED
-    offset_value: -0.01   # - 0.01 (Cross spread)
-
-# 4.3 Selection Logic (TumCSV)
+    offset_value: -0.01
 selection:
   scoring:
-    cheapness_multiplier: 1000  # Base - (1000 * cheapness)
-
+    cheapness_multiplier: 1000
   tumcsv_modes:
     v10:
-      percent: 0.10
+      percent: 0.1
       min_count: 2
     v15:
       percent: 0.15
       min_count: 2
     v20:
-      percent: 0.20
+      percent: 0.2
       min_count: 3
-  
   issuer_limit:
     enabled: true
-    divisor: 1.6  # Limit exposure to single issuer
-    
-# 4.4 Group DNA (Multipliers & Aggression)
+    divisor: 1.6
 group_dna:
-  # Defaults if not specified per group
   default:
-    multiplier: 1.0
+    multiplier: 1
     aggression: NORMAL
     max_cash_short: 0
-  
-  # Specific Groups (Examples)
   HELDKUPONLU:
     multiplier: 1.2
     max_cash_short: 200000
     aggression: HIGH
   HELDFF:
-    multiplier: 1.0 
+    multiplier: 1
     aggression: NORMAL

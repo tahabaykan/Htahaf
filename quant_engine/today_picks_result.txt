@@ -1,0 +1,11 @@
+﻿==========================================================================================
+  BUGUNUN TRADE PLANI - 2026-02-16 (Pazartesi)
+==========================================================================================
+Traceback (most recent call last):
+  File "c:\StockTracker\quant_engine\today_picks.py", line 152, in <module>
+    upcoming_longs.sort(key=lambda x: (c['entry_in_days'], -c['score']))
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\StockTracker\quant_engine\today_picks.py", line 152, in <lambda>
+    upcoming_longs.sort(key=lambda x: (c['entry_in_days'], -c['score']))
+                                       ^
+NameError: name 'c' is not defined

@@ -9,8 +9,8 @@ Execution Modes (Automation Level):
 
 Trading Account Modes (Broker Backend):
 - HAMPRO: Hammer Pro
-- IBKR_PED: IBKR Paper
-- IBKR_GUN: IBKR Live
+- IBKR_PED: IBKR PED (port 4001)
+- IBKR_GUN: IBKR GUN (port 4001)
 """
 
 from enum import Enum
@@ -219,7 +219,8 @@ class ExecutionRouter:
             'style': style,
             # Add strict fields if needed by provider
             'psfalgo_source': order_plan.get('psfalgo_source', False),
-            'psfalgo_action': order_plan.get('psfalgo_action', '')
+            'psfalgo_action': order_plan.get('psfalgo_action', ''),
+            'strategy_tag': order_plan.get('strategy_tag', order_plan.get('psfalgo_action', 'PROVIDER'))  # 8-tag system
         }
         
         # Execute with STRICT account_id

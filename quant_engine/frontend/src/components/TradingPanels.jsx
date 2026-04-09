@@ -8,14 +8,24 @@ function TradingPanels({ tradingMode, initialTab = 'positions', onTabChange }) {
   const [shadowPositions, setShadowPositions] = useState([])
   const [shadowExposure, setShadowExposure] = useState(null)
   const [orders, setOrders] = useState([])
+  const [filledOrders, setFilledOrders] = useState([])
+  const [orderSubTab, setOrderSubTab] = useState('pending')
+  const [filterText, setFilterText] = useState('')
   const [exposure, setExposure] = useState(null)
   const [loading, setLoading] = useState(false)
 
   // Bulk Selection State
   const [selectedOrders, setSelectedOrders] = useState(new Set())
 
-  // Sorting State
+  // Sorting State (for positions)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' })
+
+  // Orders Sorting State
+  const [ordersSortConfig, setOrdersSortConfig] = useState({ key: null, direction: 'ascending' })
+
+  // Pagination State for Orders
+  const [ordersPage, setOrdersPage] = useState(1)
+  const [ordersPerPage, setOrdersPerPage] = useState(25)
 
   useEffect(() => {
     // Update active tab when initialTab prop changes
@@ -50,8 +60,11 @@ function TradingPanels({ tradingMode, initialTab = 'positions', onTabChange }) {
     else if (activeTab !== 'orders') setLoading(true)
 
     try {
+      // Convert frontend mode to backend account_id format
+      const accountId = (tradingMode === 'HAMMER_PRO' || tradingMode === 'HAMMER_TRADING' || tradingMode === 'HAMPRO') ? 'HAMPRO' : tradingMode
+
       if (activeTab === 'positions') {
-        const response = await fetch(`/api/trading/positions?_t=${Date.now()}`)
+        const response = await fetch(`/api/trading/positions?_t=${Date.now()}&account_id=${accountId}`)
         const result = await response.json()
         if (result.success) {
           setPositions(result.positions || [])
@@ -69,13 +82,16 @@ function TradingPanels({ tradingMode, initialTab = 'positions', onTabChange }) {
           setShadowExposure(exposureResult.summary || null)
         }
       } else if (activeTab === 'orders') {
-        // Use Janall endpoint for Native visibility
-        const response = await fetch(`/api/janall/orders?_t=${Date.now()}`)
+        // Use Janall endpoint for Native visibility - pass mode so backend returns correct account's orders
+        const modeParam = tradingMode || 'HAMMER_PRO'
+        const response = await fetch(`/api/janall/orders?_t=${Date.now()}&mode=${modeParam}`)
         const result = await response.json()
         if (result) {
           // Janall routes return { open_orders: [], filled_orders: [] } usually
           const open = result.open_orders || result.orders || []
+          const filled = result.filled_orders || []
           setOrders(open)
+          setFilledOrders(filled)
         }
       } else if (activeTab === 'exposure') {
         const response = await fetch(`/api/trading/exposure?_t=${Date.now()}`)
@@ -91,31 +107,11 @@ function TradingPanels({ tradingMode, initialTab = 'positions', onTabChange }) {
     }
   }
 
-  // Selection Logic
-  const toggleSelect = (orderId) => {
-    const newSelected = new Set(selectedOrders)
-    if (newSelected.has(orderId)) {
-      newSelected.delete(orderId)
-    } else {
-      newSelected.add(orderId)
-    }
-    setSelectedOrders(newSelected)
-  }
-
-  const toggleSelectAll = () => {
-    if (selectedOrders.size === orders.length && orders.length > 0) {
-      setSelectedOrders(new Set())
-    } else {
-      const allIds = new Set(orders.map(o => o.order_id || `temp-${orders.indexOf(o)}`))
-      setSelectedOrders(allIds)
-    }
-  }
+  // Selection Logic moved below with pagination support
 
   const handleBulkCancel = async () => {
     if (selectedOrders.size === 0) return
-
     if (!confirm(`Cancel ${selectedOrders.size} selected orders?`)) return
-
     try {
       const response = await fetch('/api/janall/cancel-orders', {
         method: 'POST',
@@ -124,7 +120,6 @@ function TradingPanels({ tradingMode, initialTab = 'positions', onTabChange }) {
       })
       const result = await response.json()
       if (result.success) {
-        // Clear selection and refresh
         setSelectedOrders(new Set())
         loadData()
         alert(result.message)
@@ -136,6 +131,27 @@ function TradingPanels({ tradingMode, initialTab = 'positions', onTabChange }) {
     }
   }
 
+  const handleCancelAll = async () => {
+    if (orders.length === 0) return
+    if (!confirm('Hesaptaki TÜM açık emirleri iptal et? (reqGlobalCancel)')) return
+    try {
+      const response = await fetch('/api/janall/cancel-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_ids: [] })
+      })
+      const result = await response.json()
+      if (result.success) {
+        setSelectedOrders(new Set())
+        loadData()
+        alert(result.message)
+      } else {
+        alert('Failed: ' + (result.message || 'Tümünü iptal başarısız'))
+      }
+    } catch (err) {
+      alert('Error: ' + err)
+    }
+  }
 
   // Sorting Logic
   const requestSort = (key) => {
@@ -147,16 +163,22 @@ function TradingPanels({ tradingMode, initialTab = 'positions', onTabChange }) {
   }
 
   const sortedPositions = useMemo(() => {
-    let sortableItems = [...positions]
+    let sortableItems = positions.filter(p => !filterText || p.symbol.toUpperCase().includes(filterText.toUpperCase()))
     if (sortConfig.key !== null) {
       sortableItems.sort((a, b) => {
         let aValue = a[sortConfig.key]
         let bValue = b[sortConfig.key]
 
         // Special handling for derived columns
-        if (sortConfig.key === 'quantity') {
+        if (sortConfig.key === 'quantity' || sortConfig.key === 'display_qty') {
           aValue = a.display_qty !== undefined ? a.display_qty : a.qty
           bValue = b.display_qty !== undefined ? b.display_qty : b.qty
+        } else if (sortConfig.key === 'befday_qty') {
+          aValue = a.befday_qty || 0
+          bValue = b.befday_qty || 0
+        } else if (sortConfig.key === 'potential_qty') {
+          aValue = a.potential_qty || 0
+          bValue = b.potential_qty || 0
         }
 
         if (aValue < bValue) {
@@ -169,11 +191,102 @@ function TradingPanels({ tradingMode, initialTab = 'positions', onTabChange }) {
       })
     }
     return sortableItems
-  }, [positions, sortConfig])
+  }, [positions, sortConfig, filterText])
 
   const getSortIndicator = (key) => {
     if (sortConfig.key !== key) return ''
     return sortConfig.direction === 'ascending' ? ' ▲' : ' ▼'
+  }
+
+  // Orders Sorting Logic
+  const requestOrdersSort = (key) => {
+    let direction = 'ascending'
+    if (ordersSortConfig.key === key && ordersSortConfig.direction === 'ascending') {
+      direction = 'descending'
+    }
+    setOrdersSortConfig({ key, direction })
+    setOrdersPage(1) // Reset to first page when sorting
+  }
+
+  const getOrdersSortIndicator = (key) => {
+    if (ordersSortConfig.key !== key) return ''
+    return ordersSortConfig.direction === 'ascending' ? ' ▲' : ' ▼'
+  }
+
+  // Sorted and Paginated Orders
+  const { sortedOrders, paginatedOrders, totalPages } = useMemo(() => {
+    let filtered = orders.filter(o => !filterText || (o.symbol || '').toUpperCase().includes(filterText.toUpperCase()))
+
+    // Sort
+    if (ordersSortConfig.key !== null) {
+      filtered.sort((a, b) => {
+        let aValue, bValue
+
+        switch (ordersSortConfig.key) {
+          case 'symbol':
+            aValue = (a.symbol || '').toUpperCase()
+            bValue = (b.symbol || '').toUpperCase()
+            break
+          case 'side':
+            aValue = (a.action || a.side || '').toUpperCase()
+            bValue = (b.action || b.side || '').toUpperCase()
+            break
+          case 'quantity':
+            aValue = a.qty || a.quantity || 0
+            bValue = b.qty || b.quantity || 0
+            break
+          case 'price':
+            aValue = a.price || 0
+            bValue = b.price || 0
+            break
+          case 'tag':
+            aValue = (a.tag || '').toUpperCase()
+            bValue = (b.tag || '').toUpperCase()
+            break
+          case 'status':
+            aValue = (a.status || '').toUpperCase()
+            bValue = (b.status || '').toUpperCase()
+            break
+          case 'time':
+            aValue = a.timestamp || 0
+            bValue = b.timestamp || 0
+            break
+          default:
+            aValue = a[ordersSortConfig.key]
+            bValue = b[ordersSortConfig.key]
+        }
+
+        if (aValue < bValue) return ordersSortConfig.direction === 'ascending' ? -1 : 1
+        if (aValue > bValue) return ordersSortConfig.direction === 'ascending' ? 1 : -1
+        return 0
+      })
+    }
+
+    const total = Math.ceil(filtered.length / ordersPerPage)
+    const start = (ordersPage - 1) * ordersPerPage
+    const paginated = filtered.slice(start, start + ordersPerPage)
+
+    return { sortedOrders: filtered, paginatedOrders: paginated, totalPages: total }
+  }, [orders, ordersSortConfig, filterText, ordersPage, ordersPerPage])
+
+  // Toggle select all (only visible/paginated orders)
+  const toggleSelectAll = () => {
+    if (selectedOrders.size === paginatedOrders.length) {
+      setSelectedOrders(new Set())
+    } else {
+      const allIds = paginatedOrders.map((o, idx) => o.order_id || `temp-${idx}`)
+      setSelectedOrders(new Set(allIds))
+    }
+  }
+
+  const toggleSelect = (oid) => {
+    const newSet = new Set(selectedOrders)
+    if (newSet.has(oid)) {
+      newSet.delete(oid)
+    } else {
+      newSet.add(oid)
+    }
+    setSelectedOrders(newSet)
   }
 
   return (
@@ -209,9 +322,35 @@ function TradingPanels({ tradingMode, initialTab = 'positions', onTabChange }) {
         >
           Clean Logs
         </button>
-        <div className="tab-indicator">
-          <span className={`trading-mode-badge ${tradingMode === 'HAMMER_TRADING' ? 'hammer-badge' : ''}`}>
-            {tradingMode === 'HAMMER_TRADING' ? 'Hammer Account' : tradingMode}
+        <div className="tab-indicator" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div className="search-filter" style={{ position: 'relative' }}>
+            <input
+              type="text"
+              placeholder="Search symbol..."
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+              style={{
+                padding: '6px 12px 6px 30px',
+                borderRadius: '4px',
+                border: '1px solid #444',
+                background: '#1e293b',
+                color: 'white',
+                fontSize: '14px',
+                width: '180px'
+              }}
+            />
+            <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>🔍</span>
+            {filterText && (
+              <span
+                onClick={() => setFilterText('')}
+                style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', opacity: 0.7 }}
+              >
+                ✕
+              </span>
+            )}
+          </div>
+          <span className={`trading-mode-badge ${['HAMMER_TRADING', 'HAMMER_PRO', 'HAMPRO'].includes(tradingMode) ? 'hammer-badge' : ''}`}>
+            {['HAMMER_TRADING', 'HAMMER_PRO', 'HAMPRO'].includes(tradingMode) ? 'Hammer Account' : tradingMode}
           </span>
         </div>
       </div>
@@ -234,8 +373,14 @@ function TradingPanels({ tradingMode, initialTab = 'positions', onTabChange }) {
                     <th onClick={() => requestSort('symbol')} className="sortable-header">
                       Symbol <span className="sort-icon">{getSortIndicator('symbol')}</span>
                     </th>
-                    <th onClick={() => requestSort('quantity')} className="sortable-header">
-                      Quantity <span className="sort-icon">{getSortIndicator('quantity')}</span>
+                    <th onClick={() => requestSort('befday_qty')} className="sortable-header">
+                      Befday <span className="sort-icon">{getSortIndicator('befday_qty')}</span>
+                    </th>
+                    <th onClick={() => requestSort('display_qty')} className="sortable-header">
+                      Current <span className="sort-icon">{getSortIndicator('display_qty')}</span>
+                    </th>
+                    <th onClick={() => requestSort('potential_qty')} className="sortable-header">
+                      Potential <span className="sort-icon">{getSortIndicator('potential_qty')}</span>
                     </th>
                     <th onClick={() => requestSort('avg_price')} className="sortable-header">
                       Avg Price <span className="sort-icon">{getSortIndicator('avg_price')}</span>
@@ -277,10 +422,13 @@ function TradingPanels({ tradingMode, initialTab = 'positions', onTabChange }) {
                             {pos.group && <span className="group-badge">{pos.group}</span>}
                           </div>
                         </td>
+                        <td className="quantity-befday" style={{ opacity: 0.8 }}>
+                          {pos.befday_qty || 0}
+                        </td>
                         <td>
                           <div className="qty-cell">
-                            <span className={isLong ? 'quantity-long' : 'quantity-short'}>
-                              {pos.display_qty !== undefined ? pos.display_qty : pos.qty}
+                            <span className={isLong ? 'quantity-long' : 'quantity-short'} style={{ fontWeight: 'bold' }}>
+                              {pos.display_qty != null ? pos.display_qty : pos.qty}
                             </span>
                             {isMixed && (
                               <div className="split-details">
@@ -288,6 +436,9 @@ function TradingPanels({ tradingMode, initialTab = 'positions', onTabChange }) {
                               </div>
                             )}
                           </div>
+                        </td>
+                        <td className="quantity-potential" style={{ fontWeight: 'bold' }}>
+                          {pos.potential_qty != null ? pos.potential_qty : (pos.qty || 0)}
                         </td>
                         <td className={isLong ? 'quantity-long' : 'quantity-short'}>
                           ${pos.avg_price?.toFixed(2)}
@@ -393,24 +544,26 @@ function TradingPanels({ tradingMode, initialTab = 'positions', onTabChange }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {shadowPositions.map((pos, idx) => (
-                    <tr key={idx}>
-                      <td>{pos.symbol}</td>
-                      <td className={pos.current_qty >= 0 ? 'quantity-long' : 'quantity-short'}>
-                        {pos.current_qty > 0 ? '+' : ''}{pos.current_qty}
-                      </td>
-                      <td className="quantity-long">{pos.long_qty || 0}</td>
-                      <td className="quantity-short">{pos.short_qty || 0}</td>
-                      <td>${pos.market_price_used?.toFixed(4) || 'N/A'}</td>
-                      <td className="quantity-long">${pos.avg_cost_long?.toFixed(4) || 'N/A'}</td>
-                      <td className="quantity-short">${pos.avg_cost_short?.toFixed(4) || 'N/A'}</td>
-                      <td className={pos.market_value_net >= 0 ? 'positive' : 'negative'}>
-                        ${pos.market_value_net?.toFixed(2) || '0.00'}
-                      </td>
-                      <td>${pos.exposure?.toFixed(2) || '0.00'}</td>
-                      <td>{pos.entry_count || 0}</td>
-                    </tr>
-                  ))}
+                  {shadowPositions
+                    .filter(p => !filterText || (p.symbol || '').toUpperCase().includes(filterText.toUpperCase()))
+                    .map((pos, idx) => (
+                      <tr key={idx}>
+                        <td>{pos.symbol}</td>
+                        <td className={pos.current_qty >= 0 ? 'quantity-long' : 'quantity-short'}>
+                          {pos.current_qty > 0 ? '+' : ''}{pos.current_qty}
+                        </td>
+                        <td className="quantity-long">{pos.long_qty || 0}</td>
+                        <td className="quantity-short">{pos.short_qty || 0}</td>
+                        <td>${pos.market_price_used?.toFixed(4) || 'N/A'}</td>
+                        <td className="quantity-long">${pos.avg_cost_long?.toFixed(4) || 'N/A'}</td>
+                        <td className="quantity-short">${pos.avg_cost_short?.toFixed(4) || 'N/A'}</td>
+                        <td className={pos.market_value_net >= 0 ? 'positive' : 'negative'}>
+                          ${pos.market_value_net?.toFixed(2) || '0.00'}
+                        </td>
+                        <td>${pos.exposure?.toFixed(2) || '0.00'}</td>
+                        <td>{pos.entry_count || 0}</td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             )}
@@ -420,101 +573,303 @@ function TradingPanels({ tradingMode, initialTab = 'positions', onTabChange }) {
         {/* --- ORDERS PANEL WITH ACTIONS --- */}
         {activeTab === 'orders' && (
           <div className="orders-panel">
-            <div className="orders-actions" style={{ marginBottom: '10px' }}>
-              {orders.length > 0 && (
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <h3 style={{ margin: 0 }}>Active Orders ({orders.length})</h3>
-                  {selectedOrders.size > 0 && (
-                    <button
-                      className="cancel-button"
-                      onClick={handleBulkCancel}
-                      style={{
-                        backgroundColor: '#ef4444',
-                        color: 'white',
-                        border: 'none',
-                        padding: '6px 16px',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                      }}
-                    >
-                      Cancel Selected ({selectedOrders.size})
-                    </button>
-                  )}
-                </div>
+            <div className="orders-header-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+              <div className="order-sub-tabs" style={{ display: 'flex', gap: '5px' }}>
+                <button
+                  className={`sub-tab-button ${orderSubTab === 'pending' ? 'active' : ''}`}
+                  onClick={() => setOrderSubTab('pending')}
+                  style={{
+                    padding: '6px 15px',
+                    borderRadius: '4px',
+                    border: '1px solid #444',
+                    background: orderSubTab === 'pending' ? '#2563eb' : '#1e293b',
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Pending ({orders.length})
+                </button>
+                <button
+                  className={`sub-tab-button ${orderSubTab === 'filled' ? 'active' : ''}`}
+                  onClick={() => setOrderSubTab('filled')}
+                  style={{
+                    padding: '6px 15px',
+                    borderRadius: '4px',
+                    border: '1px solid #444',
+                    background: orderSubTab === 'filled' ? '#2563eb' : '#1e293b',
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Filled ({filledOrders.length})
+                </button>
+              </div>
+
+              {orderSubTab === 'pending' && orders.length > 0 && (
+                <button
+                  className="cancel-button"
+                  onClick={handleCancelAll}
+                  style={{
+                    backgroundColor: '#b91c1c',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 16px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                    marginRight: '8px'
+                  }}
+                >
+                  Tümünü iptal ({orders.length})
+                </button>
+              )}
+              {orderSubTab === 'pending' && selectedOrders.size > 0 && (
+                <button
+                  className="cancel-button"
+                  onClick={handleBulkCancel}
+                  style={{
+                    backgroundColor: '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 16px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                  }}
+                >
+                  Seçileni iptal ({selectedOrders.size})
+                </button>
               )}
             </div>
 
-            {orders.length === 0 ? (
-              <div className="empty-state">
-                No orders in {tradingMode}
-              </div>
-            ) : (
-              <table className="orders-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: '40px', textAlign: 'center' }}>
-                      <input
-                        type="checkbox"
-                        checked={orders.length > 0 && selectedOrders.size === orders.length}
-                        onChange={toggleSelectAll}
-                        style={{ cursor: 'pointer', transform: 'scale(1.2)' }}
-                      />
-                    </th>
-                    <th>Tag</th>
-                    <th>Symbol</th>
-                    <th>Side</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                    <th>Status</th>
-                    <th>Time</th>
-                    <th>ID</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((order, idx) => {
-                    const oid = order.order_id || `temp-${idx}`
-                    // Determine color
-                    const isBuy = (order.action || order.side || '').toUpperCase() === 'BUY'
-
-                    return (
-                      <tr key={oid} className={selectedOrders.has(oid) ? 'selected-row' : ''} style={selectedOrders.has(oid) ? { backgroundColor: 'rgba(239, 68, 68, 0.1)' } : {}}>
-                        <td style={{ textAlign: 'center' }}>
+            {orderSubTab === 'pending' ? (
+              orders.length === 0 ? (
+                <div className="empty-state">No pending orders in {tradingMode}</div>
+              ) : (
+                <>
+                  <table className="orders-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '40px', textAlign: 'center' }}>
                           <input
                             type="checkbox"
-                            checked={selectedOrders.has(oid)}
-                            onChange={() => toggleSelect(oid)}
+                            checked={paginatedOrders.length > 0 && selectedOrders.size === paginatedOrders.length}
+                            onChange={toggleSelectAll}
                             style={{ cursor: 'pointer', transform: 'scale(1.2)' }}
                           />
-                        </td>
-                        <td>
-                          <span className={`order-tag tag-${(order.tag || 'unknown').toLowerCase().replace(/_/g, '-')}`}>
-                            {order.tag || 'N/A'}
-                          </span>
-                        </td>
-                        <td><strong>{order.symbol}</strong></td>
-                        <td style={{ color: isBuy ? '#22c55e' : '#ef4444', fontWeight: 'bold' }}>
-                          {order.action || order.side}
-                        </td>
-                        <td>{order.qty || order.quantity}</td>
-                        <td>{order.price ? `$${order.price.toFixed(2)}` : order.order_type}</td>
-                        <td>
-                          <span className={`status-badge ${(order.status || '').toLowerCase()}`}>
-                            {order.status}
-                          </span>
-                        </td>
-                        <td style={{ fontSize: '0.85em', color: '#666' }}>
-                          {order.timestamp ? new Date(order.timestamp * 1000).toLocaleTimeString() : '-'}
-                        </td>
-                        <td style={{ fontSize: '0.8em', color: '#888', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {oid}
-                        </td>
+                        </th>
+                        <th onClick={() => requestOrdersSort('tag')} style={{ cursor: 'pointer' }}>
+                          Tag{getOrdersSortIndicator('tag')}
+                        </th>
+                        <th onClick={() => requestOrdersSort('symbol')} style={{ cursor: 'pointer' }}>
+                          Symbol{getOrdersSortIndicator('symbol')}
+                        </th>
+                        <th onClick={() => requestOrdersSort('side')} style={{ cursor: 'pointer' }}>
+                          Side{getOrdersSortIndicator('side')}
+                        </th>
+                        <th onClick={() => requestOrdersSort('quantity')} style={{ cursor: 'pointer' }}>
+                          Quantity{getOrdersSortIndicator('quantity')}
+                        </th>
+                        <th onClick={() => requestOrdersSort('price')} style={{ cursor: 'pointer' }}>
+                          Price{getOrdersSortIndicator('price')}
+                        </th>
+                        <th onClick={() => requestOrdersSort('status')} style={{ cursor: 'pointer' }}>
+                          Status{getOrdersSortIndicator('status')}
+                        </th>
+                        <th onClick={() => requestOrdersSort('time')} style={{ cursor: 'pointer' }}>
+                          Time{getOrdersSortIndicator('time')}
+                        </th>
+                        <th>ID</th>
                       </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody>
+                      {paginatedOrders.map((order, idx) => {
+                        const oid = order.order_id || `temp-${idx}`
+                        const isBuy = (order.action || order.side || '').toUpperCase() === 'BUY'
+                        return (
+                          <tr key={oid} className={selectedOrders.has(oid) ? 'selected-row' : ''}>
+                            <td style={{ textAlign: 'center' }}>
+                              <input
+                                type="checkbox"
+                                checked={selectedOrders.has(oid)}
+                                onChange={() => toggleSelect(oid)}
+                              />
+                            </td>
+                            <td>
+                              <span className={`order-tag tag-${(order.tag || 'unknown').toLowerCase().replace(/_/g, '-')}`}>
+                                {order.tag || 'N/A'}
+                              </span>
+                              {order.client_id_label != null && (
+                                <span title={order.cancelable_by_this_session ? 'Bu oturumdan iptal edilebilir' : 'Başka oturum; sadece Tümünü iptal ile kapanır'}>
+                                  <span style={{ fontSize: '0.75em', marginLeft: 6, color: '#64748b' }}>{order.client_id_label}</span>
+                                  {order.cancelable_by_this_session != null && (
+                                    <span style={{
+                                      marginLeft: 4,
+                                      padding: '1px 6px',
+                                      borderRadius: 4,
+                                      fontSize: '0.7em',
+                                      backgroundColor: order.cancelable_by_this_session ? '#dcfce7' : '#fed7aa',
+                                      color: order.cancelable_by_this_session ? '#166534' : '#9a3412'
+                                    }}>
+                                      {order.cancelable_by_this_session ? 'Bu oturum' : 'Başka oturum'}
+                                    </span>
+                                  )}
+                                </span>
+                              )}
+                            </td>
+                            <td><strong>{order.symbol}</strong></td>
+                            <td style={{ color: isBuy ? '#22c55e' : '#ef4444', fontWeight: 'bold' }}>
+                              {order.action || order.side}
+                            </td>
+                            <td>{(order.filled_qty || 0)} / {(order.qty || order.quantity || 0)}</td>
+                            <td>{order.price ? `$${order.price.toFixed(2)}` : order.order_type}</td>
+                            <td><span className={`status-badge ${(order.status || '').toLowerCase()}`}>{order.status}</span></td>
+                            <td style={{ fontSize: '0.85em', color: '#666' }}>
+                              {order.timestamp ? new Date(order.timestamp * 1000).toLocaleTimeString() : (order.time || '-')}
+                            </td>
+                            <td style={{ fontSize: '0.8em', color: '#888' }}>{oid}</td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+
+                  {/* Pagination Controls */}
+                  {totalPages > 1 && (
+                    <div className="pagination-controls" style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginTop: '12px',
+                      padding: '10px 0',
+                      borderTop: '1px solid #333'
+                    }}>
+                      <div style={{ color: '#888', fontSize: '0.9em' }}>
+                        Showing {((ordersPage - 1) * ordersPerPage) + 1} - {Math.min(ordersPage * ordersPerPage, sortedOrders.length)} of {sortedOrders.length} orders
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <select
+                          value={ordersPerPage}
+                          onChange={(e) => { setOrdersPerPage(Number(e.target.value)); setOrdersPage(1) }}
+                          style={{
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            border: '1px solid #444',
+                            background: '#1e293b',
+                            color: 'white',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <option value={10}>10 / page</option>
+                          <option value={25}>25 / page</option>
+                          <option value={50}>50 / page</option>
+                          <option value={100}>100 / page</option>
+                        </select>
+                        <button
+                          onClick={() => setOrdersPage(1)}
+                          disabled={ordersPage === 1}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '4px',
+                            border: '1px solid #444',
+                            background: ordersPage === 1 ? '#333' : '#2563eb',
+                            color: 'white',
+                            cursor: ordersPage === 1 ? 'not-allowed' : 'pointer'
+                          }}
+                        >«</button>
+                        <button
+                          onClick={() => setOrdersPage(p => Math.max(1, p - 1))}
+                          disabled={ordersPage === 1}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '4px',
+                            border: '1px solid #444',
+                            background: ordersPage === 1 ? '#333' : '#2563eb',
+                            color: 'white',
+                            cursor: ordersPage === 1 ? 'not-allowed' : 'pointer'
+                          }}
+                        >‹ Prev</button>
+                        <span style={{ color: '#ccc', padding: '0 8px' }}>
+                          Page {ordersPage} of {totalPages}
+                        </span>
+                        <button
+                          onClick={() => setOrdersPage(p => Math.min(totalPages, p + 1))}
+                          disabled={ordersPage === totalPages}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '4px',
+                            border: '1px solid #444',
+                            background: ordersPage === totalPages ? '#333' : '#2563eb',
+                            color: 'white',
+                            cursor: ordersPage === totalPages ? 'not-allowed' : 'pointer'
+                          }}
+                        >Next ›</button>
+                        <button
+                          onClick={() => setOrdersPage(totalPages)}
+                          disabled={ordersPage === totalPages}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '4px',
+                            border: '1px solid #444',
+                            background: ordersPage === totalPages ? '#333' : '#2563eb',
+                            color: 'white',
+                            cursor: ordersPage === totalPages ? 'not-allowed' : 'pointer'
+                          }}
+                        >»</button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )
+            ) : (
+              filledOrders.length === 0 ? (
+                <div className="empty-state">No filled orders today in {tradingMode}</div>
+              ) : (
+                <table className="orders-table filled-table">
+                  <thead>
+                    <tr>
+                      <th>Symbol</th>
+                      <th>Side</th>
+                      <th>Quantity</th>
+                      <th>Fill Price</th>
+                      <th>Tag</th>
+                      <th>Time</th>
+                      <th>ID</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filledOrders
+                      .filter(o => !filterText || (o.symbol || '').toUpperCase().includes(filterText.toUpperCase()))
+                      .map((order, idx) => {
+                        const oid = order.order_id || `fill-${idx}`
+                        const isBuy = (order.action || order.side || '').toUpperCase() === 'BUY'
+                        return (
+                          <tr key={oid}>
+                            <td><strong>{order.symbol}</strong></td>
+                            <td style={{ color: isBuy ? '#22c55e' : '#ef4444', fontWeight: 'bold' }}>
+                              {order.action || order.side}
+                            </td>
+                            <td>{order.qty || order.quantity}</td>
+                            <td>${(order.avg_fill_price || order.price || 0.0).toFixed(2)}</td>
+                            <td>
+                              <span className={`order-tag tag-${(order.tag || 'unknown').toLowerCase().replace(/_/g, '-')}`}>
+                                {order.tag || 'N/A'}
+                              </span>
+                            </td>
+                            <td style={{ fontSize: '0.85em', color: '#666' }}>
+                              {order.timestamp ? new Date(order.timestamp * 1000).toLocaleTimeString() : (order.time || '-')}
+                            </td>
+                            <td style={{ fontSize: '0.8em', color: '#888' }}>{oid}</td>
+                          </tr>
+                        )
+                      })}
+                  </tbody>
+                </table>
+              )
             )}
           </div>
         )}
@@ -545,6 +900,33 @@ function TradingPanels({ tradingMode, initialTab = 'positions', onTabChange }) {
                   <span className="metric-label">Position Count:</span>
                   <span className="metric-value">{exposure.position_count}</span>
                 </div>
+                {(exposure.befday_long_exp != null || exposure.intraday_total_chg_exp != null) && (
+                  <>
+                    <div className="metric-item exposure-befday-divider" style={{ gridColumn: '1 / -1', borderTop: '1px solid #333', marginTop: '6px', paddingTop: '6px' }}>
+                      <span className="metric-label" style={{ fontSize: '11px' }}>BEFDAY / Intraday</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">BEFDAY Long:</span>
+                      <span className="metric-value positive">${exposure.befday_long_exp?.toFixed(0) ?? '—'} ({exposure.befday_long_exp_pct?.toFixed(1) ?? '—'}%)</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">BEFDAY Short:</span>
+                      <span className="metric-value negative">${exposure.befday_short_exp?.toFixed(0) ?? '—'} ({exposure.befday_short_exp_pct?.toFixed(1) ?? '—'}%)</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Intra Long Chg:</span>
+                      <span className={`metric-value ${(exposure.intraday_long_chg_exp ?? 0) >= 0 ? 'positive' : 'negative'}`}>${exposure.intraday_long_chg_exp?.toFixed(0) ?? '—'} ({exposure.intraday_long_chg_exp_pct?.toFixed(1) ?? '—'}%)</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Intra Short Chg:</span>
+                      <span className={`metric-value ${(exposure.intraday_short_chg_exp ?? 0) >= 0 ? 'negative' : 'positive'}`}>${exposure.intraday_short_chg_exp?.toFixed(0) ?? '—'} ({exposure.intraday_short_chg_exp_pct?.toFixed(1) ?? '—'}%)</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Intra Total Chg:</span>
+                      <span className={`metric-value ${(exposure.intraday_total_chg_exp ?? 0) >= 0 ? 'positive' : 'negative'}`}>${exposure.intraday_total_chg_exp?.toFixed(0) ?? '—'} ({exposure.intraday_total_chg_exp_pct?.toFixed(1) ?? '—'}%)</span>
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <div className="empty-state">

@@ -2,7 +2,7 @@
 Greatest MM Quant Engine
 ========================
 
-Market Making quantitative scoring engine with 4-scenario analysis.
+Market Making quantitative scoring engine with 5-scenario analysis.
 
 Formulas:
 - Final MM Long = 200×b + 4×(b/a) - 50×Ucuzluk
@@ -34,7 +34,9 @@ class GreatestMMEngine:
     """
     Greatest MM Quant Engine
     
-    Computes 4-scenario MM Long/Short scores for optimal entry points.
+    Computes 5-scenario MM Long/Short scores for optimal entry points.
+    Scenario 5 (VOLAV_ANCHOR): uses Volav1 as Son5Tick, measuring
+    mean-reversion potential from volume-dominant price zones.
     """
     
     def __init__(self):
@@ -137,13 +139,16 @@ class GreatestMMEngine:
         prev_close: float,
         benchmark_chg: float,
         son5_tick: float,
-        new_print: Optional[float] = None
+        new_print: Optional[float] = None,
+        volav1: Optional[float] = None
     ) -> MMAnalysis:
         """
-        Analyze a symbol with 4-scenario MM scoring.
+        Analyze a symbol with 5-scenario MM scoring.
         
-        If no new_print, only Scenario 1 is computed.
-        Otherwise, all 4 scenarios are computed.
+        Scenarios 1-4: Classic Son5Tick-based analysis.
+        Scenario 5 (VOLAV_ANCHOR): Uses Volav1 as Son5Tick.
+          - The side farther from Volav1 scores higher naturally
+          - More distance = more reversion profit potential
         
         Args:
             symbol: Stock symbol
@@ -152,6 +157,7 @@ class GreatestMMEngine:
             benchmark_chg: Benchmark change (from pricing overlay)
             son5_tick: Current Son5Tick value
             new_print: Optional new print (100-200 lot)
+            volav1: Optional Volav1 price (volume-dominant anchor zone)
             
         Returns:
             MMAnalysis with all scenarios
@@ -227,22 +233,48 @@ class GreatestMMEngine:
                     )
                     scenarios.append(scenario_4)
             
+            # ── Scenario 5: VOLAV_ANCHOR ────────────────────────────
+            # Uses Volav1 as the Son5Tick replacement.
+            # Logic: Volav1 = where the REAL volume lives (mean-reversion anchor).
+            #   - Side farther from Volav1 has more reversion profit potential
+            #   - The MM formula naturally rewards this:
+            #     e.g. Volav=20.50, bid=20.40, ask=20.80
+            #     → ask side is 0.30 away, bid side only 0.10
+            #     → SHORT entry at ask-spread*0.15 profits more on reversion to Volav
+            #     → a_short = entry_short - Volav = big → MM_Short score = HIGH
+            if volav1 is not None and volav1 > 0:
+                volav_valid = (
+                    bid < volav1 < ask  # Volav must be within bid-ask range
+                    or abs(volav1 - (bid + ask) / 2) < spread * 2  # Or close enough
+                )
+                if volav_valid:
+                    # Clamp Volav1 within [bid+0.01, ask-0.01] for formula safety
+                    volav_clamped = max(bid + 0.01, min(ask - 0.01, volav1))
+                    
+                    # Entry points: same as Scenario 1 (hidden bid/ask)
+                    scenario_5 = self.compute_mm_scenario(
+                        MMScenarioType.VOLAV_ANCHOR,
+                        bid, ask, spread, prev_close, benchmark_chg,
+                        entry_long_1, entry_short_1, volav_clamped
+                    )
+                    scenarios.append(scenario_5)
+            
             analysis.scenarios = scenarios
             
-            # Find best entries (closest to 30 but >= 30)
+            # Find best entries (HIGHEST score = best edge)
             valid_long_scenarios = [(s, s.mm_long) for s in scenarios if s.long_valid]
             valid_short_scenarios = [(s, s.mm_short) for s in scenarios if s.short_valid]
             
             if valid_long_scenarios:
-                # Sort by score (closest to 30)
-                best_long = min(valid_long_scenarios, key=lambda x: x[1])
+                # Sort by score (highest = best edge)
+                best_long = max(valid_long_scenarios, key=lambda x: x[1])
                 analysis.best_long_entry = best_long[0].entry_long
                 analysis.best_long_scenario = best_long[0].scenario_type
                 analysis.best_long_score = best_long[1]
                 analysis.long_actionable = True
             
             if valid_short_scenarios:
-                best_short = min(valid_short_scenarios, key=lambda x: x[1])
+                best_short = max(valid_short_scenarios, key=lambda x: x[1])
                 analysis.best_short_entry = best_short[0].entry_short
                 analysis.best_short_scenario = best_short[0].scenario_type
                 analysis.best_short_score = best_short[1]

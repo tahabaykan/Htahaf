@@ -30,13 +30,15 @@ class StaticDataStore:
         'PREF IBKR',  # Primary key (note: space in column name)
         'CMON',
         'CGRUP',
-        'GROUP',  # PRIMARY GROUP (file_group) - added for two-tier grouping
+        # 'GROUP' removed from required, handled dynamically as GROUP or DOS GROUP
         'FINAL_THG',
         'SHORT_FINAL',
         'AVG_ADV',
         'SMI',
         'SMA63 chg',  # Note: space in column name
-        'SMA246 chg'  # Note: space in column name
+        'SMA246 chg',  # Note: space in column name
+        'SMA63 chg_raw',  # Actual CSV column name
+        'SMA246 chg_raw'  # Actual CSV column name
     ]
     
     # Optional fields (loaded if present in CSV)
@@ -58,9 +60,18 @@ class StaticDataStore:
     def _find_csv_file(self) -> Optional[Path]:
         """Find janalldata.csv file"""
         possible_paths = [
-            Path(r"C:\Users\User\OneDrive\Masaüstü\Proje\StockTracker\janall") / 'janalldata.csv',
-            Path(os.getcwd()) / 'janall' / 'janalldata.csv',
+            # PRIORITY 1: Ana dizindeki janalldata.csv (merge_csvs.py tarafından oluşturulur)
+            # janall/ alt dizini yalnızca yedek kopyadır — stale/eksik olabilir!
+            Path(r"C:\StockTracker") / 'janalldata.csv',
             Path(os.getcwd()) / 'janalldata.csv',
+            
+            # PRIORITY 2: janall alt dizini (fallback)
+            Path(r"C:\StockTracker\janall") / 'janalldata.csv',
+            Path(r"C:\StockTracker\janall\janallapp") / 'janalldata.csv',
+            Path(os.getcwd()) / 'janall' / 'janalldata.csv',
+            Path(os.getcwd()) / 'janall' / 'janallapp' / 'janalldata.csv',
+            
+            # Fallbacks
             Path(os.getcwd()).parent / 'janall' / 'janalldata.csv',
             Path(__file__).parent.parent.parent / 'janall' / 'janalldata.csv',
         ]
@@ -129,7 +140,8 @@ class StaticDataStore:
                         if pd.isna(value):
                             static_data[field] = None
                         elif field in ['FINAL_THG', 'SHORT_FINAL', 
-                                      'AVG_ADV', 'SMI', 'SMA63 chg', 'SMA246 chg']:
+                                      'AVG_ADV', 'SMI', 'SMA63 chg', 'SMA246 chg',
+                                      'SMA63 chg_raw', 'SMA246 chg_raw']:
                             # Numeric fields: convert to float
                             try:
                                 static_data[field] = float(value)
@@ -140,6 +152,22 @@ class StaticDataStore:
                             static_data[field] = str(value) if value else None
                     else:
                         static_data[field] = None
+                
+                # Internal mapping for SMA columns (handle _raw suffix)
+                if static_data.get('SMA63 chg') is None:
+                    static_data['SMA63 chg'] = static_data.get('SMA63 chg_raw')
+                if static_data.get('SMA246 chg') is None:
+                    static_data['SMA246 chg'] = static_data.get('SMA246 chg_raw')
+                
+                # Handle GROUP / DOS GROUP field manually
+                group_val = row.get('GROUP')
+                if pd.isna(group_val) or not group_val:
+                     group_val = row.get('DOS GROUP')
+                
+                if not pd.isna(group_val) and group_val:
+                    static_data['GROUP'] = str(group_val)
+                else:
+                    static_data['GROUP'] = None
                 
                 # Extract optional fields (e.g., prev_close from CSV)
                 for field in self.OPTIONAL_FIELDS:

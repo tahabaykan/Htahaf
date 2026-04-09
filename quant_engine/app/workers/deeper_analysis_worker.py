@@ -229,26 +229,39 @@ class DeeperAnalysisWorker:
             direction = 'UP' if grpan2 > grpan1 else 'DOWN'
             
             # ============ SRPAN SCORE CALCULATION ============
-            # 1. Balance Score (60% weight): G1-G2 difference should be minimal
+            # Load weights from GeneralLogicStore (qegenerallogic.csv)
+            try:
+                from app.core.general_logic_store import get_general_logic_store
+                store = get_general_logic_store()
+                balance_weight = store.get("srpan.balance_weight", 0.60)
+                total_weight = store.get("srpan.total_weight", 0.15)
+                spread_weight = store.get("srpan.spread_weight", 0.25)
+                min_spread = store.get("srpan.min_spread", 0.06)
+                optimal_spread = store.get("srpan.optimal_spread", 0.30)
+            except Exception:
+                # Fallback to defaults
+                balance_weight, total_weight, spread_weight = 0.60, 0.15, 0.25
+                min_spread, optimal_spread = 0.06, 0.30
+            
+            # 1. Balance Score (default 60% weight): G1-G2 difference should be minimal
             conf_diff = abs(grpan1_conf - grpan2_conf)
             balance_score = max(0, 100 - conf_diff)
             
-            # 2. Total Score (15% weight): G1+G2 should be close to 100
+            # 2. Total Score (default 15% weight): G1+G2 should be close to 100
             total_conf = grpan1_conf + grpan2_conf
             total_score = min(100, total_conf)
             
-            # 3. Spread Score (25% weight): Spread should be wide enough
-            # Minimum spread changed from 0.08¢ to 0.06¢
-            if spread >= 0.30:
+            # 3. Spread Score (default 25% weight): Spread should be wide enough
+            if spread >= optimal_spread:
                 spread_score = 100
-            elif spread <= 0.06:  # Changed from 0.08
+            elif spread <= min_spread:
                 spread_score = 0
             else:
-                # Linear interpolation: 0.06 → 0, 0.30 → 100 (changed from 0.08 → 0)
-                spread_score = ((spread - 0.06) / (0.30 - 0.06)) * 100
+                # Linear interpolation
+                spread_score = ((spread - min_spread) / (optimal_spread - min_spread)) * 100
             
             # Composite SRPAN score
-            srpan_score = (0.60 * balance_score) + (0.15 * total_score) + (0.25 * spread_score)
+            srpan_score = (balance_weight * balance_score) + (total_weight * total_score) + (spread_weight * spread_score)
             
             return {
                 'grpan1': grpan1,
@@ -313,7 +326,7 @@ class DeeperAnalysisWorker:
                 try:
                     csv_path = os.path.join(
                         os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
-                        "janall", "janalldata.csv"
+                        "janalldata.csv"
                     )
                     if os.path.exists(csv_path):
                         self.static_store.load_csv(csv_path)

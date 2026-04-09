@@ -12,8 +12,9 @@ function TradingOrders() {
   useEffect(() => {
     loadTradingMode()
     loadOrders()
-    const timer = setInterval(loadOrders, 2000) // Auto-refresh 2s
-    return () => clearInterval(timer)
+    const timer = setInterval(loadOrders, 2000)
+    const modeInterval = setInterval(loadTradingMode, 5000)
+    return () => { clearInterval(timer); clearInterval(modeInterval) }
   }, [])
 
   useEffect(() => {
@@ -25,7 +26,8 @@ function TradingOrders() {
       const response = await fetch('/api/trading/mode')
       const result = await response.json()
       if (result.success) {
-        setTradingMode(result.mode)
+        const m = result.trading_mode || result.mode || ''
+        setTradingMode(m === 'HAMPRO' ? 'HAMMER_TRADING' : m)
       }
     } catch (err) {
       console.error('Error loading trading mode:', err)
@@ -73,9 +75,7 @@ function TradingOrders() {
 
   const handleBulkCancel = async () => {
     if (selectedOrders.size === 0) return
-
     if (!confirm(`Cancel ${selectedOrders.size} selected orders?`)) return
-
     try {
       const response = await fetch('/api/janall/cancel-orders', {
         method: 'POST',
@@ -84,7 +84,6 @@ function TradingOrders() {
       })
       const result = await response.json()
       if (result.success) {
-        // Clear selection and refresh
         setSelectedOrders(new Set())
         loadOrders()
         alert(result.message)
@@ -96,6 +95,28 @@ function TradingOrders() {
     }
   }
 
+  const handleCancelAll = async () => {
+    if (orders.length === 0) return
+    if (!confirm('Cancel ALL open orders on this account? (reqGlobalCancel)')) return
+    try {
+      const response = await fetch('/api/janall/cancel-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_ids: [] })
+      })
+      const result = await response.json()
+      if (result.success) {
+        setSelectedOrders(new Set())
+        loadOrders()
+        alert(result.message)
+      } else {
+        alert('Failed: ' + (result.message || 'Cancel all failed'))
+      }
+    } catch (err) {
+      alert('Error: ' + err)
+    }
+  }
+
   return (
     <div className="trading-page">
       <div className="trading-page-header">
@@ -104,9 +125,14 @@ function TradingOrders() {
           {tradingMode.includes('HAMMER') ? '🟢 Hammer' : '🟣 IBKR Native'}
         </div>
 
+        {orders.length > 0 && (
+          <button className="cancel-button" onClick={handleCancelAll} style={{ backgroundColor: '#b91c1c', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', marginLeft: '8px' }}>
+            Tümünü iptal ({orders.length})
+          </button>
+        )}
         {selectedOrders.size > 0 && (
-          <button className="cancel-button" onClick={handleBulkCancel} style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', marginLeft: '20px' }}>
-            Cancel Selected ({selectedOrders.size})
+          <button className="cancel-button" onClick={handleBulkCancel} style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', marginLeft: '8px' }}>
+            Seçileni iptal ({selectedOrders.size})
           </button>
         )}
 
@@ -143,6 +169,7 @@ function TradingOrders() {
                 <th>Filled</th>
                 <th>Price</th>
                 <th>Status</th>
+                <th>Client / İptal</th>
                 <th>ID</th>
               </tr>
             </thead>
@@ -164,6 +191,26 @@ function TradingOrders() {
                     <td>{order.filled || 0}</td>
                     <td>{order.price ? `$${order.price.toFixed(2)}` : order.order_type}</td>
                     <td>{order.status}</td>
+                    <td style={{ fontSize: '0.8em' }}>
+                      {order.client_id_label != null && (
+                        <span title={order.cancelable_by_this_session ? 'Bu oturumdan iptal edilebilir' : 'Başka oturum; Tümünü iptal gerekir'}>
+                          {order.client_id_label}
+                          {order.cancelable_by_this_session != null && (
+                            <span style={{
+                              display: 'inline-block',
+                              marginLeft: 4,
+                              padding: '1px 5px',
+                              borderRadius: 4,
+                              fontSize: '0.85em',
+                              backgroundColor: order.cancelable_by_this_session ? '#dcfce7' : '#fed7aa',
+                              color: order.cancelable_by_this_session ? '#166534' : '#9a3412'
+                            }}>
+                              {order.cancelable_by_this_session ? 'Bu oturum' : 'Başka'}
+                            </span>
+                          )}
+                        </span>
+                      )}
+                    </td>
                     <td className="order-id-cell">{oid}</td>
                   </tr>
                 )

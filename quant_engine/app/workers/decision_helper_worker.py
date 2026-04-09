@@ -116,7 +116,7 @@ class DecisionHelperWorker:
                 # Calculate CSV path: go up 4 levels from worker file to project root
                 worker_file = os.path.abspath(__file__)
                 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(worker_file))))
-                csv_path = os.path.join(project_root, "janall", "janalldata.csv")
+                csv_path = os.path.join(project_root, "janalldata.csv")
                 logger.info(f"📊 [{self.worker_name}] CSV path: {csv_path}")
                 self.static_store = initialize_static_store(csv_path=csv_path)
             
@@ -126,7 +126,7 @@ class DecisionHelperWorker:
                     # Calculate CSV path
                     worker_file = os.path.abspath(__file__)
                     project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(worker_file))))
-                    csv_path = os.path.join(project_root, "janall", "janalldata.csv")
+                    csv_path = os.path.join(project_root, "janalldata.csv")
                     
                     logger.info(f"📊 [{self.worker_name}] Attempting to load CSV from: {csv_path}")
                     logger.info(f"📊 [{self.worker_name}] CSV exists: {os.path.exists(csv_path)}")
@@ -187,6 +187,12 @@ class DecisionHelperWorker:
             # Bootstrap in background (non-blocking)
             import threading
             def bootstrap_thread():
+                consecutive_failures = 0
+                BATCH_SIZE = 20
+                BATCH_PAUSE = 2.0
+                SYMBOL_DELAY = 0.15
+                FAILURE_PAUSE = 10.0
+                
                 for idx, symbol in enumerate(symbols):
                     try:
                         # Get last 100 ticks using getTicks
@@ -262,24 +268,37 @@ class DecisionHelperWorker:
                                 logger.debug(f"📊 [{self.worker_name}] Added {symbol_tick_count} ticks for {symbol}")
                             
                             self.bootstrap_progress['tick_count'] += symbol_tick_count
+                            consecutive_failures = 0  # Reset on success
                         else:
                             # Log when no ticks found
                             if tick_data:
                                 logger.debug(f"⚠️ [{self.worker_name}] No 'data' field in tick_data for {symbol}: {list(tick_data.keys())}")
                             else:
                                 logger.debug(f"⚠️ [{self.worker_name}] No tick_data returned for {symbol}")
+                            consecutive_failures += 1
                         
                         self.bootstrap_progress['completed'] = idx + 1
                         
                         # Log progress every 50 symbols
                         if (idx + 1) % 50 == 0:
                             logger.info(f"📊 [{self.worker_name}] Bootstrap progress: {idx + 1}/{len(symbols)} symbols, {self.bootstrap_progress['tick_count']} total ticks")
-                        
-                        # Small delay to avoid hammering Hammer Pro
-                        time.sleep(0.05)  # Reduced from 0.1 to speed up
                     
                     except Exception as e:
                         logger.debug(f"Error bootstrapping {symbol}: {e}")
+                        consecutive_failures += 1
+                    
+                    # ═══ Throttling: prevent Hammer Pro overload ═══
+                    if consecutive_failures >= 5:
+                        logger.warning(
+                            f"⚡ [{self.worker_name}] Bootstrap circuit breaker: "
+                            f"{consecutive_failures} failures, pausing {FAILURE_PAUSE}s"
+                        )
+                        time.sleep(FAILURE_PAUSE)
+                        consecutive_failures = 0
+                    elif (idx + 1) % BATCH_SIZE == 0:
+                        time.sleep(BATCH_PAUSE)
+                    else:
+                        time.sleep(SYMBOL_DELAY)
                 
                 logger.info(f"✅ [{self.worker_name}] Bootstrap completed: {self.bootstrap_progress['completed']}/{self.bootstrap_progress['total']} symbols, {self.bootstrap_progress['tick_count']} total ticks")
             

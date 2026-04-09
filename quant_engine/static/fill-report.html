@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Execution Quality Report — PSFALGO</title>
+    <meta name="description" content="Real-time fill quality analysis and execution report for PSFALGO trading engine">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a1f35;
+            --bg-card-hover: #1e2440;
+            --bg-elevated: #232a45;
+            --border-primary: rgba(99, 102, 241, 0.15);
+            --border-secondary: rgba(255, 255, 255, 0.06);
+            --text-primary: #f0f2f8;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-indigo: #6366f1;
+            --accent-blue: #3b82f6;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --accent-violet: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --buy-color: #10b981;
+            --sell-color: #f43f5e;
+            --excellent-color: #10b981;
+            --good-color: #3b82f6;
+            --fair-color: #f59e0b;
+            --poor-color: #f43f5e;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 20px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .app {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 24px 40px;
+        }
+
+        /* ═══════════════════════ HEADER ═══════════════════════ */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-primary);
+            margin-bottom: 24px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-logo {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--accent-indigo), var(--accent-violet));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .header-title h1 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f0f2f8, #94a3b8);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .header-title p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .date-badge {
+            padding: 6px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--accent-cyan);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .refresh-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, var(--accent-indigo), var(--accent-violet));
+            border: none;
+            border-radius: var(--radius-md);
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+        }
+
+        .refresh-btn.loading .icon {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ═══════════════════════ STAT CARDS ═══════════════════════ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .stat-card:nth-child(1)::before {
+            background: linear-gradient(90deg, var(--accent-indigo), var(--accent-blue));
+        }
+
+        .stat-card:nth-child(2)::before {
+            background: linear-gradient(90deg, var(--buy-color), #059669);
+        }
+
+        .stat-card:nth-child(3)::before {
+            background: linear-gradient(90deg, var(--sell-color), #dc2626);
+        }
+
+        .stat-card:nth-child(4)::before {
+            background: linear-gradient(90deg, var(--accent-amber), #d97706);
+        }
+
+        .stat-card:nth-child(5)::before {
+            background: linear-gradient(90deg, var(--accent-cyan), #0284c7);
+        }
+
+        .stat-card:nth-child(6)::before {
+            background: linear-gradient(90deg, var(--accent-violet), #7c3aed);
+        }
+
+        .stat-card:hover {
+            border-color: var(--border-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-detail {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* ═══════════════════════ FILL QUALITY GAUGE ═══════════════════════ */
+        .quality-section {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .quality-gauge-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gauge-ring {
+            width: 140px;
+            height: 140px;
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .gauge-ring svg {
+            transform: rotate(-90deg);
+            width: 140px;
+            height: 140px;
+        }
+
+        .gauge-ring .bg-ring {
+            fill: none;
+            stroke: var(--bg-elevated);
+            stroke-width: 10;
+        }
+
+        .gauge-ring .progress-ring {
+            fill: none;
+            stroke-width: 10;
+            stroke-linecap: round;
+            stroke-dasharray: 377;
+            stroke-dashoffset: 377;
+            transition: stroke-dashoffset 1.2s ease-out, stroke 0.5s;
+        }
+
+        .gauge-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 32px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .gauge-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .quality-breakdown {
+            background: var(--bg-card);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-lg);
+            padding: 20px 24px;
+        }
+
+        .quality-breakdown h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+        }
+
+        .quality-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .quality-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .quality-bar-label {
+            width: 90px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .quality-bar-track {
+            flex: 1;
+            height: 24px;
+            background: var(--bg-elevated);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .quality-bar-fill {
+            height: 100%;
+            border-radius: var(--radius-sm);
+            transition: width 0.8s ease-out;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+            min-width: 30px;
+        }
+
+        .quality-bar-count {
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            width: 36px;
+            text-align: right;
+        }
+
+        /* ═══════════════════════ ACCOUNT TABS ═══════════════════════ */
+        .filter-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .account-tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-secondary);
+            padding: 3px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-secondary);
+        }
+
+        .account-tab {
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .account-tab.active {
+            background: var(--accent-indigo);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .account-tab:hover:not(.active) {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            padding: 0 14px;
+            gap: 8px;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 13px;
+            padding: 10px 0;
+            outline: none;
+            width: 180px;
+            font-family: inherit;
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-icon {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* ═══════════════════════ TABLE ═══════════════════════ */
+        .table-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-secondary);
+        }
+
+        .table-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .table-count {
+            background: var(--bg-elevated);
+            padding: 3px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-cyan);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead th {
+            padding: 12px 14px;
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            font-weight: 600;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-secondary);
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.15s;
+        }
+
+        thead th:hover {
+            color: var(--accent-cyan);
+        }
+
+        thead th.sorted {
+            color: var(--accent-indigo);
+        }
+
+        thead th .sort-arrow {
+            margin-left: 4px;
+            font-size: 10px;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            transition: background 0.15s;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-card-hover);
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        td {
+            padding: 11px 14px;
+            white-space: nowrap;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+        }
+
+        .symbol-cell {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 13px;
+        }
+
+        .action-buy {
+            color: var(--buy-color);
+            font-weight: 700;
+        }
+
+        .action-sell {
+            color: var(--sell-color);
+            font-weight: 700;
+        }
+
+        .price-cell {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .bid-ask-cell {
+            color: var(--text-secondary);
+        }
+
+        .spread-cell {
+            color: var(--accent-amber);
+            font-size: 11px;
+        }
+
+        .time-cell {
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .tag-cell {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-mm {
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--accent-violet);
+        }
+
+        .tag-lt {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--accent-blue);
+        }
+
+        .tag-rev {
+            background: rgba(244, 63, 94, 0.15);
+            color: var(--accent-rose);
+        }
+
+        .tag-jfin {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-emerald);
+        }
+
+        .tag-karbotu {
+            background: rgba(6, 182, 212, 0.15);
+            color: var(--accent-cyan);
+        }
+
+        .tag-default {
+            background: rgba(148, 163, 184, 0.1);
+            color: var(--text-secondary);
+        }
+
+        .quality-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .quality-EXCELLENT {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--excellent-color);
+        }
+
+        .quality-GOOD {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--good-color);
+        }
+
+        .quality-FAIR {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--fair-color);
+        }
+
+        .quality-POOR {
+            background: rgba(244, 63, 94, 0.15);
+            color: var(--poor-color);
+        }
+
+        .quality-bar-mini {
+            width: 60px;
+            height: 6px;
+            background: var(--bg-elevated);
+            border-radius: 3px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        .quality-bar-mini-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.4s;
+        }
+
+        .pnl-positive {
+            color: var(--buy-color);
+        }
+
+        .pnl-negative {
+            color: var(--sell-color);
+        }
+
+        .pnl-neutral {
+            color: var(--text-muted);
+        }
+
+        .account-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .account-HAMPRO,
+        .account-HAMMER_PRO {
+            background: rgba(245, 158, 11, 0.12);
+            color: var(--accent-amber);
+        }
+
+        .account-IBKR_PED {
+            background: rgba(59, 130, 246, 0.12);
+            color: var(--accent-blue);
+        }
+
+        /* ═══════════════════════ EMPTY/LOADING STATES ═══════════════════════ */
+        .loading-state,
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .loading-spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid var(--bg-elevated);
+            border-top: 3px solid var(--accent-indigo);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        /* ═══════════════════════ RESPONSIVE ═══════════════════════ */
+        @media (max-width: 1024px) {
+            .quality-section {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .app {
+                padding: 0 12px 20px;
+            }
+        }
+
+        /* ═══════════════════════ ANIMATIONS ═══════════════════════ */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.4s ease-out both;
+        }
+
+        .animate-in:nth-child(2) {
+            animation-delay: 0.05s;
+        }
+
+        .animate-in:nth-child(3) {
+            animation-delay: 0.1s;
+        }
+
+        .animate-in:nth-child(4) {
+            animation-delay: 0.15s;
+        }
+
+        .animate-in:nth-child(5) {
+            animation-delay: 0.2s;
+        }
+
+        .animate-in:nth-child(6) {
+            animation-delay: 0.25s;
+        }
+
+        /* ═══════════════════════ BENCH CHG COLUMN ═══════════════════════ */
+        .bench-positive {
+            color: var(--buy-color);
+        }
+
+        .bench-negative {
+            color: var(--sell-color);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <!-- ═══════ HEADER ═══════ -->
+        <header class="header">
+            <div class="header-left">
+                <div class="header-logo">FQ</div>
+                <div class="header-title">
+                    <h1>Execution Quality Report</h1>
+                    <p>Fill analysis with bid/ask capture & benchmark tracking</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="date-badge" id="dateBadge">—</div>
+                <button class="refresh-btn" id="refreshBtn" onclick="fetchData()">
+                    <span class="icon">↻</span> Refresh
+                </button>
+            </div>
+        </header>
+
+        <!-- ═══════ STAT CARDS ═══════ -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card animate-in">
+                <div class="stat-label">Total Fills</div>
+                <div class="stat-value" id="statTotal">—</div>
+                <div class="stat-detail" id="statAccounts">—</div>
+            </div>
+            <div class="stat-card animate-in">
+                <div class="stat-label">Buy Volume</div>
+                <div class="stat-value" id="statBuyVol">—</div>
+                <div class="stat-detail" id="statBuyCount">—</div>
+            </div>
+            <div class="stat-card animate-in">
+                <div class="stat-label">Sell Volume</div>
+                <div class="stat-value" id="statSellVol">—</div>
+                <div class="stat-detail" id="statSellCount">—</div>
+            </div>
+            <div class="stat-card animate-in">
+                <div class="stat-label">Net Flow</div>
+                <div class="stat-value" id="statNet">—</div>
+                <div class="stat-detail" id="statNetDetail">Buy - Sell</div>
+            </div>
+            <div class="stat-card animate-in">
+                <div class="stat-label">Unique Symbols</div>
+                <div class="stat-value" id="statSymbols">—</div>
+                <div class="stat-detail" id="statSymList">—</div>
+            </div>
+            <div class="stat-card animate-in">
+                <div class="stat-label">Avg Quality</div>
+                <div class="stat-value" id="statQuality">—</div>
+                <div class="stat-detail" id="statQualityLabel">Fill quality score</div>
+            </div>
+        </div>
+
+        <!-- ═══════ FILL QUALITY GAUGE ═══════ -->
+        <div class="quality-section" id="qualitySection">
+            <div class="quality-gauge-card animate-in">
+                <div class="gauge-ring">
+                    <svg viewBox="0 0 140 140">
+                        <circle class="bg-ring" cx="70" cy="70" r="60" />
+                        <circle class="progress-ring" id="gaugeRing" cx="70" cy="70" r="60" />
+                    </svg>
+                    <div class="gauge-value" id="gaugeValue">—</div>
+                </div>
+                <div class="gauge-label">Fill Quality Score</div>
+            </div>
+            <div class="quality-breakdown animate-in">
+                <h3>Quality Distribution</h3>
+                <div class="quality-bars" id="qualityBars">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════ FILTERS ═══════ -->
+        <div class="filter-row">
+            <div class="account-tabs" id="accountTabs">
+                <button class="account-tab active" data-account="ALL" onclick="setFilter('ALL', this)">All
+                    Accounts</button>
+                <button class="account-tab" data-account="HAMMER_PRO"
+                    onclick="setFilter('HAMMER_PRO', this)">HAMPRO</button>
+                <button class="account-tab" data-account="IBKR_PED" onclick="setFilter('IBKR_PED', this)">IBKR
+                    PED</button>
+            </div>
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Filter by symbol..." oninput="renderTable()">
+            </div>
+        </div>
+
+        <!-- ═══════ VIEW TABS ═══════ -->
+        <div style="display:flex;gap:4px;margin-bottom:8px;">
+            <button class="account-tab active" id="tabSymbol" onclick="switchView('symbol')"
+                style="padding:10px 20px;font-size:14px;font-weight:700;">📊 Symbol Summary</button>
+            <button class="account-tab" id="tabFills" onclick="switchView('fills')"
+                style="padding:10px 20px;font-size:14px;">📋 All Fills</button>
+        </div>
+
+        <!-- ═══════ SYMBOL SUMMARY TABLE ═══════ -->
+        <div class="table-section animate-in" id="symbolView">
+            <div class="table-header">
+                <h2>📊 Per-Symbol P&L <span class="table-count" id="symbolCount">0</span></h2>
+                <div style="display:flex;gap:8px;align-items:center;font-size:12px;">
+                    <span style="color:var(--buy-color);font-weight:700;" id="totalRealPnl">—</span>
+                    <span style="color:var(--text-muted)">realized</span>
+                    <span style="color:var(--accent-cyan);font-weight:700;" id="totalUnrealPnl">—</span>
+                    <span style="color:var(--text-muted)">unrealized</span>
+                    <span style="font-weight:800;font-size:14px;" id="totalPnl">—</span>
+                    <span style="color:var(--text-muted)">total</span>
+                </div>
+            </div>
+            <div class="table-wrapper" style="max-height:70vh;overflow-y:auto;">
+                <table id="symbolTable">
+                    <thead>
+                        <tr>
+                            <th onclick="sortSymbols('symbol')">Symbol</th>
+                            <th onclick="sortSymbols('buy_qty')" style="text-align:right">Buy Lot</th>
+                            <th onclick="sortSymbols('avg_buy_price')" style="text-align:right">Avg Buy</th>
+                            <th onclick="sortSymbols('sell_qty')" style="text-align:right">Sell Lot</th>
+                            <th onclick="sortSymbols('avg_sell_price')" style="text-align:right">Avg Sell</th>
+                            <th onclick="sortSymbols('matched_qty')" style="text-align:right">Matched</th>
+                            <th onclick="sortSymbols('remaining_qty')" style="text-align:right">Open</th>
+                            <th onclick="sortSymbols('realized_pnl')" style="text-align:right">Realized</th>
+                            <th onclick="sortSymbols('unrealized_pnl')" style="text-align:right">Unrealized</th>
+                            <th onclick="sortSymbols('total_pnl')" style="text-align:right">Total P&L</th>
+                            <th>Tags</th>
+                        </tr>
+                    </thead>
+                    <tbody id="symbolBody">
+                        <tr>
+                            <td colspan="11">
+                                <div class="loading-state">
+                                    <div class="loading-spinner"></div>
+                                    <div>Loading...</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ═══════ FILLS TABLE (hidden by default) ═══════ -->
+        <div class="table-section animate-in" id="fillsView" style="display:none;">
+            <div class="table-header">
+                <h2>📋 Today's Fills <span class="table-count" id="tableCount">0</span></h2>
+            </div>
+            <div class="table-wrapper" style="max-height:70vh;overflow-y:auto;">
+                <table id="fillsTable">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('time')">Time</th>
+                            <th onclick="sortTable('account')">Account</th>
+                            <th onclick="sortTable('symbol')">Symbol</th>
+                            <th onclick="sortTable('action')">Side</th>
+                            <th onclick="sortTable('qty')">Qty</th>
+                            <th onclick="sortTable('price')">Fill Price</th>
+                            <th onclick="sortTable('bid')">Bid@Fill</th>
+                            <th onclick="sortTable('ask')">Ask@Fill</th>
+                            <th onclick="sortTable('spread')">Spread</th>
+                            <th onclick="sortTable('quality')">Quality</th>
+                            <th onclick="sortTable('tag')">Strategy</th>
+                            <th onclick="sortTable('bench_chg')">Bench Δ</th>
+                            <th onclick="sortTable('pnl')">P&L Since</th>
+                            <th>Now</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fillsBody">
+                        <tr>
+                            <td colspan="14">
+                                <div class="loading-state">
+                                    <div class="loading-spinner"></div>
+                                    <div>Loading...</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════ STATE ═══════════════════════
+        let allFills = [];
+        let symbolData = [];
+        let currentFilter = 'ALL';
+        let currentSort = { field: 'time', dir: 'desc' };
+        let symbolSort = { field: 'total_pnl', dir: 'desc' };
+        let currentView = 'symbol';
+        let refreshInterval = null;
+
+        // ═══════════════════════ VIEW SWITCHING ═══════════════════════
+        function switchView(view) {
+            currentView = view;
+            document.getElementById('tabSymbol').classList.toggle('active', view === 'symbol');
+            document.getElementById('tabFills').classList.toggle('active', view === 'fills');
+            document.getElementById('symbolView').style.display = view === 'symbol' ? '' : 'none';
+            document.getElementById('fillsView').style.display = view === 'fills' ? '' : 'none';
+        }
+
+        // ═══════════════════════ DATA FETCHING ═══════════════════════
+        async function fetchData() {
+            const btn = document.getElementById('refreshBtn');
+            btn.classList.add('loading');
+            try {
+                // Fetch individual fills (for fills tab + stats)
+                const resp = await fetch('/api/fill-report/today');
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+                if (!data.success) throw new Error(data.error || 'Unknown error');
+                allFills = data.fills || [];
+                renderStats(data.summary, data.per_account);
+                renderQualityGauge(data.fills);
+                renderTable();
+                document.getElementById('dateBadge').textContent = data.date || new Date().toLocaleDateString();
+
+                // Fetch symbol summary
+                const today = new Date().toISOString().split('T')[0];
+                const acctParam = currentFilter !== 'ALL' ? `&account=${currentFilter}` : '';
+                const symResp = await fetch(`/api/fill-history/day/${today}/symbols?sort_by=total_pnl${acctParam}`);
+                if (symResp.ok) {
+                    const symData = await symResp.json();
+                    if (symData.success) {
+                        symbolData = symData.symbols || [];
+                        renderSymbolTable(symData);
+                    }
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+                document.getElementById('fillsBody').innerHTML = `
+                    <tr><td colspan="14"><div class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <div>Error: ${err.message}</div>
+                    </div></td></tr>`;
+            } finally {
+                btn.classList.remove('loading');
+            }
+        }
+
+        // ═══════════════════════ RENDER SYMBOL SUMMARY ═══════════════════════
+        function renderSymbolTable(data) {
+            const search = (document.getElementById('searchInput').value || '').toUpperCase().trim();
+            let syms = symbolData;
+
+            if (search) {
+                syms = syms.filter(s => (s.symbol || '').toUpperCase().includes(search) ||
+                    (s.tags || []).some(t => t.toUpperCase().includes(search)));
+            }
+
+            // Sort
+            const f = symbolSort.field;
+            const dir = symbolSort.dir === 'asc' ? 1 : -1;
+            syms = [...syms].sort((a, b) => {
+                if (f === 'symbol') return (a.symbol || '').localeCompare(b.symbol || '') * dir;
+                return ((a[f] || 0) - (b[f] || 0)) * dir;
+            });
+
+            document.getElementById('symbolCount').textContent = syms.length;
+
+            // Totals
+            const totals = data ? data.totals : null;
+            if (totals) {
+                const rp = totals.realized_pnl || 0;
+                const up = totals.unrealized_pnl || 0;
+                const tp = totals.total_pnl || 0;
+                document.getElementById('totalRealPnl').textContent = `${rp >= 0 ? '+' : ''}$${rp.toFixed(2)}`;
+                document.getElementById('totalRealPnl').style.color = rp >= 0 ? 'var(--buy-color)' : 'var(--sell-color)';
+                document.getElementById('totalUnrealPnl').textContent = `${up >= 0 ? '+' : ''}$${up.toFixed(2)}`;
+                document.getElementById('totalUnrealPnl').style.color = up >= 0 ? 'var(--accent-cyan)' : 'var(--sell-color)';
+                document.getElementById('totalPnl').textContent = `${tp >= 0 ? '+' : ''}$${tp.toFixed(2)}`;
+                document.getElementById('totalPnl').style.color = tp >= 0 ? 'var(--buy-color)' : 'var(--sell-color)';
+            }
+
+            if (syms.length === 0) {
+                document.getElementById('symbolBody').innerHTML = `
+                    <tr><td colspan="11"><div class="empty-state">
+                        <div class="empty-icon">📭</div><div>No symbol data</div>
+                    </div></td></tr>`;
+                return;
+            }
+
+            document.getElementById('symbolBody').innerHTML = syms.map(s => {
+                const pnlColor = v => v > 0 ? 'color:var(--buy-color)' : v < 0 ? 'color:var(--sell-color)' : 'color:var(--text-muted)';
+                const fmtPnl = v => v !== null && v !== undefined ? `${v >= 0 ? '+' : ''}$${v.toFixed(2)}` : '—';
+                const fmtPrice = v => v ? `$${v.toFixed(2)}` : '—';
+                const tags = (s.tags || []).filter(t => t !== 'UNKNOWN').slice(0, 2).join(', ') || 'UNKNOWN';
+                const tagClass = getTagClass(tags);
+
+                return `<tr>
+                    <td class="symbol-cell">${s.symbol}</td>
+                    <td style="text-align:right;${s.buy_qty > 0 ? 'color:var(--buy-color)' : ''}">${s.buy_qty || 0}</td>
+                    <td style="text-align:right" class="price-cell">${fmtPrice(s.avg_buy_price)}</td>
+                    <td style="text-align:right;${s.sell_qty > 0 ? 'color:var(--sell-color)' : ''}">${s.sell_qty || 0}</td>
+                    <td style="text-align:right" class="price-cell">${fmtPrice(s.avg_sell_price)}</td>
+                    <td style="text-align:right">${s.matched_qty || 0}</td>
+                    <td style="text-align:right;color:var(--accent-amber)">${s.remaining_qty || 0}</td>
+                    <td style="text-align:right;${pnlColor(s.realized_pnl)};font-weight:700">${fmtPnl(s.realized_pnl)}</td>
+                    <td style="text-align:right;${pnlColor(s.unrealized_pnl)}">${s.unrealized_pnl !== null && s.unrealized_pnl !== undefined ? fmtPnl(s.unrealized_pnl) : '—'}</td>
+                    <td style="text-align:right;${pnlColor(s.total_pnl)};font-weight:800;font-size:13px">${fmtPnl(s.total_pnl)}</td>
+                    <td><span class="tag-cell ${tagClass}" style="font-size:9px">${tags}</span></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function sortSymbols(field) {
+            if (symbolSort.field === field) {
+                symbolSort.dir = symbolSort.dir === 'asc' ? 'desc' : 'asc';
+            } else {
+                symbolSort.field = field;
+                symbolSort.dir = field === 'symbol' ? 'asc' : 'desc';
+            }
+            renderSymbolTable({ totals: null });
+        }
+
+        // ═══════════════════════ RENDER STATS ═══════════════════════
+        function renderStats(summary, perAccount) {
+            if (!summary) return;
+            document.getElementById('statTotal').textContent = summary.total_fills;
+            const acctParts = Object.entries(perAccount || {})
+                .filter(([_, v]) => v.count > 0)
+                .map(([k, v]) => `${k === 'HAMMER_PRO' ? 'HAM' : 'PED'}: ${v.count}`)
+                .join(' / ');
+            document.getElementById('statAccounts').textContent = acctParts || '—';
+            document.getElementById('statBuyVol').textContent = '$' + formatNumber(summary.total_buy_value);
+            const buyCount = allFills.filter(f => f.action?.toUpperCase() === 'BUY').length;
+            document.getElementById('statBuyCount').textContent = `${buyCount} fills`;
+            document.getElementById('statSellVol').textContent = '$' + formatNumber(summary.total_sell_value);
+            const sellCount = allFills.filter(f => ['SELL', 'SHORT'].includes(f.action?.toUpperCase())).length;
+            document.getElementById('statSellCount').textContent = `${sellCount} fills`;
+            const net = summary.net_value;
+            const netEl = document.getElementById('statNet');
+            netEl.textContent = (net >= 0 ? '+' : '') + '$' + formatNumber(Math.abs(net));
+            netEl.style.color = net > 0 ? 'var(--sell-color)' : net < 0 ? 'var(--buy-color)' : 'var(--text-primary)';
+            document.getElementById('statNetDetail').textContent = net > 0 ? 'Net Buying' : net < 0 ? 'Net Selling' : 'Balanced';
+            document.getElementById('statSymbols').textContent = summary.unique_symbols;
+            document.getElementById('statSymList').textContent = (summary.symbols || []).slice(0, 5).join(', ') + (summary.symbols?.length > 5 ? '...' : '');
+            const qEl = document.getElementById('statQuality');
+            if (summary.avg_fill_quality !== null && summary.avg_fill_quality !== undefined) {
+                qEl.textContent = summary.avg_fill_quality.toFixed(1) + '%';
+                const label = summary.avg_fill_quality >= 80 ? 'EXCELLENT' : summary.avg_fill_quality >= 50 ? 'GOOD' : summary.avg_fill_quality >= 20 ? 'FAIR' : 'POOR';
+                document.getElementById('statQualityLabel').textContent = label;
+                qEl.style.color = getQualityColor(label);
+            } else {
+                qEl.textContent = 'N/A';
+                document.getElementById('statQualityLabel').textContent = 'No bid/ask data';
+            }
+        }
+
+        // ═══════════════════════ QUALITY GAUGE ═══════════════════════
+        function renderQualityGauge(fills) {
+            if (!fills || fills.length === 0) return;
+            const withQuality = fills.filter(f => f.fill_quality_pct !== undefined && f.fill_quality_pct !== null);
+            const counts = { EXCELLENT: 0, GOOD: 0, FAIR: 0, POOR: 0 };
+            withQuality.forEach(f => { const q = f.fill_quality || 'POOR'; if (counts[q] !== undefined) counts[q]++; });
+            const avg = withQuality.length > 0 ? withQuality.reduce((s, f) => s + f.fill_quality_pct, 0) / withQuality.length : 0;
+            const ring = document.getElementById('gaugeRing');
+            const circumference = 2 * Math.PI * 60;
+            const offset = circumference - (avg / 100) * circumference;
+            ring.style.strokeDasharray = circumference;
+            setTimeout(() => {
+                ring.style.strokeDashoffset = offset;
+                ring.style.stroke = avg >= 80 ? 'var(--excellent-color)' : avg >= 50 ? 'var(--good-color)' : avg >= 20 ? 'var(--fair-color)' : 'var(--poor-color)';
+            }, 100);
+            const gaugeVal = document.getElementById('gaugeValue');
+            gaugeVal.textContent = withQuality.length > 0 ? avg.toFixed(1) + '%' : 'N/A';
+            gaugeVal.style.color = avg >= 80 ? 'var(--excellent-color)' : avg >= 50 ? 'var(--good-color)' : avg >= 20 ? 'var(--fair-color)' : 'var(--poor-color)';
+            const total = withQuality.length || 1;
+            const bars = document.getElementById('qualityBars');
+            const barData = [
+                { label: 'Excellent', key: 'EXCELLENT', color: 'var(--excellent-color)', count: counts.EXCELLENT },
+                { label: 'Good', key: 'GOOD', color: 'var(--good-color)', count: counts.GOOD },
+                { label: 'Fair', key: 'FAIR', color: 'var(--fair-color)', count: counts.FAIR },
+                { label: 'Poor', key: 'POOR', color: 'var(--poor-color)', count: counts.POOR },
+            ];
+            bars.innerHTML = barData.map(b => {
+                const pct = (b.count / total * 100).toFixed(1);
+                return `<div class="quality-bar-row">
+                    <div class="quality-bar-label" style="color:${b.color}">${b.label}</div>
+                    <div class="quality-bar-track"><div class="quality-bar-fill" style="width:${pct}%;background:${b.color}">${pct}%</div></div>
+                    <div class="quality-bar-count">${b.count}</div>
+                </div>`;
+            }).join('');
+        }
+
+        // ═══════════════════════ RENDER FILLS TABLE ═══════════════════════
+        function renderTable() {
+            const search = (document.getElementById('searchInput').value || '').toUpperCase().trim();
+            let filtered = allFills;
+            if (currentFilter !== 'ALL') filtered = filtered.filter(f => f.account === currentFilter);
+            if (search) filtered = filtered.filter(f => (f.symbol || '').toUpperCase().includes(search) || (f.tag || '').toUpperCase().includes(search));
+            filtered = sortFills(filtered);
+            document.getElementById('tableCount').textContent = filtered.length;
+            if (filtered.length === 0) {
+                document.getElementById('fillsBody').innerHTML = `<tr><td colspan="14"><div class="empty-state"><div class="empty-icon">📭</div><div>No fills</div></div></td></tr>`;
+                return;
+            }
+            document.getElementById('fillsBody').innerHTML = filtered.map(f => {
+                const action = (f.action || '').toUpperCase();
+                const isBuy = action === 'BUY';
+                const tagClass = getTagClass(f.tag);
+                const accountClass = `account-${(f.account || '').replace(/\s/g, '_')}`;
+                let qualityHTML = '<span style="color:var(--text-muted)">—</span>';
+                if (f.fill_quality_pct !== undefined && f.fill_quality_pct !== null) {
+                    const qColor = getQualityColor(f.fill_quality);
+                    qualityHTML = `<span class="quality-bar-mini"><span class="quality-bar-mini-fill" style="width:${f.fill_quality_pct}%;background:${qColor}"></span></span>
+                        <span class="quality-badge quality-${f.fill_quality}">${f.fill_quality_pct}% ${f.fill_quality}</span>`;
+                }
+                let pnlHTML = '<span style="color:var(--text-muted)">—</span>';
+                if (f.pnl_since_fill !== undefined && f.pnl_since_fill !== null) {
+                    const pnlClass = f.pnl_since_fill > 0 ? 'pnl-positive' : f.pnl_since_fill < 0 ? 'pnl-negative' : 'pnl-neutral';
+                    const sign = f.pnl_since_fill >= 0 ? '+' : '';
+                    pnlHTML = `<span class="${pnlClass}">${sign}$${f.pnl_since_fill.toFixed(2)}</span>`;
+                }
+                let benchHTML = '<span style="color:var(--text-muted)">—</span>';
+                if (f.bench_chg !== undefined && f.bench_chg !== null) {
+                    const benchClass = f.bench_chg > 0 ? 'bench-positive' : f.bench_chg < 0 ? 'bench-negative' : '';
+                    benchHTML = `<span class="${benchClass}">${f.bench_chg >= 0 ? '+' : ''}${(f.bench_chg * 100).toFixed(2)}¢</span>`;
+                }
+                let nowHTML = f.last_now ? `<span class="price-cell">$${parseFloat(f.last_now).toFixed(2)}</span>` : '<span style="color:var(--text-muted)">—</span>';
+                return `<tr>
+                    <td class="time-cell">${f.time || '—'}</td>
+                    <td><span class="account-badge ${accountClass}">${f.account === 'HAMMER_PRO' ? 'HAM' : 'PED'}</span></td>
+                    <td class="symbol-cell">${f.symbol || '—'}</td>
+                    <td class="${isBuy ? 'action-buy' : 'action-sell'}">${action}</td>
+                    <td>${f.qty || 0}</td>
+                    <td class="price-cell">$${parseFloat(f.price || 0).toFixed(2)}</td>
+                    <td class="bid-ask-cell">${f.bid != null ? '$' + parseFloat(f.bid).toFixed(2) : '—'}</td>
+                    <td class="bid-ask-cell">${f.ask != null ? '$' + parseFloat(f.ask).toFixed(2) : '—'}</td>
+                    <td class="spread-cell">${f.spread != null ? '$' + parseFloat(f.spread).toFixed(3) : '—'}</td>
+                    <td>${qualityHTML}</td>
+                    <td><span class="tag-cell ${tagClass}">${f.tag || 'UNKNOWN'}</span></td>
+                    <td>${benchHTML}</td>
+                    <td>${pnlHTML}</td>
+                    <td>${nowHTML}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        // ═══════════════════════ SORTING ═══════════════════════
+        function sortTable(field) {
+            if (currentSort.field === field) { currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc'; }
+            else { currentSort.field = field; currentSort.dir = 'desc'; }
+            renderTable();
+        }
+
+        function sortFills(fills) {
+            const f = currentSort.field, dir = currentSort.dir === 'asc' ? 1 : -1;
+            return [...fills].sort((a, b) => {
+                let va, vb;
+                switch (f) {
+                    case 'time': va = a.timestamp || 0; vb = b.timestamp || 0; break;
+                    case 'symbol': return (a.symbol || '').localeCompare(b.symbol || '') * dir;
+                    case 'action': return (a.action || '').localeCompare(b.action || '') * dir;
+                    case 'account': return (a.account || '').localeCompare(b.account || '') * dir;
+                    case 'qty': va = a.qty || 0; vb = b.qty || 0; break;
+                    case 'price': va = a.price || 0; vb = b.price || 0; break;
+                    case 'bid': va = a.bid || 0; vb = b.bid || 0; break;
+                    case 'ask': va = a.ask || 0; vb = b.ask || 0; break;
+                    case 'spread': va = a.spread || 0; vb = b.spread || 0; break;
+                    case 'quality': va = a.fill_quality_pct || 0; vb = b.fill_quality_pct || 0; break;
+                    case 'tag': return (a.tag || '').localeCompare(b.tag || '') * dir;
+                    case 'bench_chg': va = a.bench_chg || 0; vb = b.bench_chg || 0; break;
+                    case 'pnl': va = a.pnl_since_fill || 0; vb = b.pnl_since_fill || 0; break;
+                    default: va = a.timestamp || 0; vb = b.timestamp || 0;
+                }
+                return (va - vb) * dir;
+            });
+        }
+
+        // ═══════════════════════ FILTERS ═══════════════════════
+        function setFilter(account, btn) {
+            currentFilter = account;
+            document.querySelectorAll('.account-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            // Re-activate view tabs
+            document.getElementById('tabSymbol').classList.toggle('active', currentView === 'symbol');
+            document.getElementById('tabFills').classList.toggle('active', currentView === 'fills');
+            fetchData();
+        }
+
+        // ═══════════════════════ HELPERS ═══════════════════════
+        function formatNumber(n) {
+            if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+            if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+            return n.toFixed(0);
+        }
+
+        function getTagClass(tag) {
+            if (!tag) return 'tag-default';
+            const t = tag.toUpperCase();
+            if (t.includes('MM') || t.includes('SIDEHIT') || t.includes('GREATEST')) return 'tag-mm';
+            if (t.includes('LT') || t.includes('REDUCEMORE')) return 'tag-lt';
+            if (t.includes('REV')) return 'tag-rev';
+            if (t.includes('JFIN') || t.includes('ADDNEWPOS')) return 'tag-jfin';
+            if (t.includes('KARBOTU')) return 'tag-karbotu';
+            return 'tag-default';
+        }
+
+        function getQualityColor(quality) {
+            switch (quality) {
+                case 'EXCELLENT': return 'var(--excellent-color)';
+                case 'GOOD': return 'var(--good-color)';
+                case 'FAIR': return 'var(--fair-color)';
+                case 'POOR': return 'var(--poor-color)';
+                default: return 'var(--text-muted)';
+            }
+        }
+
+        // ═══════════════════════ INIT ═══════════════════════
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+            refreshInterval = setInterval(fetchData, 30000);
+        });
+    </script>
+</body>
+
+</html>

@@ -279,7 +279,6 @@ function PSFALGORulesPage() {
     { id: 'jfin', label: '🎯 JFIN', icon: '🎯' },
     { id: 'lotdivider', label: '✂️ Lot Divider', icon: '✂️' },
     { id: 'controller', label: '🎮 Controller', icon: '🎮' },
-    { id: 'guardrails', label: '🛡️ Guardrails', icon: '🛡️' },
     { id: 'befday', label: '📅 BEFDAY', icon: '📅' },
     { id: 'presets', label: '💾 Presets', icon: '💾' },
   ]
@@ -986,116 +985,6 @@ function PSFALGORulesPage() {
           </section>
         )}
 
-        {/* Guardrails */}
-        {activeTab === 'guardrails' && (
-          <section className="rules-section">
-            <h2>🛡️ Guardrails - Safety Checks</h2>
-            
-            <div className="rules-subsection">
-              <h3>MAXALW (Company Exposure)</h3>
-              <div className="rules-grid">
-                <div className="rule-item">
-                  <label>Company Limit Enabled</label>
-                  {renderBoolean('guardrails.maxalw.company_limit_enabled', rules.guardrails?.maxalw?.company_limit_enabled)}
-                </div>
-                <div className="rule-item">
-                  <label>Max Company Exposure (%)</label>
-                  {renderInput('guardrails.maxalw.max_company_exposure_percent', rules.guardrails?.maxalw?.max_company_exposure_percent, 'number', 0, 1000, 0.1)}
-                </div>
-                <div className="rule-item">
-                  <label>Check Before Order</label>
-                  {renderBoolean('guardrails.maxalw.check_before_order', rules.guardrails?.maxalw?.check_before_order)}
-                </div>
-              </div>
-            </div>
-
-            <div className="rules-subsection">
-              <h3>Daily Limits</h3>
-              <div className="rules-grid">
-                <div className="rule-item">
-                  <label>Enabled</label>
-                  {renderBoolean('guardrails.daily_limits.enabled', rules.guardrails?.daily_limits?.enabled)}
-                </div>
-                <div className="rule-item">
-                  <label>Max Daily Lot Change</label>
-                  {renderInput('guardrails.daily_limits.max_daily_lot_change', rules.guardrails?.daily_limits?.max_daily_lot_change, 'number', 0, 100000, 1)}
-                </div>
-                <div className="rule-item">
-                  <label>Max Daily Lot Change Per Symbol</label>
-                  {renderInput('guardrails.daily_limits.max_daily_lot_change_per_symbol', rules.guardrails?.daily_limits?.max_daily_lot_change_per_symbol, 'number', 0, 10000, 1)}
-                </div>
-                <div className="rule-item">
-                  <label>Max Daily Orders</label>
-                  {renderInput('guardrails.daily_limits.max_daily_orders', rules.guardrails?.daily_limits?.max_daily_orders, 'number', 0, 10000, 1)}
-                </div>
-              </div>
-            </div>
-
-            <div className="rules-subsection">
-              <h3>Order Limits</h3>
-              <div className="rules-grid">
-                <div className="rule-item">
-                  <label>Max Open Orders</label>
-                  {renderInput('guardrails.order_limits.max_open_orders', rules.guardrails?.order_limits?.max_open_orders, 'number', 0, 1000, 1)}
-                </div>
-                <div className="rule-item">
-                  <label>Max Open Orders Per Symbol</label>
-                  {renderInput('guardrails.order_limits.max_open_orders_per_symbol', rules.guardrails?.order_limits?.max_open_orders_per_symbol, 'number', 0, 100, 1)}
-                </div>
-                <div className="rule-item">
-                  <label>Max Order Value ($)</label>
-                  {renderInput('guardrails.order_limits.max_order_value', rules.guardrails?.order_limits?.max_order_value, 'number', 0, 1000000, 1000)}
-                </div>
-              </div>
-            </div>
-
-            <div className="rules-subsection">
-              <h3>Duplicate Prevention</h3>
-              <div className="rules-grid">
-                <div className="rule-item">
-                  <label>Enabled</label>
-                  {renderBoolean('guardrails.duplicate_prevention.enabled', rules.guardrails?.duplicate_prevention?.enabled)}
-                </div>
-                <div className="rule-item">
-                  <label>Duplicate Intent Window (seconds)</label>
-                  {renderInput('guardrails.duplicate_prevention.duplicate_intent_window_seconds', rules.guardrails?.duplicate_prevention?.duplicate_intent_window_seconds, 'number', 0, 3600, 1)}
-                </div>
-                <div className="rule-item">
-                  <label>Same Symbol Cooldown (seconds)</label>
-                  {renderInput('guardrails.duplicate_prevention.same_symbol_cooldown_seconds', rules.guardrails?.duplicate_prevention?.same_symbol_cooldown_seconds, 'number', 0, 3600, 1)}
-                  <span className="rule-description">5 minutes cooldown per symbol</span>
-                </div>
-                <div className="rule-item">
-                  <label>Check Pending Orders</label>
-                  {renderBoolean('guardrails.duplicate_prevention.check_pending_orders', rules.guardrails?.duplicate_prevention?.check_pending_orders)}
-                </div>
-              </div>
-            </div>
-
-            <div className="rules-subsection">
-              <h3>Position Limits</h3>
-              <div className="rules-grid">
-                <div className="rule-item">
-                  <label>Enabled</label>
-                  {renderBoolean('guardrails.position_limits.enabled', rules.guardrails?.position_limits?.enabled)}
-                </div>
-                <div className="rule-item">
-                  <label>Max Position Per Symbol</label>
-                  {renderInput('guardrails.position_limits.max_position_per_symbol', rules.guardrails?.position_limits?.max_position_per_symbol, 'number', 0, 100000, 100)}
-                </div>
-                <div className="rule-item">
-                  <label>Max Total Positions</label>
-                  {renderInput('guardrails.position_limits.max_total_positions', rules.guardrails?.position_limits?.max_total_positions, 'number', 0, 1000, 1)}
-                </div>
-                <div className="rule-item">
-                  <label>Max Sector Exposure (%)</label>
-                  {renderInput('guardrails.position_limits.max_sector_exposure_percent', rules.guardrails?.position_limits?.max_sector_exposure_percent, 'number', 0, 100, 0.1)}
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
         {/* JFIN - Deterministic Transformer */}
         {activeTab === 'jfin' && (
           <section className="rules-section">
@@ -1138,7 +1027,7 @@ function PSFALGORulesPage() {
                   onClick={() => {
                     updateRule('jfin.tumcsv.selection_percent', 0.10)
                     updateRule('jfin.tumcsv.min_selection', 2)
-                    updateRule('jfin.tumcsv.heldkuponlu_pair_count', 8)
+                    updateRule('jfin.tumcsv.heldkuponlu_pair_count', 16)
                   }}
                 >
                   V10TUMCSV
@@ -1148,7 +1037,7 @@ function PSFALGORulesPage() {
                   onClick={() => {
                     updateRule('jfin.tumcsv.selection_percent', 0.12)
                     updateRule('jfin.tumcsv.min_selection', 2)
-                    updateRule('jfin.tumcsv.heldkuponlu_pair_count', 10)
+                    updateRule('jfin.tumcsv.heldkuponlu_pair_count', 20)
                   }}
                 >
                   V15TUMCSV
@@ -1158,7 +1047,7 @@ function PSFALGORulesPage() {
                   onClick={() => {
                     updateRule('jfin.tumcsv.selection_percent', 0.15)
                     updateRule('jfin.tumcsv.min_selection', 3)
-                    updateRule('jfin.tumcsv.heldkuponlu_pair_count', 12)
+                    updateRule('jfin.tumcsv.heldkuponlu_pair_count', 24)
                   }}
                 >
                   V20TUMCSV

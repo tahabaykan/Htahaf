@@ -41,6 +41,11 @@ class HammerFeed:
         Args:
             data: Message data from Hammer Pro
         """
+        if not hasattr(self, '_recent_ticks'):
+            self._recent_ticks = {}
+            self._last_volatility_check = 0
+            self._last_macro_volatility_log = 0.0  # Volatilite uyarilarini throttle etmek icin
+            
         try:
             cmd = data.get("cmd", "")
             
@@ -78,6 +83,7 @@ class HammerFeed:
                 last = result.get("last") or result.get("price") or result.get("trade") or result.get("tradePrice")
                 volume = result.get("volume")
                 size = result.get("size")
+                venue = result.get("venue") or result.get("exchange")  # FNRA, NYSE, ARCA, etc.
                 
                 # If size > 0, this is a trade and last should be set
                 if size and float(size) > 0 and last is None:
@@ -94,53 +100,97 @@ class HammerFeed:
                 if bid is None and ask is None and last is None:
                     return
                 
-                # Build market data dict
+                    # Build market data dict
+                import time
+                now = time.time()
                 market_data = {
                     "bid": float(bid) if bid is not None and bid != "" else None,
                     "ask": float(ask) if ask is not None and ask != "" else None,
                     "last": float(last) if last is not None and last != "" else None,
                     "volume": float(volume) if volume is not None and volume != "" else None,
                     "size": float(size) if size is not None and size != "" else None,
+                    "venue": str(venue) if venue is not None and venue != "" else None,
+                    "timestamp": now,  # Unix timestamp for TTL validation
                 }
                 
-                # Update market data cache
                 try:
                     from app.api.market_data_routes import update_market_data_cache, update_etf_market_data, ETF_TICKERS
                     
-                    # Check if it's an ETF
+                    # 🔴 V.I.P ETF PROCESSING LANE (Absolute Priority) 🔴
                     if display_symbol in ETF_TICKERS:
-                        # Log ETF updates at INFO level to verify they're being received
                         if not hasattr(self, '_etf_update_count'):
                             self._etf_update_count = 0
                         self._etf_update_count += 1
                         if self._etf_update_count <= 20:
-                            logger.info(f"📊 ETF L1Update #{self._etf_update_count}: {display_symbol} (hammer={hammer_symbol}) bid={bid} ask={ask} last={last}")
-                        else:
-                            logger.debug(f"📊 ETF L1Update: {display_symbol} (hammer={hammer_symbol}) bid={bid} ask={ask} last={last}")
+                            logger.info(f"⚡ [VIP_ETF_LANE] L1Update #{self._etf_update_count}: {display_symbol} bid={bid} ask={ask} last={last}")
+                        
                         update_etf_market_data(display_symbol, market_data)
                         
-                        # Update BenchmarkStore for ETF
                         try:
                             from app.core.benchmark_store import get_benchmark_store
                             benchmark_store = get_benchmark_store()
                             if benchmark_store and last is not None:
                                 benchmark_store.update_from_l1(display_symbol, float(last))
                         except Exception:
-                            pass  # Non-critical
+                            pass
+                            
+                        # Immediately alert ETF_GUARD
+                        try:
+                            from app.terminals.etf_guard_terminal import get_etf_guard
+                            guard = get_etf_guard()
+                            if guard:
+                                # Send ETF update directly to force micro-trigger check on this exact tick
+                                guard.process_vip_tick(display_symbol, market_data)
+                        except Exception as e:
+                            pass
+                            
                     else:
+                        # Standard Lane (Preferred Stocks)
                         update_market_data_cache(display_symbol, market_data)
+                        
+                        # 🔴 MACRO-VOLATILITY DETECTION 🔴
+                        # Track recent preferred stock ticks for volatility spikes
+                        self._recent_ticks[display_symbol] = now
+                        
+                        # Only run expensive volatility check every 500ms
+                        if now - self._last_volatility_check > 0.5:
+                            self._last_volatility_check = now
+                            
+                            cutoff_5s = now - 5.0
+                            cutoff_2s = now - 2.0
+                            
+                            active_5s = 0
+                            active_2s = 0
+                            
+                            for sym in list(self._recent_ticks.keys()):
+                                tick_time = self._recent_ticks[sym]
+                                if tick_time < cutoff_5s:
+                                    del self._recent_ticks[sym]
+                                else:
+                                    active_5s += 1
+                                    if tick_time >= cutoff_2s:
+                                        active_2s += 1
+                            
+                            if active_2s >= 15 or active_5s >= 25:
+                                if now - self._last_macro_volatility_log >= 2.0:
+                                    logger.warning(f"🚨 [MACRO-VOLATILITE] 2sn:{active_2s} | 5sn:{active_5s} Ticker bid/ask degisti! VIP ETF Guard devrede!")
+                                    self._last_macro_volatility_log = now
+                                try:
+                                    from app.terminals.etf_guard_terminal import get_etf_guard
+                                    guard = get_etf_guard()
+                                    if guard:
+                                        # Force a complete re-evaluation
+                                        guard._execute_safeguard_checks()
+                                except Exception as e:
+                                    logger.error(f"Error triggering ETF Guard during volatility: {e}")
                         
                         # =====================================================
                         # SECURITY REGISTRY UPDATE (hot-path - minimal work)
-                        # Only: resolve → get_or_create → update_l1
-                        # NO score calculation here!
                         # =====================================================
                         try:
                             from app.core.security_registry import get_security_registry
-                            
                             registry = get_security_registry()
                             if registry:
-                                # Use resolve_and_get which uses SymbolResolver
                                 ctx = registry.resolve_and_get(display_symbol)
                                 if ctx:
                                     ctx.update_l1(
@@ -151,16 +201,14 @@ class HammerFeed:
                                         source="HAMMER"
                                     )
                         except Exception:
-                            pass  # Non-critical - don't block L1 flow
-                    
+                            pass
+
                     # Log first few L1Updates at INFO level
                     if not hasattr(self, '_l1update_count'):
                         self._l1update_count = 0
                     self._l1update_count += 1
-                    if self._l1update_count <= 50:
+                    if self._l1update_count <= 20:
                         logger.info(f"📊 [HAMMER_FEED] L1Update #{self._l1update_count}: {display_symbol} bid={bid} ask={ask} last={last} -> Cache Updated")
-                    else:
-                        logger.debug(f"📊 L1Update: {display_symbol} bid={bid} ask={ask} last={last}")
                 except Exception as e:
                     logger.error(f"Error updating market data cache for {display_symbol}: {e}", exc_info=True)
             
@@ -190,7 +238,7 @@ class HammerFeed:
             l1_cmd = {
                 "cmd": "subscribe",
                 "sub": "L1",
-                "streamerID": "ALARICQ",
+                "streamerID": self.hammer_client.streamer_id,
                 "sym": [hammer_symbol],
                 "transient": False
             }
@@ -204,7 +252,7 @@ class HammerFeed:
                 l2_cmd = {
                     "cmd": "subscribe",
                     "sub": "L2",
-                    "streamerID": "ALARICQ",
+                    "streamerID": self.hammer_client.streamer_id,
                     "sym": [hammer_symbol],
                     "transient": False
                 }
@@ -261,7 +309,7 @@ class HammerFeed:
                 l1_cmd = {
                     "cmd": "subscribe",
                     "sub": "L1",
-                    "streamerID": "ALARICQ",
+                    "streamerID": self.hammer_client.streamer_id,
                     "sym": hammer_symbols,
                     "transient": False
                 }
@@ -283,7 +331,7 @@ class HammerFeed:
                     l2_cmd = {
                         "cmd": "subscribe",
                         "sub": "L2",
-                        "streamerID": "ALARICQ",
+                        "streamerID": self.hammer_client.streamer_id,
                         "sym": hammer_symbols,
                         "transient": False
                     }
@@ -306,3 +354,31 @@ class HammerFeed:
         
         logger.info(f"✅ Batch subscription complete: {subscribed_count}/{len(symbols)} symbols (L1{' + L2' if include_l2 else ''})")
         return subscribed_count
+
+
+# ============================================================================
+# GLOBAL SINGLETON INSTANCE
+# ============================================================================
+_hammer_feed_instance: Optional[HammerFeed] = None
+
+
+def get_hammer_feed() -> Optional[HammerFeed]:
+    """
+    Get the global HammerFeed singleton instance.
+    
+    Returns:
+        HammerFeed instance if initialized, None otherwise
+    """
+    return _hammer_feed_instance
+
+
+def set_hammer_feed(instance: HammerFeed) -> None:
+    """
+    Set the global HammerFeed singleton instance.
+    
+    Args:
+        instance: HammerFeed instance to set as global
+    """
+    global _hammer_feed_instance
+    _hammer_feed_instance = instance
+    logger.info("✅ Global HammerFeed instance set")

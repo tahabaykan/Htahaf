@@ -36,35 +36,29 @@ class TakeProfitEngine:
     def __init__(self):
         logger.info("[TAKE_PROFIT] Engine initialized")
     
-    def get_long_positions(self) -> List[TakeProfitPosition]:
+    async def get_long_positions_async(self, account_id: str) -> List[TakeProfitPosition]:
         """
-        Get long positions (quantity > 0)
-        
-        Returns:
-            List of long positions
+        Get long positions (quantity > 0) for the given account — 3-account isolation.
+        Market data (bid/ask/last) = single source Hammer, positions = account-scoped.
         """
         try:
             from app.psfalgo.position_snapshot_api import get_position_snapshot_api
-            
+            from app.core.data_fabric import get_data_fabric
+
             position_api = get_position_snapshot_api()
             if not position_api:
                 logger.warning("[TAKE_PROFIT] PositionSnapshotAPI not available")
                 return []
-            
-            snapshot = position_api.get_position_snapshot()
+
+            snapshot = await position_api.get_position_snapshot(account_id=account_id)
             if not snapshot:
                 return []
-            
-            # Get market data for positions
-            from app.core.data_fabric import get_data_fabric
+
             data_fabric = get_data_fabric()
-            
             long_positions = []
-            for pos in snapshot.positions:
+            for pos in snapshot:
                 if pos.qty > 0:  # Long position
-                    # Get market data
                     market_data = data_fabric.get_fast_snapshot(pos.symbol)
-                    
                     position = TakeProfitPosition(
                         symbol=pos.symbol,
                         quantity=pos.qty,
@@ -75,46 +69,47 @@ class TakeProfitEngine:
                         lrpan_price=self.get_lrpan_price(pos.symbol)
                     )
                     long_positions.append(position)
-            
-            logger.info(f"[TAKE_PROFIT] Found {len(long_positions)} long positions")
+            logger.info(f"[TAKE_PROFIT] Found {len(long_positions)} long positions for {account_id}")
             return long_positions
-            
         except Exception as e:
             logger.error(f"[TAKE_PROFIT] Error getting long positions: {e}", exc_info=True)
             return []
-    
-    def get_short_positions(self) -> List[TakeProfitPosition]:
+
+    def get_long_positions(self, account_id: Optional[str] = None) -> List[TakeProfitPosition]:
         """
-        Get short positions (quantity < 0)
-        
-        Returns:
-            List of short positions
+        Get long positions (quantity > 0). Uses account_id or active account — 3-account isolation.
+        Prefer get_long_positions_async(account_id) from async routes.
+        """
+        import asyncio
+        from app.trading.trading_account_context import get_trading_context
+        aid = account_id or get_trading_context().trading_mode.value
+        return asyncio.run(self.get_long_positions_async(aid))
+
+    async def get_short_positions_async(self, account_id: str) -> List[TakeProfitPosition]:
+        """
+        Get short positions (quantity < 0) for the given account — 3-account isolation.
         """
         try:
             from app.psfalgo.position_snapshot_api import get_position_snapshot_api
-            
+            from app.core.data_fabric import get_data_fabric
+
             position_api = get_position_snapshot_api()
             if not position_api:
                 logger.warning("[TAKE_PROFIT] PositionSnapshotAPI not available")
                 return []
-            
-            snapshot = position_api.get_position_snapshot()
+
+            snapshot = await position_api.get_position_snapshot(account_id=account_id)
             if not snapshot:
                 return []
-            
-            # Get market data for positions
-            from app.core.data_fabric import get_data_fabric
+
             data_fabric = get_data_fabric()
-            
             short_positions = []
-            for pos in snapshot.positions:
+            for pos in snapshot:
                 if pos.qty < 0:  # Short position
-                    # Get market data
                     market_data = data_fabric.get_fast_snapshot(pos.symbol)
-                    
                     position = TakeProfitPosition(
                         symbol=pos.symbol,
-                        quantity=abs(pos.qty),  # Make positive for display
+                        quantity=abs(pos.qty),
                         avg_price=pos.avg_price or 0.0,
                         bid=market_data.get('bid', 0.0) if market_data else 0.0,
                         ask=market_data.get('ask', 0.0) if market_data else 0.0,
@@ -122,13 +117,21 @@ class TakeProfitEngine:
                         lrpan_price=self.get_lrpan_price(pos.symbol)
                     )
                     short_positions.append(position)
-            
-            logger.info(f"[TAKE_PROFIT] Found {len(short_positions)} short positions")
+            logger.info(f"[TAKE_PROFIT] Found {len(short_positions)} short positions for {account_id}")
             return short_positions
-            
         except Exception as e:
             logger.error(f"[TAKE_PROFIT] Error getting short positions: {e}", exc_info=True)
             return []
+
+    def get_short_positions(self, account_id: Optional[str] = None) -> List[TakeProfitPosition]:
+        """
+        Get short positions (quantity < 0). Uses account_id or active account — 3-account isolation.
+        Prefer get_short_positions_async(account_id) from async routes.
+        """
+        import asyncio
+        from app.trading.trading_account_context import get_trading_context
+        aid = account_id or get_trading_context().trading_mode.value
+        return asyncio.run(self.get_short_positions_async(aid))
     
     def calculate_take_profit_price(
         self,

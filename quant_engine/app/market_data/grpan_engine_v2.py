@@ -1,5 +1,15 @@
 """
 GRPAN Engine V2 - Rolling Windows Architecture
+
+⚠️ DEPRECATED — NOT IMPORTED BY ANY MODULE ⚠️
+
+The active version is:
+    app.market_data.grpan_engine.GRPANEngine (v1)
+
+Used by: truth_ticks_worker, deeper_analysis_worker, strategy_context,
+         pricing_overlay_engine, rwvap_engine, market_data_routes.
+TODO: Delete this file.
+
 Grouped Real Print Analyzer with time-based rolling windows.
 
 Features:

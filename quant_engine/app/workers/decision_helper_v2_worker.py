@@ -91,7 +91,7 @@ class DecisionHelperV2Worker:
                     # 4 up: project root
                     worker_file = os.path.abspath(__file__)
                     project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(worker_file))))
-                    csv_path = os.path.join(project_root, "janall", "janalldata.csv")
+                    csv_path = os.path.join(project_root, "janalldata.csv")
                     logger.info(f"📊 [{self.worker_name}] CSV path: {csv_path}")
                     initialize_static_store(csv_path=csv_path)
                     self.static_store = get_static_store()
@@ -102,7 +102,7 @@ class DecisionHelperV2Worker:
                         # Calculate CSV path: go up 4 levels from worker file to project root
                         worker_file = os.path.abspath(__file__)
                         project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(worker_file))))
-                        csv_path = os.path.join(project_root, "janall", "janalldata.csv")
+                        csv_path = os.path.join(project_root, "janalldata.csv")
                         
                         logger.info(f"📊 [{self.worker_name}] Attempting to load CSV from: {csv_path}")
                         logger.info(f"📊 [{self.worker_name}] CSV exists: {os.path.exists(csv_path)}")
@@ -171,7 +171,13 @@ class DecisionHelperV2Worker:
             
             self.bootstrap_progress = {'total': len(symbols), 'completed': 0, 'tick_count': 0}
             
-            for symbol in symbols:
+            consecutive_failures = 0
+            BATCH_SIZE = 20  # Process 20 symbols per batch
+            BATCH_PAUSE = 2.0  # 2s pause between batches
+            SYMBOL_DELAY = 0.15  # 150ms between individual requests
+            FAILURE_PAUSE = 10.0  # 10s pause after 5 consecutive failures
+            
+            for i, symbol in enumerate(symbols):
                 try:
                     # Get last 2000 ticks using getTicks (more ticks for longer windows like pan_1d)
                     # CRITICAL: tradesOnly=True ensures we only get REAL TRADES
@@ -193,6 +199,9 @@ class DecisionHelperV2Worker:
                             self.decision_engine.add_tick(symbol, tick)
                             symbol_tick_count += 1
                             self.bootstrap_progress['tick_count'] += 1
+                        consecutive_failures = 0  # Reset on success
+                    else:
+                        consecutive_failures += 1
                     
                     self.bootstrap_progress['completed'] += 1
                     
@@ -206,7 +215,23 @@ class DecisionHelperV2Worker:
                 except Exception as e:
                     logger.debug(f"Error bootstrapping {symbol}: {e}")
                     self.bootstrap_progress['completed'] += 1
-                    continue
+                    consecutive_failures += 1
+                
+                # ═══ Throttling: prevent Hammer Pro overload ═══
+                # Circuit breaker: pause longer after consecutive failures
+                if consecutive_failures >= 5:
+                    logger.warning(
+                        f"⚡ [{self.worker_name}] Bootstrap circuit breaker: "
+                        f"{consecutive_failures} failures, pausing {FAILURE_PAUSE}s"
+                    )
+                    time.sleep(FAILURE_PAUSE)
+                    consecutive_failures = 0
+                # Batch pause: every BATCH_SIZE symbols, take a longer break
+                elif (i + 1) % BATCH_SIZE == 0:
+                    time.sleep(BATCH_PAUSE)
+                else:
+                    # Small delay between each symbol
+                    time.sleep(SYMBOL_DELAY)
             
             logger.info(
                 f"✅ [{self.worker_name}] Bootstrap completed: "

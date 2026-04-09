@@ -3,6 +3,7 @@ Hammer Positions Service
 READ-ONLY service to fetch positions from Hammer Pro trading account.
 """
 
+import time
 from typing import List, Dict, Any, Optional
 from app.core.logger import logger
 from app.live.symbol_mapper import SymbolMapper
@@ -24,6 +25,10 @@ class HammerPositionsService:
         """
         self.hammer_client = hammer_client
         self.account_key: Optional[str] = None
+        # Stale-cache: serve last good result when getPositions times out during order bursts
+        self._last_good_positions: List[Dict[str, Any]] = []
+        self._last_good_ts: float = 0.0
+        self._STALE_CACHE_MAX_AGE = 300  # 5 min — must survive order bursts
     
     def set_hammer_client(self, hammer_client, account_key: str):
         """
@@ -67,7 +72,13 @@ class HammerPositionsService:
             return []
         
         if not self.hammer_client.is_connected():
-            logger.warning("Hammer client not connected")
+            # CRITICAL FIX: Return cached positions when WS is disconnected
+            # WS disconnects every 2-5 min (ping/pong timeout) — don't return empty!
+            age = time.time() - self._last_good_ts
+            if self._last_good_positions and age < self._STALE_CACHE_MAX_AGE:
+                logger.info(f"Hammer WS disconnected — serving {len(self._last_good_positions)} cached positions ({age:.0f}s old)")
+                return self._last_good_positions
+            logger.warning("Hammer client not connected and no cached positions")
             return []
         
         try:
@@ -84,10 +95,14 @@ class HammerPositionsService:
             response = self.hammer_client.send_command_and_wait(
                 cmd,
                 wait_for_response=True,
-                timeout=10.0
+                timeout=4.0  # Reduced from 8.0 — keep API responsive, cache handles gaps
             )
             
             if not response or response.get('success') != 'OK':
+                age = time.time() - self._last_good_ts
+                if self._last_good_positions and age < self._STALE_CACHE_MAX_AGE:
+                    logger.warning(f"Failed to get positions (timeout), serving {len(self._last_good_positions)} cached positions ({age:.0f}s old)")
+                    return self._last_good_positions
                 logger.warning(f"Failed to get positions: {response}")
                 return []
             
@@ -119,10 +134,17 @@ class HammerPositionsService:
                     normalized_positions.append(normalized)
             
             logger.info(f"Fetched {len(normalized_positions)} positions from Hammer")
+            # Cache for stale-fallback during timeouts
+            self._last_good_positions = normalized_positions
+            self._last_good_ts = time.time()
             return normalized_positions
             
         except Exception as e:
             logger.error(f"Error fetching positions from Hammer: {e}", exc_info=True)
+            age = time.time() - self._last_good_ts
+            if self._last_good_positions and age < self._STALE_CACHE_MAX_AGE:
+                logger.warning(f"Serving {len(self._last_good_positions)} cached positions ({age:.0f}s old) after error")
+                return self._last_good_positions
             return []
     
     def _normalize_position(self, pos: Dict[str, Any]) -> Optional[Dict[str, Any]]:

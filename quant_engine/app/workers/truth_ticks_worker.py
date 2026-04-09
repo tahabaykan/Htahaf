@@ -101,6 +101,21 @@ class TruthTicksWorker:
             else:
                 logger.info(f"✅ [{self.worker_name}] Static store already loaded: {len(self.static_store.get_all_symbols())} symbols")
             
+            # ════════════════════════════════════════════════════════════════
+            # SAFETY NET: If NO symbols were assigned, auto-load ALL symbols
+            # from static store. This prevents the critical bug where workers
+            # 2-6 are not started and 334/466 symbols have no truth tick data.
+            # ════════════════════════════════════════════════════════════════
+            if not self.assigned_symbols and self.static_store and self.static_store.is_loaded():
+                all_syms = self.static_store.get_all_symbols()
+                if all_syms:
+                    self.assigned_symbols = set(all_syms)
+                    self.symbols_to_collect.update(all_syms)
+                    logger.warning(
+                        f"🔴 [{self.worker_name}] AUTO-LOADED ALL {len(all_syms)} symbols from static store! "
+                        f"No --symbols/--config was provided. Worker will collect ALL symbols."
+                    )
+            
             # Initialize GRPAN engine (for trade print routing)
             from app.market_data.grpan_engine import get_grpan_engine, initialize_grpan_engine
             # Try to get existing instance first
@@ -154,8 +169,20 @@ class TruthTicksWorker:
             # Add self as observer for connection status logging
             # self.hammer_client.add_observer(self._on_hammer_message)
             
-            if not self.hammer_client.connect():
-                logger.error(f"❌ [{self.worker_name}] Failed to connect to Hammer Pro")
+            # Connect with retry — Hammer Pro often fails auth on first attempt
+            # when many workers start simultaneously (backend + L1 + 6 workers)
+            max_retries = 5
+            connected = False
+            for attempt in range(1, max_retries + 1):
+                if self.hammer_client.connect():
+                    connected = True
+                    break
+                wait = attempt * 10  # 10s, 20s, 30s, 40s, 50s
+                logger.warning(f"⚠️ [{self.worker_name}] Hammer connect attempt {attempt}/{max_retries} failed, retrying in {wait}s...")
+                time.sleep(wait)
+            
+            if not connected:
+                logger.error(f"❌ [{self.worker_name}] Failed to connect to Hammer Pro after {max_retries} attempts")
                 return False
             
             # 5. Tick Fetcher (Bootstrap & Active Polling)
@@ -163,7 +190,8 @@ class TruthTicksWorker:
                 hammer_client=self.hammer_client,
                 trade_print_router=self.trade_print_router,
                 grpan_engine=self.grpan_engine,
-                last_few_ticks=2500,  # Fetch 2500 (fallback to 1500) per user request
+                last_few_ticks=150,   # ✅ FIXED: Was 2500 — caused 22min bootstrap (20s × 66 syms)
+                                      # 150 ticks is enough for initial state, polling fills the rest
                 polling_mode=True,    # ✅ CONTINUOUS POLLING ENABLED
                 polling_interval=60.0 # ✅ Poll every 60 seconds
             )
@@ -174,16 +202,21 @@ class TruthTicksWorker:
                 logger.info(f"📋 [{self.worker_name}] Registering {len(self.assigned_symbols)} symbols with Tick Fetcher")
                 self.grpan_tick_fetcher.add_symbols(list(self.assigned_symbols))
             
-            # 6. Snapshot Scheduler (For 5-min market data)
+            # 6. Snapshot Scheduler (For 1-min market data - L1 feed)
             if self.assigned_symbols:
                 self.snapshot_scheduler = SnapshotScheduler(
                     worker_name=self.worker_name,
                     hammer_client=self.hammer_client,
                     redis_client=self.redis_client,
                     symbols=list(self.assigned_symbols),
-                    interval_minutes=5
+                    interval_minutes=1  # Changed from 5 to 1 for faster L1 updates
                 )
                 self.snapshot_scheduler.start()
+            
+            # 6b. L1 Feed Loop (Continuous L1 updates to Redis - 30s interval)
+            # This ensures market:l1:{symbol} is always fresh for RevnBookCheck and other terminals
+            if self.assigned_symbols:
+                self.start_l1_feed_loop()
 
             # 7. Analysis Scheduler (For continuous calculations)
             # This ensures 1H/4H/1D columns are populated even without external jobs
@@ -196,12 +229,107 @@ class TruthTicksWorker:
             logger.error(f"❌ [{self.worker_name}] Failed to initialize services: {e}", exc_info=True)
             return False
 
+    def start_l1_feed_loop(self):
+        """Starts a background thread to continuously fetch L1 data and write to Redis"""
+        def l1_feed_loop():
+            logger.info(f"📊 [{self.worker_name}] L1 Feed Loop started (Interval: 30s, {len(self.assigned_symbols)} symbols)")
+            interval = 30  # 30 seconds
+            
+            while self.running:
+                try:
+                    if not self.hammer_client or not self.hammer_client.is_connected():
+                        logger.warning(f"⚠️ [{self.worker_name}] Hammer not connected, skipping L1 feed cycle")
+                        time.sleep(10)
+                        continue
+                    
+                    cycle_start = time.time()
+                    updated = 0
+                    errors = 0
+                    pipeline = self.redis_client.pipeline()
+                    
+                    for symbol in self.assigned_symbols:
+                        if not self.running:
+                            break
+                        
+                        try:
+                            # Fetch snapshot from Hammer (lightweight, just bid/ask/last)
+                            snapshot = self.hammer_client.get_symbol_snapshot(symbol, use_cache=False)
+                            
+                            if snapshot:
+                                bid = snapshot.get('bid', 0.0) or 0.0
+                                ask = snapshot.get('ask', 0.0) or 0.0
+                                last = snapshot.get('last', 0.0) or 0.0
+                                
+                                # Calculate spread
+                                spread = 0.0
+                                if bid > 0 and ask > 0 and ask > bid:
+                                    spread = round(ask - bid, 4)
+                                
+                                l1_data = {
+                                    'bid': bid,
+                                    'ask': ask,
+                                    'spread': spread,
+                                    'last': last,
+                                    'ts': time.time()
+                                }
+                                
+                                l1_json = json.dumps(l1_data)
+                                
+                                # 🔑 TICKER CONVENTION: Write BOTH Hammer and PREF_IBKR keys
+                                # so ALL consumers can find L1 data regardless of format.
+                                # Hammer format (WBS-F) is the canonical key for market data.
+                                from app.live.symbol_mapper import SymbolMapper
+                                hammer_sym = SymbolMapper.to_hammer_symbol(symbol)
+                                
+                                # Primary key: Hammer format (canonical for market data)
+                                pipeline.setex(f"market:l1:{hammer_sym}", 120, l1_json)
+                                
+                                # Secondary key: PREF_IBKR format (for backward compat)
+                                if hammer_sym != symbol:
+                                    pipeline.setex(f"market:l1:{symbol}", 120, l1_json)
+                                
+                                updated += 1
+                                
+                                # Small delay to avoid overwhelming Hammer
+                                time.sleep(0.01)
+                                
+                        except Exception as e:
+                            errors += 1
+                            if errors <= 5:  # Only log first 5 errors
+                                logger.debug(f"[{self.worker_name}] L1 feed error for {symbol}: {e}")
+                    
+                    # Execute pipeline
+                    try:
+                        pipeline.execute()
+                        cycle_time = time.time() - cycle_start
+                        logger.debug(
+                            f"📊 [{self.worker_name}] L1 Feed Cycle: "
+                            f"Updated {updated}/{len(self.assigned_symbols)} symbols in {cycle_time:.1f}s"
+                        )
+                    except Exception as e:
+                        logger.error(f"❌ [{self.worker_name}] Redis pipeline error: {e}")
+                    
+                    # Wait for next cycle
+                    elapsed = time.time() - cycle_start
+                    sleep_time = max(1, interval - elapsed)
+                    time.sleep(sleep_time)
+                    
+                except Exception as e:
+                    logger.error(f"❌ [{self.worker_name}] L1 feed loop error: {e}", exc_info=True)
+                    time.sleep(10)
+        
+        t = threading.Thread(target=l1_feed_loop, daemon=True, name=f"{self.worker_name}_l1_feed")
+        t.start()
+    
     def start_analysis_scheduler(self):
         """Starts a background thread to run analysis periodically"""
         def analysis_loop():
             logger.info(f"🔄 [{self.worker_name}] Analysis Scheduler started (Interval: 1m)")
+            cycle_count = 0
             while self.running:
                 try:
+                    cycle_count += 1
+                    
                     # Run analysis for all assigned symbols
                     # Passing None as job_data triggers 'process all assigned' logic
                     job_data = {"job_id": "auto_analysis", "symbols": None}
@@ -215,11 +343,17 @@ class TruthTicksWorker:
                             300, # 5 min TTL
                             json.dumps(result)
                         )
-                        logger.info(f"✅ [AutoAnalysis] Saved result to truth_ticks:auto_analysis ({result.get('processed_count')} symbols)")
+                        # Heartbeat log every 5 cycles (5 min)
+                        if cycle_count % 5 == 0:
+                            logger.info(
+                                f"💓 [{self.worker_name}] Heartbeat: cycle={cycle_count}, "
+                                f"processed={result.get('processed_count')}/{result.get('total_count')} symbols, "
+                                f"tick_store={len(self.truth_ticks_engine.tick_store) if self.truth_ticks_engine else 0}"
+                            )
                     
                     time.sleep(60) # Run every minute
                 except Exception as e:
-                    logger.error(f"Error in analysis loop: {e}")
+                    logger.error(f"❌ [{self.worker_name}] Error in analysis loop (will retry): {e}", exc_info=True)
                     time.sleep(10)
 
         t = threading.Thread(target=analysis_loop, daemon=True)
@@ -288,17 +422,13 @@ class TruthTicksWorker:
             
             # Add symbols to GRPANTickFetcher (bootstrap if needed)
             # Only if we are running the fetcher (which we are)
+            new_symbols = []
             with self._symbols_lock:
                 new_symbols = [s for s in symbols_to_process if s not in self.symbols_to_collect]
                 if new_symbols:
                     self.grpan_tick_fetcher.add_symbols(new_symbols, bootstrap=True)
                     self.symbols_to_collect.update(new_symbols)
                     logger.info(f"📊 [{self.worker_name}] Added {len(new_symbols)} new symbols to tick fetcher")
-            
-            # Wait a bit if we just added new symbols
-            if new_symbols:
-                logger.info(f"⏳ [{self.worker_name}] Waiting for initial tick collection (bootstrap)...")
-                time.sleep(5)
             
             # Fixed timeframes (explicit in code as per requirements)
             TIMEFRAMES = {
@@ -377,6 +507,23 @@ class TruthTicksWorker:
                                 3600,
                                 json.dumps({"success": True, "symbol": symbol, "data": inspect_data})
                             )
+                            # Write latest truth tick for RevnBookCheck/Frontlama (truthtick:latest:{symbol})
+                            path_dataset = inspect_data.get("path_dataset") or []
+                            if path_dataset:
+                                last_tick = path_dataset[-1]
+                                latest_payload = {
+                                    "price": last_tick.get("price"),
+                                    "ts": last_tick.get("timestamp"),       # Market tick time (can be old for illiquid stocks)
+                                    "updated_at": time.time(),              # When worker last refreshed (use THIS for staleness)
+                                    "size": last_tick.get("size"),
+                                    "venue": last_tick.get("venue", ""),
+                                    "exch": last_tick.get("venue", ""),
+                                }
+                                self.redis_client.setex(
+                                    f"truthtick:latest:{symbol}",
+                                    600,  # 10 min TTL (analysis runs every 60s, so this is safe)
+                                    json.dumps(latest_payload),
+                                )
                             
                 except Exception as e:
                     logger.error(f"❌ [{self.worker_name}] Error processing {symbol}: {e}", exc_info=True)
@@ -428,6 +575,8 @@ class TruthTicksWorker:
             logger.info(f"📌 [{self.worker_name}] Initialized with SHARD: {len(self.assigned_symbols)} symbols assigned")
             # Pre-populate symbols to collect
             self.symbols_to_collect.update(self.assigned_symbols)
+        else:
+            logger.warning(f"⚠️ [{self.worker_name}] No symbols assigned! Will auto-load ALL symbols from static store after initialization.")
             
         self._symbols_lock = threading.Lock()
     

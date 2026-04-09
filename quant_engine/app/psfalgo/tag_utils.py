@@ -19,7 +19,7 @@ def resolve_strategy_tag(
         intended_book: 'LT' (default) or 'MM'. Derived from which engine originating the order.
         
     Returns:
-        StrategyTag enum value (e.g. 'LT_LONG_INCREASE')
+        StrategyTag enum value (e.g. 'LT_LONG_INC')
     """
     # 1. Determine Prefix (LT vs MM) from Intended Book
     book = intended_book.upper()
@@ -38,33 +38,27 @@ def resolve_strategy_tag(
         # Existing position determines Side
         side = "LONG" if current_qty > 0 else "SHORT"
         
-    # 3. Determine Direction (Increase/Decrease)
+    # 3. Determine Direction (INC/DEC)
     # Map input action to simple BUY/SELL
     is_buy = "BUY" in action.upper() or "ADD_LONG" in action.upper() or "REDUCE_SHORT" in action.upper()
     is_sell = "SELL" in action.upper() or "ADD_SHORT" in action.upper() or "REDUCE_LONG" in action.upper()
     # Note: REDUCE_SHORT is a BUY order. REDUCE_LONG is a SELL order.
     
-    direction = "INCREASE"
+    direction = "INC"
     
     if side == "LONG":
         if is_buy:
-             direction = "INCREASE" # Buying more Long
+             direction = "INC"  # Buying more Long
         elif is_sell:
-             direction = "DECREASE" # Selling Long
+             direction = "DEC"  # Selling Long
              
     elif side == "SHORT":
         if is_sell:
-             direction = "INCREASE" # Selling more Short
+             direction = "INC"  # Selling more Short
         elif is_buy:
-             direction = "DECREASE" # Buying back Short (Cover)
+             direction = "DEC"  # Buying back Short (Cover)
              
     # 4. Construct Tag
     tag_str = f"{book}_{side}_{direction}"
     
-    # Validation (Optional)
-    # try:
-    #     return StrategyTag(tag_str).value
-    # except ValueError:
-    #     return tag_str
-        
     return tag_str

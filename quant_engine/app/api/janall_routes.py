@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 from datetime import datetime
 import asyncio
+import time
 
 from app.api.janall_models import BulkOrderRequest, BulkOrderResponse, CancelOrderRequest, GenericResponse
 from app.psfalgo.account_mode import get_account_mode_manager, AccountMode
@@ -10,6 +11,7 @@ from app.psfalgo.ibkr_connector import get_ibkr_connector
 from app.trading.hammer_execution_service import get_hammer_execution_service
 from app.algo.janall_bulk_manager import JanallBulkOrderManager
 from app.psfalgo.execution_ledger import PSFALGOExecutionLedger
+from app.psfalgo.order_manager import get_order_controller
 from app.core.logger import logger
 
 router = APIRouter(prefix="/api/janall", tags=["Janall Order Mechanisms"])
@@ -17,6 +19,18 @@ router = APIRouter(prefix="/api/janall", tags=["Janall Order Mechanisms"])
 # Global references (for IB Native specifically)
 _native_client = None # Holds the IBNativeConnector instance
 _janall_manager = None
+
+# Short-TTL cache for get_orders() to avoid repeated IBKR/Hammer calls when UI polls every 2s
+_orders_response_cache: Dict[str, Tuple[float, Dict[str, Any]]] = {}
+_ORDERS_CACHE_TTL = 3
+
+def _invalidate_orders_cache():
+    """Clear get_orders cache for current mode so next poll returns fresh data after place/cancel."""
+    mode_mgr = get_account_mode_manager()
+    if mode_mgr:
+        mode = mode_mgr.get_mode()
+        if mode and str(mode) in _orders_response_cache:
+            del _orders_response_cache[str(mode)]
 
 def set_janall_dependencies(manager, client):
     global _janall_manager, _native_client
@@ -70,13 +84,9 @@ def get_active_client():
              return _native_client
         
         # Fallback to ib_insync connector if native not available?
-        # User insisted on "Native" logic. But if native failed to connect, we must bail or warn.
         if not _native_client:
              raise HTTPException(status_code=503, detail="IB Native Client not initialized")
         if not _native_client.isConnected():
-             # Try converting to active IBKR_GUN/PED connector?
-             # But those are ib_insync.
-             # Taking user request "ayni mantigi" strictly -> Try to reconnect Native?
              raise HTTPException(status_code=503, detail="IB Native Client not connected. Check logs.")
              
         return _native_client
@@ -108,443 +118,522 @@ async def place_bulk_order(req: BulkOrderRequest):
         )
     except Exception as e:
          raise HTTPException(status_code=500, detail=f"Bulk Execution Failed: {str(e)}")
-    
+    _invalidate_orders_cache()
     return BulkOrderResponse(
         status="completed", 
         message=f"Processed {len(req.tickers)} tickers",
         results=results
     )
 
-@router.post("/cancel-orders", response_model=GenericResponse)
-async def cancel_orders(req: CancelOrderRequest):
-    client = get_active_client()
-    
-    success_count = 0
-    fail_count = 0
-    
-    for oid in req.order_ids:
-        try:
-            if client.cancel_order(oid):
-                success_count += 1
-            else:
-                fail_count += 1
-        except Exception:
-            fail_count += 1
-            
-    return GenericResponse(
-        success=True,
-        message=f"Sent cancel for {success_count} orders. Failed: {fail_count}"
-    )
-
-
-def determine_order_tag(order: Dict[str, Any], position_map: Dict[str, Dict]) -> str:
-    """
-    Determine order tag based on position and order source.
-    
-    Returns one of 8 tags:
-    - LT_LONG_INC, LT_SHORT_INC, LT_LONG_DEC, LT_SHORT_DEC
-    - MM_LONG_INC, MM_SHORT_INC, MM_LONG_DEC, MM_SHORT_DEC
-    
-    Uses position tags (from PositionTagManager) to determine LT vs MM.
-    """
-    symbol = order.get('symbol', '')
-    action = order.get('action', '')  # BUY or SELL
-    source = order.get('source', order.get('order_ref', 'UNKNOWN'))
-    
-    # Find existing position
-    position = position_map.get(symbol)
-    
-    # NEW POSITION (opening)
-    if not position or abs(position.get('qty', 0)) < 0.01:
-        # Check source for LT vs MM
-        source_upper = str(source).upper()
-        
-        if 'MM' in source_upper or 'GREATEST' in source_upper:
-            # MM new position
-            return 'MM_LONG_INC' if action == 'BUY' else 'MM_SHORT_INC'
-        else:
-            # LT new position (JFIN, ADDNEWPOS, etc.)
-            return 'LT_LONG_INC' if action == 'BUY' else 'LT_SHORT_INC'
-    
-    # EXISTING POSITION - use position tag
-    pos_qty = position.get('qty', 0)
-    pos_tag = position.get('tag', 'LT ov long')  # Default to LT if no tag
-    
-    # Determine if LT or MM from position tag
-    is_mm = 'MM' in pos_tag
-    base = 'MM' if is_mm else 'LT'
-    
-    # Determine direction (LONG/SHORT)
-    is_long = pos_qty > 0
-    direction = 'LONG' if is_long else 'SHORT'
-    
-    # Determine INC/DEC
-    if is_long:
-        # LONG position: BUY = increase, SELL = decrease
-        action_type = 'INC' if action == 'BUY' else 'DEC'
-    else:
-        # SHORT position: SELL = increase, BUY = decrease (cover)
-        action_type = 'INC' if action == 'SELL' else 'DEC'
-    
-    return f"{base}_{direction}_{action_type}"
-
-
-@router.get("/orders")
-async def get_orders():
-    """
-    Fetch orders based on active mode.
-    """
-    global _native_client
-    
-    mode_mgr = get_account_mode_manager()
-    if not mode_mgr:
-        return {"open_orders": [], "filled_orders": []}
-
-    mode = mode_mgr.get_mode()
-    
-    logger.info(f"[JANALL_ORDERS_DEBUG] Mode: {mode}, Type: {type(mode)}")
-    logger.info(f"[JANALL_ORDERS_DEBUG] HAMMER_PRO value: {AccountMode.HAMMER_PRO.value}")
-    logger.info(f"[JANALL_ORDERS_DEBUG] Comparison: {mode == AccountMode.HAMMER_PRO.value}")
-    
-    # HAMMER MODE
-    if mode == AccountMode.HAMMER_PRO.value:
-        try:
-            # Lazy import to avoid circular dependency
-            from app.api.trading_routes import get_hammer_services
-            
-            orders_svc, _ = get_hammer_services()
-            if not orders_svc:
-                return {"open_orders": [], "filled_orders": []}
-            
-            # Hammer service .get_open_orders() returns list of dicts
-            open_orders = orders_svc.get_open_orders()
-            # Fills not perfectly tracked in service yet, maybe empty
-            return {
-                "open_orders": open_orders,
-                "filled_orders": [] # Not implemented in HammerService yet
-            }
-        except Exception:
-             return {"open_orders": [], "filled_orders": []}
-
-    # IBKR MODE
-    # IBKR MODE
-    # IBKR MODE
-    # IBKR MODE
-    else:
-        all_orders = {}
-        all_fills = []
-        native_fills = []
-        
-        # logger.info("🔍 [JANALL] Fetching IBKR Orders (Merged Mode)...")
-
-        # 1. Fetch from Native Client (Active Fetch)
-        if _native_client:
-             if not _native_client.isConnected():
-                 logger.warning("[JANALL] IB Native Client disconnected. Attempting reconnect...")
-                 try:
-                     _native_client.connect_client()
-                 except Exception as e:
-                     logger.error(f"[JANALL] Native reconnect failed: {e}")
-
-             if _native_client.isConnected():
-                 try:
-                     native_orders = _native_client.get_open_orders()
-                     logger.info(f"   [NATIVE] Connected. Found {len(native_orders)} orders.")
-                     for o in native_orders:
-                         all_orders[o['order_id']] = o
-                     
-                     # Native fills
-                     native_fills = _native_client.get_todays_filled_orders()
-                 except Exception as e:
-                     logger.error(f"   [NATIVE] Error: {e}")
-             else:
-                 logger.warning("   [NATIVE] Still disconnected after retry.")
-
-        else:
-             # Native client not initialized - try to initialize it now
-             logger.warning("   [NATIVE] Not initialized. Attempting lazy initialization...")
-             try:
-                  from app.ibkr.ib_native_connector import IBNativeConnector
-                  from app.config.settings import settings
-                  
-                  _native_client = IBNativeConnector(host=settings.IBKR_HOST, port=settings.IBKR_PORT, client_id=1)
-                  
-                  if _native_client.connect_client():
-                       logger.info(f"✅ [NATIVE] Lazy connect successful!")
-                       # Now fetch orders
-                       try:
-                            native_orders = _native_client.get_open_orders()
-                            logger.info(f"   [NATIVE] Found {len(native_orders)} orders after lazy connect.")
-                            for o in native_orders:
-                                 all_orders[o['order_id']] = o
-                            native_fills = _native_client.get_todays_filled_orders()
-                       except Exception as e:
-                            logger.error(f"   [NATIVE] Error after lazy connect: {e}")
-                  else:
-                       logger.warning("   [NATIVE] Lazy connect failed.")
-             except Exception as e:
-                  logger.error(f"   [NATIVE] Lazy initialization error: {e}")
-        
-        # 2. Fetch from IBKRConnector (ib_insync) - Cached/Event-driven
-        try:
-             # Determine Account Type from Mode
-             # AccountMode values: HAMMER_PRO, IBKR_GUN, IBKR_PED
-             logger.info(f"[JANALL] Current mode: {mode}")
-             
-             target_account = "IBKR_GUN"
-             if mode == AccountMode.IBKR_PED.value:
-                 target_account = "IBKR_PED"
-             elif mode == AccountMode.IBKR_GUN.value:
-                target_account = "IBKR_GUN"
-             
-             conn = get_ibkr_connector(account_type=target_account)
-             
-             if conn:
-                  if not conn.is_connected():
-                       logger.info(f"[JANALL] {target_account} disconnected. Connecting...")
-                       await conn.connect()
-                  
-                  if conn.is_connected():
-                       # force reqAllOpenOrders to see Client 1 / Manual orders
-                       if hasattr(conn, '_ibkr_client') and conn._ibkr_client:
-                            # ib_insync reqAllOpenOrders requests updates. 
-                            conn._ibkr_client.reqAllOpenOrders()
-                            
-                            # Increase wait time to ensure TWS sends data
-                            await asyncio.sleep(0.5) 
-                            
-                            # Fetch from cache after update
-                            ib_insync_orders = await conn.get_open_orders()
-                            logger.info(f"   [IB_INSYNC] Connected to {target_account}. Found {len(ib_insync_orders)} orders.")
-                            
-                            for o in ib_insync_orders:
-                                # Merge: Native is authority, but assume ib_insync sees same orders plus maybe more
-                                if o['order_id'] not in all_orders:
-                                     all_orders[o['order_id']] = o
-                  else:
-                       logger.warning(f"   [IB_INSYNC] Failed to connect to {target_account}.")
-             else:
-                  logger.warning("   [IB_INSYNC] Connector retrieval failed.")
-        except Exception as e:
-             logger.error(f"   [IB_INSYNC] Error: {e}")
-
-        # Add tags to all orders before returning
-        try:
-            # For now, all positions are LT (as user confirmed)
-            # Fetch current positions to determine tags
-            from app.api.trading_routes import get_positions_snapshot
-            positions = []
-            try:
-                pos_response = await get_positions_snapshot()
-                if isinstance(pos_response, dict) and 'positions' in pos_response:
-                    positions = pos_response['positions']
-            except:
-                pass
-            
-            # Create position lookup
-            position_map = {p['symbol']: p for p in positions}
-            
-            for order in all_orders.values():
-                tag = determine_order_tag(order, position_map)
-                order['tag'] = tag
-                
-        except Exception as e:
-            logger.error(f"   [TAG] Error adding tags: {e}")
-            # Continue without tags
-
-        logger.info(f"   [MERGED] Total Unique Orders: {len(all_orders)}")
-        return {
-            "open_orders": list(all_orders.values()),
-            "filled_orders": native_fills
-        }
-
-
-class CancelOrdersRequest(BaseModel):
-    order_ids: List[int]
-
-
 @router.post("/cancel-orders")
-async def cancel_orders(request: CancelOrdersRequest):
+async def cancel_orders(request: CancelOrderRequest):
     """
-    Cancel selected orders.
+    Cancel selected orders. Uses the same client as order visibility:
+    - HAMMER_PRO → Hammer execution service
+    - IBKR (GUN/PED) → Native first (historically working path), then IB_INSYNC for any remaining.
     """
+    logger.info(f"[CANCEL_DEBUG] Received cancel request for IDs: {request.order_ids}")
     global _native_client
-    
+
     mode_mgr = get_account_mode_manager()
     if not mode_mgr:
         raise HTTPException(status_code=500, detail="Account mode manager not available")
-    
+
     mode = mode_mgr.get_mode()
-    
-    # IBKR orders
     cancelled = []
     failed = []
-    
-    # Try ib_insync connector
+
+    # --- HAMMER MODE: use Hammer service (same as /orders) ---
+    if mode == AccountMode.HAMMER_PRO.value:
+        try:
+            hammer_svc = get_hammer_execution_service()
+            if hammer_svc:
+                # CANCEL ALL: empty order_ids → cancel_all_orders() cancels every open order
+                if not request.order_ids:
+                    logger.info("[CANCEL] HAMMER CANCEL ALL: Empty order_ids → calling cancel_all_orders()")
+                    result = hammer_svc.cancel_all_orders(side=None)
+                    if result.get("success", False):
+                        cancelled = result.get("cancelled", [])
+                        logger.info(f"[CANCEL] HAMMER CANCEL ALL: Cancelled {len(cancelled)} orders")
+                    else:
+                        failed.append({"order_id": "ALL", "error": result.get("message", "Cancel all failed")})
+                        logger.warning(f"[CANCEL] HAMMER CANCEL ALL failed: {result.get('message')}")
+                else:
+                    # CANCEL SELECTED: batch cancel using array (Hammer API supports orderID as array)
+                    # Per Hammer Pro API docs: "orderID": ["id1", "id2", ...] is valid
+                    order_ids_str = [str(oid) for oid in request.order_ids]
+                    logger.info(f"[CANCEL] HAMMER BATCH CANCEL: {len(order_ids_str)} orders: {order_ids_str[:5]}...")
+                    try:
+                        cancel_cmd = {
+                            "cmd": "tradeCommandCancel",
+                            "accountKey": hammer_svc.account_key,
+                            "orderID": order_ids_str  # Array - single API call for all!
+                        }
+                        response = hammer_svc.hammer_client.send_command_and_wait(
+                            cancel_cmd, wait_for_response=True, timeout=5.0
+                        )
+                        if response and isinstance(response, dict) and response.get('success') == 'OK':
+                            cancelled = order_ids_str
+                            logger.info(f"[CANCEL] HAMMER BATCH CANCEL SUCCESS: {len(cancelled)} orders")
+                        else:
+                            error_msg = response.get('result') if isinstance(response, dict) else str(response) if response else "No response"
+                            # Batch failed - try individual as fallback
+                            logger.warning(f"[CANCEL] Batch cancel failed ({error_msg}), trying individual...")
+                            for oid in order_ids_str:
+                                try:
+                                    res = hammer_svc.cancel_order(oid)
+                                    if res.get("success", False):
+                                        cancelled.append(oid)
+                                    else:
+                                        failed.append({"order_id": oid, "error": res.get("message", "Cancel failed")})
+                                except Exception as e2:
+                                    failed.append({"order_id": oid, "error": str(e2)})
+                    except Exception as e:
+                        logger.error(f"[CANCEL] Hammer batch cancel error: {e}")
+                        for oid in order_ids_str:
+                            failed.append({"order_id": oid, "error": str(e)})
+            else:
+                if not request.order_ids:
+                    failed.append({"order_id": "ALL", "error": "Hammer service not available"})
+                else:
+                    for oid in request.order_ids:
+                        failed.append({"order_id": oid, "error": "Hammer service not available"})
+        except Exception as e:
+            logger.error(f"[CANCEL] Hammer path error: {e}")
+            if not request.order_ids:
+                failed.append({"order_id": "ALL", "error": str(e)})
+            else:
+                for oid in request.order_ids:
+                    failed.append({"order_id": oid, "error": str(e)})
+        _invalidate_orders_cache()
+        return {
+            "success": len(cancelled) > 0 or (not failed),
+            "cancelled": cancelled,
+            "failed": failed,
+            "message": f"Cancelled {len(cancelled)} orders" + (f", {len(failed)} failed" if failed else ""),
+        }
+
+    # --- IBKR MODE: use ONLY ib_insync bridge (native path disabled for Python 3.14) ---
+    target_account = "IBKR_GUN"
+    if mode in ["IBKR_PAPER", "IBKR_PED", AccountMode.IBKR_PED.value]:
+        target_account = "IBKR_PED"
+
     try:
-        target_account = "IBKR_GUN"
-        if mode in ["IBKR_PAPER", "IBKR_PED", AccountMode.IBKR_PED.value]:
-            target_account = "IBKR_PED"
-        
-        conn = get_ibkr_connector(account_type=target_account)
-        if conn and conn.is_connected():
-            for order_id in request.order_ids:
-                try:
-                    # Cancel via ib_insync
-                    if hasattr(conn, '_ibkr_client') and conn._ibkr_client:
-                        conn._ibkr_client.cancelOrder(order_id)
-                        cancelled.append(order_id)
-                        logger.info(f"[CANCEL] Cancelled order {order_id}")
-                except Exception as e:
-                    logger.error(f"[CANCEL] Failed to cancel order {order_id}: {e}")
-                    failed.append({"order_id": order_id, "error": str(e)})
+        from app.psfalgo.ibkr_connector import (
+            get_open_orders_isolated_sync,
+            get_open_orders_all_isolated_sync,
+            cancel_orders_isolated_sync,
+            global_cancel_isolated_sync,
+        )
+        loop = asyncio.get_event_loop()
+
+        # CANCEL ALL: empty order_ids → reqGlobalCancel() cancels every open order on the account (any clientId)
+        if not request.order_ids:
+            all_open = await loop.run_in_executor(None, lambda: get_open_orders_all_isolated_sync(target_account))
+            all_ids = [int(o.get("order_id") or o.get("orderId")) for o in (all_open or []) if (o.get("order_id") or o.get("orderId")) is not None]
+            if not all_ids:
+                logger.warning("[CANCEL] No open orders on account - nothing to cancel")
+            else:
+                ok = await loop.run_in_executor(None, lambda: global_cancel_isolated_sync(target_account))
+                if ok:
+                    await asyncio.sleep(1.0)
+                    open_after = await loop.run_in_executor(None, lambda: get_open_orders_all_isolated_sync(target_account))
+                    still_open = set((o.get("order_id") or o.get("orderId") for o in (open_after or []) if (o.get("order_id") or o.get("orderId")) is not None))
+                    for oid in all_ids:
+                        if int(oid) not in still_open:
+                            cancelled.append(int(oid))
+                            logger.info(f"[CANCEL] Cancelled order {oid} via reqGlobalCancel")
+                        else:
+                            failed.append({"order_id": oid, "error": "Still open after reqGlobalCancel"})
+                else:
+                    for oid in all_ids:
+                        failed.append({"order_id": oid, "error": "reqGlobalCancel failed"})
         else:
-            logger.warning(f"[CANCEL] IBKR connector not connected")
+            # CANCEL SELECTED: try cancelOrder() for every selected ID; only our session's orders will actually cancel (IB 10147 for others)
+            requested = [int(x) for x in request.order_ids]
+            if not requested:
+                pass
+            else:
+                await loop.run_in_executor(
+                    None, lambda: cancel_orders_isolated_sync(target_account, requested)
+                )
+                await asyncio.sleep(0.5)
+                open_after = await loop.run_in_executor(None, lambda: get_open_orders_all_isolated_sync(target_account))
+                still_open = set()
+                for o in (open_after or []):
+                    oid = o.get("order_id") or o.get("orderId")
+                    if oid is not None:
+                        still_open.add(int(oid))
+                for oid in requested:
+                    if oid not in still_open:
+                        cancelled.append(oid)
+                        logger.info(f"[CANCEL] Cancelled order {oid} via IB_INSYNC")
+                    else:
+                        failed.append({"order_id": oid, "error": "Başka oturumdan (10147); Tümünü iptal kullanın"})
+        # Update Redis open-orders: remove confirmed cancelled IDs; if any failed (10147/stale), clear key so UI refetches from IB
+        try:
+            from app.core.redis_client import get_redis_client
+            import json
+            r = get_redis_client()
+            if r and hasattr(r, "get") and hasattr(r, "set"):
+                key = f"psfalgo:open_orders:{target_account}"
+                if failed:
+                    # Stale/10147: clear cache so UI shows only what IB has (reqOpenOrders)
+                    try:
+                        r.delete(key)
+                    except Exception:
+                        r.set(key, json.dumps([]), ex=60)
+                    logger.info(f"[CANCEL] Cleared Redis {key} after {len(failed)} failed (stale/10147) so UI refetches from IB")
+                elif cancelled:
+                    raw = r.get(key)
+                    if raw:
+                        s = raw.decode("utf-8") if isinstance(raw, bytes) else raw
+                        parsed = json.loads(s) if isinstance(s, str) else s
+                        # Handle wrapped format vs legacy list
+                        if isinstance(parsed, dict) and 'orders' in parsed:
+                            redis_list = parsed['orders']
+                        elif isinstance(parsed, list):
+                            redis_list = parsed
+                        else:
+                            redis_list = []
+                        if isinstance(redis_list, list):
+                            cancelled_ids = {int(x) for x in cancelled} | {str(x) for x in cancelled}
+                            new_list = [o for o in redis_list if o.get("order_id") not in cancelled_ids]
+                            import time as _time
+                            payload = {'orders': new_list, '_meta': {'updated_at': _time.time()}}
+                            r.set(key, json.dumps(payload), ex=600)
+                            logger.info(f"[CANCEL] Removed {len(cancelled)} order IDs from Redis {key} (now {len(new_list)} open)")
+        except Exception as redis_err:
+            logger.debug(f"[CANCEL] Redis cleanup: {redis_err}")
     except Exception as e:
-        logger.error(f"[CANCEL] Error: {e}")
-        raise HTTPException(status_code=500, detail=f"Cancel failed: {str(e)}")
-    
+        logger.warning(f"[CANCEL] IBKR ib_insync error: {e}", exc_info=True)
+        for oid in request.order_ids:
+            failed.append({"order_id": oid, "error": str(e)})
+
+    _invalidate_orders_cache()
     return {
         "success": len(cancelled) > 0,
         "cancelled": cancelled,
         "failed": failed,
-        "message": f"Cancelled {len(cancelled)} orders" + (f", {len(failed)} failed" if failed else "")
+        "message": f"Cancelled {len(cancelled)} orders" + (f", {len(failed)} failed" if failed else ""),
     }
 
+def determine_order_tag(order: Dict[str, Any], position_map: Dict[str, Dict], account_id: str = None) -> str:
+    """
+    Determine order tag for display with account info.
+    LT_TRIM / KARBOTU / REDUCEMORE → always DECREASE (SELL=long reduce, BUY=short reduce).
+    Placement strategy_tag/order_ref is preferred: if it already contains DEC/INC, use it.
+    Tag Format: {ACCOUNT}_{LT/MM}_{LONG/SHORT}_{INC/DEC}
+    Example: IBKR_PED_LT_LONG_DEC, HAMPRO_MM_SHORT_INC
+    
+    KEY FIX: For DECREASE orders:
+    - SELL action on a LONG position = LT_LONG_DEC (selling to reduce long)
+    - BUY action on a SHORT position = LT_SHORT_DEC (buying to cover short)
+    """
+    symbol = order.get('symbol', '')
+    action = order.get('action', '')
+    qty = abs(order.get('qty', order.get('total_qty', 0)))
+    
+    # Check if order already has a well-formed tag 
+    existing_tag = order.get('tag', '') or order.get('strategy_tag', '')
+    if existing_tag:
+        existing_upper = existing_tag.upper()
+        # If tag already contains full format (e.g. LT_LONG_DEC, MM_SHORT_INC), preserve it
+        if ('_LONG_' in existing_upper or '_SHORT_' in existing_upper) and ('_INC' in existing_upper or '_DEC' in existing_upper):
+            # Just add account prefix if needed
+            if account_id and not existing_upper.startswith(account_id.upper()):
+                return f"{account_id}_{existing_tag}"
+            return existing_tag
+    
+    source = order.get('strategy_tag') or order.get('source') or order.get('order_ref', 'UNKNOWN')
+    source_upper = str(source).upper()
+    
+    position = position_map.get(symbol)
+    current_qty = position.get('qty', 0) if position else 0
+    if action == 'BUY':
+        potential_qty = current_qty + qty
+    else:
+        potential_qty = current_qty - qty
+    
+    # Base: LT vs MM
+    if 'LT_TRIM' in source_upper or 'KARBOTU' in source_upper or 'REDUCEMORE' in source_upper or source_upper.startswith('LT_'):
+        base = 'LT'
+    elif 'MM' in source_upper or 'GREATEST' in source_upper or (position and (position.get('tag') or '').upper().find('MM') >= 0):
+        base = 'MM'
+    else:
+        base = 'LT'
+    
+    # INC vs DEC: Prefer placement tag. LT_TRIM/KARBOTU/REDUCEMORE are always DECREASE.
+    if 'DEC' in source_upper or 'DECREASE' in source_upper or 'TRIM' in source_upper or 'KARBOTU' in source_upper or 'REDUCE' in source_upper:
+        action_type = 'DEC'
+    elif 'INC' in source_upper or 'INCREASE' in source_upper:
+        action_type = 'INC'
+    else:
+        is_increasing = abs(potential_qty) > abs(current_qty)
+        action_type = 'INC' if is_increasing else 'DEC'
+    
+    # Direction: LONG or SHORT  
+    # KEY FIX: For DECREASE orders, the direction is what we're decreasing FROM (existing position)
+    # - SELL on long = LONG_DEC (reducing long position)
+    # - BUY on short = SHORT_DEC (covering short position)
+    # For INCREASE orders, direction is what we're building TO
+    # - BUY = LONG_INC (adding long)
+    # - SELL = SHORT_INC (adding short)
+    if action_type == 'DEC':
+        # DECREASE: Look at current position to determine what we're trimming
+        if abs(current_qty) > 0.01:
+            direction = 'LONG' if current_qty > 0 else 'SHORT'
+        else:
+            # No current position - infer from action: 
+            # SELL = was long, BUY = was short  
+            direction = 'LONG' if action == 'SELL' else 'SHORT'
+    else:
+        # INCREASE: Direction is where we're going
+        if abs(potential_qty) > abs(current_qty) and abs(potential_qty) > 0.01:
+            direction = 'LONG' if potential_qty > 0 else 'SHORT'
+        elif abs(current_qty) > 0.01:
+            direction = 'LONG' if current_qty > 0 else 'SHORT'
+        else:
+            # Building new position
+            direction = 'LONG' if action == 'BUY' else 'SHORT'
+    
+    # Include account_id if provided
+    base_tag = f"{base}_{direction}_{action_type}"
+    if account_id:
+        return f"{account_id}_{base_tag}"
+    return base_tag
 
+@router.get("/orders")
+async def get_orders(mode: str = None):
+    """
+    Fetch orders based on active mode with merged Native + IB_INSYNC sources.
+    Cached 3s per mode to avoid repeated IBKR/Hammer calls when UI polls.
+    
+    Args:
+        mode: Optional mode override from UI (HAMMER_PRO, IBKR_GUN, IBKR_PED)
+              If provided, uses this mode instead of global account mode.
+              This is essential for Dual Process where UI follows bot's current account.
+    """
+    global _native_client
+    mode_mgr = get_account_mode_manager()
+    if not mode_mgr: return {"open_orders": [], "filled_orders": []}
+    
+    # Use provided mode parameter if given, otherwise use global mode manager
+    if mode:
+        mode_upper = mode.upper()
+        if mode_upper == 'HAMMER_PRO':
+            active_mode = AccountMode.HAMMER_PRO.value
+        elif mode_upper == 'IBKR_PED':
+            active_mode = AccountMode.IBKR_PED.value
+        elif mode_upper == 'IBKR_GUN':
+            active_mode = AccountMode.IBKR_GUN.value
+        else:
+            active_mode = mode_mgr.get_mode()
+    else:
+        active_mode = mode_mgr.get_mode()
+    
+    cache_key = str(active_mode) if active_mode else None
+    if cache_key:
+        now = time.time()
+        if cache_key in _orders_response_cache:
+            expiry_ts, cached = _orders_response_cache[cache_key]
+            if now < expiry_ts:
+                return cached
+    # 1. HAMMER MODE
+    if active_mode == AccountMode.HAMMER_PRO.value:
+        try:
+            from app.api.trading_routes import get_hammer_services, get_positions
+            orders_svc, _ = get_hammer_services()
+            if not orders_svc: return {"open_orders": [], "filled_orders": []}
+            
+            # Use get_all_orders() to get BOTH open and filled in single getTransactions call
+            all_data = orders_svc.get_all_orders()
+            open_orders = all_data.get('open_orders', [])
+            filled_orders = all_data.get('filled_orders', [])
+            
+            # Enrich tags: Redis tag written at placement time is already in the order dict,
+            # but for older/untagged orders, infer from positions
+            if open_orders or filled_orders:
+                try:
+                    pos_resp = await get_positions(account_id='HAMPRO')
+                    positions = pos_resp.get('positions', []) if isinstance(pos_resp, dict) else []
+                    position_map = {p['symbol']: p for p in positions}
+                    for o in open_orders:
+                        if not o.get('tag'):
+                            o['tag'] = determine_order_tag(o, position_map, account_id='HAMPRO')
+                    for o in filled_orders:
+                        if not o.get('tag'):
+                            o['tag'] = determine_order_tag(o, position_map, account_id='HAMPRO')
+                except Exception as tag_err:
+                    logger.warning(f"[HAMMER_TAG] Could not enrich tags: {tag_err}")
+            
+            out = {"open_orders": open_orders, "filled_orders": filled_orders}
+            if cache_key:
+                _orders_response_cache[cache_key] = (time.time() + _ORDERS_CACHE_TTL, out)
+            return out
+        except Exception as e:
+            logger.error(f"[HAMMER_ORDERS] Error in Hammer orders block: {e}", exc_info=True)
+            return {"open_orders": [], "filled_orders": []}
+
+    # 2. IBKR MODE (GUN or PED - Both use Port 4001 via Gateway)
+    all_orders = {}
+    native_fills = []
+    target_account = "IBKR_PED" if active_mode == AccountMode.IBKR_PED.value else "IBKR_GUN"
+    
+    # Force Gateway Port 4001 as per user requirement
+    TARGET_PORT = 4001 
+    
+    # A. Native Client - DISABLED: We use IB_INSYNC connector instead
+    # Native client causes connection issues and is not needed when using IB_INSYNC
+    # If you need native client, uncomment and fix the connection logic
+    # For now, we rely solely on IB_INSYNC connector (get_open_orders_isolated_sync)
+
+    # B. IB_INSYNC – fetch ALL open orders (reqAllOpenOrders) so UI shows every order on account; cancel uses reqOpenOrders (our session only)
+    try:
+        import asyncio
+        import json
+        from app.psfalgo.ibkr_connector import get_open_orders_all_isolated_sync, get_filled_orders_isolated_sync, get_ibkr_connector
+        loop = asyncio.get_event_loop()
+        ib_orders = await loop.run_in_executor(None, lambda: get_open_orders_all_isolated_sync(target_account))
+        
+        # Pre-check IBKR connection before calling filled orders (avoid 18s timeout when disconnected)
+        ibkr_conn = get_ibkr_connector(account_type=target_account, create_if_missing=False)
+        ibkr_connected = ibkr_conn and ibkr_conn.connected if ibkr_conn else False
+        
+        ib_fills = []
+        if ibkr_connected:
+            ib_fills = await loop.run_in_executor(None, lambda: get_filled_orders_isolated_sync(target_account)) or []
+        
+        for o in (ib_orders or []):
+            if o.get('order_id') and o['order_id'] not in all_orders:
+                all_orders[o['order_id']] = o
+        # Merge open orders from Redis (orders pushed after place_order show up before next IBKR fetch)
+        try:
+            from app.core.redis_client import get_redis_client
+            r = get_redis_client()
+            if r and hasattr(r, 'get'):
+                orders_key = f"psfalgo:open_orders:{target_account}"
+                raw = r.get(orders_key)
+                if raw:
+                    s = raw.decode('utf-8') if isinstance(raw, bytes) else raw
+                    redis_orders = json.loads(s) if isinstance(s, str) else s
+                    # Handle wrapped format vs legacy list
+                    if isinstance(redis_orders, dict) and 'orders' in redis_orders:
+                        redis_orders = redis_orders['orders']
+                    if isinstance(redis_orders, list):
+                        for o in redis_orders:
+                            oid = o.get('order_id')
+                            if oid is not None and oid not in all_orders:
+                                all_orders[oid] = o
+        except Exception as _:
+            pass
+        for f in (ib_fills or []):
+            if not any(nf.get('order_id') == f.get('order_id') for nf in native_fills):
+                native_fills.append(f)
+        
+        # FALLBACK: If IBKR returned 0 fills, try CSV-based DailyFillsStore
+        if not native_fills:
+            try:
+                from app.trading.daily_fills_store import get_daily_fills_store
+                csv_fills = get_daily_fills_store().get_all_fills(target_account)
+                if csv_fills:
+                    native_fills.extend(csv_fills)
+                    logger.info(f"[FILLS_FALLBACK] Loaded {len(csv_fills)} fills from CSV (IBKR returned 0)")
+            except Exception as csv_err:
+                logger.debug(f"[FILLS_FALLBACK] CSV fallback failed: {csv_err}")
+    except Exception as e:
+        logger.error(f"[IB_INSYNC] Error: {e}")
+        # Even on total IBKR failure, try CSV fallback
+        try:
+            from app.trading.daily_fills_store import get_daily_fills_store
+            csv_fills = get_daily_fills_store().get_all_fills(target_account)
+            if csv_fills:
+                native_fills.extend(csv_fills)
+                logger.info(f"[FILLS_FALLBACK] Loaded {len(csv_fills)} fills from CSV (IBKR error)")
+        except Exception:
+            pass
+
+    # C. Enrich & Tag (pozisyonlar açık hesaba göre; get_positions(account_id=...) ile Pozisyonlar ekranı ile aynı kaynak)
+    try:
+        from app.api.trading_routes import get_positions
+        pos_resp = await get_positions(account_id=target_account)
+        positions = pos_resp.get('positions', []) if isinstance(pos_resp, dict) else []
+        position_map = {p['symbol']: p for p in positions}
+        
+        controller = get_order_controller()
+        if controller:
+            active_orders = controller.get_active_orders(account_id=target_account)
+            internal_map = {o.broker_order_id: o for o in active_orders if o.broker_order_id}
+            
+            for o in all_orders.values():
+                match = internal_map.get(str(o.get('order_id')))
+                if match:
+                    if not o.get('timestamp'): o['timestamp'] = match.created_at.timestamp()
+                    if not o.get('price'): o['price'] = match.price
+                    o['internal_tracked'] = True
+                    o['parent_intent_id'] = match.parent_intent_id
+
+        _our_client_id = 12 if target_account == 'IBKR_PED' else 11
+        for o in all_orders.values():
+            o['tag'] = determine_order_tag(o, position_map, account_id=target_account)
+            if 'filled_qty' not in o: o['filled_qty'] = o.get('filled', 0)
+            if 'remaining_qty' not in o: o['remaining_qty'] = o.get('remaining', o.get('qty', 0))
+            if 'price' not in o or not o['price']: o['price'] = o.get('limit_price', 0.0)
+            cid = o.get('client_id')
+            o['cancelable_by_this_session'] = (cid is not None and int(cid) == _our_client_id)
+            o['client_id_label'] = f"clientId {cid}" if cid is not None else "clientId ?"
+
+        for o in native_fills:
+            o['tag'] = determine_order_tag(o, position_map)
+            if 'filled_qty' not in o: o['filled_qty'] = o.get('qty', 0)
+            o['remaining_qty'] = 0
+
+    except Exception as e: logger.error(f"[TAG] Error adding tags: {e}")
+
+    out = {"open_orders": list(all_orders.values()), "filled_orders": native_fills}
+    if cache_key:
+        _orders_response_cache[cache_key] = (time.time() + _ORDERS_CACHE_TTL, out)
+    return out
 
 @router.get("/orders/pending")
 async def get_pending_orders():
-    """
-    Get pending orders (remaining > 0).
-    
-    Returns orders with partial or no fills.
-    Format: {filled}/{total} @ avg_fill_price
-    """
+    """Get pending orders (remaining > 0)."""
     try:
-        # Get all orders from main endpoint
-        all_orders_response = await get_orders()
-        open_orders = all_orders_response.get('open_orders', [])
-        
-        # Get positions for tag determination
-        from app.psfalgo.position_snapshot_api import get_position_snapshot_api
-        pos_api = get_position_snapshot_api()
-        
-        mode_mgr = get_account_mode_manager()
-        account_id = mode_mgr.current_mode.value if mode_mgr else 'HAMPRO'
-        
-        snapshot = await pos_api.get_position_snapshot(account_id=account_id)
-        positions = snapshot.get('positions', [])
-        position_map = {p['symbol']: p for p in positions}
-        
-        # Filter and format pending orders
+        resp = await get_orders()
+        open_orders = resp.get('open_orders', [])
         pending = []
-        for order in open_orders:
-            remaining = order.get('remaining', order.get('qty', 0))
-            
-            # Only include if there's remaining quantity
+        for o in open_orders:
+            remaining = o.get('remaining_qty', o.get('remaining', o.get('qty', 0)))
             if remaining > 0:
-                filled = order.get('filled', 0)
-                total = filled + remaining
-                
-                # Determine tag
-                tag = determine_order_tag(order, position_map)
-                
-                pending.append({
-                    'symbol': order.get('symbol'),
-                    'side': order.get('action'),  # BUY/SELL
-                    'total_qty': total,
-                    'filled_qty': filled,
-                    'remaining_qty': remaining,
-                    'avg_fill_price': order.get('avg_fill_price', 0.0),
-                    'limit_price': order.get('price', 0.0),
-                    'tag': tag,
-                    'time': order.get('time', ''),
-                    'order_id': order.get('order_id'),
-                    'status': order.get('status', 'PENDING')
-                })
-        
-        logger.info(f"[Pending Orders] Returning {len(pending)} pending orders")
-        
-        return {
-            'success': True,
-            'orders': pending
-        }
-        
+                o['total_qty'] = o.get('filled_qty', 0) + remaining
+                # Add human readable time if missing
+                if not o.get('time') and o.get('timestamp'):
+                    o['time'] = datetime.fromtimestamp(o['timestamp']).strftime('%H:%M:%S')
+                pending.append(o)
+        return {'success': True, 'orders': pending}
     except Exception as e:
         logger.error(f"[Pending Orders] Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/orders/filled")
 async def get_filled_orders():
-    """
-    Get filled orders (remaining == 0) from today.
-    
-    Returns completed orders with fill details.
-    """
+    """Get filled orders (today)."""
     try:
-        # Get all orders
-        all_orders_response = await get_orders()
-        open_orders = all_orders_response.get('open_orders', [])
-        filled_orders_raw = all_orders_response.get('filled_orders', [])
-        
-        # Get positions for tag determination
-        from app.psfalgo.position_snapshot_api import get_position_snapshot_api
-        pos_api = get_position_snapshot_api()
-        
-        mode_mgr = get_account_mode_manager()
-        account_id = mode_mgr.current_mode.value if mode_mgr else 'HAMPRO'
-        
-        snapshot = await pos_api.get_position_snapshot(account_id=account_id)
-        positions = snapshot.get('positions', [])
-        position_map = {p['symbol']: p for p in positions}
-        
-        # Collect filled orders
+        resp = await get_orders()
+        open_orders = resp.get('open_orders', [])
+        filled_raw = resp.get('filled_orders', [])
         filled = []
-        
-        # 1. From open_orders that are fully filled
-        for order in open_orders:
-            remaining = order.get('remaining', 1)  # Default to 1 if not specified
-            filled_qty = order.get('filled', 0)
-            
-            if remaining == 0 and filled_qty > 0:
-                tag = determine_order_tag(order, position_map)
-                
-                filled.append({
-                    'symbol': order.get('symbol'),
-                    'side': order.get('action'),
-                    'qty': filled_qty,
-                    'fill_price': order.get('avg_fill_price', order.get('price', 0.0)),
-                    'tag': tag,
-                    'time': order.get('time', ''),
-                    'order_id': order.get('order_id')
-                })
-        
-        # 2. From filled_orders list (if available)
-        for order in filled_orders_raw:
-            tag = determine_order_tag(order, position_map)
-            
-            filled.append({
-                'symbol': order.get('symbol'),
-                'side': order.get('action'),
-                'qty': order.get('qty', order.get('filled', 0)),
-                'fill_price': order.get('fill_price', order.get('avg_fill_price', 0.0)),
-                'tag': tag,
-                'time': order.get('time', ''),
-                'order_id': order.get('order_id')
-            })
-        
-        # Sort by time (most recent first)
-        filled.sort(key=lambda x: x.get('time', ''), reverse=True)
-        
-        logger.info(f"[Filled Orders] Returning {len(filled)} filled orders")
-        
-        return {
-            'success': True,
-            'orders': filled
-        }
-        
+        for o in open_orders:
+            if o.get('remaining_qty', 1) == 0 and o.get('filled_qty', 0) > 0:
+                if not o.get('time') and o.get('timestamp'):
+                    o['time'] = datetime.fromtimestamp(o['timestamp']).strftime('%H:%M:%S')
+                filled.append(o)
+        for o in filled_raw:
+            if not o.get('time') and o.get('timestamp'):
+                o['time'] = datetime.fromtimestamp(o['timestamp']).strftime('%H:%M:%S')
+            filled.append(o)
+        filled.sort(key=lambda x: x.get('timestamp', 0), reverse=True)
+        return {'success': True, 'orders': filled}
     except Exception as e:
         logger.error(f"[Filled Orders] Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

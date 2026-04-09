@@ -163,7 +163,7 @@ class ShadowLiveRunner:
         # Initialize RUNALL engine (dry_run=True, ALWAYS)
         if not self.runall_engine:
             self.runall_engine = initialize_runall_engine(config={
-                'cycle_interval_seconds': 60,  # 1 minute cycles
+                'cycle_interval_seconds': 65,  # 65 sn: tekil ve en guncel emirler icin
                 'dry_run_mode': True  # ZERO RISK: Always dry_run
             })
             

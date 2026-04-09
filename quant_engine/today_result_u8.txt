@@ -1,0 +1,71 @@
+﻿==========================================================================================
+  BUGUNUN TRADE PLANI - 2026-02-16 (Pazartesi)
+==========================================================================================
+
+  BUGUN ENTRY PENCERESI ACIK - TOP 5 LONG
+  -------------------------------------------------------------------------------------
+   # Ticker         Strateji              ExDiv  Ent  Ext   Ret%   Win   Shrp   pVal   n   Yld  Score
+  -------------------------------------------------------------------------------------
+   1 TRTN PRD       OPTIMAL_LONG     2026-03-06 d-20 d +0 +3.45% 100%  +3.9 0.000  15  7.3%   5.6
+   2 FLG PRA        OPTIMAL_LONG     2026-03-06 d-18 d+12 +5.76%  91%  +1.8 0.002  15  7.4%   5.2
+   3 KEY PRK        OPTIMAL_LONG     2026-02-27 d-12 d +1 +3.47%  83%  +1.7 0.004  15  6.3%   4.2
+   4 OCCIM          QUICK_FLIP       2026-02-20 d -3 d +3 +0.73% 100%  +2.1 0.018   5  2.6%   4.1
+   5 CIM PRB        OPTIMAL_LONG     2026-03-02 d-15 d +2 +3.55%  83%  +1.2 0.032  15 11.0%   4.1
+
+  BUGUN ENTRY PENCERESI ACIK - TOP 5 SHORT
+  -------------------------------------------------------------------------------------
+   1 MHNC           ExDiv=2026-02-14 ret=+2.54%  shrp= +1.8  yld=10.8%  score=  2.2
+   2 BML PRJ        ExDiv=2026-02-15 ret=+2.37%  shrp= +1.3  yld= 6.1%  score=  1.8
+   3 CNO PRA        ExDiv=2026-02-15 ret=+1.70%  shrp= +1.2  yld= 6.6%  score=  1.4
+   4 DUK PRA        ExDiv=2026-02-15 ret=+1.21%  shrp= +1.5  yld= 5.8%  score=  1.3
+   5 DTG            ExDiv=2026-02-15 ret=+1.62%  shrp= +1.0  yld= 5.7%  score=  1.3
+
+  HOLDING - Zaten Pozisyon Acik Olmasi Gereken (entry gecmis, exit gelecek)
+  -------------------------------------------------------------------------------------
+   1 ECCU           OPTIMAL_LONG     ExDiv=2026-02-12  13d once girilmeli | exit 14d sonra  ret=+1.78%  shrp= +5.1
+   2 RWTP           OPTIMAL_LONG     ExDiv=2026-02-15  18d once girilmeli | exit 3d sonra  ret=+2.34%  shrp= +4.2
+   3 PBI PRB        OPTIMAL_LONG     ExDiv=2026-02-21  10d once girilmeli | exit 5d sonra  ret=+6.21%  shrp= +2.5
+   4 NEE PRN        OPTIMAL_LONG     ExDiv=2026-02-27  3d once girilmeli | exit 11d sonra  ret=+2.10%  shrp= +3.2
+   5 MFA PRC        OPTIMAL_LONG     ExDiv=2026-03-02  4d once girilmeli | exit 14d sonra  ret=+3.50%  shrp= +2.8
+   6 MITT PRC       OPTIMAL_LONG     ExDiv=2026-02-28  8d once girilmeli | exit 14d sonra  ret=+4.12%  shrp= +1.4
+   7 PDPA           QUICK_FLIP       ExDiv=2026-02-16  3d once girilmeli | exit 3d sonra  ret=+1.17%  shrp= +3.2
+   8 SPMA           DIV_HOLD         ExDiv=2026-02-15  3d once girilmeli | exit 1d sonra  ret=+0.59%  shrp= +3.5
+   9 SIGIP          OPTIMAL_LONG     ExDiv=2026-02-27  7d once girilmeli | exit 11d sonra  ret=+2.85%  shrp= +2.5
+  10 RWAYZ          DIV_HOLD         ExDiv=2026-02-15  3d once girilmeli | exit 1d sonra  ret=+0.65%  shrp= +3.3
+
+  BU HAFTA YAKLASAN LONG FIRSATLARI (7 gun icerisinde entry)
+  -------------------------------------------------------------------------------------
+   # Ticker         Strateji              ExDiv    Entry  Ent   Ret%   Win   Shrp  Score
+  -------------------------------------------------------------------------------------
+   1 ECCC           OPTIMAL_LONG     2026-03-11    02/19  +3d +1.61%  82%  +1.7   3.6
+   2 DTG            OPTIMAL_LONG     2026-02-15    02/20  +4d +1.70%  75%  +1.0   3.2
+   3 CUBB           OPTIMAL_LONG     2026-03-13    02/21  +5d +3.75% 100%  +3.1   5.4
+   4 DLR PRK        OPTIMAL_LONG     2026-03-13    02/21  +5d +2.73%  91%  +2.4   4.5
+   5 CHSCM          OPTIMAL_LONG     2026-03-13    02/21  +5d +2.09%  82%  +2.1   3.9
+   6 BML PRJ        OPTIMAL_LONG     2026-02-15    02/21  +5d +3.46%  75%  +1.3   3.8
+   7 ATH PRD        OPTIMAL_LONG     2026-03-13    02/21  +5d +2.23%  80%  +1.8   3.8
+   8 MFICL          CAPTURE_HOLD     2026-02-27    02/22  +6d +2.00% 100%  +7.2   6.5
+   9 ECCX           OPTIMAL_LONG     2026-03-12    02/22  +6d +3.33% 100%  +3.3   5.3
+  10 MFA PRB        CAPTURE_HOLD     2026-02-27    02/22  +6d +2.49% 100%  +3.7   5.2
+
+  YAKLASAN SHORT FIRSATLARI (14 gun icerisinde exdiv)
+  -------------------------------------------------------------------------------------
+   1 BANC PRF       ExDiv=2026-02-19   +3d  ret=+0.96%  shrp= +1.2  score=  1.1
+   2 PBI PRB        ExDiv=2026-02-21   +5d  ret=+1.42%  shrp= +0.6  score=  1.0
+   3 WFC PRC        ExDiv=2026-02-27  +11d  ret=+2.36%  shrp= +2.5  score=  2.5
+   4 RF PRE         ExDiv=2026-02-27  +11d  ret=+2.98%  shrp= +1.7  score=  2.3
+   5 KEY PRK        ExDiv=2026-02-27  +11d  ret=+2.54%  shrp= +2.0  score=  2.3
+   6 EFSCP          ExDiv=2026-02-27  +11d  ret=+3.20%  shrp= +1.3  score=  2.2
+   7 CFR PRB        ExDiv=2026-02-27  +11d  ret=+2.78%  shrp= +1.6  score=  2.2
+   8 KEY PRJ        ExDiv=2026-02-27  +11d  ret=+2.77%  shrp= +1.6  score=  2.2
+   9 MET PRF        ExDiv=2026-02-27  +11d  ret=+2.31%  shrp= +1.7  score=  2.0
+  10 KREF PRA       ExDiv=2026-02-27  +11d  ret=+2.42%  shrp= +1.4  score=  1.9
+
+==========================================================================================
+  OZET
+  Toplam hisse: 418
+  Long aday: 415 | Short aday: 237
+  Bugun entry acik: 13 long, 23 short
+  Holding: 28 long
+  Bu hafta yaklasan: 45 long, 45 short
+==========================================================================================

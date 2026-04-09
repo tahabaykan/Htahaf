@@ -1,0 +1,19 @@
+Symbol,Group,Round_Lots_Count,Execution_Mode,Profit_Target,Strategy_Desc,Trend_Status,Mid_Point_Action,Gem_Davg,Size_Adjustment,Group_Vol_Alert,Avg_Inter_Arrival_Sec,Persistence_Risk_Score,OFI_Score,Optimal_Spread,PM_Transition_Plan,ADV
+AGNCL,heldnff,39,NORMAL,0.10,Balanced approach. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.033,NEUTRAL,True,3415.0,0.95,-0.57,0.08,STRICT_3H_EXIT,12250.0
+ATH PRA,heldnff,75,SHADOW,0.05,"Front-run inside spread, fast churn. | GROUP VOL ALERT (Spread Widened)",RANGE,NONE,-0.063,NEUTRAL,True,2226.0,0.62,0.1,0.08,NORMAL,33355.0
+BANC PRF,heldnff,115,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | DETECTED MID-POINT ACTION -> FRONT RUN EXIT! | GROUP VOL ALERT (Spread Widened),RANGE,FRONT_RUN_EXIT,0.077,NEUTRAL,True,1246.0,0.35,-0.39,0.3,NORMAL,30518.0
+CNOBP,heldnff,10,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | DETECTED MID-POINT ACTION -> FRONT RUN EXIT! | GROUP VOL ALERT (Spread Widened),RANGE,FRONT_RUN_EXIT,-0.055,NEUTRAL,True,13280.0,1.0,0.48,0.3,STRICT_3H_EXIT,4530.0
+EFC PRB,heldnff,21,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,0.007,NEUTRAL,True,9241.0,1.0,0.33,0.3,STRICT_3H_EXIT,5117.0
+EFC PRC,heldnff,26,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.143,NEUTRAL,True,4296.0,1.0,-0.04,0.3,STRICT_3H_EXIT,1384.0
+FLG PRA,heldnff,186,SHADOW,0.05,"Front-run inside spread, fast churn. | GROUP VOL ALERT (Spread Widened)",RANGE,NONE,0.078,NEUTRAL,True,960.0,0.27,0.48,0.08,NORMAL,30495.0
+KMPB,heldnff,75,NORMAL,0.10,Balanced approach. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.063,NEUTRAL,True,2330.0,0.65,-0.04,0.08,NORMAL,12333.0
+KEY PRL,heldnff,159,NORMAL,0.10,Balanced approach. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.03,NEUTRAL,True,1104.0,0.31,-0.39,0.08,NORMAL,26201.0
+KEY PRI,heldnff,64,SHADOW,0.05,"Front-run inside spread, fast churn. | GROUP VOL ALERT (Spread Widened)",RANGE,NONE,-0.028,NEUTRAL,True,2864.0,0.8,0.25,0.08,STRICT_3H_EXIT,36478.0
+MTB PRH,heldnff,39,PREDATOR,0.20-0.25,Sit and wait for fat tail. Do not front-run for cents. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.027,NEUTRAL,True,3632.0,1.0,0.97,0.3,STRICT_3H_EXIT,21080.0
+RF PRC,heldnff,274,NORMAL,0.10,Balanced approach. | DETECTED MID-POINT ACTION -> FRONT RUN EXIT! | GROUP VOL ALERT (Spread Widened),RANGE,FRONT_RUN_EXIT,0.156,ASYM_SELL_HEAVY (Bid 100 / Ask 300),True,705.0,0.2,0.2,0.08,NORMAL,24562.0
+RZB,heldnff,101,SHADOW,0.05,"Front-run inside spread, fast churn. | GROUP VOL ALERT (Spread Widened)",RANGE,NONE,-0.067,NEUTRAL,True,1580.0,0.44,-0.19,0.08,NORMAL,54090.0
+RITM PRD,heldnff,69,NORMAL,0.10,Balanced approach. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.063,NEUTRAL,True,2127.0,0.59,-0.01,0.08,NORMAL,35152.0
+TWO PRA,heldnff,211,NORMAL,0.10,Balanced approach. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,0.203,ASYM_SELL_HEAVY (Bid 100 / Ask 300),True,647.0,0.18,-0.04,0.08,NORMAL,26785.0
+TWO PRB,heldnff,85,NORMAL,0.10,Balanced approach. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,0.048,NEUTRAL,True,1774.0,0.49,0.03,0.08,NORMAL,22891.0
+VOYA PRB,heldnff,71,NORMAL,0.10,Balanced approach. | GROUP VOL ALERT (Spread Widened),RANGE,NONE,-0.072,NEUTRAL,True,2406.0,0.67,0.03,0.08,NORMAL,18984.0
+WAL PRA,heldnff,84,SHADOW,0.05,"Front-run inside spread, fast churn. | GROUP VOL ALERT (Spread Widened)",RANGE,NONE,-0.066,NEUTRAL,True,1665.0,0.46,0.1,0.08,NORMAL,38391.0

@@ -121,3 +121,37 @@
   margin-left: 3px;
   opacity: 0.6;
 }
+
+/* Sortable column headers */
+.orders-table th[style*="cursor: pointer"]:hover {
+  background: #e9ecef;
+  color: #2563eb !important;
+}
+
+.orders-table th[style*="cursor: pointer"]:active {
+  background: #dee2e6;
+}
+
+/* Selected row highlight */
+.orders-table tr.selected-row {
+  background-color: #dbeafe !important;
+}
+
+.orders-table tr.selected-row:hover {
+  background-color: #bfdbfe !important;
+}
+
+/* Pagination controls */
+.pagination-controls {
+  background: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 0 0 8px 8px;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+  background: #1d4ed8 !important;
+}
+
+.pagination-controls select:hover {
+  border-color: #2563eb;
+}

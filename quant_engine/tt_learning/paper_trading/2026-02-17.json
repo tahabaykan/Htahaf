@@ -1,0 +1,102 @@
+{
+  "date": "2026-02-17",
+  "summary": {
+    "daily_pnl": 124.0,
+    "daily_gross": 130.0,
+    "daily_fees": 6.0,
+    "roundtrips": 1,
+    "open_positions": 2,
+    "open_orders": 0,
+    "scans": 2
+  },
+  "fills": [
+    {
+      "symbol": "SCHW PRD",
+      "side": "buy",
+      "price": 25.09,
+      "qty": 900,
+      "time": "2026-02-17T01:21:36.449485"
+    },
+    {
+      "symbol": "JPM PRD",
+      "side": "sell",
+      "price": 24.94,
+      "qty": 1000,
+      "time": "2026-02-17T01:21:36.449821"
+    },
+    {
+      "symbol": "MBINN",
+      "side": "sell",
+      "price": 20.2,
+      "qty": 1000,
+      "time": "2026-02-17T01:21:36.450186"
+    },
+    {
+      "symbol": "MBINN",
+      "side": "buy",
+      "price": 20.07,
+      "qty": 1000,
+      "time": "2026-02-17T01:21:36.450194"
+    }
+  ],
+  "closed_trades": [
+    {
+      "symbol": "MBINN",
+      "entry_price": 20.2,
+      "exit_price": 20.07,
+      "qty": 1000,
+      "pnl": 124.0,
+      "gross_pnl": 130.0,
+      "fees": 6.0,
+      "hold_time": 0,
+      "time": "2026-02-17T01:21:36.450206"
+    }
+  ],
+  "snapshots": [
+    {
+      "scan": 1,
+      "time": "2026-02-17T01:21:31.446600",
+      "et_time": "17:21:31",
+      "summary": {
+        "daily_pnl": 0.0,
+        "daily_gross": 0.0,
+        "daily_fees": 0.0,
+        "roundtrips": 0,
+        "open_positions": 0,
+        "open_orders": 10,
+        "scans": 1
+      },
+      "opportunities": 26,
+      "placed": 5,
+      "market_state_count": 95
+    },
+    {
+      "scan": 2,
+      "time": "2026-02-17T01:21:36.454599",
+      "et_time": "17:21:36",
+      "summary": {
+        "daily_pnl": 124.0,
+        "daily_gross": 130.0,
+        "daily_fees": 6.0,
+        "roundtrips": 1,
+        "open_positions": 2,
+        "open_orders": 16,
+        "scans": 2
+      },
+      "opportunities": 19,
+      "placed": 5,
+      "market_state_count": 95
+    }
+  ],
+  "observations": [],
+  "config": {
+    "exposure_total": 500000,
+    "exposure_per_stock": 25000,
+    "lot_pct_adv": 0.1,
+    "min_capture": 0.05,
+    "spread_entry_pct": 0.15,
+    "scan_interval": 300,
+    "active_symbols": 30,
+    "monitor_symbols": 65
+  }
+}

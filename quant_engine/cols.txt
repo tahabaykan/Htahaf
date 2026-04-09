@@ -1,0 +1,97 @@
+PREF IBKR
+CMON
+EX-DIV DATE
+CALL DATE
+MATUR DATE
+DIV AMOUNT
+COUPON
+Aug2022_Price
+Oct19_Price
+CGRUP
+QDI
+Type
+Sector
+IG
+CRDT_RTNG
+CRDT_SCORE
+Last Price
+Oct19_diff
+Aug2022_diff
+SMA20
+SMA63
+SMA246
+SMA20 chg
+SMA63 chg
+SMA246 chg
+3M Low
+3M High
+6M Low
+6M High
+1Y Low
+1Y High
+TIME TO DIV
+Div adj.price
+Aug4_chg
+Oct19_chg
+SMA20_chg_norm
+SMA63_chg_norm
+SMA246_chg_norm
+Aug4_chg_norm
+Oct19_chg_norm
+1Y_High_diff
+1Y_Low_diff
+1Y_High_diff_norm
+1Y_Low_diff_norm
+2Y Cally
+5Y Cally
+7Y Cally
+10Y Cally
+15Y Cally
+20Y Cally
+30Y Cally
+NCOMP Count
+Normal Treasury Bench
+Adj Treasury Bench
+Adj Risk Premium
+ADV_6M
+ADV_3M
+ADV_15D
+AVG_ADV
+SOLIDITY_SCORE_NORM
+CUR_YIELD
+EXP_ANN_RETURN
+SMA63 chg_raw
+SMA246 chg_raw
+GORT
+EXP_ANN_RETURN_NORM
+GORT_NORM
+CUR_YIELD_LIMITED
+Final Adj Risk Premium
+SOLCALL_SCORE
+SOLCALL_SCORE_NORM
+CREDIT_SCORE_NORM
+EX_FINAL_THG
+FINAL_THG
+SOLIDITY_WEIGHT_USED
+YIELD_WEIGHT_USED
+ADV_WEIGHT_USED
+SOLCALL_SCORE_WEIGHT_USED
+CREDIT_SCORE_NORM_WEIGHT_USED
+ADJ_RISK_PREMIUM_WEIGHT_USED
+SMA20_WEIGHT_USED
+SMI
+SHORT_FINAL
+prev_close
+YTC
+YTC_NORM
+6M_Low_diff
+6M_High_diff
+3M_Low_diff
+3M_High_diff
+6M_Low_diff_norm
+6M_High_diff_norm
+3M_Low_diff_norm
+3M_High_diff_norm
+CRDT SCORE_
+YTM
+YTM_NORM

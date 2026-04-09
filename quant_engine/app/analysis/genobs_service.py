@@ -175,9 +175,17 @@ class GenobsService:
                         # If Truth Price is needed, we look at path_dataset[-1] if exists
                         
                         path_dataset = d.get('path_dataset', [])
-                        valid_ticks = [t for t in path_dataset if t.get('size', 0) in [100, 200]]
+                        
+                        # Use Central Truth Engine for validation
+                        from app.market_data.truth_ticks_engine import get_truth_ticks_engine
+                        truth_engine = get_truth_ticks_engine()
+                        
+                        # Filter ticks based on central "Binary Venue Rule"
+                        valid_ticks = [t for t in path_dataset if truth_engine.is_truth_tick(t)]
+                        
                         if valid_ticks:
-                            last_tick = valid_ticks[-1] 
+                            # Ticks in path_dataset are usually sorted by time, but let's be safe
+                            last_tick = sorted(valid_ticks, key=lambda x: x.get('timestamp', 0))[-1]
                             truth_price = last_tick.get('price')
                             truth_ts = last_tick.get('timestamp')
 

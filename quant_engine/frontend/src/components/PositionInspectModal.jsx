@@ -53,10 +53,18 @@ const PositionInspectModal = ({ isOpen, onClose, position }) => {
                 <div className="inspect-body">
                     <div className="inspect-overview">
                         <div className="overview-item">
-                            <span className="overview-label">Total Quantity</span>
+                            <span className="overview-label">Befday Qty</span>
+                            <span className="overview-value">{fmtQty(position.befday_qty)}</span>
+                        </div>
+                        <div className="overview-item">
+                            <span className="overview-label">Current Qty</span>
                             <span className={`overview-value ${position.qty >= 0 ? 'qty-positive' : 'qty-negative'}`}>
                                 {fmtQty(position.qty)}
                             </span>
+                        </div>
+                        <div className="overview-item">
+                            <span className="overview-label">Potential Qty</span>
+                            <span className="overview-value">{fmtQty(position.potential_qty)}</span>
                         </div>
                         <div className="overview-item">
                             <span className="overview-label">Unrealized P&L</span>

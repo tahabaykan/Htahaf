@@ -1,0 +1,155 @@
+﻿15:48:33 | INFO     | ================================================================================
+python : --- Logging error in Loguru Handler #1 ---
+At line:1 char:1
++ python test_integration_flow.py --account IBKR_PED 2>&1 | Out-File 
+-F ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (--- Logging err... Hand 
+   ler #1 ---:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Record was: {'elapsed': datetime.timedelta(microseconds=12972), 'exce
+ption': None, 'extra': {}, 'file': (name='test_integration_flow.py', 
+path='C:\\StockTracker\\quant_engine\\test_integration_flow.py'), 'fu
+nction': 'run_all_tests', 'level': (name='INFO', no=20, icon='\u2139\
+ufe0f'), 'line': 138, 'message': '\U0001f9ea PSFALGO INTEGRATION TEST
+ SUITE', 'module': 'test_integration_flow', 'name': '__main__', 'proc
+ess': (id=52888, name='MainProcess'), 'thread': (id=30008, name='Main
+Thread'), 'time': datetime(2026, 2, 2, 15, 48, 33, 412302, tzinfo=dat
+etime.timezone(datetime.timedelta(seconds=10800), 'T³rkiye Standart S
+aati'))}
+Traceback (most recent call last):
+  File "C:\Users\User\AppData\Roaming\Python\Python314\site-packages\
+loguru\_handler.py", line 206, in emit
+    self._sink.write(str_record)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\User\AppData\Roaming\Python\Python314\site-packages\
+loguru\_simple_sinks.py", line 16, in write
+    self._stream.write(message)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1254.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f9e
+a' in position 22: character maps to <undefined>
+--- End of logging error ---
+15:48:33 | INFO     |    Account: IBKR_PED
+15:48:33 | INFO     |    Time: 2026-02-02T15:48:33.416445
+15:48:33 | INFO     | ================================================================================
+[32m2026-02-02 15:48:33.827[0m | [1mINFO    [0m | [36mapp.core.r
+edis_client[0m:[36msync[0m:[36m177[0m | [1mRedis sync client co
+nnected: localhost:6379[0m
+[32m2026-02-02 15:48:33.828[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mlog_result[0m:[36m133[0m | [1m\u2705 PASS | Redis Connect
+ion | Connected & responsive | 412ms[0m
+[32m2026-02-02 15:48:33.829[0m | [1mINFO    [0m | [36mapp.tradin
+g.trading_account_context[0m:[36m__init__[0m:[36m55[0m | [1mTra
+dingAccountContext initialized[0m
+[32m2026-02-02 15:48:33.829[0m | [33m[1mWARNING [0m | [36mapp.t
+rading.trading_account_context[0m:[36mset_trading_mode[0m:[36m107
+[0m | [33m[1mNote: Switching to IBKR_PED but IBKR PED not connecte
+d yet.[0m
+[32m2026-02-02 15:48:33.831[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mlog_result[0m:[36m133[0m | [1m\u2705 PASS | Trading Conte
+xt | Mode set to IBKR_PED | 3ms[0m
+[32m2026-02-02 15:48:33.832[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mtest_ibkr_connection[0m:[36m238[0m | [1m   Connecting to 
+IBKR Gateway port 4001...[0m
+[32m2026-02-02 15:48:33.832[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mlog_result[0m:[36m133[0m | [1m\u274c FAIL | IBKR Connecti
+on | connect_isolated_sync() got an unexpected keyword argument 'time
+out' | 1ms[0m
+[32m2026-02-02 15:48:33.857[0m | [31m[1mERROR   [0m | [36mapp.l
+ive.hammer_client[0m:[36mconnect[0m:[36m90[0m | [31m[1m\u274c 
+[HAMMER_CONNECT] Hammer API password not set[0m
+[32m2026-02-02 15:48:33.857[0m | [31m[1mERROR   [0m | [36mapp.l
+ive.hammer_client[0m:[36mconnect[0m:[36m91[0m | [31m[1m   \U00
+01f4a1 Set HAMMER_PASSWORD in .env file or environment variable[0m
+[32m2026-02-02 15:48:33.857[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mlog_result[0m:[36m133[0m | [1m\u274c FAIL | Hammer Connec
+tion | Connection failed | 25ms[0m
+[32m2026-02-02 15:48:34.759[0m | [1mINFO    [0m | [36mapp.psfalg
+o.position_snapshot_api[0m:[36minitialize_position_snapshot_api[0m
+:[36m1266[0m | [1mPositionSnapshotAPI initialized[0m
+[32m2026-02-02 15:48:34.759[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mlog_result[0m:[36m133[0m | [1m\u274c FAIL | Position Snap
+shot API | API is None after init attempt | 902ms[0m
+[32m2026-02-02 15:48:35.589[0m | [1mINFO    [0m | [36mapp.core.d
+ata_fabric[0m:[36m__init__[0m:[36m143[0m | [1m\U0001f3d7\ufe0f 
+DataFabric initialized (singleton)[0m
+[32m2026-02-02 15:48:35.591[0m | [1mINFO    [0m | [36mapp.psfalg
+o.position_snapshot_api[0m:[36m_load_befday_map[0m:[36m725[0m | 
+[1m[_load_befday_map] Loaded 101 entries from Redis[0m
+[32m2026-02-02 15:48:35.591[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mlog_result[0m:[36m133[0m | [1m\u2705 PASS | MinMax Area S
+ervice | 3 rows computed, validation: allowed=True, qty=500 | 832ms[
+0m
+[32m2026-02-02 15:48:35.591[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mlog_result[0m:[36m133[0m | [1m\u2705 PASS | Order Tag For
+mat | Tag: IBKR_PED_LT_LONG_DEC | 0ms[0m
+[32m2026-02-02 15:48:35.592[0m | [33m[1mWARNING [0m | [36mapp.p
+sfalgo.runall_engine[0m:[36m_prepare_request[0m:[36m764[0m | [3
+3m[1m[RUNALL] \u26a0\ufe0f Hammer Feed/Client not available - L1 dat
+a may not be updating[0m
+[32m2026-02-02 15:48:35.592[0m | [1mINFO    [0m | [36mapp.psfalg
+o.runall_engine[0m:[36m_prepare_request[0m:[36m776[0m | [1m[RUN
+ALL] \U0001f50d DataFabric Diagnostic: \U0001f7e2 LIVE mode, live_sym
+bols=0[0m
+[32m2026-02-02 15:48:35.592[0m | [31m[1mERROR   [0m | [36mapp.p
+sfalgo.runall_engine[0m:[36m_prepare_request[0m:[36m803[0m | [3
+1m[1m[RUNALL] Critical APIs not initialized: MetricsSnapshotAPI, Exp
+osureCalculator[0m
+[32m2026-02-02 15:48:35.592[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mlog_result[0m:[36m133[0m | [1m\u274c FAIL | RunAll Engine
+ | Request preparation failed | 0ms[0m
+[32m2026-02-02 15:48:35.598[0m | [1mINFO    [0m | [36mapp.xnl.xn
+l_engine[0m:[36m__init__[0m:[36m132[0m | [1m[XNL_ENGINE] Initia
+lized[0m
+[32m2026-02-02 15:48:35.598[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mlog_result[0m:[36m133[0m | [1m\u2705 PASS | XNL Engine Fl
+ow | Config OK: LT_DEC front cycle = 120s | 6ms[0m
+[32m2026-02-02 15:48:35.601[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mlog_result[0m:[36m133[0m | [1m\u2705 PASS | REV Order Mec
+hanism | Redis flags work: running=1, account=IBKR_PED | 3ms[0m
+[32m2026-02-02 15:48:35.601[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mprint_summary[0m:[36m495[0m | [1m[0m
+[32m2026-02-02 15:48:35.602[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mprint_summary[0m:[36m496[0m | [1m========================
+========================================================[0m
+[32m2026-02-02 15:48:35.602[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mprint_summary[0m:[36m497[0m | [1m\U0001f4ca TEST SUMMARY
+[0m
+[32m2026-02-02 15:48:35.602[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mprint_summary[0m:[36m498[0m | [1m========================
+========================================================[0m
+[32m2026-02-02 15:48:35.602[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mprint_summary[0m:[36m504[0m | [1m   Total Tests: 10[0m
+[32m2026-02-02 15:48:35.602[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mprint_summary[0m:[36m505[0m | [1m   \u2705 Passed: 6[0m
+[32m2026-02-02 15:48:35.602[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mprint_summary[0m:[36m506[0m | [1m   \u274c Failed: 4[0m
+[32m2026-02-02 15:48:35.602[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mprint_summary[0m:[36m507[0m | [1m   Success Rate: 60.0%[
+0m
+[32m2026-02-02 15:48:35.602[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mprint_summary[0m:[36m510[0m | [1m[0m
+[32m2026-02-02 15:48:35.602[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mprint_summary[0m:[36m511[0m | [1mFailed Tests:[0m
+[32m2026-02-02 15:48:35.602[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mprint_summary[0m:[36m514[0m | [1m   \u274c IBKR Connectio
+n: connect_isolated_sync() got an unexpected keyword argument 'timeou
+t'[0m
+[32m2026-02-02 15:48:35.602[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mprint_summary[0m:[36m514[0m | [1m   \u274c Hammer Connect
+ion: Connection failed[0m
+[32m2026-02-02 15:48:35.602[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mprint_summary[0m:[36m514[0m | [1m   \u274c Position Snaps
+hot API: API is None after init attempt[0m
+[32m2026-02-02 15:48:35.602[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mprint_summary[0m:[36m514[0m | [1m   \u274c RunAll Engine:
+ Request preparation failed[0m
+[32m2026-02-02 15:48:35.602[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mprint_summary[0m:[36m526[0m | [1m[0m
+[32m2026-02-02 15:48:35.602[0m | [1mINFO    [0m | [36m__main__[
+0m:[36mprint_summary[0m:[36m527[0m | [1m========================
+========================================================[0m

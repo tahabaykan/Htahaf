@@ -1,0 +1,27 @@
+﻿================================================================================
+python : Traceback (most recent call last):
+At line:1 char:1
++ python c:\StockTracker\quant_engine\test_plan30.py
+ 2>&1 | Out-File -F ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo          : NotSpecified: (Traceb 
+   ack (most recent call last)::String) [], Remote  
+  Exception
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "c:\StockTracker\quant_engine\test_plan30.py"
+, line 18, in <module>
+    print(f"  \U0001f4c5 BUG▄N▄N TAR¦H¦: {TODAY_STR}
+ ({TODAY.strftime('%A')})")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1254.py", line 
+19, in encode
+    return codecs.charmap_encode(input,self.errors,e
+ncoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode cha
+racter '\U0001f4c5' in position 2: character maps to
+ <undefined>

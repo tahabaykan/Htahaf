@@ -53,7 +53,7 @@ class JFINConfig:
     # TUMCSV Selection Parameters
     selection_percent: float = 0.10      # %10 default (V10TUMCSV)
     min_selection: int = 2               # Minimum stocks per group
-    heldkuponlu_pair_count: int = 8      # Special rule for HELDKUPONLU group
+    heldkuponlu_pair_count: int = 32     # Special rule for HELDKUPONLU group (Doubled: 16→32 per user request)
     
     # Janall Selection Criteria (Two-Step Intersection)
     long_percent: float = 25.0           # Top %X for LONG (Janall: 25%)
@@ -164,6 +164,8 @@ class JFINIntent:
     fbtot: float = 0.0
     sfstot: float = 0.0
     gort: float = 0.0
+    sma63_chg: float = 0.0
+    sma246_chg: float = 0.0
     
     # Position Context
     maxalw: int = 0
@@ -262,6 +264,15 @@ class JFINEngine:
             'long': {},
             'short': {}
         }
+        # Portfolio Rules (Janall-compatible logic for lot reduction based on portfolio size)
+        self.portfolio_rules = [
+            {'max_portfolio_percent': 1.0, 'maxalw_multiplier': 0.50, 'portfolio_percent': 5.0},
+            {'max_portfolio_percent': 3.0, 'maxalw_multiplier': 0.40, 'portfolio_percent': 4.0},
+            {'max_portfolio_percent': 5.0, 'maxalw_multiplier': 0.30, 'portfolio_percent': 3.0},
+            {'max_portfolio_percent': 7.0, 'maxalw_multiplier': 0.20, 'portfolio_percent': 2.0},
+            {'max_portfolio_percent': 10.0, 'maxalw_multiplier': 0.10, 'portfolio_percent': 1.5},
+            {'max_portfolio_percent': 100.0, 'maxalw_multiplier': 0.05, 'portfolio_percent': 1.0}
+        ]
         logger.info(f"[JFIN] Engine initialized with config: {self.config.to_dict()}")
     
     def update_config(self, new_config: Dict[str, Any]):
@@ -281,9 +292,16 @@ class JFINEngine:
     
     def set_group_weights(self, long_weights: Dict[str, float], short_weights: Dict[str, float]):
         """Set group weights from CSV or UI"""
-        self._group_weights['long'] = long_weights
-        self._group_weights['short'] = short_weights
-        logger.info(f"[JFIN] Group weights set: {len(long_weights)} long, {len(short_weights)} short")
+        # Normalize keys to lowercase for case-insensitive matching
+        self._group_weights['long'] = {k.lower(): v for k, v in long_weights.items()}
+        self._group_weights['short'] = {k.lower(): v for k, v in short_weights.items()}
+        
+        # 🔍 DEBUG: Log actual weights
+        long_nonzero = {k: v for k, v in self._group_weights['long'].items() if v > 0}
+        short_nonzero = {k: v for k, v in self._group_weights['short'].items() if v > 0}
+        logger.info(f"[JFIN] 📊 Group weights set: {len(long_weights)} long ({len(long_nonzero)} non-zero), {len(short_weights)} short ({len(short_nonzero)} non-zero)")
+        logger.info(f"[JFIN] 📊 Long non-zero weights: {long_nonzero}")
+        logger.info(f"[JFIN] 📊 Short non-zero weights: {short_nonzero}")
     
     async def transform(
         self,
@@ -296,21 +314,19 @@ class JFINEngine:
         """
         Transform ADDNEWPOS candidates into JFIN Intentions
         
-        ⚠️ THIS DOES NOT SEND ORDERS!
-        Output is a list of INTENTIONS for user approval.
-        
         Args:
-            addnewpos_candidates: Candidates from ADDNEWPOS decision engine
-            market_data: Current market data (bid, ask, last)
-            positions: Current positions
-            befday_positions: BEFDAY positions (for daily limit)
-            max_addable_total: Max addable lot (Pot Max - Pot Total)
-        
+            addnewpos_candidates: List of candidates from ADDNEWPOS engine
+            market_data: Market data map
+            positions: Current positions map
+            befday_positions: Befday positions map
+            max_addable_total: Optional total lot limit for exposure control
+            
         Returns:
-            JFINResult with 4 separate pools of intentions
+            JFINResult with intentions
         """
         start_time = datetime.now()
-        errors = []
+        result = JFINResult(config=self.config)
+        errors = []  # Initialize errors list
         
         try:
             logger.info(f"[JFIN] 🔄 Transform started with {len(addnewpos_candidates)} candidates")
@@ -385,8 +401,7 @@ class JFINEngine:
             
         except Exception as e:
             logger.error(f"[JFIN] ❌ Transform error: {e}", exc_info=True)
-            errors.append(str(e))
-            return JFINResult(errors=errors)
+            return JFINResult(errors=[str(e)])
     
     def _select_stocks_for_pools(
         self,
@@ -844,7 +859,10 @@ class JFINEngine:
             selected_cgrups = set()
             company_counts = {}
             
-            # Step 1: Select at least 1 from each non-special CGRUP
+            # Step 1: Select at least 2 from each non-special CGRUP (Updated per user request)
+            # We track "count per CGRUP" instead of simple boolean
+            cgrup_counts = {} # CGRUP -> count
+
             for c in sorted_candidates:
                 if len(selected) >= target_count:
                     break
@@ -861,10 +879,13 @@ class JFINEngine:
                 max_per = company_limits.get(company, 1)
                 current = company_counts.get(company, 0)
                 
-                # Select if CGRUP not yet represented and company limit allows
-                if cgrup not in selected_cgrups and current < max_per:
+                # Check CGRUP requirement (Min 2)
+                current_cgrup_count = cgrup_counts.get(cgrup, 0)
+                
+                # Select if CGRUP needs more representation (<2) and company limit allows
+                if current_cgrup_count < 2 and current < max_per:
                     selected.append(c)
-                    selected_cgrups.add(cgrup)
+                    cgrup_counts[cgrup] = current_cgrup_count + 1
                     company_counts[company] = current + 1
             
             # Step 2: Fill remaining with best scores (all CGRUPs including special)
@@ -944,8 +965,8 @@ class JFINEngine:
             final_sfs_skor=float(candidate.get('Final_SFS_skor', candidate.get('final_sfs_skor', 0)) or 0),
             fbtot=float(candidate.get('fbtot', candidate.get('Fbtot', candidate.get('FBTOT', 0))) or 0),
             sfstot=float(candidate.get('sfstot', candidate.get('SFStot', candidate.get('SFSTOT', 0))) or 0),
-            gort=float(candidate.get('gort', candidate.get('GORT', 0)) or 0),
-            sma63_chg=float(candidate.get('sma63_chg', candidate.get('SMA63_CHG', 0)) or 0),
+            gort=float(candidate.get('gort', candidate.get('GORT', candidate.get('metrics_used', {}).get('gort'))) or 0),
+            sma63_chg=float(candidate.get('sma63_chg', candidate.get('SMA63_CHG', candidate.get('metrics_used', {}).get('sma63_chg'))) or 0),
             maxalw=int(candidate.get('maxalw', candidate.get('MAXALW', 0)) or 0),
             current_position=int(candidate.get('current_position', candidate.get('qty', 0)) or 0),
         )
@@ -971,17 +992,26 @@ class JFINEngine:
         )
         weights = self._group_weights.get(direction, {})
         
-        # Group stocks by group
+        # 🔍 DEBUG: Log weights for this direction
+        logger.info(f"[JFIN] 📊 _distribute_lots: direction={direction}, total_rights={total_rights}, weights_count={len(weights)}")
+        
+        # Group stocks by group (normalize to lowercase for matching)
         groups: Dict[str, List[JFINStock]] = {}
         for stock in stocks:
-            if stock.group not in groups:
-                groups[stock.group] = []
-            groups[stock.group].append(stock)
+            group_key = stock.group.lower() if stock.group else 'unknown'
+            if group_key not in groups:
+                groups[group_key] = []
+            groups[group_key].append(stock)
         
-        # Distribute lots per group
+        # 🔍 DEBUG: Log stock groups
+        logger.info(f"[JFIN] 📊 _distribute_lots: Found {len(groups)} groups for {direction}: {list(groups.keys())}")
+        
+        # Distribute lots per group (both group names and weights are now lowercase)
         for group_name, group_stocks in groups.items():
             weight = weights.get(group_name, 0)
+            
             if weight <= 0:
+                logger.warning(f"[JFIN] ⚠️ _distribute_lots: Group '{group_name}' has weight=0 for {direction}, skipping {len(group_stocks)} stocks")
                 continue
             
             # Group lot rights
@@ -1026,7 +1056,8 @@ class JFINEngine:
         
         Clips calculated_lot to:
         1. MAXALW remaining (maxalw - current_position)
-        2. Daily change limit (befday × 2)
+        2. Portfolio Percentage Rules (replaces befday limit)
+           - e.g. <1% portfolio -> maxalw * 0.50
         
         ORDER MATTERS: This runs AFTER lot distribution
         """
@@ -1040,21 +1071,33 @@ class JFINEngine:
             maxalw_remaining = stock.maxalw - abs(stock.current_position)
             maxalw_remaining = max(0, maxalw_remaining)
             
-            # 2. Daily change limit (BEFDAY × 2)
-            if stock.befday_qty != 0:
-                daily_limit = abs(stock.befday_qty) * 2
-                current_daily_change = abs(stock.current_position - stock.befday_qty)
-                daily_remaining = daily_limit - current_daily_change
-                daily_remaining = max(0, daily_remaining)
-            else:
-                # No BEFDAY, use calculated_lot × 2 as limit
-                daily_remaining = stock.calculated_lot * 2
+            # 2. Portfolio Rules (REPLACING BEFDAY LIMIT)
+            # Calculate portfolio percentage: (current_positions / MAXALW) * 100
+            portfolio_percent = 0.0
+            if stock.maxalw > 0:
+                portfolio_percent = (abs(stock.current_position) / stock.maxalw) * 100.0
+                
+            # Find applicable rule
+            applicable_rule = None
+            for rule in self.portfolio_rules:
+                if portfolio_percent < rule['max_portfolio_percent']:
+                    applicable_rule = rule
+                    break
             
-            # Addable = min(Calculated, MAXALW remaining, Daily remaining)
+            # If no rule found, use last rule
+            if not applicable_rule:
+                applicable_rule = self.portfolio_rules[-1]
+                
+            # Calculate Rule Limit Lot (The Max Addable Lot based on Portfolio Size)
+            # Janall Logic: Option1 = maxalw * applicable_rule['maxalw_multiplier']
+            # Note: This is a "Cap on ADDITION", similar to how befday was a cap.
+            rule_limit_lot = stock.maxalw * applicable_rule['maxalw_multiplier']
+            
+            # 3. Addable = min(Calculated, MAXALW remaining, Rule limit lot)
             stock.addable_lot = min(
                 stock.calculated_lot,
                 maxalw_remaining,
-                daily_remaining
+                rule_limit_lot
             )
             
             # Round to lot_rounding
@@ -1180,6 +1223,8 @@ class JFINEngine:
                 fbtot=stock.fbtot,
                 sfstot=stock.sfstot,
                 gort=stock.gort,
+                sma63_chg=getattr(stock, 'sma63_chg', 0.0),
+                sma246_chg=getattr(stock, 'sma246_chg', 0.0), # Use safe access
                 maxalw=stock.maxalw,
                 current_position=stock.current_position,
                 befday_qty=stock.befday_qty,

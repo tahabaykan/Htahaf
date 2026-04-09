@@ -1,0 +1,126 @@
+19:15:48 | ================================================================================
+19:15:48 | TRUTH TICK BACKTEST TRAINING — GEMINI ANALYSIS
+19:15:48 | ================================================================================
+19:15:48 | Gemini API key: AIzaSyD7...mZms
+19:15:48 | Loading static data...
+19:15:49 | ✅ Loaded 166 general logic parameters from CSV
+19:15:50 | 443 symbols loaded
+19:15:50 | Connecting to Hammer Pro...
+19:15:50 | Websocket connected
+19:15:50 | Hammer Pro connected (127.0.0.1:16400)
+19:15:52 | Test: NLY PRD -> 0 truth ticks
+19:15:52 | 
+19:15:52 | ================================================================================
+19:15:52 | Running full analysis (5 trading days, 30-min windows)...
+19:15:52 | This will take ~5 minutes to fetch ticks for all 400+ symbols
+19:15:52 | ================================================================================
+19:20:56 | 
+19:20:56 | ================================================================================
+19:20:56 | SONUCLAR
+19:20:56 | ================================================================================
+19:20:56 |   Symbols: 405
+19:20:56 |   Groups: 19
+19:20:56 |   Elapsed: 303s
+19:20:56 | 
+19:20:56 |   [heldcilizyeniyedi] buyer_dominant | 6B / 0S | ticks=766
+19:20:56 |     BIPJ         int=4.7 mm=3.2 ticks=  74 vol/ADV=   29% sprd= 11.2bps FBtot=1315.18 SFStot=1714.58 GORT=   0.0
+19:20:56 |     CRBD         int=3.1 mm=3.8 ticks= 171 vol/ADV=   20% sprd=  5.8bps FBtot= 1229.7 SFStot= 1274.4 GORT=   0.0
+19:20:56 |     FGSN         int=2.8 mm=2.7 ticks= 112 vol/ADV=   17% sprd= 10.1bps FBtot= 1419.4 SFStot= 1452.5 GORT=   0.0
+19:20:56 | 
+19:20:56 |   [heldcommonsuz] seller_dominant | 1B / 3S | ticks=1144
+19:20:56 |     PSEC PRA     int=6.0 mm=3.1 ticks=  55 vol/ADV=   58% sprd= 24.8bps FBtot= 973.34 SFStot=1079.74 GORT=   0.0
+19:20:56 |     VNO PRL      int=3.0 mm=2.8 ticks=  64 vol/ADV=   23% sprd=  6.1bps FBtot=1251.05 SFStot=1266.45 GORT=   0.0
+19:20:56 |     AHL PRD      int=2.5 mm=2.7 ticks=  60 vol/ADV=   34% sprd=  7.3bps FBtot=1390.51 SFStot=1445.61 GORT=   0.0
+19:20:56 | 
+19:20:56 |   [helddeznff] buyer_dominant | 9B / 3S | ticks=2985
+19:20:56 |     DCOMG        int=5.5 mm=2.1 ticks=   5 vol/ADV=    7% sprd= 30.4bps FBtot=  629.3 SFStot=696.699 GORT=  None
+19:20:56 |     UMBFO        int=4.2 mm=2.8 ticks=  67 vol/ADV=   14% sprd=  7.3bps FBtot= 672.08 SFStot=741.680 GORT=  None
+19:20:56 |     LOB PRA      int=3.9 mm=3.8 ticks= 143 vol/ADV=   82% sprd=  4.6bps FBtot= 724.01 SFStot= 792.81 GORT=  None
+19:20:56 | 
+19:20:56 |   [heldff] buyer_dominant | 3B / 1S | ticks=2406
+19:20:56 |     DDT          int=3.8 mm=2.5 ticks=  33 vol/ADV=   21% sprd= 17.9bps FBtot= 649.19 SFStot=744.890 GORT=  None
+19:20:56 |     CHSCO        int=2.9 mm=1.4 ticks=  46 vol/ADV=   14% sprd=  6.1bps FBtot= 703.61 SFStot= 743.21 GORT=  None
+19:20:56 |     RITM PRA     int=2.4 mm=3.9 ticks=  69 vol/ADV=   66% sprd=  3.5bps FBtot= 812.45 SFStot=840.550 GORT=  None
+19:20:56 | 
+19:20:56 |   [heldflr] buyer_dominant | 4B / 1S | ticks=1342
+19:20:56 |     BML PRG      int=3.2 mm=2.4 ticks=  32 vol/ADV=   22% sprd= 12.7bps FBtot= 731.73 SFStot=1063.23 GORT=  None
+19:20:56 |     BAC PRE      int=2.8 mm=3.2 ticks=  56 vol/ADV=   13% sprd= 11.9bps FBtot= 863.48 SFStot= 908.58 GORT=  None
+19:20:56 |     GS PRC       int=2.8 mm=1.8 ticks=  65 vol/ADV=   22% sprd=  4.0bps FBtot=  612.9 SFStot=  728.8 GORT=  None
+19:20:56 | 
+19:20:56 |   [heldgarabetaltiyedi] buyer_dominant | 5B / 3S | ticks=921
+19:20:56 |     AMH PRG      int=4.9 mm=2.8 ticks=  51 vol/ADV=   48% sprd= 13.9bps FBtot= 1377.0 SFStot= 2358.4 GORT=   0.0
+19:20:56 |     WBS PRG      int=4.8 mm=3.8 ticks= 128 vol/ADV=  144% sprd=  3.5bps FBtot= 928.61 SFStot=1007.01 GORT=   0.0
+19:20:56 |     FITBP        int=4.0 mm=1.4 ticks=  45 vol/ADV=   51% sprd=  6.2bps FBtot=1357.09 SFStot=1603.79 GORT=   0.0
+19:20:56 | 
+19:20:56 |   [heldkuponlu] buyer_dominant | 26B / 14S | ticks=10443
+19:20:56 |     MS PRL       int=4.2 mm=2.5 ticks= 121 vol/ADV=   33% sprd=  5.1bps FBtot=1234.11 SFStot=1297.61 GORT=  0.29
+19:20:56 |     ADC PRA      int=3.7 mm=3.8 ticks=  98 vol/ADV=   48% sprd=  5.6bps FBtot=1399.67 SFStot=1597.07 GORT= -1.52
+19:20:56 |     DTB          int=3.3 mm=3.5 ticks= 122 vol/ADV=   36% sprd=  4.6bps FBtot=1420.33 SFStot=1464.03 GORT=  -1.5
+19:20:56 | 
+19:20:56 |   [heldkuponlukreciliz] buyer_dominant | 6B / 2S | ticks=595
+19:20:56 |     FHN PRF      int=3.2 mm=2.0 ticks=  26 vol/ADV=   13% sprd= 17.5bps FBtot= 985.31 SFStot=1053.61 GORT= -0.27
+19:20:56 |     FULTP        int=2.6 mm=1.6 ticks=  39 vol/ADV=   31% sprd= 14.1bps FBtot=1857.37 SFStot=1914.27 GORT= -5.01
+19:20:56 |     MBINN        int=2.4 mm=3.9 ticks=  72 vol/ADV=  103% sprd=  6.9bps FBtot=1060.21 SFStot=1110.61 GORT= -0.31
+19:20:56 | 
+19:20:56 |   [heldkuponlukreorta] seller_dominant | 3B / 4S | ticks=805
+19:20:56 |     WBS PRF      int=4.1 mm=4.3 ticks=  89 vol/ADV=  330% sprd=  5.9bps FBtot=  278.6 SFStot=  375.1 GORT= 11.13
+19:20:56 |     FCNCO        int=3.0 mm=2.6 ticks=  57 vol/ADV=   24% sprd=  8.6bps FBtot=1453.35 SFStot=1612.85 GORT= -2.06
+19:20:56 |     FITBO        int=2.6 mm=2.9 ticks=  71 vol/ADV=   17% sprd=  7.2bps FBtot=1471.45 SFStot=1638.65 GORT= -2.68
+19:20:56 | 
+19:20:56 |   [heldnff] buyer_dominant | 7B / 3S | ticks=1742
+19:20:56 |     MTB PRH      int=3.2 mm=3.8 ticks= 141 vol/ADV=   61% sprd=  2.6bps FBtot= 537.73 SFStot= 676.23 GORT=  None
+19:20:56 |     WAL PRA      int=3.1 mm=3.5 ticks=  84 vol/ADV=   35% sprd=  2.5bps FBtot= 582.51 SFStot= 626.51 GORT=  None
+19:20:56 |     VOYA PRB     int=2.9 mm=4.5 ticks= 207 vol/ADV=   72% sprd=  6.4bps FBtot= 325.71 SFStot= 479.21 GORT=  None
+19:20:56 | 
+19:20:56 |   [heldotelremorta] buyer_dominant | 4B / 3S | ticks=823
+19:20:56 |     INN PRE      int=4.2 mm=3.1 ticks=  64 vol/ADV=   63% sprd= 15.8bps FBtot= 1187.5 SFStot= 1357.8 GORT=   0.0
+19:20:56 |     AHH PRA      int=3.0 mm=1.7 ticks=  51 vol/ADV=   40% sprd= 10.2bps FBtot=1098.12 SFStot=1410.32 GORT=   0.0
+19:20:56 |     PEB PRF      int=2.8 mm=4.2 ticks=   3 vol/ADV=    1% sprd= 87.4bps FBtot=1162.19 SFStot=1308.29 GORT=   0.0
+19:20:56 | 
+19:20:56 |   [heldsolidbig] buyer_dominant | 2B / 0S | ticks=876
+19:20:56 |     HIG PRG      int=2.5 mm=2.2 ticks=  33 vol/ADV=   16% sprd=  5.1bps FBtot=1001.99 SFStot=1045.29 GORT=  None
+19:20:56 |     BAC PRB      int=1.8 mm=3.8 ticks= 126 vol/ADV=   14% sprd=  0.8bps FBtot=1229.89 SFStot=1266.59 GORT=  None
+19:20:56 |     SCHW PRD     int=0.5 mm=4.5 ticks= 155 vol/ADV=   26% sprd=  1.2bps FBtot= 237.84 SFStot= 258.74 GORT=  None
+19:20:56 | 
+19:20:56 |   [heldtitrekhc] seller_dominant | 0B / 1S | ticks=379
+19:20:56 |     ACR PRC      int=2.5 mm=2.6 ticks=  38 vol/ADV=   25% sprd=  6.6bps FBtot=1296.62 SFStot=1337.91 GORT=  None
+19:20:56 |     SEAL PRA     int=1.4 mm=3.3 ticks=  42 vol/ADV=   51% sprd=  8.0bps FBtot=1122.65 SFStot=1156.95 GORT=  None
+19:20:56 |     TRTN PRB     int=1.2 mm=3.2 ticks=  35 vol/ADV=   35% sprd=  8.1bps FBtot=1121.24 SFStot=1226.84 GORT=  None
+19:20:56 | 
+19:20:56 |   [highmatur] seller_dominant | 5B / 7S | ticks=1779
+19:20:56 |     OXLCI        int=5.3 mm=3.5 ticks=  82 vol/ADV=  139% sprd=  2.8bps FBtot= 974.92 SFStot=1578.92 GORT=  None
+19:20:56 |     SAY          int=5.0 mm=3.5 ticks=  83 vol/ADV=  165% sprd=  4.1bps FBtot=1054.54 SFStot=1098.84 GORT=  None
+19:20:56 |     PRIF PRD     int=4.2 mm=2.2 ticks=  25 vol/ADV=   81% sprd= 10.1bps FBtot= 259.26 SFStot= 651.26 GORT=  None
+19:20:56 | 
+19:20:56 |   [notbesmaturlu] seller_dominant | 0B / 1S | ticks=233
+19:20:56 |     HTFC         int=3.8 mm=1.9 ticks=  22 vol/ADV=   83% sprd=  6.3bps FBtot= 976.87 SFStot=1182.47 GORT=  None
+19:20:56 |     OCCIO        int=2.4 mm=2.5 ticks=  10 vol/ADV=   46% sprd=  1.8bps FBtot= 735.51 SFStot= 974.21 GORT=  None
+19:20:56 |     SSSSL        int=0.7 mm=2.8 ticks=   6 vol/ADV=   12% sprd= 13.1bps FBtot= 944.92 SFStot=1363.52 GORT=  None
+19:20:56 | 
+19:20:56 |   [notcefilliquid] balanced | 3B / 3S | ticks=1120
+19:20:56 |     REXR PRB     int=6.4 mm=2.6 ticks=  90 vol/ADV=  146% sprd= 13.3bps FBtot=1235.07 SFStot=1417.87 GORT=   0.0
+19:20:56 |     ETI PR       int=5.4 mm=2.4 ticks=  22 vol/ADV=   95% sprd= 21.0bps FBtot=1072.33 SFStot=1418.53 GORT=   0.0
+19:20:56 |     GGT PRG      int=4.5 mm=2.7 ticks=   6 vol/ADV=   17% sprd= 41.2bps FBtot=1138.45 SFStot=1327.85 GORT=   0.0
+19:20:56 | 
+19:20:56 |   [nottitrekhc] seller_dominant | 3B / 5S | ticks=444
+19:20:56 |     CMRE PRD     int=5.6 mm=0.7 ticks=  16 vol/ADV=   51% sprd= 10.8bps FBtot= 375.54 SFStot=648.640 GORT=  None
+19:20:56 |     SB PRD       int=5.3 mm=3.5 ticks= 152 vol/ADV=  233% sprd=  5.3bps FBtot= 780.55 SFStot=1017.45 GORT=  None
+19:20:56 |     CHMI PRB     int=5.0 mm=1.1 ticks=  28 vol/ADV=   49% sprd=  5.6bps FBtot=1124.68 SFStot=1189.28 GORT=  None
+19:20:56 | 
+19:20:56 |   [salakilliquid] buyer_dominant | 4B / 1S | ticks=682
+19:20:56 |     GOODO        int=6.2 mm=3.4 ticks=  82 vol/ADV=   95% sprd= 11.4bps FBtot= 993.61 SFStot=1250.71 GORT=   0.0
+19:20:56 |     NHPBP        int=5.5 mm=1.9 ticks=  13 vol/ADV=   19% sprd= 18.4bps FBtot= 874.22 SFStot=1198.92 GORT=   0.0
+19:20:56 |     GMRE PRA     int=4.5 mm=3.0 ticks=  58 vol/ADV=  118% sprd=  5.3bps FBtot=1121.37 SFStot=1348.46 GORT=   0.0
+19:20:56 | 
+19:20:56 |   [shitremhc] buyer_dominant | 2B / 1S | ticks=193
+19:20:56 |     MITT PRA     int=6.3 mm=1.9 ticks=  15 vol/ADV=   37% sprd= 18.5bps FBtot=1102.83 SFStot=1469.53 GORT=   0.0
+19:20:56 |     MITT PRB     int=3.8 mm=2.7 ticks=  48 vol/ADV=   42% sprd= 10.9bps FBtot=1112.89 SFStot=1412.39 GORT=   0.0
+19:20:56 |     MFA PRB      int=3.2 mm=2.8 ticks=  31 vol/ADV=   12% sprd= 15.2bps FBtot= 1529.7 SFStot= 1610.5 GORT=   0.0
+19:20:56 | 
+19:20:56 | ================================================================================
+19:20:56 | GEMINI RAPORU
+19:20:56 | ================================================================================
+19:20:56 | [GEMINI ERROR] HTTP 429
+19:20:56 | 
+19:20:56 | Result: C:\StockTracker\quant_engine\tt_training_result.json
+19:20:56 | Log: tt_output.txt

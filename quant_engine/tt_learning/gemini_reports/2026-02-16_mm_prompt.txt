@@ -1,0 +1,104 @@
+## PRACTICAL MARKET MAKING SYSTEM DESIGN — PREFERRED STOCKS
+
+Sen QAGENTT — Preferred Stock Market Making Sistem Mimarisi.
+Asagida truth tick verileriyle dogrulanmis MM adayi hisseler var.
+
+### TEMEL KURALLAR:
+1. **Lot Buyuklugu = AVG_ADV'nin yuzde kaciyla girilir?** (sabit 100 lot degil!)
+2. **Her hissenin fiyati, ADV'si, spreadi farkli** — lot buyuklugu buna gore ayarlanmali
+3. **Hidden emirler** kullaniyoruz (gorunmez emir, iceberg style)
+4. **Hedef**: Her hissede spread capture + mean reversion. Gunluk kucuk karlar.
+5. **Risk**: Max $50K exposure per stock, $1.4M toplam portfoy
+
+### TRUTH TICK BAZLI MM ADAYI HiSSELER:
+(5 is gunu verileri, truth tick filtreli)
+
+Symbol         GRP                   AVG_ADV   Price Tick/D  V/ADV%   Sprd   MM         Peak
+-----------------------------------------------------------------------------------------------
+FITBI          heldff                  24660 $ 25.00    346  107.3%   1.8  4.5  15:30-16:00
+VOYA PRB       heldnff                 18259 $ 25.00    104   71.8%   6.4  4.5  15:00-15:30
+SCHW PRD       heldsolidbig            35284 $ 25.00     78   26.4%   1.2  4.5  15:30-16:00
+MS PRI         heldsolidbig            53824 $ 25.00     68   14.0%   1.4  4.5  15:00-15:30
+JPM PRD        heldsolidbig            97913 $ 25.00    126   18.1%   1.1  4.5  15:30-16:00
+NCV PRA        notcefilliquid           4963 $ 25.00    104  258.2%   5.4  4.5  15:30-16:00
+VNO PRO        heldcommonsuz           18574 $ 25.00     48   28.4%   7.0  4.4  14:30-15:00
+RLJ PRA        heldtitrekhc            14500 $ 25.00     48   38.7%   3.9  4.4  15:00-15:30
+WBS PRF        heldkuponlukreorta       9081 $ 25.00     44  330.3%   5.9  4.3  15:00-15:30
+PEB PRF        heldotelremorta          7723 $ 25.00      2    1.1%  87.4  4.2  15:30-16:00
+MBINN          heldkuponlukreciliz     10129 $ 25.00     36  103.2%   6.9  3.9  15:30-16:00
+RITM PRA       heldff                  10762 $ 25.00     34   65.7%   3.5  3.9  15:00-15:30
+CRBD           heldcilizyeniyedi       45847 $ 25.00     86   20.1%   5.8  3.8  15:00-15:30
+LOB PRA        helddeznff              14939 $ 25.00     72   81.8%   4.6  3.8  15:00-15:30
+WBS PRG        heldgarabetaltiyedi     10277 $ 25.00     64  143.6%   3.5  3.8  15:00-15:30
+KEY PRJ        heldkuponlukreorta      29103 $ 25.00     96   44.5%   3.6  3.8  15:30-16:00
+MTB PRH        heldnff                 30912 $ 25.00     70   61.2%   2.6  3.8  15:30-16:00
+RF PRC         heldnff                 25878 $ 25.00     95   29.9%   4.8  3.8  15:30-16:00
+BAC PRB        heldsolidbig            70085 $ 25.00     63   13.9%   0.8  3.8  14:30-15:00
+VLYPO          heldff                   4534 $ 25.00     32   86.1%   5.0  3.8  15:30-16:00
+SHO PRH        heldotelremorta          4512 $ 25.00     32  136.3%   2.0  3.8  15:30-16:00
+ADC PRA        heldkuponlu             11974 $ 25.00     49   47.9%   5.6  3.8  15:00-15:30
+GNL PRB        heldotelremorta          4496 $ 25.00     10   21.0%  40.3  3.7  14:30-15:00
+SYF PRA        heldkuponlukreciliz     42474 $ 25.00     44   11.5%   7.3  3.6  14:30-15:00
+DCOMP          heldkuponlukreciliz      6089 $ 25.00     19   32.2%  14.0  3.5  15:30-16:00
+WAL PRA        heldnff                 40587 $ 25.00     42   35.0%   2.5  3.5  15:30-16:00
+TDS PRV        heldcommonsuz           38268 $ 25.00     70   22.1%   3.8  3.5  15:00-15:30
+MET PRA        heldflr                 66217 $ 25.00    120   22.4%   3.4  3.5  14:30-15:00
+DTB            heldkuponlu             17117 $ 25.00     61   35.7%   4.6  3.5  15:30-16:00
+CFG PRE        heldkuponlukreorta      36695 $ 25.00     72   26.8%   4.4  3.5  15:00-15:30
+
+### GOREV — PRATIK MM SISTEM TASARIMI:
+
+Her hisse icin **GERCEKCI** bir MM plani olustur. Su sorulari yanitle:
+
+**A. LOT BUYUKLUGU FORMULU:**
+- AVG_ADV'ye oranla lot buyuklugu nasil hesaplanir?
+- Kural: ADV'nin %X'i kadar emir koymak optimal. Bu X kac olmali?
+- Ornek: ADV=5000 olan hisse icin lot buyuklugu? ADV=500 olan? ADV=50000 olan?
+- Minimum ve maximum lot siniri ne olmali?
+- Fiyata gore dolar bazli normalizasyon nasil yapilir? ($25'lik hissede 200 lot = $5000, $10'luk hissede 200 lot = $2000)
+
+**B. HIDDEN EMIR STRATEJISI (TOP 15 icin detayli):**
+Her hisse icin tablo formatinda:
+- Symbol
+- BUY hidden: kac lot, nereye (last truth tick'e gore -X bps veya -$0.0Y)
+- SELL hidden: kac lot, nereye (last truth tick'e gore +X bps veya +$0.0Y)
+- Spread capture hedefi (bps ve $)
+- Gunluk roundtrip hedefi (kac kere buy+sell)
+- Gunluk tahmini gelir ($)
+- Max pozisyon suresi (dakika)
+- Cancel-replace kurali: kac dakikada bir guncellenir?
+
+**C. EMiR YERLESIM ORNEK SENARYOSU:**
+FITBI ($25.50, ADV=3000, spread=1.8bps) icin:
+1. Saat 15:00'te ne yapilir?
+2. Buy emri: kac lot, hangi fiyat, hidden mi?
+3. Sell emri: kac lot, hangi fiyat, hidden mi?
+4. Buy dolunca ne olur? (sell tarafini nasil ayarlariz?)
+5. Sell dolunca ne olur?
+6. 15:30'da hala pozisyon varsa ne olur?
+7. Gun sonuna kalan pozisyon ne olur?
+
+**D. RISK YONETIMI:**
+- Per-stock max exposure (lot ve $)
+- Per-group max exposure
+- Adverse selection korunma: truth tick yonune aykiri pozisyonda ne yapilir?
+- Stop-loss kac bps?
+- Gunluk max zarar limiti?
+
+**E. RETURN TABLOSU (30 hisse icin):**
+Her hisse icin:
+- Onerilen lot
+- Gunluk gelir tahmini ($)
+- Aylik gelir tahmini ($)
+- Yillik gelir tahmini ($)
+- TOPLAM PORTFOY gunduk/aylik/yillik
+
+**F. IMPLEMENTASYON:**
+- Bu sistemi otomatize etmek icin ne gerekir?
+- Emir gonderim hizi: kac ms'de bir?
+- Hangi venue'lara gonderilir? (NYSE, ARCA, EDGX, dark pool)
+- Truth tick monitoring: nasil yapilir?
+- Cancel suresi: truth tick yonu degisince kac ms'de cancel edilir?
+
+Turkce yaz. Gercekci tahminler ver — ne abartici ne de kucumseyici.
+Her hisse icin RAKAMLARLA konuş.

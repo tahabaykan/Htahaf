@@ -193,7 +193,9 @@ class DataReadinessChecker:
             has_fbtot_fabric = fabric_snapshot and fabric_snapshot.get('Fbtot') is not None
             has_fbtot_snapshot = snapshot and snapshot.fbtot is not None
             
-            if has_fbtot_fabric or has_fbtot_snapshot:
+            has_fbtot = has_fbtot_fabric or has_fbtot_snapshot
+            
+            if has_fbtot:
                 symbols_with_fbtot += 1
             else:
                 missing_fields['fbtot'] += 1

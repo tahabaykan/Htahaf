@@ -259,7 +259,7 @@ class MMChurnEngine:
             else:
                 # Generate Replace Intent
                 intents.append({
-                    'type': 'MM_LONG_INCREASE', # Wait. Increase/Decrease logic? 
+                    'type': 'MM_LONG_INC', # Wait. Increase/Decrease logic? 
                     # Actually MM Churn is usually "Modify Order" -> "MM_QUOTE_UPDATE"
                     # But standard intent system uses Increase/Decrease.
                     # Let's emit CHURN_UPDATE intent to specific side
@@ -276,7 +276,7 @@ class MMChurnEngine:
             # New Order
             if len(active_orders) < self.max_working_orders:
                 intents.append({
-                    'type': 'MM_LONG_INCREASE',
+                    'type': 'MM_LONG_INC',
                     'action': 'NEW',
                     'price': my_bid,
                     'qty': target_lot_size,
@@ -307,7 +307,7 @@ class MMChurnEngine:
             # New Order
             if len(active_orders) < self.max_working_orders:
                 intents.append({
-                    'type': 'MM_SHORT_INCREASE', # Or LONG_DECREASE if holding inventory?
+                    'type': 'MM_SHORT_INC', # Or LONG_DEC if holding inventory?
                     # Simplified: Churn Sell is always offering.
                     'action': 'NEW',
                     'price': my_ask,

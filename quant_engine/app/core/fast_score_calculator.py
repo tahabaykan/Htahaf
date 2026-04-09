@@ -420,9 +420,21 @@ class FastScoreCalculator:
             group_stats = janall_engine.compute_group_metrics(all_metrics_list)
             
             # Apply group overlays to each symbol
+            fbtot_stats = {'with_fbtot': 0, 'without_fbtot': 0, 'without_final_fb': 0, 'without_group_stats': 0}
             for metrics in all_metrics_list:
                 symbol = metrics.get('symbol')
                 updated = janall_engine.apply_group_overlays(metrics, group_stats)
+                
+                # Track FBTOT statistics
+                if updated.get('fbtot') is not None:
+                    fbtot_stats['with_fbtot'] += 1
+                else:
+                    fbtot_stats['without_fbtot'] += 1
+                    if updated.get('final_fb') is None:
+                        fbtot_stats['without_final_fb'] += 1
+                    if updated.get('group_key') not in group_stats:
+                        fbtot_stats['without_group_stats'] += 1
+                
                 results[symbol] = {
                     'fbtot': updated.get('fbtot'),
                     'sfstot': updated.get('sfstot'),
@@ -438,6 +450,15 @@ class FastScoreCalculator:
                     'bid_sell_pahalilik': updated.get('bid_sell_pahalilik'),
                     'daily_chg': updated.get('daily_chg'),
                 }
+            
+            # Log FBTOT summary
+            total = fbtot_stats['with_fbtot'] + fbtot_stats['without_fbtot']
+            if total > 0:
+                logger.info(
+                    f"📊 [FBTOT_SUMMARY] {fbtot_stats['with_fbtot']}/{total} symbols have FBTOT "
+                    f"(missing: {fbtot_stats['without_fbtot']}, no final_fb: {fbtot_stats['without_final_fb']}, "
+                    f"no group: {fbtot_stats['without_group_stats']})"
+                )
             
             logger.debug(f"🚀 [FAST_SCORES] Group metrics computed for {len(results)} symbols")
             
@@ -662,6 +683,7 @@ class FastScoreCalculator:
                     final_sfs_skor=scores.get('Final_SFS_skor'),
                     final_bb_skor=scores.get('Final_BB_skor'),
                     final_sas_skor=scores.get('Final_SAS_skor'),
+                    bench_chg=scores.get('bench_chg') or scores.get('benchmark_chg'), # NEW
                     computed_by="FastScoreCalculator"
                 )
                 updated += 1

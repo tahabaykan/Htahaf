@@ -9,6 +9,7 @@ from collections import deque
 import os
 from pathlib import Path
 import json
+import threading  # 🔒 Thread-safety için eklendi
 
 from app.core.logger import logger
 from app.config.settings import settings
@@ -63,7 +64,12 @@ user_action_store: Optional[UserActionStore] = None
 signal_interpreter: Optional[SignalInterpreter] = None
 execution_router: Optional[ExecutionRouter] = None
 pricing_overlay_engine = None  # PricingOverlayEngine instance
+
+# 🔒 THREAD-SAFE MARKET DATA CACHE
+# Multiple threads access this: Hammer Feed (thread), XNL (asyncio), RUNALL (asyncio), WebSocket (asyncio)
 market_data_cache: Dict[str, Dict[str, Any]] = {}  # {symbol: market_data}
+_market_data_cache_lock = threading.RLock()  # Reentrant lock (allows same thread to acquire multiple times)
+
 etf_market_data: Dict[str, Dict[str, Any]] = {}  # {symbol: etf_data} - Isolated from scanner logic
 
 # Dirty tracking for WebSocket optimization (only broadcast changed symbols)
@@ -74,17 +80,24 @@ etf_prev_close: Dict[str, float] = {}  # {ETF: prev_close} - Loaded from janeket
 ETF_TICKERS = ['TLT', 'IEF', 'IEI', 'PFF', 'PGF', 'KRE', 'IWM', 'SPY']
 
 # Global hammer_feed instance (set by main.py or external process)
-_hammer_feed_instance = None
+# NOTE: DEPRECATED - We now delegate to app.live.hammer_feed for single source of truth
+_hammer_feed_instance = None  # Kept for backward compat, but unused
 
 def set_hammer_feed(hammer_feed):
-    """Set global hammer_feed instance (called by main.py)"""
-    global _hammer_feed_instance
-    _hammer_feed_instance = hammer_feed
-    logger.info("Hammer feed instance set for ETF subscription")
+    """Set global hammer_feed instance (called by main.py)
+    DEPRECATED: Use app.live.hammer_feed.set_hammer_feed() instead
+    """
+    # Delegate to the canonical source
+    from app.live.hammer_feed import set_hammer_feed as _set_hammer_feed
+    _set_hammer_feed(hammer_feed)
+    logger.info("Hammer feed instance set for ETF subscription (delegated to app.live.hammer_feed)")
 
 def get_hammer_feed():
-    """Get global hammer_feed instance"""
-    return _hammer_feed_instance
+    """Get global hammer_feed instance
+    Delegates to app.live.hammer_feed for single source of truth
+    """
+    from app.live.hammer_feed import get_hammer_feed as _get_hammer_feed
+    return _get_hammer_feed()
 
 def get_hammer_client():
     """Get Hammer client from hammer_feed instance"""
@@ -522,6 +535,37 @@ def initialize_market_data_services():
             logger.info("📊 AUTO_LOAD_CSV enabled - loading CSV automatically on startup...")
             success = static_store.load_csv()
             if success:
+                # --- EXCLUDED LIST FILTERING ---
+                try:
+                    excluded_symbols = set()
+                    excluded_path = os.path.join(os.getcwd(), 'qe_excluded.csv')
+                    if os.path.exists(excluded_path):
+                        with open(excluded_path, 'r', encoding='utf-8') as f:
+                            import csv
+                            reader = csv.reader(f)
+                            for row in reader:
+                                if row:
+                                    excluded_symbols.update([s.strip().upper() for s in row if s.strip()])
+                    
+                    if excluded_symbols:
+                        removed_count = 0
+                        # Identify keys to remove (symbol is usually the key)
+                        keys_to_remove = []
+                        for sym in static_store.data.keys():
+                            if sym.upper() in excluded_symbols:
+                                keys_to_remove.append(sym)
+                        
+                        # Remove them
+                        for sym in keys_to_remove:
+                            static_store.data.pop(sym, None)
+                            removed_count += 1
+                            
+                        if removed_count > 0:
+                            logger.info(f"🚫 Filtered {removed_count} excluded symbols from static store")
+                except Exception as e:
+                    logger.error(f"Error processing excluded list: {e}")
+                # -------------------------------
+
                 symbol_count = len(static_store.get_all_symbols())
                 logger.info(f"✅ CSV loaded successfully: {symbol_count} symbols (startup auto-load)")
             else:
@@ -595,10 +639,19 @@ def initialize_market_data_services():
     # 🔵 CRITICAL: GRPANTickFetcher is now ONLY handled by worker process
     # Backend does NOT start GRPANTickFetcher to avoid blocking terminal
     # Worker (deeper_analysis_worker.py) has its own GRPANTickFetcher instance
+    # Backend does NOT start GRPANTickFetcher to avoid blocking terminal
+    # Worker (deeper_analysis_worker.py) has its own GRPANTickFetcher instance
     global grpan_tick_fetcher
     # Keep as None - worker will handle all GRPAN bootstrap
     grpan_tick_fetcher = None
     logger.info("🔵 SLOW PATH: GRPANTickFetcher DISABLED in backend (handled by worker process)")
+
+    # Subscription handled by background task (robust wait for connection)
+    # NOTE: _ensure_hammer_subscription was removed - subscription now handled by L1 Feed Terminal
+    if static_store:
+        symbols = list(static_store.get_all_symbols())
+        logger.info(f"📡 [HAMMER_FEED] {len(symbols)} symbols available for subscription (handled by L1 Feed Terminal)")
+
     if position_analytics_engine is None:
         position_analytics_engine = PositionAnalyticsEngine()
     if exposure_mode_engine is None:
@@ -644,6 +697,9 @@ def initialize_market_data_services():
     # Mark as initialized (prevent future initialization)
     _market_data_services_initialized = True
     logger.info("Market data services initialized (startup-only)")
+
+
+
 
 
 @router.get("/snapshot")
@@ -706,6 +762,34 @@ async def get_snapshot_history(symbol: str):
             "error": str(e),
             "data": []
         }
+
+
+# 🔒 THREAD-SAFE HELPER FUNCTIONS
+def get_market_data(symbol: str) -> Dict[str, Any]:
+    """
+    Thread-safe getter for market_data_cache.
+    
+    Args:
+        symbol: Symbol (PREF_IBKR format)
+        
+    Returns:
+        Copy of market data dict (or empty dict if not found)
+    """
+    with _market_data_cache_lock:
+        data = market_data_cache.get(symbol, {})
+        # Return a copy to prevent external modifications
+        return dict(data) if data else {}
+
+
+def get_all_market_data() -> Dict[str, Dict[str, Any]]:
+    """
+    Thread-safe getter for entire market_data_cache.
+    
+    Returns:
+        Shallow copy of market_data_cache
+    """
+    with _market_data_cache_lock:
+        return dict(market_data_cache)
 
 
 def update_market_data_cache(symbol: str, data: Dict[str, Any]):
@@ -781,7 +865,23 @@ def update_market_data_cache(symbol: str, data: Dict[str, Any]):
     #   3. NOT fetched from L1Update path (prev_close is not real-time data)
     
     # Store in cache (with prev_close from CSV if available)
-    market_data_cache[symbol] = data
+    # 🔒 THREAD-SAFE: Protect against concurrent writes from Hammer Feed thread
+    with _market_data_cache_lock:
+        market_data_cache[symbol] = data
+    
+    # NEW: Write to Redis for external workers (e.g. QeBench Benchmark Worker)
+    try:
+        from app.core.redis_client import redis_client
+        if redis_client:
+            # Filter None values (Redis doesn't like them)
+            redis_data = {k: str(v) for k, v in data.items() if v is not None}
+            if redis_data:
+                redis_client.hset(f"live:{symbol}", mapping=redis_data)
+                # Set TTL to avoid stale data if feed stops (e.g. 5 mins)
+                redis_client.expire(f"live:{symbol}", 300)
+    except Exception as e:
+        # Don't block main flow if Redis fails
+        pass
     
     # EVENT-DRIVEN: For preferred stocks, send update immediately (bypass broadcast loop)
     # This restores the old "instant fill" behavior where each L1Update triggers immediate UI update
@@ -873,6 +973,24 @@ def update_market_data_cache(symbol: str, data: Dict[str, Any]):
             fabric.update_live(symbol, data)
     except Exception as e:
         logger.error(f"Failed to update DataFabric for {symbol}: {e}")
+
+    # 🟢 NEW: Write to Redis "live:{symbol}" for QeBench/Benchmark Engine
+    # BenchmarkPriceFetcher needs this to calculate group averages
+    try:
+        from app.core.redis_client import get_redis_client
+        redis_client = get_redis_client()
+        # Use .sync to access the underlying redis connection
+        redis_sync = redis_client.sync
+        
+        if redis_sync:
+            # Ensure values are strings for Redis
+            redis_data = {k: str(v) for k, v in data.items() if v is not None}
+            if redis_data:
+                redis_sync.hset(f"live:{symbol}", mapping=redis_data)
+                # Set TTL to 60 minutes (keep data fresh but allow expiration if feed dies)
+                redis_sync.expire(f"live:{symbol}", 3600) 
+    except Exception as e:
+        logger.error(f"Failed to write live:{symbol} to Redis: {e}")
 
     # Log first few cache updates to verify BID/ASK are being stored
     if not hasattr(update_market_data_cache, '_cache_log_count'):
@@ -1279,8 +1397,9 @@ async def get_merged_market_data():
                 account_mode_manager = get_account_mode_manager()
                 
                 if account_mode_manager and account_mode_manager.is_ibkr():
-                    # IBKR mode: Get positions from IBKR
-                    from app.psfalgo.ibkr_connector import get_ibkr_connector
+                    # IBKR mode: Get positions from IBKR; orders via isolated executor to avoid event-loop errors
+                    import asyncio
+                    from app.psfalgo.ibkr_connector import get_ibkr_connector, get_open_orders_isolated_sync
                     from app.psfalgo.position_snapshot_api import get_position_snapshot_api
                     
                     account_type = account_mode_manager.get_account_type()
@@ -1301,8 +1420,9 @@ async def get_merged_market_data():
                         ]
                         logger.debug(f"Fetched {len(positions_cache)} positions from IBKR {account_type} for batch processing")
                         
-                        # Get orders from IBKR
-                        ibkr_orders = await ibkr_connector.get_open_orders()
+                        # Get orders from IBKR via isolated executor (no "event loop already running")
+                        loop = asyncio.get_event_loop()
+                        ibkr_orders = await loop.run_in_executor(None, lambda: get_open_orders_isolated_sync(account_type))
                         orders_cache = [
                             {
                                 'symbol': o.get('symbol'),
@@ -1313,7 +1433,7 @@ async def get_merged_market_data():
                                 'status': o.get('status', 'OPEN'),
                                 'account': o.get('account', account_type)
                             }
-                            for o in ibkr_orders if o.get('status', '').upper() == 'OPEN'
+                            for o in (ibkr_orders or []) if o.get('status', '').upper() == 'OPEN'
                         ]
                         logger.debug(f"Fetched {len(orders_cache)} open orders from IBKR {account_type} for batch processing")
                     else:
@@ -1572,12 +1692,18 @@ async def get_merged_market_data():
                     psfalgo_guards['guard_reason']['inputs']['current_qty'] = psfalgo_snapshot.get('current_qty')
                     psfalgo_guards['guard_reason']['inputs']['potential_qty'] = psfalgo_snapshot.get('potential_qty')
             
-            # Compute PSFALGO action plan
+            # Compute PSFALGO action plan (run in executor: plan_action -> check_capacity -> get_open_orders_isolated_sync must not run on event loop to avoid deadlock)
             psfalgo_action_plan = {}
             if psfalgo_action_planner and psfalgo_snapshot and psfalgo_guards:
-                psfalgo_action_plan = psfalgo_action_planner.plan_action(
-                    symbol, psfalgo_snapshot, psfalgo_guards, janall_metrics, exposure_mode
-                )
+                try:
+                    ev_loop = asyncio.get_running_loop()
+                    psfalgo_action_plan = await ev_loop.run_in_executor(
+                        None,
+                        lambda s=symbol, snap=psfalgo_snapshot, g=psfalgo_guards, jm=janall_metrics, em=exposure_mode: psfalgo_action_planner.plan_action(s, snap, g, jm, em)
+                    )
+                except Exception as e:
+                    logger.debug(f"plan_action executor for {symbol}: {e}")
+                    psfalgo_action_plan = {}
             
             # Calculate MAXALW = AVG_ADV / 10 (static data)
             avg_adv = static_data.get('AVG_ADV')
@@ -1675,7 +1801,9 @@ async def get_merged_market_data():
                 # Janall metrics (v1)
                 'group_key': janall_metrics.get('group_key'),
                 'benchmark_symbol': janall_metrics.get('benchmark_symbol'),
-                'benchmark_chg': janall_metrics.get('benchmark_chg'),
+                'benchmark_chg': janall_metrics.get('bench_chg'), # Match Janall Engine key
+                'bench_chg': janall_metrics.get('bench_chg'), # New key for frontend
+                'bench_source': janall_metrics.get('bench_source'), # Group info
                 'benchmark_chg_percent': janall_metrics.get('benchmark_chg_percent'),
                 # FIX: Use locally calculated spread (which respects Lifeless Mode shuffling)
                 # janall_metrics comes from worker which might not see RAM-only simulation
@@ -2100,9 +2228,10 @@ async def load_csv():
                 else:
                     # Try to find CSV file manually
                     possible_paths = [
-                        Path(r"C:\Users\User\OneDrive\Masaüstü\Proje\StockTracker\janall") / 'janalldata.csv',
-                        Path(os.getcwd()) / 'janall' / 'janalldata.csv',
+                        Path(r"C:\StockTracker") / 'janalldata.csv',
                         Path(os.getcwd()) / 'janalldata.csv',
+                        Path(r"C:\StockTracker\janall") / 'janalldata.csv',
+                        Path(os.getcwd()) / 'janall' / 'janalldata.csv',
                     ]
                     csv_path_obj = None
                     for path in possible_paths:
@@ -2721,5 +2850,81 @@ async def enable_deep_analysis(enabled: bool = True):
         }
     except Exception as e:
         logger.error(f"Error enabling deep analysis: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/l1-diagnostic")
+async def get_l1_diagnostic():
+    """
+    Diagnostic endpoint to check L1 data flow.
+    
+    Shows:
+    - Hammer connection status
+    - Which symbols are subscribed
+    - Which symbols are receiving L1Update
+    - Which symbols have live data in cache
+    - Which symbols are missing live data
+    """
+    try:
+        from app.core.data_fabric import get_data_fabric
+        
+        diagnostic = {
+            "hammer_connected": False,
+            "hammer_authenticated": False,
+            "hammer_feed_active": False,
+            "l1update_count": 0,
+            "subscribed_symbols": [],
+            "symbols_with_live_data": [],
+            "symbols_without_live_data": [],
+            "total_static_symbols": 0,
+            "live_data_coverage": 0.0
+        }
+        
+        # Check Hammer connection
+        hammer_client = get_hammer_client()
+        if hammer_client:
+            diagnostic["hammer_connected"] = hammer_client.is_connected()
+            diagnostic["hammer_authenticated"] = getattr(hammer_client, 'authenticated', False)
+            diagnostic["l1update_count"] = getattr(hammer_client, '_l1_msg_count', 0)
+        
+        # Check HammerFeed
+        hammer_feed = get_hammer_feed()
+        if hammer_feed:
+            diagnostic["hammer_feed_active"] = True
+            diagnostic["l1update_count"] = getattr(hammer_feed, '_l1update_count', 0)
+        
+        # Get all static symbols
+        if static_store and static_store.is_loaded():
+            all_symbols = static_store.get_all_symbols()
+            diagnostic["total_static_symbols"] = len(all_symbols)
+            
+            # Check which symbols have live data
+            fabric = get_data_fabric()
+            symbols_with_live = []
+            symbols_without_live = []
+            
+            for symbol in all_symbols:
+                live = fabric.get_live(symbol) if fabric else None
+                if live and live.get('bid') is not None and live.get('ask') is not None:
+                    symbols_with_live.append(symbol)
+                else:
+                    symbols_without_live.append(symbol)
+            
+            diagnostic["symbols_with_live_data"] = symbols_with_live
+            diagnostic["symbols_without_live_data"] = symbols_without_live[:20]  # First 20 only
+            
+            if len(all_symbols) > 0:
+                diagnostic["live_data_coverage"] = len(symbols_with_live) / len(all_symbols) * 100
+        
+        # Check market_data_cache
+        diagnostic["cache_size"] = len(market_data_cache)
+        diagnostic["cache_symbols"] = list(market_data_cache.keys())[:20]  # First 20 only
+        
+        return {
+            "success": True,
+            "diagnostic": diagnostic
+        }
+    except Exception as e:
+        logger.error(f"Error getting L1 diagnostic: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 

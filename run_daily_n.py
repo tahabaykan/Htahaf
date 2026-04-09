@@ -51,12 +51,14 @@ scripts = [
     #   Bu script sessizce "dosya bulunamadı" yazıp geçiyordu — ölü kod.
     "nmarket_risk_analyzer.py",
     "ncalculate_thebest.py",
-    "noptimize_shorts.py",  # EKHELD dosyalarından en düşük SHORT_FINAL hisselerini bulur
+    "noptimize_shorts.py",  # finek*.csv → ssfinek*.csv (SMI merge + SHORT_FINAL hesaplama)
+    "netobosol.py",  # NETOBOSOL: ssfinek*.csv üzerinde Market regime FINAL_THG revision
     "ntumcsvport.py",  # SSFINEK dosyalarından LONG/SHORT hisseleri seçer
     "npreviousadd.py",  # SSFINEK dosyalarına prev_close kolonu ekler ve janek_ prefix ile kaydeder
     "merge_csvs.py",  # janek_ssfinek dosyalarını birleştirir ve janalldata.csv oluşturur
     "exdiv_info.py",  # Bugün ex-dividend olan hisseleri bulur → exdiv_today.json
     "gorter.py",  # janalldata.csv'den her CGRUP için en yüksek ve en düşük 3 GORT değerine sahip hisseleri bulur
+    "npattern_export.py",  # LPAT ve SPAT skorlarını hesaplayıp pattern_suggestions_lpat_spat.csv olarak kaydeder
 ]
 
 # Çalışma dizinini run_daily_n.py'nin bulunduğu klasöre ayarla (nereden çalıştırılırsa çalıştırılsın)

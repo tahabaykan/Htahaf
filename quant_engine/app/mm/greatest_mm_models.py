@@ -17,6 +17,7 @@ class MMScenarioType(str, Enum):
     NEW_SON5 = "NEW_SON5"           # Entry same, Son5Tick=new_print
     NEW_ENTRY = "NEW_ENTRY"         # Entry=new_print±0.01, Son5Tick=old
     BOTH_NEW = "BOTH_NEW"           # Entry=old_son5±0.01, Son5Tick=new_print
+    VOLAV_ANCHOR = "VOLAV_ANCHOR"   # Entry=Bid/Ask±spread×0.15, Son5Tick=Volav1 (mean-reversion)
 
 
 class MMScenario(BaseModel):

@@ -104,6 +104,8 @@ def _load_group_files(base_path: Optional[Path] = None) -> Dict[str, set]:
     for group, file_name in GROUP_FILE_MAP.items():
         # Try multiple possible locations
         possible_paths = [
+            Path(r"C:\StockTracker") / file_name,  # Root workspace
+            Path(r"C:\StockTracker\janall") / file_name,
             base_path / file_name,
             base_path / 'janall' / file_name,
             Path(file_name),  # Current directory
@@ -162,8 +164,9 @@ def resolve_primary_group(static_row: Dict[str, Any], symbol: Optional[str] = No
         if symbol in _group_cache:
             return _group_cache[symbol]
         
-        # Try GROUP column first (if exists in CSV)
-        for col_name in ['GROUP', 'file_group', 'group']:
+        # Try GROUP / DOS GROUP column first (if exists in CSV)
+        # This is the fastest method (direct lookup from janalldata.csv)
+        for col_name in ['DOS GROUP', 'DOS_GROUP', 'GROUP', 'file_group', 'group']:
             if col_name in static_row:
                 value = static_row[col_name]
                 if value is not None and str(value).strip() and str(value).strip().lower() != 'nan':

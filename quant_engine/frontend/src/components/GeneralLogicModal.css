@@ -1,0 +1,474 @@
+/* GeneralLogicModal.css - QE General Logic Formulas Editor */
+
+.gl-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.gl-modal {
+  background: linear-gradient(145deg, #0d1117, #161b22);
+  border-radius: 12px;
+  width: 95%;
+  max-width: 1400px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 25px 60px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(48, 54, 61, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  animation: glModalIn 0.25s ease-out;
+}
+
+@keyframes glModalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Header */
+.gl-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(48, 54, 61, 0.8);
+  position: relative;
+  background: linear-gradient(90deg, rgba(88, 166, 255, 0.08), transparent);
+}
+
+.gl-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gl-icon {
+  font-size: 1.6em;
+  filter: drop-shadow(0 0 8px rgba(88, 166, 255, 0.5));
+}
+
+.gl-header h2 {
+  margin: 0;
+  font-size: 1.4em;
+  font-weight: 700;
+  color: #e6edf3;
+  letter-spacing: 1px;
+}
+
+.gl-subtitle {
+  margin-top: 4px;
+  margin-left: 42px;
+  font-size: 0.8em;
+  color: #7d8590;
+}
+
+.gl-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(248, 81, 73, 0.15);
+  border: 1px solid rgba(248, 81, 73, 0.3);
+  color: #f85149;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  font-size: 1.3em;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gl-close:hover {
+  background: rgba(248, 81, 73, 0.25);
+  transform: scale(1.05);
+}
+
+/* Toolbar */
+.gl-toolbar {
+  padding: 12px 24px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+}
+
+.gl-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 0.85em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.5px;
+}
+
+.gl-btn.save {
+  background: linear-gradient(135deg, #238636, #1a7f37);
+  border: none;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(35, 134, 54, 0.3);
+}
+
+.gl-btn.save:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(35, 134, 54, 0.4);
+}
+
+.gl-btn.save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gl-btn.reset {
+  background: rgba(210, 153, 34, 0.15);
+  border: 1px solid rgba(210, 153, 34, 0.4);
+  color: #d29922;
+}
+
+.gl-btn.reset:hover:not(:disabled) {
+  background: rgba(210, 153, 34, 0.25);
+}
+
+.gl-btn.refresh {
+  background: rgba(88, 166, 255, 0.15);
+  border: 1px solid rgba(88, 166, 255, 0.4);
+  color: #58a6ff;
+}
+
+.gl-btn.refresh:hover:not(:disabled) {
+  background: rgba(88, 166, 255, 0.25);
+}
+
+.gl-autosave {
+  margin-left: auto;
+  font-size: 0.85em;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.gl-autosave.saving {
+  color: #d29922;
+  background: rgba(210, 153, 34, 0.12);
+  animation: pulse 1.5s infinite;
+}
+
+.gl-autosave.saved {
+  color: #3fb950;
+  background: rgba(35, 134, 54, 0.12);
+}
+
+.gl-autosave.error {
+  color: #f85149;
+  background: rgba(248, 81, 73, 0.12);
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Messages */
+.gl-error,
+.gl-success {
+  margin: 10px 24px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.gl-error {
+  background: rgba(248, 81, 73, 0.12);
+  border: 1px solid rgba(248, 81, 73, 0.25);
+  color: #f85149;
+}
+
+.gl-success {
+  background: rgba(35, 134, 54, 0.12);
+  border: 1px solid rgba(35, 134, 54, 0.25);
+  color: #3fb950;
+}
+
+/* Content */
+.gl-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 24px;
+}
+
+.gl-loading {
+  text-align: center;
+  padding: 60px;
+  color: #7d8590;
+  font-size: 1em;
+}
+
+/* Sections */
+.gl-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gl-section {
+  background: rgba(22, 27, 34, 0.6);
+  border: 1px solid rgba(48, 54, 61, 0.6);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.gl-section-header {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(48, 54, 61, 0.3);
+  border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+}
+
+.section-icon {
+  font-size: 1.2em;
+}
+
+.section-name {
+  font-size: 0.95em;
+  font-weight: 700;
+  color: #e6edf3;
+  flex: 1;
+}
+
+.section-count {
+  font-size: 0.7em;
+  color: #58a6ff;
+  background: rgba(88, 166, 255, 0.12);
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.gl-section-content {
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 10px;
+}
+
+/* Parameters */
+.gl-param {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  border: 1px solid rgba(48, 54, 61, 0.4);
+  transition: all 0.12s;
+}
+
+.gl-param:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(88, 166, 255, 0.3);
+}
+
+.param-key {
+  flex: 1;
+  font-size: 0.72em;
+  color: #8b949e;
+  font-family: 'Consolas', 'Monaco', monospace;
+  min-width: 150px;
+  word-break: break-word;
+}
+
+.param-value {
+  flex: 0 0 auto;
+  min-width: 120px;
+}
+
+.param-value input[type="number"],
+.param-value input[type="text"] {
+  width: 100%;
+  padding: 7px 10px;
+  background: rgba(13, 17, 23, 0.8);
+  border: 1px solid rgba(48, 54, 61, 0.6);
+  border-radius: 4px;
+  color: #e6edf3;
+  font-size: 0.85em;
+  font-family: 'Consolas', 'Monaco', monospace;
+  transition: all 0.15s;
+}
+
+.param-value input:focus {
+  outline: none;
+  border-color: #58a6ff;
+  box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
+}
+
+.param-value input[type="number"] {
+  width: 100px;
+}
+
+.param-value .array-input {
+  min-width: 200px;
+}
+
+/* Threshold Tables */
+.threshold-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.threshold-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8em;
+}
+
+.threshold-table th {
+  text-align: left;
+  font-size: 0.75em;
+  color: #7d8590;
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(48, 54, 61, 0.6);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.threshold-table td {
+  padding: 4px;
+}
+
+.threshold-table input {
+  width: 80px;
+  padding: 6px 8px;
+  background: rgba(13, 17, 23, 0.8);
+  border: 1px solid rgba(48, 54, 61, 0.6);
+  border-radius: 4px;
+  color: #e6edf3;
+  font-size: 0.85em;
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.threshold-table input:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+.portfolio-rules th {
+  font-size: 0.7em;
+}
+
+.portfolio-rules input {
+  width: 70px;
+}
+
+/* Bool Toggle */
+.bool-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.bool-toggle input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #58a6ff;
+}
+
+.bool-toggle span {
+  font-size: 0.75em;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.bool-toggle span.on {
+  background: rgba(35, 134, 54, 0.2);
+  color: #3fb950;
+}
+
+.bool-toggle span.off {
+  background: rgba(110, 118, 129, 0.2);
+  color: #6e7681;
+}
+
+/* Footer */
+.gl-footer {
+  padding: 12px 24px;
+  border-top: 1px solid rgba(48, 54, 61, 0.5);
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.75em;
+  color: #6e7681;
+}
+
+/* Scrollbar */
+.gl-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.gl-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.gl-content::-webkit-scrollbar-thumb {
+  background: rgba(88, 166, 255, 0.3);
+  border-radius: 4px;
+}
+
+.gl-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(88, 166, 255, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .gl-section-content {
+    grid-template-columns: 1fr;
+  }
+
+  .gl-param {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .param-value {
+    width: 100%;
+  }
+
+  .param-value input[type="number"] {
+    width: 100%;
+  }
+}

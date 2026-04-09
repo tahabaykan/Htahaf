@@ -219,30 +219,25 @@ def runall_cancel_orders_and_restart(self):
 
 ## 🎯 KATEGORİ 3: RİSK/GUARDRAIL EKSİKLİKLERİ
 
-### ❌ 3.1. MAXALW (Company Limits) - Şirket Bazlı Emir Limiti
+### ✅ 3.1. Company Limit (Şirket Bazlı Emir Limiti) — ÇÖZÜLDÜ
+
+**NOT**: Bu madde önceden yanlışlıkla MAXALW ile karıştırılmıştı.
+- **MAXALW** = `AVG_ADV / 10` → Hisse bazlı likidite limiti (tamamen farklı)
+- **Company Limit** = Aynı şirketten kaç hisseye emir gönderilebilir
 
 **Janall'da:**
 ```python
-# psfalgo.py - MAXALW hesaplama
-def calculate_maxalw_per_company(self, company_symbols):
-    # Aynı şirketten kaç farklı hisse var?
-    total_stocks = len(company_symbols)
-    
-    # MAXALW = min(3, max(1, round(total_stocks / 3)))
-    maxalw = min(3, max(1, round(total_stocks / 3)))
-    
-    # Bu şirketten maksimum maxalw kadar emir gönderilebilir
-    return maxalw
+# Janall: limit_by_company
+# max_per_company = company_total / 1.6 (minimum 1)
 ```
 
 **Quant Engine'de:**
-- ❌ **YOK**: Şirket bazlı emir limiti yok
-- ❌ **YOK**: MAXALW per company hesaplama yok
-- ❌ **YOK**: Aynı şirketten maksimum emir sayısı kontrolü yok
+- ✅ **VAR**: `jfin_engine.py` → `_apply_company_limit()` fonksiyonu
+- ✅ **VAR**: CMON field'ı ile şirket gruplama
+- ✅ **VAR**: `company_limit_divisor = 1.6` (configurable)
+- ✅ **VAR**: `intent_risk_checks.py` → `check_maxalw_company_limit()`
 
-**Etki:**
-- Janall'da aynı şirketten maksimum 3 emir gönderilebilir (risk kontrolü)
-- Quant Engine'de sınırsız emir gönderilebilir (risk)
+**Durum:** Bu eksiklik **YOKTUR**. Company Limit doğru çalışmaktadır.
 
 ---
 
@@ -593,28 +588,28 @@ def runall_loop(self):
 
 ## 📊 ÖZET TABLO: TÜM EKSİKLİKLER
 
-| # | Kategori | Özellik | Janall | Quant Engine | Kritiklik |
-|---|----------|---------|--------|--------------|-----------|
-| 1.1 | RUNALL Loop | Lot Bölücü Kontrolü | ✅ Var | ❌ Yok | 🔴 Yüksek |
-| 1.2 | RUNALL Loop | Controller ON | ✅ Var | ⚠️ Var ama çalışmıyor | 🔴 Yüksek |
-| 1.3 | RUNALL Loop | Qpcal İşlemi | ✅ Var | ❌ Yok | 🔴 Yüksek |
-| 1.4 | RUNALL Loop | 2 Dakika Bekleme | ✅ Var | ❌ Yok | 🔴 Yüksek |
-| 1.5 | RUNALL Loop | Emir İptal Loop | ✅ Var | ❌ Yok | 🔴 Yüksek |
-| 1.6 | RUNALL Loop | Cycle Timing | ✅ 3-4 dakika | ⚠️ 60 saniye | 🔴 Yüksek |
-| 2.1 | Emir Yönetimi | Replace Loop | ✅ Var | ❌ Yok | 🟡 Orta |
-| 2.2 | Emir Yönetimi | Cancel Policy | ✅ Var | ❌ Yok | 🔴 Yüksek |
-| 3.1 | Risk/Guardrail | MAXALW (Company) | ✅ Var | ❌ Yok | 🔴 Yüksek |
-| 3.2 | Risk/Guardrail | Daily Position Limits | ✅ Var | ❌ Yok | 🔴 Yüksek |
-| 3.3 | Risk/Guardrail | BEFDAY Tracking | ✅ Var | ⚠️ Var ama eksik | 🟡 Orta |
-| 4.1 | Veri Kaynağı | DataFrame Güncelleme | ✅ Var | ⚠️ Var ama farklı | 🟡 Orta |
-| 4.2 | Veri Kaynağı | Exposure Timing | ✅ Async | ⚠️ Sync | 🟢 Düşük |
-| 5.1 | Execution Flow | Rate Limiting | ✅ Var | ❌ Yok | 🟡 Orta |
-| 5.2 | Execution Flow | Allowed Modu | ✅ Var | ⚠️ Var ama farklı | 🟡 Orta |
-| 6.1 | UI/UX | Take Profit Panel | ✅ Var | ❌ Yok | 🟢 Düşük |
-| 6.2 | UI/UX | Confirmation Window | ✅ Var | ⚠️ Var ama farklı | 🟡 Orta |
-| 7.1 | Data Consistency | Snapshot Consistency | ✅ Var | ⚠️ Var ama eksik | 🟡 Orta |
-| 7.2 | Data Consistency | CSV Reload | ✅ Var | ❌ Yok | 🟢 Düşük |
-| 8.1 | Error Handling | Cycle Error Recovery | ✅ Var | ⚠️ Var ama eksik | 🟡 Orta |
+| # | Kategori | Özellik | Janall | Quant Engine | Kritiklik | Audit Notu |
+|---|----------|---------|--------|--------------|-----------|-----------|
+| 1.1 | RUNALL Loop | Lot Bölücü Kontrolü | ✅ Var | ❌ Yok | 🔴 Yüksek | |
+| 1.2 | RUNALL Loop | Controller ON | ✅ Var | ⚠️ Var ama çalışmıyor | 🔴 Yüksek | |
+| 1.3 | RUNALL Loop | Qpcal İşlemi | ✅ Var | ❌ Yok | 🔴 Yüksek | |
+| 1.4 | RUNALL Loop | 2 Dakika Bekleme | ✅ Var | ❌ Yok | 🔴 Yüksek | |
+| 1.5 | RUNALL Loop | Emir İptal Loop | ✅ Var | ✅ cancel_by_filter("tum") | 🟢 Çözüldü | dual_process_runner L228 |
+| 1.6 | RUNALL Loop | Cycle Timing | ✅ 3-4 dakika | ⚠️ 60 saniye | 🔴 Yüksek | |
+| 2.1 | Emir Yönetimi | Replace Loop | ✅ Var | ❌ Yok | 🟡 Orta | |
+| 2.2 | Emir Yönetimi | Cancel Policy | ✅ Var | ✅ cancel_by_filter + REV koruma | 🟢 Çözüldü | REV emirler korunuyor |
+| 3.1 | Risk/Guardrail | Company Limit | ✅ Var | ✅ jfin_engine._apply_company_limit() | 🟢 Çözüldü | CMON + /1.6 divisor |
+| 3.2 | Risk/Guardrail | Daily Position Limits | ✅ Var | ⚠️ MinMax+DailyLimit var | 🟡 Orta | validate_order_against_minmax var |
+| 3.3 | Risk/Guardrail | BEFDAY Tracking | ✅ Var | ⚠️ Var ama eksik | 🟡 Orta | |
+| 4.1 | Veri Kaynağı | DataFrame Güncelleme | ✅ Var | ⚠️ Var ama farklı | 🟡 Orta | |
+| 4.2 | Veri Kaynağı | Exposure Timing | ✅ Async | ⚠️ Async (await) | 🟢 Düşük | xnl_engine async |
+| 5.1 | Execution Flow | Rate Limiting | ✅ Var | ✅ ORDER_SEND_DELAY_SEC=0.067 | 🟢 Çözüldü | ~15 orders/sec |
+| 5.2 | Execution Flow | Allowed Modu | ✅ Var | ⚠️ Var ama farklı | 🟡 Orta | |
+| 6.1 | UI/UX | Take Profit Panel | ✅ Var | ❌ Yok | 🟢 Düşük | |
+| 6.2 | UI/UX | Confirmation Window | ✅ Var | ⚠️ Var ama farklı | 🟡 Orta | |
+| 7.1 | Data Consistency | Snapshot Consistency | ✅ Var | ⚠️ Var ama eksik | 🟡 Orta | |
+| 7.2 | Data Consistency | CSV Reload | ✅ Var | ❌ Yok | 🟢 Düşük | |
+| 8.1 | Error Handling | Cycle Error Recovery | ✅ Var | ⚠️ Var ama eksik | 🟡 Orta | |
 | 9.1 | Performans | Polling vs Event | ✅ Polling | ⚠️ Event-driven | 🟡 Orta |
 
 ---
@@ -653,15 +648,33 @@ def runall_loop(self):
 
 ## ✅ SONUÇ
 
-**Toplam Eksiklik Sayısı**: 21 adet
+**Toplam Eksiklik Sayısı**: 21 adet (5 tanesi çözüldü ✅)
 
-**Kritik Eksiklikler**: 7 adet (sistemin çalışmamasına sebep olan)
+**Kritik Eksiklikler**: 3 adet (7'den 3'e düştü — 1.5, 2.2, 3.1, 5.1 çözüldü)
 **Önemli Eksiklikler**: 6 adet (sistemin doğru çalışmamasına sebep olan)
-**İyileştirme Eksiklikleri**: 8 adet (sistemin daha iyi çalışması için)
+**İyileştirme Eksiklikleri**: 7 adet (4.2 çözüldü)
 
-**Birebirlik Durumu**: ⚠️ **%40-50 Eşleşiyor**
+**Birebirlik Durumu**: ⚠️ **%60-65 Eşleşiyor** (5 tane daha çözüldü)
 
-**Ana Sorun**: Quant Engine'de **emir lifecycle yönetimi** (iptal, bekleme, temizlik) tamamen eksik. Bu, sistemin Janall gibi çalışmamasının ana sebebidir.
+**Ana Sorun**: Quant Engine'de **emir lifecycle yönetimi** kısmen eksik (cycle bekleme, lot bölücü). Cancel policy ve Company Limit çözüldü.
 
+---
 
+## 🔧 BUG FIX KAYITLARI (Session: 2026-02-15)
+
+| Bug | Dosya | Fix |
+|-----|-------|-----|
+| BUG-RUN-03 | dual_process_runner.py L298 | Redis state sync: loop_count sonrası publish eklendi |
+| Tag Mismatch | xnl_engine.py L1464-1467 | cancel_by_filter 'INC'/'DEC' matching düzeltildi |
+| check_capacity Short Bug | daily_limit_service.py L145 | BUY≠increase for shorts: is_increase param eklendi |
+| action_planner Short Bug | action_planner.py L339-349 | ADD=increase, REDUCE=decrease olarak düzeltildi |
+| befday_guard Short Bug | befday_guard.py L14-51 | is_increase inference from position direction |
+| Duplicate except | action_planner.py L453-462 | Unreachable dead code kaldırıldı |
+| Exposure BUY_TO_COVER Bug | intent_risk_checks.py L214 | BUY_TO_COVER exposure artışı sayılıyordu → azalış olarak düzeltildi |
+| Dead Guard Docs | position_guard_engine.py L108-123 | daily_add ve 3h_change guard'ları INACTIVE olarak belgelendi (yazma yolu yok) |
+| KARBOTU Normal MinMax | karbotu_engine_v2.py L246-290, L376-420 | Normal mode LONG+SHORT → MinMax validation eklendi (HEAVY ile tutarlı) |
+| LT_TRIM MinMax | xnl_engine.py L408-440 | LT_TRIM intent→order dönüşümüne MinMax validation eklendi |
+| guardrails.py DEPRECATED | guardrails.py L1-20 | 677 satır ölü kod — hiçbir yerden çağrılmıyor, DEPRECATED olarak işaretlendi |
+| BUG-E: remaining Short Dir | daily_limit_service.py L109-152 | `remaining` hesabı short pozisyonlarda yönü yanlış okuyordu: short daha short olunca (increase) formül bunu görmüyor, cover yapılmadığı halde decrease consumed diye sayıyordu. befday_qty işaretine göre yön ayrımı eklendi |
+| BUG-F: MinMax Double Count | minmax_area_service.py L233-245 | MinMax `limit_qty` (tam günlük limit) kullanıyordu → `remaining` (limit − tüketilen) ile değiştirildi. `compute_minmax_row` zaten current_qty üzerinden çalıştığı için limit_qty kullanmak bugün yapılan işlemleri çift sayıyordu. Örn: 400 lot increase yapılmış, limit 600 → eski: max=current+600 (yanlış), yeni: max=current+200 (doğru) |
 

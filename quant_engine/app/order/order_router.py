@@ -3,6 +3,17 @@
 Order router - consumes orders from Redis stream and executes them via IBKR.
 Handles order execution, status tracking, and error handling.
 """
+import asyncio
+
+# FIX: Create event loop before importing ib_insync - nbefore_common_adv.py pattern
+try:
+    asyncio.get_running_loop()
+except RuntimeError:
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+# Monkey patch asyncio.get_event_loop to use get_running_loop
+asyncio.get_event_loop = asyncio.get_running_loop
 
 import json
 import time

@@ -69,7 +69,7 @@ class ConnectionManager:
             message_json = json.dumps(clean_message, allow_nan=False)
             disconnected = set()
             
-            for connection in self.active_connections:
+            for connection in set(self.active_connections):
                 try:
                     await connection.send_text(message_json)
                 except Exception as e:

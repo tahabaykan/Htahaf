@@ -136,6 +136,11 @@
   color: #60a5fa;
 }
 
+.active-indicator.dual-process-indicator {
+  background: #4433a1;
+  color: #c4b5fd;
+  margin-left: 6px;
+}
 
 
 

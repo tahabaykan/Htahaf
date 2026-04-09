@@ -106,6 +106,10 @@ class PositionGuardEngine:
                     maxalw_exceeded_potential = True
             
             # Get daily tracker
+            # ⚠️ WARNING: daily_add_used is ALWAYS 0 — no code path writes fill data
+            # to state_store.update_daily_tracker(). This guard is effectively INACTIVE.
+            # The REAL daily limit enforcement is done by DailyLimitService.check_capacity()
+            # which uses daily_net_change from BEFDAY diff.
             daily_tracker = self.state_store.get_daily_tracker(symbol)
             daily_add_used = daily_tracker['daily_add_used']
             # Daily limit from config
@@ -113,6 +117,8 @@ class PositionGuardEngine:
             daily_add_remaining = (daily_add_limit - daily_add_used) if daily_add_limit is not None else None
             
             # Get 3h net change
+            # ⚠️ WARNING: 3h tracking is ALWAYS 0 — no code path writes to
+            # state_store.record_3h_change(). This guard is effectively INACTIVE.
             change_3h_net = self.state_store.get_3h_net_change(symbol)
             # 3h limit from config
             change_3h_limit = maxalw * self.change_3h_limit_multiplier if maxalw is not None else None

@@ -9,7 +9,7 @@ import signal
 import json
 import yaml
 from pathlib import Path
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 from app.core.logger import logger
 from app.core.redis_client import get_redis_client
 from app.event_driven.state.event_log import EventLog
@@ -403,31 +403,31 @@ class DecisionEngine:
             
             # Determine action and classification based on action_type
             if "SHORT_TOO_HIGH" in action_type:
-                # Prefer LT_SHORT_DECREASE: sell short position (BUY to close)
+                # Prefer LT_SHORT_DEC: sell short position (BUY to close)
                 if quantity < 0:
                     action = "BUY"  # Close short
-                    classification = OrderClassification.LT_SHORT_DECREASE
+                    classification = OrderClassification.LT_SHORT_DEC
                 else:
-                    # Or LT_LONG_INCREASE: buy long
+                    # Or LT_LONG_INC: buy long
                     action = "BUY"
-                    classification = OrderClassification.LT_LONG_INCREASE
+                    classification = OrderClassification.LT_LONG_INC
             elif "SHORT_TOO_LOW" in action_type:
-                # Prefer LT_SHORT_INCREASE: sell to open short
+                # Prefer LT_SHORT_INC: sell to open short
                 action = "SELL"
-                classification = OrderClassification.LT_SHORT_INCREASE
+                classification = OrderClassification.LT_SHORT_INC
             elif "LONG_TOO_HIGH" in action_type:
-                # Prefer LT_LONG_DECREASE: sell long position
+                # Prefer LT_LONG_DEC: sell long position
                 if quantity > 0:
                     action = "SELL"  # Close long
-                    classification = OrderClassification.LT_LONG_DECREASE
+                    classification = OrderClassification.LT_LONG_DEC
                 else:
-                    # Or LT_SHORT_INCREASE: sell to open short
+                    # Or LT_SHORT_INC: sell to open short
                     action = "SELL"
-                    classification = OrderClassification.LT_SHORT_INCREASE
+                    classification = OrderClassification.LT_SHORT_INC
             elif "LONG_TOO_LOW" in action_type:
-                # Prefer LT_LONG_INCREASE: buy long
+                # Prefer LT_LONG_INC: buy long
                 action = "BUY"
-                classification = OrderClassification.LT_LONG_INCREASE
+                classification = OrderClassification.LT_LONG_INC
             else:
                 return  # Unknown action type
             
@@ -609,7 +609,7 @@ class DecisionEngine:
             # For now, we'll rely on Execution Service to track and cancel
             logger.warning(
                 f"🚨 [{self.worker_name}] HARD CAP reached - "
-                f"Execution Service should cancel all *_INCREASE orders"
+                f"Execution Service should cancel all *_INC orders"
             )
         except Exception as e:
             logger.error(f"❌ [{self.worker_name}] Error canceling risk-increasing orders: {e}", exc_info=True)
@@ -632,8 +632,8 @@ class DecisionEngine:
             # No position - determine from action
             direction = "LONG" if action == "BUY" else "SHORT"
         
-        # Effect: DECREASE (we're reducing/closing position)
-        effect = "DECREASE"
+        # Effect: DEC (we're reducing/closing position)
+        effect = "DEC"
         
         return OrderClassification.from_components(bucket, direction, effect)
     

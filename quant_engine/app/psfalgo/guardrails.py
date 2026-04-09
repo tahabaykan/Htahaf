@@ -1,16 +1,24 @@
 """
-Guardrails - Janall-Compatible Safety Checks
+⚠️ DEPRECATED — THIS MODULE IS DEAD CODE ⚠️
 
+No code in the system calls get_guardrails() or Guardrails.check_all().
+The actual safety checks are handled by:
+  - PositionGuardEngine → MAXALW, allowed_actions
+  - DailyLimitService → daily increase/decrease limits
+  - MinMaxAreaService → todays_min_qty / todays_max_qty
+  - IntentRiskChecks → exposure, duplicate, company limits
+
+This file was originally created as "Guardrails - Janall-Compatible Safety Checks"
+but was never integrated into the order flow pipeline (XNL Engine, ActionPlanner).
+
+DO NOT rely on this module for safety. It may be removed in a future refactor.
+
+Original description:
 Implements safety checks before order execution:
 - MAXALW: Company exposure limits
 - Daily Limits: Max daily lot change, order count
 - Position Limits: Max position per symbol, total positions
 - Duplicate Prevention: Prevent duplicate orders
-
-Janall Logic:
-- Check MAXALW before each order
-- Track daily lot changes per symbol
-- Prevent duplicate orders within cooldown window
 """
 
 import threading
@@ -160,28 +168,12 @@ class Guardrails:
             check = self._check_befday_maxalw(symbol, action, lot_qty, maxalw, current_position, bef_pos)
             checks.append(check)
         
-        # Daily Limits Check
-        if self.config.daily_limits_enabled:
-            check = self._check_daily_limits(symbol, lot_qty)
-            checks.append(check)
+        # REMOVED per user: daily limits, open order limits, position limits, order value.
+        # Only MAXALW, BEFDAY, portfolio %, exposure % (via MinMax Area) and duplicate are used.
         
-        # Order Limits Check
-        check = self._check_order_limits(symbol)
-        checks.append(check)
-        
-        # Duplicate Prevention Check
+        # Duplicate Prevention Check (keep)
         if self.config.duplicate_prevention_enabled:
             check = self._check_duplicate(symbol, action, lot_qty)
-            checks.append(check)
-        
-        # Position Limits Check
-        if self.config.position_limits_enabled:
-            check = self._check_position_limits(symbol, action, lot_qty, current_position)
-            checks.append(check)
-        
-        # Order Value Check
-        if price is not None:
-            check = self._check_order_value(symbol, lot_qty, price)
             checks.append(check)
         
         # Determine overall result

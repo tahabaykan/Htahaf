@@ -80,13 +80,64 @@ def run_api():
     logger.info(f"Starting API server on {settings.API_HOST}:{settings.API_PORT}")
     
     import uvicorn
-    # Use uvicorn.run() without nest_asyncio conflicts
-    uvicorn.run(
-        app,
-        host=settings.API_HOST,
-        port=settings.API_PORT,
-        log_level=settings.LOG_LEVEL.lower()
-    )
+    import platform
+    
+    # Windows-specific: Suppress ProactorEventLoop shutdown errors
+    if platform.system() == "Windows":
+        import warnings
+        # Suppress WinError 995 and InvalidStateError during shutdown
+        warnings.filterwarnings("ignore", category=RuntimeWarning, message=".*proactor.*")
+        
+        # Monkey-patch asyncio to suppress shutdown errors
+        import asyncio.windows_events
+        original_poll = asyncio.windows_events.IocpProactor._poll
+        
+        def patched_poll(self, timeout=None):
+            try:
+                return original_poll(self, timeout)
+            except (ConnectionResetError, OSError) as e:
+                # Suppress WinError 995 during shutdown
+                if hasattr(e, 'winerror') and e.winerror == 995:
+                    return []
+                raise
+            except asyncio.exceptions.InvalidStateError:
+                # Suppress "invalid state" errors during shutdown
+                return []
+        
+        asyncio.windows_events.IocpProactor._poll = patched_poll
+        
+        # Also patch _loop_writing to suppress AssertionError in concurrent WebSocket writes
+        # Known CPython bug: https://github.com/python/cpython/issues/99205
+        import asyncio.proactor_events as _proactor_events
+        _original_loop_writing = _proactor_events._ProactorBaseWritePipeTransport._loop_writing
+        
+        def _patched_loop_writing(self, f=None, data=None):
+            try:
+                _original_loop_writing(self, f, data)
+            except (AssertionError, RuntimeError):
+                # Silently ignore "assert f is self._write_fut" race condition
+                pass
+        
+        _proactor_events._ProactorBaseWritePipeTransport._loop_writing = _patched_loop_writing
+    
+    # Use uvicorn.run() without nest_asyncio conflicts.
+    # Python 3.14: use ws="wsproto" to avoid websockets legacy server "Timeout should be used inside a task".
+    try:
+        uvicorn.run(
+            app,
+            host=settings.API_HOST,
+            port=settings.API_PORT,
+            log_level=settings.LOG_LEVEL.lower(),
+            ws="wsproto",
+        )
+    except KeyboardInterrupt:
+        logger.info("API server stopped by user")
+    except Exception as e:
+        # Suppress InvalidStateError during shutdown
+        if "invalid state" not in str(e).lower():
+            logger.error(f"API server error: {e}", exc_info=True)
+        else:
+            logger.info("API server shutdown complete")
 
 
 def run_ibkr_sync():

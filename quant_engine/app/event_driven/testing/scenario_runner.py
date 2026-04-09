@@ -286,7 +286,7 @@ def scenario_e_potential_135pct_throttle(runner: ScenarioRunner):
 
 
 def scenario_f_classification_cancel(runner: ScenarioRunner):
-    """Scenario F: Mixed classified open orders, hit cap, ensure only *_INCREASE are canceled"""
+    """Scenario F: Mixed classified open orders, hit cap, ensure only *_INC are canceled"""
     from app.event_driven.contracts.events import IntentEvent, OrderClassification
     
     # Inject exposure at 130% (hard cap)
@@ -297,7 +297,7 @@ def scenario_f_classification_cancel(runner: ScenarioRunner):
     time.sleep(0.5)
     
     # Check that Execution Service would cancel risk-increasing orders
-    # This is tested by checking that only *_INCREASE orders are in cancel list
+    # This is tested by checking that only *_INC orders are in cancel list
     # In real system, Execution Service monitors exposure and cancels automatically
     
     # For this test, we verify the classification system works
@@ -305,14 +305,14 @@ def scenario_f_classification_cancel(runner: ScenarioRunner):
     intents = runner.check_intents(expected_count=0)  # May have derisk intents
     
     # Verify classification enum works
-    cls = OrderClassification.MM_LONG_INCREASE
-    assert cls.is_risk_increasing == True, "MM_LONG_INCREASE should be risk-increasing"
+    cls = OrderClassification.MM_LONG_INC
+    assert cls.is_risk_increasing == True, "MM_LONG_INC should be risk-increasing"
     assert cls.bucket == "MM", "Bucket should be MM"
     assert cls.direction == "LONG", "Direction should be LONG"
-    assert cls.effect == "INCREASE", "Effect should be INCREASE"
+    assert cls.effect == "INC", "Effect should be INC"
     
-    cls2 = OrderClassification.LT_SHORT_DECREASE
-    assert cls2.is_risk_increasing == False, "LT_SHORT_DECREASE should NOT be risk-increasing"
+    cls2 = OrderClassification.LT_SHORT_DEC
+    assert cls2.is_risk_increasing == False, "LT_SHORT_DEC should NOT be risk-increasing"
     
     return True
 

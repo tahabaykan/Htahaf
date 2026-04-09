@@ -21,6 +21,8 @@ function TradingPositions() {
   useEffect(() => {
     loadTradingMode()
     loadPositions()
+    const modeInterval = setInterval(loadTradingMode, 5000)
+    return () => clearInterval(modeInterval)
   }, [])
 
   useEffect(() => {
@@ -32,7 +34,8 @@ function TradingPositions() {
       const response = await fetch('/api/trading/mode')
       const result = await response.json()
       if (result.success) {
-        setTradingMode(result.mode)
+        const m = result.mode || result.trading_mode || ''
+        setTradingMode(m === 'HAMPRO' ? 'HAMMER_TRADING' : m)
       }
     } catch (err) {
       console.error('Error loading trading mode:', err)
@@ -59,7 +62,7 @@ function TradingPositions() {
       <div className="trading-page-header">
         <h1>Positions</h1>
         <div className="trading-mode-badge">
-          {tradingMode === 'HAMMER_TRADING' ? '🟢 Hammer Account' : '🟣 IBKR Account'}
+          {['HAMMER_TRADING', 'HAMMER_PRO', 'HAMPRO'].includes(tradingMode) ? '🟢 Hammer Account' : '🟣 IBKR Account'}
         </div>
         <button className="back-button" onClick={() => navigate('/')}>
           ← Back to Scanner
@@ -81,8 +84,9 @@ function TradingPositions() {
           <table className="trading-table">
             <thead>
               <tr>
-                <th>Symbol</th>
-                <th>Quantity</th>
+                <th>Befday</th>
+                <th>Current</th>
+                <th>Potential</th>
                 <th>Avg Price</th>
                 <th>Current Price</th>
                 <th>Unrealized P&L</th>
@@ -115,8 +119,14 @@ function TradingPositions() {
                         <span className="taxonomy-badge lt">LT OV {isLong ? 'Long' : 'Short'}</span>
                       )}
                     </td>
+                    <td className="quantity-befday">
+                      {pos.befday_qty || 0}
+                    </td>
                     <td className={isLong ? 'quantity-long' : isShort ? 'quantity-short' : ''}>
                       {displayQuantity}
+                    </td>
+                    <td className="quantity-potential" style={{ fontWeight: '600' }}>
+                      {pos.potential_qty || 0}
                     </td>
                     <td className={isLong ? 'quantity-long' : isShort ? 'quantity-short' : ''}>
                       ${pos.avg_price?.toFixed(2)}

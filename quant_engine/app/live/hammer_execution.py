@@ -210,7 +210,7 @@ class HammerExecution:
     
     def cancel_order(self, order_id: str) -> bool:
         """
-        Cancel order.
+        Cancel a single order.
         
         Args:
             order_id: Order ID to cancel
@@ -238,6 +238,215 @@ class HammerExecution:
         
         except Exception as e:
             logger.error(f"Error cancelling order: {e}", exc_info=True)
+            return False
+
+    # ============================================================================
+    # BULK CANCEL OPERATIONS
+    # ============================================================================
+
+    def cancel_all_orders(self, reason: str = "manual") -> Dict[str, Any]:
+        """
+        Cancel ALL open orders (both BUY and SELL).
+        
+        Args:
+            reason: Why the cancel was triggered (e.g., "etf_guard", "manual", "rally", "selloff")
+            
+        Returns:
+            Dict with 'cancelled_count', 'failed_count', 'order_ids', 'errors'
+        """
+        return self._bulk_cancel(side_filter=None, reason=reason)
+
+    def cancel_all_buys(self, reason: str = "selloff") -> Dict[str, Any]:
+        """
+        Cancel all BUY orders. Use during selloffs to prevent buying into falling market.
+        
+        Args:
+            reason: Why (e.g., "selloff", "etf_guard_drop")
+            
+        Returns:
+            Dict with cancel results
+        """
+        return self._bulk_cancel(side_filter="BUY", reason=reason)
+
+    def cancel_all_sells(self, reason: str = "rally") -> Dict[str, Any]:
+        """
+        Cancel all SELL orders. Use during rallies to prevent selling into rising market.
+        
+        Args:
+            reason: Why (e.g., "rally", "short_squeeze")
+            
+        Returns:
+            Dict with cancel results
+        """
+        return self._bulk_cancel(side_filter="SELL", reason=reason)
+
+    def cancel_orders_by_tag(self, tag: str, side_filter: str = None, reason: str = "tag_filter") -> Dict[str, Any]:
+        """
+        Cancel orders matching a specific strategy tag (e.g., 'MM', 'LT', 'PATADD').
+        
+        Args:
+            tag: Strategy tag to filter (e.g., 'MM', 'LT', 'KARBOTU')
+            side_filter: Optional 'BUY' or 'SELL' to further filter
+            reason: Why
+            
+        Returns:
+            Dict with cancel results
+        """
+        return self._bulk_cancel(side_filter=side_filter, tag_filter=tag, reason=reason)
+
+    def _bulk_cancel(
+        self, 
+        side_filter: str = None, 
+        tag_filter: str = None,
+        reason: str = "manual"
+    ) -> Dict[str, Any]:
+        """
+        Internal bulk cancel implementation.
+        
+        Args:
+            side_filter: None=all, 'BUY'=only buys, 'SELL'=only sells
+            tag_filter: Only cancel orders with this strategy tag
+            reason: Audit trail reason
+            
+        Returns:
+            Dict with 'cancelled_count', 'failed_count', 'order_ids', 'details'
+        """
+        result = {
+            'cancelled_count': 0,
+            'failed_count': 0,
+            'order_ids': [],
+            'details': [],
+            'reason': reason,
+            'side_filter': side_filter or 'ALL',
+            'tag_filter': tag_filter,
+        }
+        
+        if not self.hammer_client.is_connected():
+            logger.error("[BULK_CANCEL] Hammer client not connected")
+            result['error'] = "Not connected"
+            return result
+        
+        try:
+            # Get open orders from HammerOrdersService
+            from app.trading.hammer_orders_service import get_hammer_orders_service
+            orders_service = get_hammer_orders_service()
+            
+            if not orders_service:
+                logger.error("[BULK_CANCEL] HammerOrdersService not available")
+                result['error'] = "Orders service not available"
+                return result
+            
+            open_orders = orders_service.get_orders(force_refresh=True)
+            
+            if not open_orders:
+                logger.info(f"[BULK_CANCEL] No open orders to cancel (filter={side_filter or 'ALL'})")
+                return result
+            
+            # Filter orders
+            targets = []
+            for order in open_orders:
+                # Side filter
+                if side_filter and order.get('side') != side_filter:
+                    continue
+                # Tag filter
+                if tag_filter and order.get('tag') != tag_filter:
+                    continue
+                targets.append(order)
+            
+            if not targets:
+                filter_desc = f"side={side_filter or 'ALL'}, tag={tag_filter or 'ANY'}"
+                logger.info(f"[BULK_CANCEL] No matching orders to cancel ({filter_desc})")
+                return result
+            
+            # Log what we're about to cancel
+            target_ids = [t['order_id'] for t in targets]
+            filter_desc = side_filter or "ALL"
+            logger.warning(
+                f"⚡ [BULK_CANCEL] Cancelling {len(targets)} {filter_desc} orders | "
+                f"Reason: {reason} | "
+                f"Symbols: {', '.join(t['symbol'] for t in targets[:10])}"
+                f"{'...' if len(targets) > 10 else ''}"
+            )
+            
+            # Send bulk cancel — Hammer API supports array of orderIDs
+            cancel_cmd = {
+                "cmd": "tradeCommandCancel",
+                "accountKey": self.account_key,
+                "orderID": target_ids
+            }
+            
+            if self.hammer_client._send_command(cancel_cmd):
+                result['cancelled_count'] = len(target_ids)
+                result['order_ids'] = target_ids
+                result['details'] = [
+                    {
+                        'order_id': t['order_id'],
+                        'symbol': t['symbol'],
+                        'side': t['side'],
+                        'qty': t.get('quantity', 0),
+                        'price': t.get('price'),
+                        'tag': t.get('tag'),
+                    }
+                    for t in targets
+                ]
+                
+                logger.warning(
+                    f"✅ [BULK_CANCEL] Sent cancel for {len(target_ids)} orders | "
+                    f"Filter: {filter_desc} | Reason: {reason}"
+                )
+            else:
+                result['failed_count'] = len(target_ids)
+                result['error'] = "Failed to send cancel command"
+                logger.error(f"[BULK_CANCEL] Failed to send cancel command")
+            
+        except Exception as e:
+            logger.error(f"[BULK_CANCEL] Error: {e}", exc_info=True)
+            result['error'] = str(e)
+        
+        return result
+
+    # ============================================================================
+    # ORDER MODIFICATION
+    # ============================================================================
+
+    def modify_order_price(self, order_id: str, new_price: float) -> bool:
+        """
+        Modify the limit price of an existing open order.
+        
+        Args:
+            order_id: The order ID to modify
+            new_price: New limit price
+            
+        Returns:
+            True if modification sent successfully
+        """
+        if not self.hammer_client.is_connected():
+            logger.error("Hammer client not connected")
+            return False
+        
+        try:
+            modify_cmd = {
+                "cmd": "tradeCommandModify",
+                "accountKey": self.account_key,
+                "order": {
+                    "OrderID": order_id,
+                    "Legs": [
+                        {
+                            "LimitPrice": new_price,
+                        }
+                    ]
+                }
+            }
+            
+            if self.hammer_client._send_command(modify_cmd):
+                logger.info(f"✏️ [ORDER_MODIFY] Price change sent: OrderID={order_id} → ${new_price}")
+                return True
+            else:
+                logger.error(f"[ORDER_MODIFY] Failed to send modify for OrderID={order_id}")
+                return False
+        
+        except Exception as e:
+            logger.error(f"[ORDER_MODIFY] Error: {e}", exc_info=True)
             return False
     
     def get_positions(self) -> list:

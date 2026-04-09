@@ -108,7 +108,7 @@ def test_liquidity_guard_lt():
     clamped_qty, info = guard.clamp_quantity(
         desired_qty=desired_qty,
         symbol="AAPL",
-        classification="LT_LONG_INCREASE",
+        classification="LT_LONG_INC",
         avg_adv=avg_adv,
         bucket="LT",
         minutes_to_close=None,
@@ -141,7 +141,7 @@ def test_liquidity_guard_mm():
     clamped_qty, info = guard.clamp_quantity(
         desired_qty=desired_qty,
         symbol="AAPL",
-        classification="MM_LONG_INCREASE",
+        classification="MM_LONG_INC",
         avg_adv=avg_adv,
         bucket="MM",
         minutes_to_close=None,
@@ -176,7 +176,7 @@ def test_liquidity_guard_min_lot():
     clamped_qty, info = guard.clamp_quantity(
         desired_qty=desired_qty,
         symbol="AAPL",
-        classification="LT_LONG_INCREASE",
+        classification="LT_LONG_INC",
         avg_adv=avg_adv,
         bucket="LT",
         minutes_to_close=60,  # Not near close
@@ -210,7 +210,7 @@ def test_liquidity_guard_residual_near_close():
     clamped_qty, info = guard.clamp_quantity(
         desired_qty=desired_qty,
         symbol="AAPL",
-        classification="LT_LONG_DECREASE",
+        classification="LT_LONG_DEC",
         avg_adv=avg_adv,
         bucket="LT",
         minutes_to_close=1,  # Near close (< 2 minutes)

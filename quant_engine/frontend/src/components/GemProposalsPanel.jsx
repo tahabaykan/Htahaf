@@ -1,586 +1,545 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import ReactDOM from 'react-dom'
+import './GemProposalsPanel.css'
 
-const GemProposalsPanel = ({ isOpen, onClose }) => {
+const GemProposalsPanel = () => {
     const [proposals, setProposals] = useState([])
     const [loading, setLoading] = useState(false)
+    const [lastUpdate, setLastUpdate] = useState(null)
+    
+    // Exposure state
+    const [realExposure, setRealExposure] = useState(null)
+    const [estCurRatio, setEstCurRatio] = useState(44.0) // Default %44
+    const [maxExposure, setMaxExposure] = useState(1200000) // Default $1.2M
+    
+    // Load MM settings on mount
+    useEffect(() => {
+        const loadMMSettings = async () => {
+            try {
+                const res = await fetch('/api/xnl/mm/settings')
+                const data = await res.json()
+                if (data.success && data.settings) {
+                    if (data.settings.est_cur_ratio !== undefined) {
+                        setEstCurRatio(data.settings.est_cur_ratio)
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to load MM settings", err)
+            }
+        }
+        loadMMSettings()
+    }, [])
+    
+    // Save MM settings when Est/Cur ratio changes (debounced)
+    useEffect(() => {
+        const saveTimer = setTimeout(async () => {
+            try {
+                await fetch('/api/xnl/mm/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ est_cur_ratio: estCurRatio })
+                })
+            } catch (err) {
+                console.error("Failed to save MM settings", err)
+            }
+        }, 1000) // Debounce 1 second
+        
+        return () => clearTimeout(saveTimer)
+    }, [estCurRatio])
+    
+    // Selection state (separate for LONG and SHORT)
+    const [selectedLongs, setSelectedLongs] = useState(new Set())
+    const [selectedShorts, setSelectedShorts] = useState(new Set())
 
-    // Inspector State
-    const [selectedSymbol, setSelectedSymbol] = useState(null)
-    const [inspectorData, setInspectorData] = useState(null)
-    const [inspectLoading, setInspectLoading] = useState(false)
-
-    // Sorting state
-    const [sortBy, setSortBy] = useState('divergence')
-    const [sortDirection, setSortDirection] = useState('desc')
-
-    // Filter state
-    const [searchTerm, setSearchTerm] = useState('')
-    const [selectedGroups, setSelectedGroups] = useState([])
-    const [showGroupDropdown, setShowGroupDropdown] = useState(false)
-
+    // Fetch Standard Proposals from PSFALGO API
     const fetchProposals = async () => {
         setLoading(true)
         try {
-            const res = await fetch(`http://localhost:8000/api/gem-proposals/?t=${Date.now()}`)
+            // Fetch latest 500 proposals to ensure we catch MM ones
+            const res = await fetch(`/api/psfalgo/proposals/latest?limit=500&t=${Date.now()}`)
             const data = await res.json()
-            if (data.success) {
-                setProposals(data.data)
+            if (data.success && data.proposals) {
+                // Filter only GREATEST_MM engine proposals
+                const mmProposals = data.proposals.filter(p => (p.engine || '').includes('MM'))
+                setProposals(mmProposals)
+                setLastUpdate(new Date())
             }
         } catch (err) {
-            console.error("Failed to fetch proposals", err)
+            console.error("Failed to fetch MM proposals", err)
         } finally {
             setLoading(false)
         }
     }
 
-    const fetchInspectorData = async (symbol) => {
-        setInspectLoading(true)
-        setInspectorData(null)
+    // Fetch real exposure
+    const fetchRealExposure = async () => {
         try {
-            const res = await fetch(`http://localhost:8000/api/gem-proposals/inspect/${symbol}?t=${Date.now()}`)
+            const res = await fetch('/api/psfalgo/state')
             const data = await res.json()
-            if (data.success) {
-                setInspectorData(data.data)
+            if (data.success && data.state?.exposure) {
+                setRealExposure(data.state.exposure)
+                // Use same source as ADDNEWPOS: limit_max_exposure or pot_max
+                const maxExp = data.state.account_state?.limit_max_exposure || 
+                              data.state.account_state?.pot_max || 
+                              data.state.exposure.pot_max || 
+                              1200000
+                setMaxExposure(maxExp)
             }
         } catch (err) {
-            console.error("Failed to fetch inspection", err)
-        } finally {
-            setInspectLoading(false)
+            console.error("Failed to fetch exposure", err)
         }
-    }
-
-    const handleRowClick = (symbol) => {
-        setSelectedSymbol(symbol)
-        fetchInspectorData(symbol)
-    }
-
-    const closeInspector = () => {
-        setSelectedSymbol(null)
-        setInspectorData(null)
     }
 
     useEffect(() => {
-        if (isOpen) {
+        fetchProposals()
+        fetchRealExposure()
+        const interval = setInterval(() => {
             fetchProposals()
-            const interval = setInterval(fetchProposals, 5000)
-            return () => clearInterval(interval)
-        }
-    }, [isOpen])
+            fetchRealExposure()
+        }, 65000)  // 65 sn: emir dongusu ile uyumlu
+        return () => clearInterval(interval)
+    }, [])
 
-    // Get unique groups for filter dropdown
-    const uniqueGroups = useMemo(() => {
-        const groups = [...new Set(proposals.map(p => p.group))].filter(Boolean).sort()
-        return groups
-    }, [proposals])
+    // Split into Longs (BUY) and Shorts (SELL) - Apply Est/Cur ratio to limit count
+    const { longs, shorts, exposureData } = useMemo(() => {
+        const longMap = new Map()
+        const shortMap = new Map()
 
-    // Sort handler
-    const handleSort = (column) => {
-        if (sortBy === column) {
-            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
-        } else {
-            setSortBy(column)
-            setSortDirection('desc')
-        }
-    }
-
-    // Toggle group selection
-    const toggleGroup = (group) => {
-        setSelectedGroups(prev =>
-            prev.includes(group)
-                ? prev.filter(g => g !== group)
-                : [...prev, group]
-        )
-    }
-
-    const selectAllGroups = () => setSelectedGroups([...uniqueGroups])
-    const clearAllGroups = () => setSelectedGroups([])
-
-    // Filter and sort proposals
-    const filteredAndSortedProposals = useMemo(() => {
-        let filtered = proposals
-
-        // Filter by search term (group name)
-        if (searchTerm.trim()) {
-            const term = searchTerm.toLowerCase()
-            filtered = filtered.filter(p =>
-                p.group?.toLowerCase().includes(term) ||
-                p.symbol?.toLowerCase().includes(term)
-            )
-        }
-
-        // Filter by selected groups
-        if (selectedGroups.length > 0) {
-            filtered = filtered.filter(p => selectedGroups.includes(p.group))
-        }
-
-        // Sort
-        const sorted = [...filtered].sort((a, b) => {
-            let aValue, bValue
-
-            switch (sortBy) {
-                case 'symbol':
-                    aValue = a.symbol ?? ''
-                    bValue = b.symbol ?? ''
-                    break
-                case 'group':
-                    aValue = a.group ?? ''
-                    bValue = b.group ?? ''
-                    break
-                case 'price':
-                    aValue = parseFloat(a.price) || null
-                    bValue = parseFloat(b.price) || null
-                    break
-                case 'rr':
-                    aValue = a.rr ?? null
-                    bValue = b.rr ?? null
-                    break
-                case 'divergence':
-                    aValue = (a.divergence !== null && a.divergence !== undefined) ? a.divergence : null
-                    bValue = (b.divergence !== null && b.divergence !== undefined) ? b.divergence : null
-                    break
-                case 'action':
-                    aValue = a.action ?? ''
-                    bValue = b.action ?? ''
-                    break
-                case 'qty':
-                    aValue = a.qty ?? null
-                    bValue = b.qty ?? null
-                    break
-                case 'reason':
-                    aValue = a.reason ?? ''
-                    bValue = b.reason ?? ''
-                    break
-                case 'has_truth':
-                    aValue = a.has_truth_tick ? 1 : 0
-                    bValue = b.has_truth_tick ? 1 : 0
-                    break
-                case 'prev_close':
-                    aValue = parseFloat(a.prev_close) || null
-                    bValue = parseFloat(b.prev_close) || null
-                    break
-                case 'grp_avg_prev':
-                    aValue = parseFloat(a.grp_avg_prev) || null
-                    bValue = parseFloat(b.grp_avg_prev) || null
-                    break
-                case 'div_1h':
-                    aValue = a.div_1h ?? null
-                    bValue = b.div_1h ?? null
-                    break
-                case 'div_4h':
-                    aValue = a.div_4h ?? null
-                    bValue = b.div_4h ?? null
-                    break
-                case 'div_1d':
-                    aValue = a.div_1d ?? null
-                    bValue = b.div_1d ?? null
-                    break
-                case 'div_2d':
-                    aValue = a.div_2d ?? null
-                    bValue = b.div_2d ?? null
-                    break
-                case 'davg':
-                    aValue = a.davg ?? null
-                    bValue = b.davg ?? null
-                    break
-                case 'fbtot':
-                    aValue = a.fbtot ?? null
-                    bValue = b.fbtot ?? null
-                    break
-                case 'sfstot':
-                    aValue = a.sfstot ?? null
-                    bValue = b.sfstot ?? null
-                    break
-                default:
-                    return 0
+        proposals.forEach(p => {
+            // Parse metrics
+            let metrics = p.metrics_used || p.metrics || {}
+            if (typeof metrics === 'string') {
+                try { metrics = JSON.parse(metrics) } catch (e) { }
             }
+            p.parsedMetrics = metrics
 
-            // Handle null values - ALWAYS AT BOTTOM
-            if (aValue === null && bValue === null) return 0
-            if (aValue === null) return 1
-            if (bValue === null) return -1
+            const side = (p.side || '').toUpperCase()
+            const score = metrics.mm_score || 0
 
-            if (typeof aValue === 'string' && typeof bValue === 'string') {
-                return sortDirection === 'asc'
-                    ? aValue.localeCompare(bValue)
-                    : bValue.localeCompare(aValue)
+            // Filter: Score must be < 180
+            if (score >= 180) return
+
+            const isLong = side.includes('BUY')
+            const isShort = side.includes('SELL')
+
+            if (isLong) {
+                if (!longMap.has(p.symbol) || (score > longMap.get(p.symbol).parsedMetrics.mm_score)) {
+                    longMap.set(p.symbol, p)
+                }
+            } else if (isShort) {
+                if (!shortMap.has(p.symbol) || (score > shortMap.get(p.symbol).parsedMetrics.mm_score)) {
+                    shortMap.set(p.symbol, p)
+                }
             }
-
-            return sortDirection === 'asc' ? aValue - bValue : bValue - aValue
         })
 
-        return sorted
-    }, [proposals, searchTerm, selectedGroups, sortBy, sortDirection])
+        let longs = Array.from(longMap.values())
+        let shorts = Array.from(shortMap.values())
 
-    if (!isOpen) return null
+        // Sort by Score Descending
+        longs.sort((a, b) => (b.parsedMetrics.mm_score || 0) - (a.parsedMetrics.mm_score || 0))
+        shorts.sort((a, b) => (b.parsedMetrics.mm_score || 0) - (a.parsedMetrics.mm_score || 0))
 
-    const renderSortIcon = (column) => {
-        if (sortBy === column) {
-            return sortDirection === 'asc' ? ' ↑' : ' ↓'
+        // Calculate default count (50 long + 50 short = 100 total)
+        const defaultCount = 50
+        const currentExp = realExposure?.pot_total || 1000000
+        const estValue = currentExp * (estCurRatio / 100)
+        
+        // Calculate how many stocks we need (200 lot × avg_price × count = estValue)
+        // For MM: lot is fixed 200, so we adjust count
+        const avgPrice = 22 // Default estimate
+        const lotPerStock = 200
+        const valuePerStock = lotPerStock * avgPrice
+        const targetCount = Math.floor(estValue / valuePerStock)
+        
+        // Limit to reasonable range (min 5, max 100)
+        const finalCount = Math.max(5, Math.min(100, Math.floor(targetCount / 2))) // Divide by 2 for long+short
+        
+        // Apply Est/Cur ratio: if estCurRatio is 50% of default, take top 25 instead of 50
+        const ratioMultiplier = estCurRatio / 44.0 // Default is 44%
+        const adjustedCount = Math.max(5, Math.min(100, Math.floor(defaultCount * ratioMultiplier)))
+
+        // Take top N stocks
+        const finalLongs = longs.slice(0, adjustedCount)
+        const finalShorts = shorts.slice(0, adjustedCount)
+
+        // Calculate exposure metrics
+        const totalLots = (finalLongs.length + finalShorts.length) * 200
+        const estCons = totalLots * avgPrice
+        const curExp = currentExp
+        const maxExp = maxExposure
+        const estToCur = curExp > 0 ? (estCons / curExp * 100) : 0
+        const estToMax = maxExp > 0 ? (estCons / maxExp * 100) : 0
+        const curToMax = maxExp > 0 ? (curExp / maxExp * 100) : 0
+
+        return {
+            longs: finalLongs,
+            shorts: finalShorts,
+            exposureData: {
+                totalLots,
+                estCons,
+                curExp,
+                maxExp,
+                estToCur,
+                estToMax,
+                curToMax
+            }
         }
-        return ''
+    }, [proposals, estCurRatio, realExposure, maxExposure])
+
+    // Selection handlers
+    const toggleSelection = (proposalId, isLong) => {
+        if (isLong) {
+            setSelectedLongs(prev => {
+                const newSet = new Set(prev)
+                if (newSet.has(proposalId)) {
+                    newSet.delete(proposalId)
+                } else {
+                    newSet.add(proposalId)
+                }
+                return newSet
+            })
+        } else {
+            setSelectedShorts(prev => {
+                const newSet = new Set(prev)
+                if (newSet.has(proposalId)) {
+                    newSet.delete(proposalId)
+                } else {
+                    newSet.add(proposalId)
+                }
+                return newSet
+            })
+        }
     }
 
-    return (
-        <div className="overlay-panel">
-            <div className="overlay-header">
-                <h2>💎 Gem Proposals ({filteredAndSortedProposals.length}/{proposals.length})</h2>
-                <button onClick={onClose} className="close-btn">×</button>
-            </div>
+    const selectAll = (data, isLong) => {
+        const allIds = new Set(data.map(p => p.id || `${p.symbol}_${p.side}`))
+        if (isLong) {
+            setSelectedLongs(allIds)
+        } else {
+            setSelectedShorts(allIds)
+        }
+    }
 
-            {/* Filter Controls */}
-            <div className="gem-filters">
-                <div className="filter-row">
-                    <input
-                        type="text"
-                        placeholder="🔍 Search by Symbol or Group..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="search-input"
-                    />
+    const deselectAll = (isLong) => {
+        if (isLong) {
+            setSelectedLongs(new Set())
+        } else {
+            setSelectedShorts(new Set())
+        }
+    }
 
-                    <div className="group-filter">
-                        <button
-                            className="group-filter-btn"
-                            onClick={() => setShowGroupDropdown(!showGroupDropdown)}
+    // Send orders handlers
+    const handleSendBuyOrders = async () => {
+        if (selectedLongs.size === 0) {
+            alert('No orders selected')
+            return
+        }
+
+        if (!confirm(`Send ${selectedLongs.size} BUY orders?`)) return
+
+        try {
+            // Get selected proposals
+            const selectedProposals = longs.filter(p => {
+                const id = p.id || `${p.symbol}_${p.side}`
+                return selectedLongs.has(id)
+            })
+
+            // Accept and execute each proposal
+            let successCount = 0
+            let failCount = 0
+            const errors = []
+
+            for (const proposal of selectedProposals) {
+                const proposalId = proposal.id
+                if (!proposalId) {
+                    failCount++
+                    errors.push(`${proposal.symbol}: No proposal ID`)
+                    continue
+                }
+
+                try {
+                    const response = await fetch(`/api/psfalgo/proposals/${proposalId}/accept`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+
+                    const result = await response.json()
+                    if (result.success) {
+                        successCount++
+                    } else {
+                        failCount++
+                        errors.push(`${proposal.symbol}: ${result.message || 'Unknown error'}`)
+                    }
+                } catch (err) {
+                    failCount++
+                    errors.push(`${proposal.symbol}: ${err.message}`)
+                }
+            }
+
+            if (failCount === 0) {
+                alert(`Successfully sent ${successCount} BUY orders`)
+            } else {
+                alert(`Sent ${successCount} orders, ${failCount} failed.\n\nErrors:\n${errors.slice(0, 5).join('\n')}${errors.length > 5 ? '\n...' : ''}`)
+            }
+
+            setSelectedLongs(new Set())
+        } catch (err) {
+            console.error('Error sending buy orders:', err)
+            alert('Error sending orders: ' + err.message)
+        }
+    }
+
+    const handleSendSellOrders = async () => {
+        if (selectedShorts.size === 0) {
+            alert('No orders selected')
+            return
+        }
+
+        if (!confirm(`Send ${selectedShorts.size} SELL orders?`)) return
+
+        try {
+            // Get selected proposals
+            const selectedProposals = shorts.filter(p => {
+                const id = p.id || `${p.symbol}_${p.side}`
+                return selectedShorts.has(id)
+            })
+
+            // Accept and execute each proposal
+            let successCount = 0
+            let failCount = 0
+            const errors = []
+
+            for (const proposal of selectedProposals) {
+                const proposalId = proposal.id
+                if (!proposalId) {
+                    failCount++
+                    errors.push(`${proposal.symbol}: No proposal ID`)
+                    continue
+                }
+
+                try {
+                    const response = await fetch(`/api/psfalgo/proposals/${proposalId}/accept`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+
+                    const result = await response.json()
+                    if (result.success) {
+                        successCount++
+                    } else {
+                        failCount++
+                        errors.push(`${proposal.symbol}: ${result.message || 'Unknown error'}`)
+                    }
+                } catch (err) {
+                    failCount++
+                    errors.push(`${proposal.symbol}: ${err.message}`)
+                }
+            }
+
+            if (failCount === 0) {
+                alert(`Successfully sent ${successCount} SELL orders`)
+            } else {
+                alert(`Sent ${successCount} orders, ${failCount} failed.\n\nErrors:\n${errors.slice(0, 5).join('\n')}${errors.length > 5 ? '\n...' : ''}`)
+            }
+
+            setSelectedShorts(new Set())
+        } catch (err) {
+            console.error('Error sending sell orders:', err)
+            alert('Error sending orders: ' + err.message)
+        }
+    }
+
+    const ProposalTable = ({ data, title, type }) => {
+        const isLong = type === 'long'
+        const selectedSet = isLong ? selectedLongs : selectedShorts
+        const selectedCount = selectedSet.size
+
+        return (
+            <div className={`mm-section ${type}`}>
+                <div className={`mm-header ${type}`}>
+                    <h3>{title} ({data.length})</h3>
+                    <div className="mm-header-controls">
+                        <button 
+                            className="mm-control-btn"
+                            onClick={() => selectAll(data, isLong)}
+                            title="Select All"
                         >
-                            📁 Groups ({selectedGroups.length || 'All'}) ▼
+                            Select All
                         </button>
-
-                        {showGroupDropdown && (
-                            <div className="group-dropdown">
-                                <div className="group-dropdown-actions">
-                                    <button onClick={selectAllGroups}>Select All</button>
-                                    <button onClick={clearAllGroups}>Clear All</button>
-                                </div>
-                                <div className="group-list">
-                                    {uniqueGroups.map(group => (
-                                        <label key={group} className="group-item">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedGroups.includes(group)}
-                                                onChange={() => toggleGroup(group)}
-                                            />
-                                            <span>{group}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
+                        <button 
+                            className="mm-control-btn"
+                            onClick={() => deselectAll(isLong)}
+                            title="Deselect All"
+                        >
+                            Deselect
+                        </button>
+                        {isLong ? (
+                            <button 
+                                className="mm-send-btn mm-send-buy"
+                                onClick={handleSendBuyOrders}
+                                disabled={selectedCount === 0}
+                                title="Send Buy Orders"
+                            >
+                                Send Buy Orders ({selectedCount})
+                            </button>
+                        ) : (
+                            <button 
+                                className="mm-send-btn mm-send-sell"
+                                onClick={handleSendSellOrders}
+                                disabled={selectedCount === 0}
+                                title="Send Sell Orders"
+                            >
+                                Send Sell Orders ({selectedCount})
+                            </button>
                         )}
                     </div>
                 </div>
-            </div>
-
-            <div className="gem-content">
-                {loading && proposals.length === 0 ? (
-                    <div className="loading">Loading Gems...</div>
-                ) : proposals.length === 0 ? (
-                    <div style={{ padding: '20px', color: '#888' }}>
-                        No proposals found. (Backend API returned 0 items)
-                    </div>
-                ) : filteredAndSortedProposals.length === 0 ? (
-                    <div style={{ padding: '20px', color: '#888' }}>
-                        No proposals match your filter criteria.
-                    </div>
-                ) : (
-                    <table className="gem-table">
+                <div className="mm-table-container">
+                    <table className="mm-table">
                         <thead>
                             <tr>
-                                <th onClick={() => handleSort('symbol')} className="sortable">Sym{renderSortIcon('symbol')}</th>
-                                <th onClick={() => handleSort('group')} className="sortable">Grp{renderSortIcon('group')}</th>
-                                <th onClick={() => handleSort('price')} className="sortable">Px{renderSortIcon('price')}</th>
-                                <th onClick={() => handleSort('rr')} className="sortable">RelRet{renderSortIcon('rr')}</th>
-                                <th onClick={() => handleSort('davg')} className="sortable highlight-header">Davg{renderSortIcon('davg')}</th>
-                                <th onClick={() => handleSort('divergence')} className="sortable">D.Now{renderSortIcon('divergence')}</th>
-                                <th onClick={() => handleSort('div_1h')} className="sortable">1H{renderSortIcon('div_1h')}</th>
-                                <th onClick={() => handleSort('div_4h')} className="sortable">4H{renderSortIcon('div_4h')}</th>
-                                <th onClick={() => handleSort('div_1d')} className="sortable">1D{renderSortIcon('div_1d')}</th>
-                                <th onClick={() => handleSort('div_2d')} className="sortable">2D{renderSortIcon('div_2d')}</th>
-                                <th onClick={() => handleSort('fbtot')} className="sortable">FbTot{renderSortIcon('fbtot')}</th>
-                                <th onClick={() => handleSort('sfstot')} className="sortable">SfsTot{renderSortIcon('sfstot')}</th>
-                                <th onClick={() => handleSort('action')} className="sortable">Act{renderSortIcon('action')}</th>
-                                <th onClick={() => handleSort('has_truth')} className="sortable">T{renderSortIcon('has_truth')}</th>
+                                <th style={{ width: '30px' }}>☐</th>
+                                <th>Sym</th>
+                                <th>Score</th>
+                                <th>Price</th>
+                                <th>Bid</th>
+                                <th>Ask</th>
+                                <th>Spread</th>
+                                <th>Prev Close</th>
+                                <th>Bench Chg</th>
+                                <th>Scenario</th>
+                                <th>Son5</th>
+                                <th>NewP</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredAndSortedProposals.map((p, idx) => (
-                                <tr
-                                    key={idx}
-                                    className={p.is_fake_print ? "fake-print-row clickable-row" : "clickable-row"}
-                                    onClick={() => handleRowClick(p.symbol)}
-                                    title="Click to view full inspection details"
-                                >
-                                    <td>{p.symbol}</td>
-                                    <td className="tiny-text">{p.group}</td>
-                                    <td>{p.price}</td>
-                                    <td className={p.rr >= 0 ? 'positive-cents' : 'negative-cents'}>{p.rr >= 0 ? '+' : ''}{p.rr.toFixed(2)}</td>
-                                    <td className={p.davg != null ? (p.davg >= 0 ? 'positive-cents highlight-cell' : 'negative-cents highlight-cell') : 'na-cell highlight-cell'}>
-                                        {p.davg != null ? (p.davg >= 0 ? '+' : '') + p.davg.toFixed(2) : '-'}
-                                    </td>
-                                    <td className={p.divergence >= 0 ? 'positive-cents' : 'negative-cents'}>{p.divergence >= 0 ? '+' : ''}{p.divergence.toFixed(2)}</td>
-                                    <td className={p.div_1h != null ? (p.div_1h >= 0 ? 'positive-cents' : 'negative-cents') : 'na-cell'}>{p.div_1h != null ? p.div_1h.toFixed(2) : '-'}</td>
-                                    <td className={p.div_4h != null ? (p.div_4h >= 0 ? 'positive-cents' : 'negative-cents') : 'na-cell'}>{p.div_4h != null ? p.div_4h.toFixed(2) : '-'}</td>
-                                    <td className={p.div_1d != null ? (p.div_1d >= 0 ? 'positive-cents' : 'negative-cents') : 'na-cell'}>{p.div_1d != null ? p.div_1d.toFixed(2) : '-'}</td>
-                                    <td className={p.div_2d != null ? (p.div_2d >= 0 ? 'positive-cents' : 'negative-cents') : 'na-cell'}>{p.div_2d != null ? p.div_2d.toFixed(2) : '-'}</td>
-
-                                    <td className="metric-cell">{p.fbtot != null ? p.fbtot.toFixed(2) : '-'}</td>
-                                    <td className="metric-cell">{p.sfstot != null ? p.sfstot.toFixed(2) : '-'}</td>
-
-                                    <td className={`action-${p.action.toLowerCase()}`}>{p.action}</td>
-                                    <td className={p.has_truth_tick ? 'truth-yes' : 'truth-no'}>{p.has_truth_tick ? '✓' : ''}</td>
+                            {data.length === 0 ? (
+                                <tr>
+                                    <td colSpan="12" className="empty-cell">No {title} Proposals</td>
                                 </tr>
-                            ))}
+                            ) : (
+                                data.map((p, idx) => {
+                                    const proposalId = p.id || `${p.symbol}_${p.side}`
+                                    const isSelected = selectedSet.has(proposalId)
+                                    const bid = p.bid || p.parsedMetrics?.bid || 0
+                                    const ask = p.ask || p.parsedMetrics?.ask || 0
+                                    const spread = p.spread || (ask - bid) || 0
+                                    const prevClose = p.prev_close || p.parsedMetrics?.prev_close || 0
+                                    const benchChg = p.bench_chg || p.parsedMetrics?.benchmark_chg || p.parsedMetrics?.bench_chg || 0
+                                    
+                                    return (
+                                        <tr 
+                                            key={idx}
+                                            className={isSelected ? 'mm-row-selected' : ''}
+                                            onClick={() => toggleSelection(proposalId, isLong)}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            <td onClick={(e) => e.stopPropagation()}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    onChange={() => toggleSelection(proposalId, isLong)}
+                                                    style={{ cursor: 'pointer' }}
+                                                />
+                                            </td>
+                                            <td className="sym-cell">{p.symbol}</td>
+                                            <td className="score-cell">{p.parsedMetrics.mm_score?.toFixed(1) || '-'}</td>
+                                            <td className="price-cell">{p.price?.toFixed(2) || '-'}</td>
+                                            <td className="bid-cell">{bid.toFixed(2)}</td>
+                                            <td className="ask-cell">{ask.toFixed(2)}</td>
+                                            <td className="spread-cell">{spread.toFixed(2)}</td>
+                                            <td className="prev-close-cell">{prevClose.toFixed(2)}</td>
+                                            <td className={`bench-chg-cell ${benchChg >= 0 ? 'positive' : 'negative'}`}>
+                                                {benchChg >= 0 ? '+' : ''}{benchChg.toFixed(2)}
+                                            </td>
+                                            <td className="scenario-cell">{p.parsedMetrics.scenario || '-'}</td>
+                                            <td className="son5-cell">{p.parsedMetrics.son5_tick?.toFixed(2) || '-'}</td>
+                                            <td className="newp-cell" style={{ color: '#00d2ff' }}>
+                                                {p.parsedMetrics.new_print ? p.parsedMetrics.new_print.toFixed(2) : '-'}
+                                            </td>
+                                        </tr>
+                                    )
+                                })
+                            )}
                         </tbody>
                     </table>
-                )}
+                </div>
             </div>
+        )
+    }
 
-            {/* INSPECTOR MODAL */}
-            {selectedSymbol && (
-                <div className="inspector-overlay" onClick={closeInspector}>
-                    <div className="inspector-modal" onClick={e => e.stopPropagation()}>
-                        <div className="inspector-header">
-                            <h3>🔍 Gem Inspector: {selectedSymbol}</h3>
-                            <button onClick={closeInspector}>✕</button>
+    return (
+        <div className="mm-panel-container">
+            {/* Exposure Panel */}
+            {exposureData && (
+                <div className="mm-exposure-panel">
+                    <div className="exposure-horizontal-row">
+                        <div className="exposure-item">
+                            <span className="exposure-icon">📦</span>
+                            <span className="exposure-label">Tot. Lots (MM):</span>
+                            <span className="exposure-value blue">{exposureData.totalLots.toLocaleString()}</span>
                         </div>
-                        <div className="inspector-body">
-                            {inspectLoading ? (
-                                <div className="loading">Loading details...</div>
-                            ) : !inspectorData ? (
-                                <div className="error">No detailed data available yet. Please wait for next engine cycle.</div>
-                            ) : (
-                                <>
-                                    <div className="inspector-section">
-                                        <h4>Current Truth Status <span className="group-badge">{inspectorData.group}</span></h4>
-                                        <div className="metrics-grid">
-                                            <div className="metric-box">
-                                                <label>Effective Price</label>
-                                                <div className="value">{inspectorData.current?.price?.toFixed(2)}</div>
-                                            </div>
-                                            <div className="metric-box">
-                                                <label>Davg</label>
-                                                <div className={`value ${inspectorData.current?.davg >= 0 ? 'pos' : 'neg'}`}>
-                                                    {inspectorData.current?.davg != null ? inspectorData.current?.davg.toFixed(2) : '-'}
-                                                </div>
-                                            </div>
-                                            <div className="metric-box">
-                                                <label>Truth Size</label>
-                                                <div className="value">{inspectorData.current?.size}</div>
-                                            </div>
-                                            <div className="metric-box">
-                                                <label>Change (vs PrevCl)</label>
-                                                <div className={`value ${inspectorData.current?.change >= 0 ? 'pos' : 'neg'}`}>
-                                                    {inspectorData.current?.change?.toFixed(2)}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="metrics-grid" style={{ marginTop: '10px' }}>
-                                            <div className="metric-box">
-                                                <label>Fbtot</label>
-                                                <div className="value">{inspectorData.current?.fbtot != null ? inspectorData.current?.fbtot.toFixed(2) : '-'}</div>
-                                            </div>
-                                            <div className="metric-box">
-                                                <label>Sfstot</label>
-                                                <div className="value">{inspectorData.current?.sfstot != null ? inspectorData.current?.sfstot.toFixed(2) : '-'}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="inspector-section">
-                                        <h4>Timeframe Divergence Breakdown</h4>
-                                        <table className="inspector-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>TF</th>
-                                                    <th>Hist. Volav Price</th>
-                                                    <th>Stock Change</th>
-                                                    <th>Group Avg Change</th>
-                                                    <th>Divergence (Stock - Grp)</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {['1h', '4h', '1d', '2d'].map(tf => {
-                                                    const d = inspectorData.timeframes?.[tf];
-                                                    if (!d) return null;
-                                                    return (
-                                                        <tr key={tf}>
-                                                            <td className="tf-label">{tf.toUpperCase()}</td>
-                                                            <td>{d.hist_price ? d.hist_price.toFixed(2) : '-'}</td>
-                                                            <td className={d.change_cents >= 0 ? 'pos' : 'neg'}>
-                                                                {d.change_cents != null ? d.change_cents.toFixed(2) : '-'}
-                                                            </td>
-                                                            <td className={d.group_avg_change >= 0 ? 'pos' : 'neg'}>
-                                                                {d.group_avg_change != null ? d.group_avg_change.toFixed(2) : '-'}
-                                                            </td>
-                                                            <td className={d.divergence >= 0 ? 'pos-bold' : 'neg-bold'}>
-                                                                {d.divergence != null ? d.divergence.toFixed(2) : '-'}
-                                                            </td>
-                                                        </tr>
-                                                    )
-                                                })}
-                                            </tbody>
-                                        </table>
-                                        <p className="inspector-note">
-                                            * <b>Divergence Formula:</b> (Current Truth - Hist Volav) - (Group Avg Change)
-                                        </p>
-                                    </div>
-                                </>
-                            )}
+                        <span className="exp-sep">|</span>
+                        <div className="exposure-item">
+                            <span className="exposure-icon">💰</span>
+                            <span className="exposure-label">Est. Cons:</span>
+                            <span className="exposure-value cyan">${exposureData.estCons.toLocaleString()}</span>
+                        </div>
+                        <span className="exp-sep">|</span>
+                        <div className="exposure-item">
+                            <span className="exposure-icon">📊</span>
+                            <span className="exposure-label">Cur Exp:</span>
+                            <span className="exposure-value green">${exposureData.curExp.toLocaleString()}</span>
+                        </div>
+                        <span className="exp-sep">|</span>
+                        <div className="exposure-item">
+                            <span className="exposure-icon">🎯</span>
+                            <span className="exposure-label">Max Exp:</span>
+                            <span className="exposure-value orange">${exposureData.maxExp.toLocaleString()}</span>
+                        </div>
+                        <span className="exp-sep">|</span>
+                        <div className="exposure-slider-group">
+                            <label>Est/Cur:</label>
+                            <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                step="0.1"
+                                value={estCurRatio}
+                                onChange={(e) => setEstCurRatio(parseFloat(e.target.value))}
+                                className="exposure-slider"
+                            />
+                            <span className="slider-value">{estCurRatio.toFixed(1)}%</span>
+                        </div>
+                        <span className="exp-sep">|</span>
+                        <div className="exposure-ratios-inline">
+                            <span className="ratio-item">
+                                Est/Cur: <span className="ratio-value">{exposureData.estToCur.toFixed(1)}%</span>
+                            </span>
+                            <span className="ratio-item">
+                                Est/Max: <span className="ratio-value">{exposureData.estToMax.toFixed(1)}%</span>
+                            </span>
+                            <span className="ratio-item">
+                                Cur/Max: <span className="ratio-value">{exposureData.curToMax.toFixed(1)}%</span>
+                            </span>
                         </div>
                     </div>
                 </div>
             )}
 
-            <style>{`
-        .overlay-panel {
-          position: fixed; top: 50px; left: 50px; right: 50px; bottom: 50px;
-          background: #1e1e1e; border: 1px solid #444; z-index: 1000;
-          display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-        .overlay-header {
-            padding: 10px 15px; background: #252525; border-bottom: 1px solid #333;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .overlay-header h2 { margin: 0; color: #00d4ff; font-size: 18px; }
-        .close-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
-        
-        /* Filter Styles */
-        .gem-filters {
-            padding: 8px 15px; background: #252525; border-bottom: 1px solid #333;
-        }
-        .filter-row {
-            display: flex; gap: 8px; align-items: center;
-        }
-        .search-input {
-            flex: 1; padding: 6px 10px; background: #1a1a1a; border: 1px solid #444;
-            border-radius: 4px; color: #fff; font-size: 13px;
-        }
-        .search-input:focus {
-            outline: none; border-color: #00d4ff;
-        }
-        .search-input::placeholder {
-            color: #666;
-        }
-        .group-filter {
-            position: relative;
-        }
-        .group-filter-btn {
-            padding: 6px 12px; background: #333; border: 1px solid #555;
-            border-radius: 4px; color: #fff; cursor: pointer; font-size: 13px;
-        }
-        .group-filter-btn:hover {
-            background: #444;
-        }
-        .group-dropdown {
-            position: absolute; top: 100%; right: 0; margin-top: 4px;
-            background: #2a2a2a; border: 1px solid #444; border-radius: 4px;
-            min-width: 220px; max-height: 300px; overflow-y: auto; z-index: 100;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-        }
-        .group-dropdown-actions {
-            display: flex; gap: 8px; padding: 8px; border-bottom: 1px solid #444;
-        }
-        .group-dropdown-actions button {
-            flex: 1; padding: 6px 8px; background: #444; border: none;
-            border-radius: 3px; color: #fff; cursor: pointer; font-size: 12px;
-        }
-        .group-dropdown-actions button:hover {
-            background: #555;
-        }
-        .group-list {
-            max-height: 240px; overflow-y: auto;
-        }
-        .group-item {
-            display: flex; align-items: center; gap: 8px; padding: 8px 12px;
-            cursor: pointer; color: #ddd;
-        }
-        .group-item:hover {
-            background: #333;
-        }
-        .group-item input[type="checkbox"] {
-            accent-color: #00d4ff;
-        }
-        
-        .gem-content { padding: 0; overflow: auto; flex: 1; }
-        .gem-table { width: 100%; border-collapse: collapse; color: #ddd; font-size: 12px; }
-        .gem-table th, .gem-table td { padding: 4px 6px; text-align: left; border-bottom: 1px solid #333; }
-        .gem-table th { color: #888; position: sticky; top: 0; background: #1e1e1e; font-weight: 600; white-space: nowrap; }
-        
-        /* Sortable Headers */
-        .gem-table th.sortable {
-            cursor: pointer; user-select: none; transition: background 0.2s;
-        }
-        .gem-table th.sortable:hover {
-            background: rgba(0, 212, 255, 0.1); color: #00d4ff;
-        }
-        
-        .highlight-header { color: #fff !important; background: #2a2a2a !important; }
-        .highlight-cell { background: #252525; font-weight: bold; }
+            <div className="mm-split-view">
+                {/* LONGS (LEFT) */}
+                <ProposalTable data={longs} title="LONG (BUY)" type="long" />
 
-        .action-sell { color: #ff4444; font-weight: bold; }
-        .action-buy { color: #00ff88; font-weight: bold; }
-        .action-watch { color: #ffaa00; font-weight: bold; }
-        .fake-print-row { opacity: 0.5; }
-        .truth-yes { color: #00ff88; font-weight: bold; text-align: center; }
-        .truth-no { color: #666; text-align: center; }
-        .positive-cents { color: #00ff88; }
-        .negative-cents { color: #ff4444; }
-        .na-cell { color: #555; text-align: center; }
-        .tiny-text { font-size: 10px; color: #888; white-space: nowrap; overflow: hidden; max-width: 80px; text-overflow: ellipsis; }
-        .metric-cell { color: #ccc; }
+                {/* SHORTS (RIGHT) */}
+                <ProposalTable data={shorts} title="SHORT (SELL)" type="short" />
+            </div>
 
-        .clickable-row { cursor: pointer; transition: background 0.1s; }
-        .clickable-row:hover { background: #2a2a2a; }
-
-        /* INSPECTOR MODAL STYLES */
-        .inspector-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7); z-index: 2000;
-            display: flex; justify-content: center; align-items: center;
-            backdrop-filter: blur(2px);
-        }
-        .inspector-modal {
-            background: #1e1e1e; width: 600px; max-width: 90%; max-height: 90vh;
-            border: 1px solid #555; box-shadow: 0 0 30px rgba(0,0,0,0.8);
-            border-radius: 8px; display: flex; flex-direction: column; overflow: hidden;
-        }
-        .inspector-header {
-            padding: 15px; background: #252525; border-bottom: 1px solid #444;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .inspector-header h3 { margin: 0; color: #fff; }
-        .inspector-header button {
-            background: none; border: none; color: #888; font-size: 20px; cursor: pointer;
-        }
-        .inspector-header button:hover { color: #fff; }
-        
-        .inspector-body { padding: 20px; overflow-y: auto; }
-        .inspector-section { margin-bottom: 25px; }
-        .inspector-section h4 { color: #888; border-bottom: 1px solid #333; padding-bottom: 5px; margin-bottom: 15px; }
-        
-        .group-badge {
-            background: #333; padding: 2px 6px; border-radius: 4px; color: #aaa; font-size: 12px; margin-left: 8px;
-        }
-        
-        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .metric-box { background: #252525; padding: 10px; border-radius: 4px; text-align: center; }
-        .metric-box label { display: block; color: #666; font-size: 10px; margin-bottom: 4px; text-transform: uppercase; }
-        .metric-box .value { font-size: 16px; font-weight: bold; color: #fff; }
-        .source-tag { font-size: 10px !important; color: #00d4ff !important; word-break: break-all; }
-        
-        .inspector-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .inspector-table th { text-align: left; padding: 8px; border-bottom: 1px solid #444; color: #666; }
-        .inspector-table td { padding: 8px; border-bottom: 1px solid #333; color: #ddd; }
-        .tf-label { font-weight: bold; color: #00d4ff !important; }
-        
-        .pos { color: #00ff88; }
-        .neg { color: #ff4444; }
-        .pos-bold { color: #00ff88; font-weight: bold; font-size: 14px; }
-        .neg-bold { color: #ff4444; font-weight: bold; font-size: 14px; }
-        
-        .inspector-note { font-size: 11px; color: #666; margin-top: 10px; font-style: italic; }
-        
-      `}</style>
+            <div className="mm-footer">
+                <span>Total MM Proposals: {proposals.length}</span>
+                <span>Last Update: {lastUpdate ? lastUpdate.toLocaleTimeString() : 'Never'}</span>
+                <span style={{ marginLeft: 'auto', fontSize: '11px', color: '#666' }}>* Range: 30-250 Score | Lot: 200 (fixed)</span>
+            </div>
         </div>
     )
 }

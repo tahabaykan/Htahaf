@@ -1,0 +1,35 @@
+﻿python : 20:18:40 | [CLAUDE] Call #1 | 7463 in / 241
+8 out | $0.0156 | model=claude-3-haiku-20240307
+At line:1 char:1
++ python send_to_claude.py 2>&1 | Out-File -Encoding
+ utf8 C:\StockTrack ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (20:18: 
+   40 | [CLA...-haiku-20240307:String) [], RemoteE  
+  xception
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Prompt: 16199 chars (~4049 tokens)
+Stocks in table: 95
+MM candidates (score>=3): 49
+Sending to Claude Haiku 3...
+Response: 4943 chars
+Cost: {'model': 'claude-3-haiku-20240307', 'daily_calls': 1, 'daily_input_tokens': 7463, 'daily_output_tokens': 2418, 'daily_cost_usd': 0.0156}
+
+Report: C:\StockTracker\quant_engine\tt_learning\gemini_reports\2026-02-16_deep.txt
+
+================================================================================
+Traceback (most recent call last):
+  File "C:\StockTracker\quant_engine\send_to_claude.
+py", line 189, in <module>
+    print(response[:4000])
+    ~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1254.py", line 
+19, in encode
+    return codecs.charmap_encode(input,self.errors,e
+ncoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode cha
+racter '\u2265' in position 859: character maps to <
+undefined>
